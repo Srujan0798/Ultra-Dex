@@ -21,7 +21,7 @@ import {
 import { assertSafeCommand, assertSafePath } from '../sandbox/permissions.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
-import { AppError, ValidationError, SecurityError } from '../utils/errors.js';
+import { AppError, ValidationError } from '../utils/errors.js';
 // ============================================================================
 // LOCAL EXECUTION (UNSAFE)
 // ============================================================================

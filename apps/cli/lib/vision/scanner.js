@@ -102,11 +102,11 @@ export class VisionScanner {
       // of the *Baseline* if multi-image upload isn't fully standardized in our wrapper yet.
       // BUT, let's try to pass both if the provider supports it.
 
-      const baselineBuffer = await fs.readFile(baselinePath);
+      const _baselineBuffer = await fs.readFile(baselinePath);
       const currentBuffer = await fs.readFile(currentPath);
 
       // We construct a prompt asking for comparison
-      const prompt = `
+      const _prompt = `
 I am providing two images: 
 1. The BASELINE (Reference)
 2. The CURRENT (Test)

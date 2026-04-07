@@ -7,7 +7,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import chalk from 'chalk';
+
 import crypto from 'crypto';
 
 /**
@@ -304,7 +304,7 @@ export class ConflictResolver {
   /**
    * Unlock file
    */
-  async unlockFile(file, lockId) {
+  async unlockFile(file, _lockId) {
     // Release lock
     return true;
   }
@@ -418,7 +418,7 @@ export class CostTracker {
  * Report progress per agent and overall
  */
 export class ProgressReporter {
-  constructor(options = {}) {
+  constructor(_options = {}) {
     this.callbacks = [];
     this.agentProgress = new Map();
     this.overallProgress = {

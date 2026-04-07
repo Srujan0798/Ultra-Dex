@@ -13,7 +13,7 @@ import { readFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
-import { AppError, ValidationError } from '../utils/errors.js';
+import { AppError } from '../utils/errors.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

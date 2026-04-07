@@ -8,9 +8,9 @@ import ora from '../utils/ora.js';
 import { agents as AGENTS_MAP } from '../utils/agents.js';
 import { createProvider, getDefaultProvider } from '../providers/index.js';
 import { context as contextScanner } from '../kernel/context.js';
-import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { printError, printInfo, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
-import { AppError, ValidationError } from '../utils/errors.js';
+import { AppError } from '../utils/errors.js';
 
 // Convert agents map to array for easier usage
 const ALL_AGENTS = Object.values(AGENTS_MAP);

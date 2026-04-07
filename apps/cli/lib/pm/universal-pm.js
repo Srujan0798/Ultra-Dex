@@ -11,7 +11,7 @@ import path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
-import { validateSafePath } from '../utils/validation.js';
+
 
 const execAsync = promisify(exec);
 
@@ -309,7 +309,7 @@ class PackageManager {
       auditArgs.push('--json');
     }
 
-    const { stdout, stderr } = await this.executeCommand(this.detectedManager.command, auditArgs);
+    const { stdout, _stderr } = await this.executeCommand(this.detectedManager.command, auditArgs);
     
     const auditResult = options.json ? JSON.parse(stdout) : stdout;
     
@@ -686,7 +686,7 @@ class PackageManager {
     printInfo(chalk.cyan(`\n🔄 Migrating from ${this.detectedManager.name} to ${targetManager}...`));
     
     // Get current dependencies
-    const projectDeps = await this.getProjectDependencies();
+    const _projectDeps = await this.getProjectDependencies();
     
     // Remove current lock file and node_modules
     const lockFile = this.detectedManager.lockFile;

@@ -2,16 +2,16 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import { createReadStream } from 'fs';
+
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { z } from 'zod';
+
 import axios from 'axios';
 import sharp from 'sharp';
 import { AppError } from '../utils/errors.js';
-import { printInfo, printSuccess, printError, printWarning } from '../utils/output.js';
+import { printInfo, printSuccess, printWarning } from '../utils/output.js';
 
-const execAsync = promisify(exec);
+const _execAsync = promisify(exec);
 
 /**
  * Vision Agent for Screenshot-to-Code Conversion
@@ -379,7 +379,7 @@ Output only the code with no explanations unless specifically asked.`;
   /**
    * Save generated code to file
    */
-  async saveCodeToFile(generatedCode, filePath, options = {}) {
+  async saveCodeToFile(generatedCode, filePath, _options = {}) {
     try {
       // Extract code blocks from AI response if present
       const code = this.extractCodeBlocks(generatedCode);

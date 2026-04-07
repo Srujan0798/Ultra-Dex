@@ -118,7 +118,7 @@ class EnterpriseFeatures {
   /**
    * Validate password (simulated)
    */
-  validatePassword(password, userId) {
+  validatePassword(password, _userId) {
     return true;
   }
   /**

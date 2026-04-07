@@ -9,9 +9,9 @@ import chalk from 'chalk';
 import inquirer from 'inquirer';
 import fs from 'fs/promises';
 import path from 'path';
-import { spawn } from 'child_process';
+
 import { logger } from '../utils/logger.js';
-import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import { printInfo, printSuccess, printError } from '../utils/output.js';
 import { ConfigManager } from '../utils/config-manager.js';
 
 /**
@@ -400,7 +400,7 @@ export function registerOmniBoxCommand(program) {
     .alias('omni')
     .description('Interactive Omni-Box dashboard')
     .option('-t, --terminal', 'Force terminal UI mode')
-    .action(async (options) => {
+    .action(async (_options) => {
       try {
         await showDashboard();
       } catch (error) {

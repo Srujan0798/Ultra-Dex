@@ -14,7 +14,7 @@ import chalk from 'chalk';
 import ora from '../utils/ora.js';
 import { execSync } from 'child_process';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
-import { AppError, ValidationError } from '../utils/errors.js';
+import { AppError } from '../utils/errors.js';
 
 const STEPS_21 = [
   {
@@ -128,7 +128,7 @@ const STEPS_21 = [
 // Automated step executors
 const stepExecutors = {
   // Step 1: UNDERSTAND - Parse task and context
-  async understand(taskPath, context) {
+  async understand(taskPath, _context) {
     const task = await fs.readFile(taskPath, 'utf-8');
     const analysis = {
       taskLength: task.length,

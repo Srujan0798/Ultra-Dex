@@ -5,7 +5,7 @@
  * @module swarm/coordinator
  */
 
-import chalk from 'chalk';
+
 import ora from '../utils/ora.js';
 import { runAgentLoop } from '../commands/run.js';
 import fs from 'fs/promises';

@@ -6,7 +6,7 @@
  */
 
 import { renderComponent, validateComponentProps } from './components.js';
-import { printInfo, printSuccess, printWarning, printError } from '../../utils/output.js';
+import { printInfo, printSuccess, printError } from '../../utils/output.js';
 import chalk from 'chalk';
 import { AppError } from '../../utils/errors.js';
 
@@ -186,7 +186,7 @@ export class MCPAppRenderer {
    * Render for terminal (fallback)
    */
   renderTerminal(componentType, props) {
-    const component = this.renderComponent(componentType, props);
+    const _component = this.renderComponent(componentType, props);
 
     // For terminal, just return a text representation
     switch (componentType) {

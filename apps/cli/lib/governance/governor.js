@@ -9,7 +9,7 @@ import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
 import { loadADRs } from './schema.js';
-import { printInfo, printError, printSuccess, printWarning } from '../utils/output.js';
+import { printInfo, printError, printSuccess } from '../utils/output.js';
 
 /**
  * Audit a file or directory against active ADRs

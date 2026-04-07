@@ -8,7 +8,7 @@ import { performance } from 'perf_hooks';
 import * as acorn from 'acorn';
 import * as walk from 'acorn-walk';
 import neo4j from 'neo4j-driver';
-import { AppError, ValidationError } from '../utils/errors.js';
+import { ValidationError } from '../utils/errors.js';
 import { logger } from '../ui/logger.js';
 
 /**

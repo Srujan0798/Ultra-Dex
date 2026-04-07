@@ -40,7 +40,7 @@ export async function appendBlock(
   // Ensure storage directory exists
   try {
     await fs.mkdir(ultraDir, { recursive: true });
-  } catch (e) {
+  } catch (_e) {
     // Ignore if exists
   }
 
@@ -53,7 +53,7 @@ export async function appendBlock(
       const lastBlock = JSON.parse(lines[lines.length - 1]);
       previousHash = lastBlock.hash;
     }
-  } catch (e) {
+  } catch (_e) {
     // First block
   }
 

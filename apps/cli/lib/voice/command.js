@@ -9,7 +9,7 @@
 
 import { audioRecorder } from './recorder.js';
 import { whisperService } from './whisper.js';
-import { routeIntent, extractParams, getIntentConfidence } from '../nlp/router.js';
+import { extractParams, getIntentConfidence } from '../nlp/router.js';
 import { execSync } from 'child_process';
 import fs from 'fs';
 
@@ -22,7 +22,7 @@ function checkPrerequisites() {
   } catch (_e) {
     try {
       execSync('sox --version', { stdio: 'ignore' });
-    } catch (e2) {
+    } catch (_e2) {
       missing.push('sox (or rec)');
     }
   }

@@ -523,7 +523,7 @@ export function registerSearchCommand(program) {
           // Display results
           for (let i = 0; i < results.length; i++) {
             const r = results[i];
-            const score = r.score || 0; // fallback if undefined
+            const _score = r.score || 0; // fallback if undefined
 
             printInfo(chalk.bold(`${i + 1}. ${r.path}`) + chalk.gray(` (chunk ${r.chunk})`));
             printInfo(chalk.gray(`   ${r.preview.replace(/\n/g, ' ')}`));

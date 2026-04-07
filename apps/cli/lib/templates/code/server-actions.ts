@@ -12,7 +12,7 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
+
 import { auth } from '@clerk/nextjs/server';
 import { prisma } from '@/lib/prisma';
 

@@ -335,7 +335,7 @@ export async function authorizeOperation({
   return decision;
 }
 
-export function enforceAgentExecution({ agent, providerId, task, systemPrompt, userPrompt } = {}) {
+export function enforceAgentExecution({ agent, _providerId, task, systemPrompt, userPrompt } = {}) {
   const roleId = agent?.roleId || agent?.id || 'default';
   // All AI providers are authorized under 'ai' execution target
   const target = 'ai';

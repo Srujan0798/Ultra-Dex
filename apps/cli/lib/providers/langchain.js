@@ -10,7 +10,7 @@ import { BaseProvider } from './base.js';
 // Mock LangChain imports when packages are corrupted
 class MockChatOpenAI {
   constructor(config) { this.config = config; }
-  async invoke(messages) { return { content: "Mock response" }; }
+  async invoke(_messages) { return { content: "Mock response" }; }
 }
 
 class MockMessage {
@@ -20,10 +20,10 @@ class MockMessage {
 class MockStateGraph {
   constructor() { this.nodes = new Map(); }
   addNode(name, fn) { this.nodes.set(name, fn); return this; }
-  addEdge(from, to) { return this; }
-  setEntryPoint(node) { return this; }
-  setFinishPoint(node) { return this; }
-  compile(options) { return { invoke: async () => ({ messages: [] }) }; }
+  addEdge(from, _to) { return this; }
+  setEntryPoint(_node) { return this; }
+  setFinishPoint(_node) { return this; }
+  compile(_options) { return { invoke: async () => ({ messages: [] }) }; }
 }
 
 class MockMemorySaver {
@@ -34,11 +34,11 @@ class MockMemorySaver {
 const ChatOpenAI = MockChatOpenAI;
 const HumanMessage = MockMessage;
 const SystemMessage = MockMessage; 
-const AIMessage = MockMessage;
+const _AIMessage = MockMessage;
 const StateGraph = MockStateGraph;
 const START = "START";
 const END = "END";
-const MemorySaver = MockMemorySaver;
+const _MemorySaver = MockMemorySaver;
 
 // State definition for our graphs
 const GraphState = {
@@ -189,7 +189,7 @@ export class LangChainAdapter extends BaseProvider {
       .addNode('retrieve', async (state) => {
         // In a real implementation, this would call vectorStore.search
         // For now, we assume context might be passed in input, or we return mock
-        const query = state.messages[state.messages.length - 1].content;
+        const _query = state.messages[state.messages.length - 1].content;
         const context = state.context || '';
         return { context };
       })

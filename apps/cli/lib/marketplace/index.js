@@ -69,7 +69,7 @@ export class AgentMarketplace {
   /**
    * Search local agents
    */
-  async searchLocalAgents(query, options = {}) {
+  async searchLocalAgents(query, _options = {}) {
     try {
       const agents = [];
       const agentDirs = await fs.readdir(this.agentsDir);
@@ -173,7 +173,7 @@ export class AgentMarketplace {
     const { createWriteStream } = await import('fs');
     const { get } = await import('https');
 
-    const finished = promisify(pipeline);
+    const _finished = promisify(pipeline);
 
     // Create temporary file
     const tempFile = path.join(this.options.localRegistry, 'temp', `${Date.now()}.zip`);
@@ -397,7 +397,7 @@ export class AgentMarketplace {
   /**
    * Update an installed agent
    */
-  async updateAgent(agentName, version = 'latest') {
+  async updateAgent(agentName, _version = 'latest') {
     try {
       const installedAgents = await this.listInstalledAgents();
       const agent = installedAgents.find((a) => a.name === agentName);

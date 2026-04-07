@@ -1,6 +1,6 @@
 // Copyright (c) 2026 Ultra-Dex
 
-import { projectGraph, GraphRAG } from './graph.js';
+import { projectGraph } from './graph.js';
 import fs from 'fs/promises';
 import path from 'path';
 import { AppError, ValidationError } from '../utils/errors.js';
@@ -183,7 +183,7 @@ export class ContextEngine {
    * @param {Object} options - Search options
    * @returns {Promise<Array<Object>>} List of nodes containing the symbol
    */
-  async getSymbolContext(symbol, options = {}) {
+  async getSymbolContext(symbol, _options = {}) {
     const results = this.graph.findSymbol(symbol);
     const context = [];
 
@@ -234,7 +234,7 @@ export class ContextEngine {
     let size = 0;
 
     if (context.fileContents) {
-      for (const [path, content] of Object.entries(context.fileContents)) {
+      for (const [_path, content] of Object.entries(context.fileContents)) {
         size += content.length;
       }
     }

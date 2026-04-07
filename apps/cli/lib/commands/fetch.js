@@ -12,7 +12,7 @@ import path from 'path';
 import { GITHUB_RAW_BASE } from '../config/urls.js';
 import { fetchWithRetry } from '../utils/network.js';
 import { validateSafePath } from '../utils/validation.js';
-import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { printError, printInfo, printWarning } from '../utils/output.js';
 
 async function downloadFile(url, destPath) {
   try {

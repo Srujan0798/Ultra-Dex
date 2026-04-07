@@ -125,7 +125,7 @@ export class PerformanceMetrics extends EventEmitter {
       }
     }
 
-    return recommendations.sort((a, b) => (a.priority === 'high' ? -1 : 1));
+    return recommendations.sort((a, _b) => (a.priority === 'high' ? -1 : 1));
   }
 }
 
@@ -348,7 +348,7 @@ export class UltraCache extends EventEmitter {
       if (score < lowestPriority) {
         lowestPriority = score;
         oldest = key;
-        oldestTime = entry.timestamp;
+        _oldestTime = entry.timestamp;
       }
     }
 

@@ -13,10 +13,10 @@ import chalk from 'chalk';
 import { interpretInput, listModes } from './interpreter.js';
 import { streamText } from './realtime.js';
 import { HistoryManager } from '../history/undo.js';
-import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import { printInfo, printSuccess, printWarning } from '../utils/output.js';
 
 const SESSION_DIR = path.resolve(process.cwd(), '.ultra-dex', 'vibe');
-const SESSION_FILE = path.join(SESSION_DIR, 'session.json');
+const _SESSION_FILE = path.join(SESSION_DIR, 'session.json');
 
 async function ensureSessionDir() {
   await fs.mkdir(SESSION_DIR, { recursive: true });

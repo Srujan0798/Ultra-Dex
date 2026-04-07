@@ -6,7 +6,7 @@ import { spawn, exec } from 'child_process';
 import { promisify } from 'util';
 // import { CronJob } from 'cron'; // Removed external dependency
 import chokidar from 'chokidar';
-import axios from 'axios';
+
 import { createServer } from 'http';
 import { WebSocketServer } from 'ws';
 import { printInfo, printSuccess, printError, printWarning } from '../utils/output.js';
@@ -16,7 +16,7 @@ import { GovernanceEngine } from '../governance/index.js';
 import { AgentSwarm } from '../agents/swarm.js';
 import { MCPHost } from '../mcp/host.js';
 
-const execAsync = promisify(exec);
+const _execAsync = promisify(exec);
 
 /**
  * Autonomous Daemon - 24/7 AI Assistant for Development
@@ -653,7 +653,7 @@ export class AutonomousDaemon {
           .then(() => true)
           .catch(() => false)
       ) {
-        const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
+        const _packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
 
         // Check for outdated dependencies
         // This would normally call npm audit or similar
@@ -993,7 +993,7 @@ export class AutonomousDaemon {
   /**
    * Process auto-fix task
    */
-  async processAutoFixTask(task) {
+  async processAutoFixTask(_task) {
     // This would implement automated fixes
     return {
       success: true,
@@ -1101,7 +1101,7 @@ export class AutonomousDaemon {
    * Execute a command through the daemon
    */
   async executeCommand(command) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _reject) => {
       const child = spawn(command, { shell: true, cwd: process.cwd() });
       let output = '';
       let error = '';
@@ -1242,7 +1242,7 @@ export class AutonomousDaemon {
     }
 
     // Stop all monitors
-    for (const [id, monitor] of this.monitors) {
+    for (const [_id, monitor] of this.monitors) {
       clearInterval(monitor.intervalId);
     }
 
@@ -1413,7 +1413,7 @@ export class AutonomousDaemon {
           .catch(() => false)
       ) {
         const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
-        const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
+        const _deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
 
         // In a real implementation, this would call npm outdated
         // For now, return empty array

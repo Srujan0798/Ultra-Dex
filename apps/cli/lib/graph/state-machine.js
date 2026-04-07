@@ -353,42 +353,42 @@ export function createStandardAgentWorkflow() {
     'init',
     'planning',
     () => true,
-    async (data) => printInfo(chalk.blue('📋 Starting planning phase...'))
+    async (_data) => printInfo(chalk.blue('📋 Starting planning phase...'))
   );
 
   sm.addTransition(
     'planning',
     'implementation',
     (data) => data.plan && data.plan.valid,
-    async (data) => printInfo(chalk.blue('🛠️  Starting implementation phase...'))
+    async (_data) => printInfo(chalk.blue('🛠️  Starting implementation phase...'))
   );
 
   sm.addTransition(
     'implementation',
     'testing',
     (data) => data.implementation && data.implementation.completed,
-    async (data) => printInfo(chalk.blue('🧪 Starting testing phase...'))
+    async (_data) => printInfo(chalk.blue('🧪 Starting testing phase...'))
   );
 
   sm.addTransition(
     'testing',
     'review',
     (data) => data.tests && data.tests.passed,
-    async (data) => printInfo(chalk.blue('🔍 Starting review phase...'))
+    async (_data) => printInfo(chalk.blue('🔍 Starting review phase...'))
   );
 
   sm.addTransition(
     'review',
     'deployment',
     (data) => data.review && data.review.approved,
-    async (data) => printInfo(chalk.blue('🚀 Starting deployment phase...'))
+    async (_data) => printInfo(chalk.blue('🚀 Starting deployment phase...'))
   );
 
   sm.addTransition(
     'deployment',
     'completed',
     (data) => data.deployment && data.deployment.success,
-    async (data) => printSuccess(chalk.green('✅ Workflow completed successfully!'))
+    async (_data) => printSuccess(chalk.green('✅ Workflow completed successfully!'))
   );
 
   // Error transitions
@@ -396,14 +396,14 @@ export function createStandardAgentWorkflow() {
     'planning',
     'failed',
     (data) => data.error && data.step === 'planning',
-    async (data) => printError(chalk.red('❌ Planning failed'))
+    async (_data) => printError(chalk.red('❌ Planning failed'))
   );
 
   sm.addTransition(
     'implementation',
     'failed',
     (data) => data.error && data.step === 'implementation',
-    async (data) => printError(chalk.red('❌ Implementation failed'))
+    async (_data) => printError(chalk.red('❌ Implementation failed'))
   );
 
   return sm;
@@ -424,35 +424,35 @@ export function createSwarmStateMachine() {
     'init',
     'coordinating',
     () => true,
-    async (data) => printInfo(chalk.magenta('🐝 Starting agent swarm coordination...'))
+    async (_data) => printInfo(chalk.magenta('🐝 Starting agent swarm coordination...'))
   );
 
   sm.addTransition(
     'coordinating',
     'executing',
     (data) => data.coordinated,
-    async (data) => printInfo(chalk.magenta('🤖 Agents executing tasks...'))
+    async (_data) => printInfo(chalk.magenta('🤖 Agents executing tasks...'))
   );
 
   sm.addTransition(
     'executing',
     'synthesizing',
     (data) => data.executionComplete,
-    async (data) => printInfo(chalk.magenta('🔗 Synthesizing agent outputs...'))
+    async (_data) => printInfo(chalk.magenta('🔗 Synthesizing agent outputs...'))
   );
 
   sm.addTransition(
     'synthesizing',
     'validating',
     (data) => data.synthesisComplete,
-    async (data) => printInfo(chalk.magenta('✅ Validating outputs...'))
+    async (_data) => printInfo(chalk.magenta('✅ Validating outputs...'))
   );
 
   sm.addTransition(
     'validating',
     'completed',
     (data) => data.validationPassed,
-    async (data) => printSuccess(chalk.magenta('🎉 Swarm completed successfully!'))
+    async (_data) => printSuccess(chalk.magenta('🎉 Swarm completed successfully!'))
   );
 
   // Error handling
@@ -460,7 +460,7 @@ export function createSwarmStateMachine() {
     'executing',
     'failed',
     (data) => data.error,
-    async (data) => printError(chalk.red('❌ Swarm execution failed'))
+    async (_data) => printError(chalk.red('❌ Swarm execution failed'))
   );
 
   return sm;

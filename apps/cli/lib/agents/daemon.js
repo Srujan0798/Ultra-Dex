@@ -225,7 +225,7 @@ export class AgentDaemon {
 
     const statuses = [];
 
-    for (const [sessionId, daemon] of this.daemons) {
+    for (const [sessionId, _daemon] of this.daemons) {
       statuses.push(this.getDaemonStatus(sessionId));
     }
 
@@ -346,7 +346,7 @@ export class AgentDaemon {
    */
   async cleanup() {
     // Stop all daemons
-    for (const [sessionId, daemon] of this.daemons) {
+    for (const [sessionId, _daemon] of this.daemons) {
       try {
         await this.stopDaemon(sessionId);
       } catch (error) {

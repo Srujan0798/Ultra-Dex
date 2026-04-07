@@ -8,8 +8,8 @@
 import fs from 'fs/promises';
 import path from 'path';
 import chalk from 'chalk';
-import { execSync } from 'child_process';
-import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+
+import { printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 import { AppError } from '../utils/errors.js';
 

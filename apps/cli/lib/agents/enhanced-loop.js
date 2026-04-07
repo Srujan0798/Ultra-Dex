@@ -3,13 +3,13 @@
  */
 
 import chalk from 'chalk';
-import fs from 'fs/promises';
+
 import ora from '../utils/ora.js';
 import path from 'path';
 import { dashboardNotifier } from '../utils/dashboard-notifier.js';
 import { authorizeOperation } from '../governance/index.js';
 import { verifyLinting, verifyTypeSafety, verifySecurityPatterns } from '../quality/automation.js';
-import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import { printInfo, printSuccess, printError } from '../utils/output.js';
 import { errorRecovery } from '../utils/error-recovery.js';
 import { executeTool, processToolCalls } from '../tools/execution.js';
 import { logger } from '../utils/logger.js';
@@ -596,7 +596,7 @@ function buildAgentContext(agentId, agent) {
 /**
  * Placeholder functions that would be imported from other modules
  */
-async function authorizeAgentAccess(agentId) {
+async function authorizeAgentAccess(_agentId) {
   return { allowed: true, role: 'admin' };
 }
 

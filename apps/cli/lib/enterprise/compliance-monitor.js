@@ -7,7 +7,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import { printInfo, printSuccess, printError } from '../utils/output.js';
 import { enterpriseFeatures } from './features.js';
 
 const COMPLIANCE_DIR = path.join(process.cwd(), '.ultra-dex', 'compliance');

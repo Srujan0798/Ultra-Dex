@@ -9,10 +9,10 @@ import { performance } from 'perf_hooks';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
-import { spawn } from 'child_process';
-import { promisify } from 'util';
-import { createGzip } from 'zlib';
-import { pipeline } from 'stream/promises';
+
+
+
+
 import { perfOptimizer, PERFORMANCE_CONFIG } from './tuning.js';
 
 // Performance configuration
@@ -750,7 +750,7 @@ class UltraDexPerformanceMonitor {
   }
 
   // Circuit breaker state management
-  isCircuitOpen(taskName) {
+  isCircuitOpen(_taskName) {
     // Simplified circuit breaker - in a real implementation, you'd track state
     return false;
   }
@@ -760,7 +760,7 @@ class UltraDexPerformanceMonitor {
     console.warn(`Tripped circuit breaker for ${taskName}:`, error.message);
   }
 
-  resetCircuit(taskName) {
+  resetCircuit(_taskName) {
     // Reset the circuit for this task
   }
 }

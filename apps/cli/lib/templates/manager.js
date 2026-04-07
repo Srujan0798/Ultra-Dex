@@ -217,7 +217,7 @@ class TemplateManager {
       // Clean up on error
       try {
         await fs.rm(targetDir, { recursive: true, force: true });
-      } catch (cleanupError) {
+      } catch (_cleanupError) {
         // Ignore cleanup errors
       }
 
@@ -239,7 +239,7 @@ class TemplateManager {
       // Determine package manager
       const hasYarn = await this.checkFileExists(path.join(projectDir, 'yarn.lock'));
       const hasPnpm = await this.checkFileExists(path.join(projectDir, 'pnpm-lock.yaml'));
-      const hasNpm = await this.checkFileExists(path.join(projectDir, 'package-lock.json'));
+      const _hasNpm = await this.checkFileExists(path.join(projectDir, 'package-lock.json'));
 
       let installCmd;
       if (hasYarn) {
@@ -308,7 +308,7 @@ class TemplateManager {
    */
   searchTemplatesByTag(tag) {
     return Object.entries(OFFICIAL_TEMPLATES)
-      .filter(([name, template]) => template.tags.includes(tag))
+      .filter(([_name, template]) => template.tags.includes(tag))
       .map(([name, template]) => ({
         name,
         ...template,

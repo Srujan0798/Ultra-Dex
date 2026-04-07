@@ -53,7 +53,7 @@ class AgentMarketplace {
       if (!existsSync(agentPath)) {
         execSync(`mkdir -p ${agentPath}`, { stdio: 'inherit' });
       }
-      const agentZipUrl = `${this.marketplaceUrl}/api/agents/${agentId}/download`;
+      const _agentZipUrl = `${this.marketplaceUrl}/api/agents/${agentId}/download`;
       const manifestPath = join(agentPath, 'manifest.json');
       writeFileSync(manifestPath, JSON.stringify(agentManifest, null, 2));
       console.log(`\u2705 Agent ${agentId} installed successfully`);
@@ -81,7 +81,7 @@ class AgentMarketplace {
       if (!existsSync(pluginPath)) {
         execSync(`mkdir -p ${pluginPath}`, { stdio: 'inherit' });
       }
-      const pluginZipUrl = `${this.marketplaceUrl}/api/plugins/${pluginId}/download`;
+      const _pluginZipUrl = `${this.marketplaceUrl}/api/plugins/${pluginId}/download`;
       const manifestPath = join(pluginPath, 'manifest.json');
       writeFileSync(manifestPath, JSON.stringify(pluginManifest, null, 2));
       console.log(`\u2705 Plugin ${pluginId} installed successfully`);

@@ -16,7 +16,7 @@ import { projectGraph } from '../mcp/graph.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { logger } from '../utils/logger.js';
 import { handleError } from '../utils/error-handler.js';
-import { AppError, ValidationError } from '../utils/errors.js';
+import { AppError } from '../utils/errors.js';
 import { buildDiffSummary, applyDiffSummary } from './brain.js';
 import { VERIFICATION_STEPS, summarizeSteps } from '../verify/21-steps.js';
 import { runProtocol21 } from '../quality/protocol-21.js';
@@ -473,27 +473,27 @@ async function runSecretsDetection(projectDir) {
 // Helper functions for enhanced verification
 import { existsSync } from 'fs';
 
-async function analyzeCodeComplexity(projectDir) {
+async function analyzeCodeComplexity(_projectDir) {
   // Placeholder implementation - would analyze actual code complexity
   return 5; // Return a complexity score
 }
 
-async function detectMemoryLeaks(projectDir) {
+async function detectMemoryLeaks(_projectDir) {
   // Placeholder implementation - would check for memory leak patterns
   return false; // Return whether leaks were detected
 }
 
-async function checkIntegrationTests(projectDir) {
+async function checkIntegrationTests(_projectDir) {
   // Placeholder implementation - would check for integration tests
   return true; // Return whether integration tests exist
 }
 
-async function validateConfigs(projectDir) {
+async function validateConfigs(_projectDir) {
   // Placeholder implementation - would validate actual configs
   return true; // Return whether configs are valid
 }
 
-async function detectSecrets(projectDir) {
+async function detectSecrets(_projectDir) {
   // Placeholder implementation - would check for secrets in code
   return false; // Return whether secrets were detected
 }

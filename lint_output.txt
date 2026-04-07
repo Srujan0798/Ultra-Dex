@@ -1,0 +1,941 @@
+
+> @ultra-dex/monorepo@3.0.0 lint
+> node scripts/run-lint.js
+
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/agents/checkpoint.js
+   23:7   error  'MAX_DIFF_CHECKPOINTS' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  285:15  error  'filePath' is assigned a value but never used. Allowed unused vars must match /^_/u              no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/agents/computer-use-agent.js
+     5:10  error  'createCanvas' is defined but never used. Allowed unused vars must match /^_/u      no-unused-vars
+     5:24  error  'loadImage' is defined but never used. Allowed unused vars must match /^_/u         no-unused-vars
+    10:47  error  'printWarning' is defined but never used. Allowed unused vars must match /^_/u      no-unused-vars
+    88:24  error  'options' is assigned a value but never used. Allowed unused args must match /^_/u  no-unused-vars
+   151:5   error  'prompt' is assigned a value but never used. Allowed unused args must match /^_/u   no-unused-vars
+  1012:17  error  'pid' is assigned a value but never used. Allowed unused vars must match /^_/u      no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/agents/daemon.js
+  228:28  error  'daemon' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  349:28  error  'daemon' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/agents/enhanced-loop.js
+    6:8   error  'fs' is defined but never used. Allowed unused vars must match /^_/u            no-unused-vars
+   12:35  error  'printWarning' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  599:37  error  'agentId' is defined but never used. Allowed unused args must match /^_/u       no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/agents/queue.js
+  329:34  error  'reject' is defined but never used. Allowed unused args must match /^_/u            no-unused-vars
+  330:13  error  'timeout' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/agents/session-manager.js
+  526:17  error  'sessionId' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  532:17  error  'sessionId' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/agents/vision-agent.js
+   13:7   error  'execAsync' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  657:32  error  'options' is assigned a value but never used. Allowed unused args must match /^_/u    no-unused-vars
+  723:49  error  'options' is assigned a value but never used. Allowed unused args must match /^_/u    no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/agents/vision.js
+   71:11  error  'systemPrompt' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+   99:43  error  'styling' is defined but never used. Allowed unused args must match /^_/u                no-unused-vars
+   99:52  error  'colors' is defined but never used. Allowed unused args must match /^_/u                 no-unused-vars
+  149:32  error  'framework' is defined but never used. Allowed unused args must match /^_/u              no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/ai/evaluation-loop.js
+   44:38  error  'context' is assigned a value but never used. Allowed unused args must match /^_/u  no-unused-vars
+   45:9   error  'score' is assigned a value but never used. Allowed unused vars must match /^_/u    no-unused-vars
+   98:47  error  'context' is assigned a value but never used. Allowed unused args must match /^_/u  no-unused-vars
+  146:42  error  'context' is assigned a value but never used. Allowed unused args must match /^_/u  no-unused-vars
+  199:45  error  'context' is assigned a value but never used. Allowed unused args must match /^_/u  no-unused-vars
+  241:41  error  'context' is assigned a value but never used. Allowed unused args must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/ai/langgraph-integration.js
+  11:7  error  'WorkflowState' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/ai/model-router.js
+    8:35  error  'printWarning' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  382:24  error  'options' is defined but never used. Allowed unused args must match /^_/u       no-unused-vars
+  408:33  error  'options' is defined but never used. Allowed unused args must match /^_/u       no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/analytics/run-artifacts.js
+  169:14  error  'accessError' is defined but never used. Allowed unused caught errors must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/auth/api-keys.js
+   16:15  error  'options' is assigned a value but never used. Allowed unused args must match /^_/u      no-unused-vars
+  145:11  error  'windowStart' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/auth/sso.js
+  55:18  error  'userInfo' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/autonomous/planning-engine.js
+  491:25  error  'context' is assigned a value but never used. Allowed unused args must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/browser/agent.js
+  48:11  error  'timeout' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/charts.js
+   44:9   error  'radius' is assigned a value but never used. Allowed unused vars must match /^_/u      no-unused-vars
+  183:47  error  'options' is assigned a value but never used. Allowed unused args must match /^_/u     no-unused-vars
+  212:77  error  'options' is assigned a value but never used. Allowed unused args must match /^_/u     no-unused-vars
+  275:9   error  'indentChar' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/charts.ts
+   13:8   warning  Missing return type on function                  @typescript-eslint/explicit-function-return-type
+   43:8   warning  Missing return type on function                  @typescript-eslint/explicit-function-return-type
+   44:9   error    'radius' is assigned a value but never used      @typescript-eslint/no-unused-vars
+   78:8   warning  Missing return type on function                  @typescript-eslint/explicit-function-return-type
+  154:8   warning  Missing return type on function                  @typescript-eslint/explicit-function-return-type
+  183:8   warning  Missing return type on function                  @typescript-eslint/explicit-function-return-type
+  183:47  error    'options' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  212:8   warning  Missing return type on function                  @typescript-eslint/explicit-function-return-type
+  212:77  error    'options' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  231:28  warning  Missing return type on function                  @typescript-eslint/explicit-function-return-type
+  274:8   warning  Missing return type on function                  @typescript-eslint/explicit-function-return-type
+  275:9   error    'indentChar' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  279:3   warning  Missing return type on function                  @typescript-eslint/explicit-function-return-type
+  316:8   warning  Missing return type on function                  @typescript-eslint/explicit-function-return-type
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/cicd/self-healing.js
+    7:8   error  'axios' is defined but never used. Allowed unused vars must match /^_/u                    no-unused-vars
+    8:10  error  'z' is defined but never used. Allowed unused vars must match /^_/u                        no-unused-vars
+    9:57  error  'createGoogleRunnable' is defined but never used. Allowed unused vars must match /^_/u     no-unused-vars
+   11:10  error  'loadState' is defined but never used. Allowed unused vars must match /^_/u                no-unused-vars
+   12:10  error  'ultraMemory' is defined but never used. Allowed unused vars must match /^_/u              no-unused-vars
+  169:21  error  'options' is assigned a value but never used. Allowed unused args must match /^_/u         no-unused-vars
+  217:13  error  'testResult' is assigned a value but never used. Allowed unused vars must match /^_/u      no-unused-vars
+  264:13  error  'securityResult' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  279:16  error  'fixError' is defined but never used. Allowed unused caught errors must match /^_/u        no-unused-vars
+  297:13  error  'buildResult' is assigned a value but never used. Allowed unused vars must match /^_/u     no-unused-vars
+  344:13  error  'perfResult' is assigned a value but never used. Allowed unused vars must match /^_/u      no-unused-vars
+  359:16  error  'fixError' is defined but never used. Allowed unused caught errors must match /^_/u        no-unused-vars
+  391:11  error  'deployResult' is assigned a value but never used. Allowed unused vars must match /^_/u    no-unused-vars
+  607:31  error  'error' is defined but never used. Allowed unused args must match /^_/u                    no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/auto-implement.js
+  18:10  error  'printError' is defined but never used. Allowed unused vars must match /^_/u    no-unused-vars
+  18:47  error  'printWarning' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/autonomous.js
+   23:10  error  'AppError' is defined but never used. Allowed unused vars must match /^_/u         no-unused-vars
+   23:20  error  'ValidationError' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  230:5   error  Unreachable code                                                                   no-unreachable
+  230:5   error  'autoCmd' is not defined                                                           no-undef
+  237:5   error  'autoCmd' is not defined                                                           no-undef
+  267:5   error  Unreachable code                                                                   no-unreachable
+  267:5   error  'autoCmd' is not defined                                                           no-undef
+  288:5   error  Unreachable code                                                                   no-unreachable
+  288:5   error  'autoCmd' is not defined                                                           no-undef
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/brain.js
+   92:16  error  'gitError' is defined but never used. Allowed unused caught errors must match /^_/u  no-unused-vars
+  103:16  error  'gitError' is defined but never used. Allowed unused caught errors must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/build.js
+  20:10  error  'printError' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/config.js
+  9:10  error  'printError' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/deploy.js
+  17:10  error  'AppError' is defined but never used. Allowed unused vars must match /^_/u         no-unused-vars
+  17:20  error  'ValidationError' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/enterprise.js
+    8:10  error  'Command' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  107:34  error  'options' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/exec.js
+  24:37  error  'SecurityError' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/export.js
+    9:47  error  'printWarning' is defined but never used. Allowed unused vars must match /^_/u                   no-unused-vars
+  323:7   error  'currentSectionNumber' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  638:34  error  'index' is defined but never used. Allowed unused args must match /^_/u                          no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/fetch.js
+  15:33  error  'printSuccess' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/git.js
+  1:10  error  'Command' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  2:8   error  'chalk' is defined but never used. Allowed unused vars must match /^_/u    no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/health.js
+   9:8   error  'os' is defined but never used. Allowed unused vars must match /^_/u              no-unused-vars
+  10:10  error  'createProvider' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/import.js
+  8:10  error  'printError' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/init.js
+  17:10  error  'getRandomMessage' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/integrate.js
+  17:10  error  'handleError' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/mcp.js
+  4:10  error  'printError' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/pipeline.js
+   17:10  error  'AppError' is defined but never used. Allowed unused vars must match /^_/u         no-unused-vars
+   17:20  error  'ValidationError' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  131:30  error  'context' is defined but never used. Allowed unused args must match /^_/u          no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/plan.js
+    7:10  error  'printError' is defined but never used. Allowed unused vars must match /^_/u     no-unused-vars
+  166:15  error  'pos' is assigned a value but never used. Allowed unused vars must match /^_/u   no-unused-vars
+  167:15  error  'char' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/predict.js
+  4:8   error  'chalk' is defined but never used. Allowed unused vars must match /^_/u         no-unused-vars
+  9:21  error  'printSuccess' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  9:35  error  'printWarning' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/review.js
+  21:33  error  'printSuccess' is defined but never used. Allowed unused vars must match /^_/u     no-unused-vars
+  23:10  error  'AppError' is defined but never used. Allowed unused vars must match /^_/u         no-unused-vars
+  23:20  error  'ValidationError' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/run.js
+  30:35  error  'printWarning' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/scaffold.js
+  14:33  error  'printSuccess' is defined but never used. Allowed unused vars must match /^_/u     no-unused-vars
+  15:10  error  'AppError' is defined but never used. Allowed unused vars must match /^_/u         no-unused-vars
+  15:20  error  'ValidationError' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/search.js
+  526:19  error  'score' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/state.js
+  19:10  error  'AppError' is defined but never used. Allowed unused vars must match /^_/u              no-unused-vars
+  19:20  error  'ValidationError' is defined but never used. Allowed unused vars must match /^_/u       no-unused-vars
+  89:14  error  'unlinkError' is defined but never used. Allowed unused caught errors must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/suggest.js
+  11:10  error  'printError' is defined but never used. Allowed unused vars must match /^_/u       no-unused-vars
+  11:33  error  'printSuccess' is defined but never used. Allowed unused vars must match /^_/u     no-unused-vars
+  13:10  error  'AppError' is defined but never used. Allowed unused vars must match /^_/u         no-unused-vars
+  13:20  error  'ValidationError' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/swarm.js
+   15:10  error  'printError' is defined but never used. Allowed unused vars must match /^_/u               no-unused-vars
+   54:14  error  'unlinkError' is defined but never used. Allowed unused caught errors must match /^_/u     no-unused-vars
+  450:9   error  'startTime' is assigned a value but never used. Allowed unused vars must match /^_/u       no-unused-vars
+  508:7   error  'previousOutput' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  510:9   error  'agentTimings' is assigned a value but never used. Allowed unused vars must match /^_/u    no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/upgrade.js
+  16:10  error  'AppError' is defined but never used. Allowed unused vars must match /^_/u         no-unused-vars
+  16:20  error  'ValidationError' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/verify.js
+   19:20  error  'ValidationError' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  476:38  error  'projectDir' is defined but never used. Allowed unused args must match /^_/u       no-unused-vars
+  481:34  error  'projectDir' is defined but never used. Allowed unused args must match /^_/u       no-unused-vars
+  486:38  error  'projectDir' is defined but never used. Allowed unused args must match /^_/u       no-unused-vars
+  491:32  error  'projectDir' is defined but never used. Allowed unused args must match /^_/u       no-unused-vars
+  496:30  error  'projectDir' is defined but never used. Allowed unused args must match /^_/u       no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commerce/alerts.js
+  12:10  error  'AppError' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commerce/usage.js
+  341:11  error  'agentRecords' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/context/compactor.js
+    3:18  error  'decode' is defined but never used. Allowed unused vars must match /^_/u            no-unused-vars
+  280:30  error  'originalMessages' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+  520:47  error  's' is defined but never used. Allowed unused args must match /^_/u                 no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/core/capability-router.js
+  181:18  error  'taskDescription' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/core/execution-engine.js
+   10:10  error  'errorRecovery' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  158:49  error  'trace' is defined but never used. Allowed unused args must match /^_/u          no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/daemon/autonomous-daemon.js
+     9:8   error  'axios' is defined but never used. Allowed unused vars must match /^_/u                 no-unused-vars
+    19:7   error  'execAsync' is assigned a value but never used. Allowed unused vars must match /^_/u    no-unused-vars
+   656:15  error  'packageJson' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+   996:28  error  'task' is defined but never used. Allowed unused args must match /^_/u                  no-unused-vars
+  1104:34  error  'reject' is defined but never used. Allowed unused args must match /^_/u                no-unused-vars
+  1245:17  error  'id' is assigned a value but never used. Allowed unused vars must match /^_/u           no-unused-vars
+  1416:15  error  'deps' is assigned a value but never used. Allowed unused vars must match /^_/u         no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/enterprise/compliance-monitor.js
+  10:35  error  'printWarning' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/enterprise/enterprise-features.js
+  121:20  error  'password' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+  121:30  error  'userId' is defined but never used. Allowed unused args must match /^_/u    no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/environment-detector.ts
+    1:21  error    'inject' is defined but never used     @typescript-eslint/no-unused-vars
+    2:10  error    'DI_TOKENS' is defined but never used  @typescript-eslint/no-unused-vars
+   25:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+   52:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+   67:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+   80:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+  101:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+  123:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+  142:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+  175:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+  206:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+  236:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+  255:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+  268:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+  281:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+  297:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+  310:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+  371:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/formatters.ts
+   15:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+   41:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+   64:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+  125:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+  152:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+  183:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+  198:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+  237:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+  251:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+  267:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+  277:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+  292:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+  317:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/gamification/achievements.js
+  417:21  error  'achievement' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  490:15  error  'progress' is assigned a value but never used. Allowed unused vars must match /^_/u     no-unused-vars
+  509:15  error  'progress' is assigned a value but never used. Allowed unused vars must match /^_/u     no-unused-vars
+  574:19  error  'id' is assigned a value but never used. Allowed unused vars must match /^_/u           no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/generation/advanced.js
+  106:26  error  'options' is assigned a value but never used. Allowed unused args must match /^_/u      no-unused-vars
+  152:11  error  'patterns' is assigned a value but never used. Allowed unused vars must match /^_/u     no-unused-vars
+  500:11  error  'afterCursor' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/ghost/agent.js
+  8:8  error  'fs' is defined but never used. Allowed unused vars must match /^_/u    no-unused-vars
+  9:8  error  'path' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/governance/adr-check.js
+   10:21  error  'printSuccess' is defined but never used. Allowed unused vars must match /^_/u    no-unused-vars
+   10:49  error  'printError' is defined but never used. Allowed unused vars must match /^_/u      no-unused-vars
+  106:11  error  'lines' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/governance/data-policy.js
+  5:21  error  'printSuccess' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/governance/data-retention.js
+  11:10  error  'enterpriseFeatures' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/governance/governor.js
+  12:21  error  'printError' is defined but never used. Allowed unused vars must match /^_/u    no-unused-vars
+  12:47  error  'printWarning' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/governance/index.js
+  338:48  error  'providerId' is assigned a value but never used. Allowed unused args must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/graph/repo-indexer.js
+   11:10  error  'createHash' is defined but never used. Allowed unused vars must match /^_/u               no-unused-vars
+  429:11  error  'fileId' is assigned a value but never used. Allowed unused vars must match /^_/u          no-unused-vars
+  454:11  error  'functionUsages' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  505:23  error  'functionName' is defined but never used. Allowed unused args must match /^_/u             no-unused-vars
+  514:23  error  'functionName' is defined but never used. Allowed unused args must match /^_/u             no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/graph/semantic-graph.js
+  155:17  error  'id' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/graph/state-machine.js
+   10:16  error  'uuidv4' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  356:12  error  'data' is defined but never used. Allowed unused args must match /^_/u    no-unused-vars
+  363:12  error  'data' is defined but never used. Allowed unused args must match /^_/u    no-unused-vars
+  370:12  error  'data' is defined but never used. Allowed unused args must match /^_/u    no-unused-vars
+  377:12  error  'data' is defined but never used. Allowed unused args must match /^_/u    no-unused-vars
+  384:12  error  'data' is defined but never used. Allowed unused args must match /^_/u    no-unused-vars
+  391:12  error  'data' is defined but never used. Allowed unused args must match /^_/u    no-unused-vars
+  399:12  error  'data' is defined but never used. Allowed unused args must match /^_/u    no-unused-vars
+  406:12  error  'data' is defined but never used. Allowed unused args must match /^_/u    no-unused-vars
+  427:12  error  'data' is defined but never used. Allowed unused args must match /^_/u    no-unused-vars
+  434:12  error  'data' is defined but never used. Allowed unused args must match /^_/u    no-unused-vars
+  441:12  error  'data' is defined but never used. Allowed unused args must match /^_/u    no-unused-vars
+  448:12  error  'data' is defined but never used. Allowed unused args must match /^_/u    no-unused-vars
+  455:12  error  'data' is defined but never used. Allowed unused args must match /^_/u    no-unused-vars
+  463:12  error  'data' is defined but never used. Allowed unused args must match /^_/u    no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/graph/traversal.js
+  133:17  error  'nodeId' is assigned a value but never used. Allowed unused vars must match /^_/u     no-unused-vars
+  182:7   error  'nodeTypes' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  239:19  error  'edgeId' is assigned a value but never used. Allowed unused vars must match /^_/u     no-unused-vars
+  254:19  error  'edgeId' is assigned a value but never used. Allowed unused vars must match /^_/u     no-unused-vars
+  356:17  error  'nodeId' is assigned a value but never used. Allowed unused vars must match /^_/u     no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/graph/visualizer.js
+  75:15  error  'edgeId' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/history/tracker.js
+  10:8  error  'path' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/ide/web-ide.js
+  54:16  error  'error' is defined but never used. Allowed unused caught errors must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/input/voice.js
+   59:14  error  'cleanupError' is defined but never used. Allowed unused caught errors must match /^_/u  no-unused-vars
+  108:18  error  'ffmpegErr' is defined but never used. Allowed unused caught errors must match /^_/u     no-unused-vars
+  166:31  error  'data' is defined but never used. Allowed unused args must match /^_/u                   no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/integrations/discord.js
+    8:10  error  'printInfo' is defined but never used. Allowed unused vars must match /^_/u        no-unused-vars
+    8:35  error  'printWarning' is defined but never used. Allowed unused vars must match /^_/u     no-unused-vars
+  635:9   error  'client' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/integrations/github.js
+  10:10  error  'printInfo' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  29:35  error  'options' is defined but never used. Allowed unused args must match /^_/u    no-unused-vars
+  33:44  error  'options' is defined but never used. Allowed unused args must match /^_/u    no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/integrations/jira.js
+  9:10  error  'printInfo' is defined but never used. Allowed unused vars must match /^_/u     no-unused-vars
+  9:35  error  'printWarning' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/integrations/notion.js
+    9:10  error  'printInfo' is defined but never used. Allowed unused vars must match /^_/u          no-unused-vars
+    9:35  error  'printWarning' is defined but never used. Allowed unused vars must match /^_/u       no-unused-vars
+  267:11  error  'response' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/integrations/slack.js
+    9:10  error  'printInfo' is defined but never used. Allowed unused vars must match /^_/u        no-unused-vars
+    9:35  error  'printWarning' is defined but never used. Allowed unused vars must match /^_/u     no-unused-vars
+  687:9   error  'client' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/integrations/stripe.js
+    11:35  error  'printWarning' is defined but never used. Allowed unused vars must match /^_/u      no-unused-vars
+  2125:31  error  'options' is assigned a value but never used. Allowed unused args must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/interactive-cli.ts
+    1:21  error    'inject' is defined but never used     @typescript-eslint/no-unused-vars
+    2:10  error    'DI_TOKENS' is defined but never used  @typescript-eslint/no-unused-vars
+   21:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+   41:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+   64:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+   87:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+  108:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+  126:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+  145:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+  150:31  warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+  170:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+  200:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+  210:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+  231:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+  238:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+  245:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+  252:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+  262:3   warning  Missing return type on function        @typescript-eslint/explicit-function-return-type
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/kernel/agent.js
+  15:10  error  'runQualityScan' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  18:3   error  'verifyLinting' is defined but never used. Allowed unused vars must match /^_/u   no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/learn.js
+   2:8   error  'path' is defined but never used. Allowed unused vars must match /^_/u             no-unused-vars
+   5:10  error  'logger' is defined but never used. Allowed unused vars must match /^_/u           no-unused-vars
+  88:11  error  'output' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/learn.ts
+    2:8   error    'path' is defined but never used             @typescript-eslint/no-unused-vars
+    5:10  error    'logger' is defined but never used           @typescript-eslint/no-unused-vars
+   20:3   warning  Missing return type on function              @typescript-eslint/explicit-function-return-type
+   48:3   warning  Missing return type on function              @typescript-eslint/explicit-function-return-type
+   78:3   warning  Missing return type on function              @typescript-eslint/explicit-function-return-type
+   88:11  error    'output' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  112:3   warning  Missing return type on function              @typescript-eslint/explicit-function-return-type
+  119:1   warning  Missing return type on function              @typescript-eslint/explicit-function-return-type
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/ledger/schema.ts
+  17:13  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  28:30  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  35:8   warning  Missing return type on function           @typescript-eslint/explicit-function-return-type
+  43:12  error    'e' is defined but never used             @typescript-eslint/no-unused-vars
+  56:12  error    'e' is defined but never used             @typescript-eslint/no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/lib/swarm/p2p.js
+  101:17  error  'peerId' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/lsp/server.js
+  13:10  error  'TextDocument' is defined but never used. Allowed unused vars must match /^_/u        no-unused-vars
+  15:7   error  'documents' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/marketplace/agent-marketplace.js
+  56:13  error  'agentZipUrl' is assigned a value but never used. Allowed unused vars must match /^_/u   no-unused-vars
+  84:13  error  'pluginZipUrl' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/marketplace/client.js
+  77:11  error  'content' is assigned a value but never used. Allowed unused vars must match /^_/u       no-unused-vars
+  77:20  error  'systemPrompt' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  77:34  error  'prompt' is assigned a value but never used. Allowed unused vars must match /^_/u        no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/marketplace/index.js
+   72:34  error  'options' is assigned a value but never used. Allowed unused args must match /^_/u   no-unused-vars
+  176:11  error  'finished' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  400:32  error  'version' is assigned a value but never used. Allowed unused args must match /^_/u   no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/marketplace/templates.js
+  56:50  error  'options' is assigned a value but never used. Allowed unused args must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/marketplace/workflows.js
+  16:49  error  'printError' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/mcp/apps/components.js
+    8:10  error  'printInfo' is defined but never used. Allowed unused vars must match /^_/u         no-unused-vars
+    8:21  error  'printSuccess' is defined but never used. Allowed unused vars must match /^_/u      no-unused-vars
+    8:35  error  'printWarning' is defined but never used. Allowed unused vars must match /^_/u      no-unused-vars
+    8:49  error  'printError' is defined but never used. Allowed unused vars must match /^_/u        no-unused-vars
+    9:8   error  'chalk' is defined but never used. Allowed unused vars must match /^_/u             no-unused-vars
+   60:52  error  'metrics' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  274:32  error  'labels' is assigned a value but never used. Allowed unused vars must match /^_/u   no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/mcp/apps/index.js
+    8:10  error  'MCPAppRenderer' is defined but never used. Allowed unused vars must match /^_/u    no-unused-vars
+   10:3   error  'renderComponent' is defined but never used. Allowed unused vars must match /^_/u   no-unused-vars
+   15:35  error  'printWarning' is defined but never used. Allowed unused vars must match /^_/u      no-unused-vars
+  197:20  error  'updates' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  214:33  error  'data' is assigned a value but never used. Allowed unused vars must match /^_/u     no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/mcp/apps/renderer.js
+    9:35  error  'printWarning' is defined but never used. Allowed unused vars must match /^_/u        no-unused-vars
+  189:11  error  'component' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/mcp/client.js
+  9:8  error  'chalk' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/mcp/context-bus.js
+  13:10  error  'glob' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/mcp/context-engine.js
+    3:24  error  'GraphRAG' is defined but never used. Allowed unused vars must match /^_/u          no-unused-vars
+  186:34  error  'options' is assigned a value but never used. Allowed unused args must match /^_/u  no-unused-vars
+  237:19  error  'path' is assigned a value but never used. Allowed unused vars must match /^_/u     no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/mcp/graph.js
+  11:10  error  'AppError' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/mcp/memory.js
+  323:11  error  'normalizedQuery' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/mcp/remote/client.js
+   13:10  error  'AppError' is defined but never used. Allowed unused vars must match /^_/u            no-unused-vars
+  103:25  error  'timestamp' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  150:25  error  'data' is defined but never used. Allowed unused args must match /^_/u                no-unused-vars
+  158:22  error  'data' is defined but never used. Allowed unused args must match /^_/u                no-unused-vars
+  166:23  error  'data' is defined but never used. Allowed unused args must match /^_/u                no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/mcp/resources.js
+  164:14  error  'error' is defined but never used. Allowed unused caught errors must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/mcp/server-enhanced.js
+  10:8  error  'crypto' is defined but never used. Allowed unused vars must match /^_/u                 no-unused-vars
+  15:7  error  'deflateAsync' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  16:7  error  'inflateAsync' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/mcp/server.js
+  5:10  error  'SSEServerTransport' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/mcp/servers/context7.js
+  14:10  error  'fetchContext7Docs' is not defined  no-undef
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/mcp/websocket.js
+    9:8   error  'chalk' is defined but never used. Allowed unused vars must match /^_/u             no-unused-vars
+   11:20  error  'ValidationError' is defined but never used. Allowed unused vars must match /^_/u   no-unused-vars
+  301:11  error  'summary' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/memory/manager.js
+  6:15  error  'options' is assigned a value but never used. Allowed unused args must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/memory/titans.js
+  5:8   error  'chalk' is defined but never used. Allowed unused vars must match /^_/u         no-unused-vars
+  6:10  error  'printInfo' is defined but never used. Allowed unused vars must match /^_/u     no-unused-vars
+  6:21  error  'printSuccess' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/memory/vector-store.js
+  19:27  error  'filename' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+  19:37  error  'driver' is defined but never used. Allowed unused args must match /^_/u    no-unused-vars
+  20:16  error  'sql' is defined but never used. Allowed unused args must match /^_/u       no-unused-vars
+  21:15  error  'sql' is defined but never used. Allowed unused args must match /^_/u       no-unused-vars
+  21:23  error  'params' is defined but never used. Allowed unused args must match /^_/u    no-unused-vars
+  22:15  error  'sql' is defined but never used. Allowed unused args must match /^_/u       no-unused-vars
+  22:23  error  'params' is defined but never used. Allowed unused args must match /^_/u    no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/mobile/core.js
+  9:7  error  'execAsync' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/nlp/model-integration.js
+  210:19  error  'p' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+  213:21  error  'p' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+  216:16  error  'p' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+  219:17  error  'p' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/onboarding/system.js
+  11:8   error  'path' is defined but never used. Allowed unused vars must match /^_/u      no-unused-vars
+  12:10  error  'execSync' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/ops/docker-integration.js
+   15:10  error  'validateSafePath' is defined but never used. Allowed unused vars must match /^_/u         no-unused-vars
+  657:55  error  'options' is assigned a value but never used. Allowed unused args must match /^_/u         no-unused-vars
+  661:9   error  'composeContent' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/ops/git-hooks.js
+   15:10  error  'validateSafePath' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  260:30  error  'options' is defined but never used. Allowed unused args must match /^_/u           no-unused-vars
+  292:24  error  'options' is defined but never used. Allowed unused args must match /^_/u           no-unused-vars
+  312:26  error  'options' is defined but never used. Allowed unused args must match /^_/u           no-unused-vars
+  338:23  error  'options' is defined but never used. Allowed unused args must match /^_/u           no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/ops/rollback-gen.js
+  192:11  error  'errorRate' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/optimization/ultra.js
+  128:37  error  'b' is defined but never used. Allowed unused args must match /^_/u                    no-unused-vars
+  351:9   error  'oldestTime' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/performance/enhanced-predictive-debugger.js
+  325:11  error  'contextWeight' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/performance/monitor.js
+   12:10  error  'spawn' is defined but never used. Allowed unused vars must match /^_/u       no-unused-vars
+   13:10  error  'promisify' is defined but never used. Allowed unused vars must match /^_/u   no-unused-vars
+   14:10  error  'createGzip' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+   15:10  error  'pipeline' is defined but never used. Allowed unused vars must match /^_/u    no-unused-vars
+  753:17  error  'taskName' is defined but never used. Allowed unused args must match /^_/u    no-unused-vars
+  763:16  error  'taskName' is defined but never used. Allowed unused args must match /^_/u    no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/performance/swarm-optimizer.js
+  9:10  error  'Worker' is defined but never used. Allowed unused vars must match /^_/u        no-unused-vars
+  9:18  error  'isMainThread' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  9:32  error  'parentPort' is defined but never used. Allowed unused vars must match /^_/u    no-unused-vars
+  9:44  error  'workerData' is defined but never used. Allowed unused vars must match /^_/u    no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/performance/tuning.js
+  11:8   error  'fs' is defined but never used. Allowed unused vars must match /^_/u        no-unused-vars
+  12:8   error  'path' is defined but never used. Allowed unused vars must match /^_/u      no-unused-vars
+  13:10  error  'execSync' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/planning/neuro-symbolic.js
+   8:39  error  'options' is assigned a value but never used. Allowed unused args must match /^_/u  no-unused-vars
+  15:28  error  'agentId' is defined but never used. Allowed unused args must match /^_/u           no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/plugin-system.js
+   93:26  error  'description' is assigned a value but never used. Allowed unused args must match /^_/u  no-unused-vars
+  144:37  error  'options' is assigned a value but never used. Allowed unused args must match /^_/u      no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/plugin-system.ts
+    1:21  error    'inject' is defined but never used                @typescript-eslint/no-unused-vars
+    2:10  error    'DI_TOKENS' is defined but never used             @typescript-eslint/no-unused-vars
+   15:7   error    '__dirname' is assigned a value but never used    @typescript-eslint/no-unused-vars
+   29:3   warning  Missing return type on function                   @typescript-eslint/explicit-function-return-type
+   37:3   warning  Missing return type on function                   @typescript-eslint/explicit-function-return-type
+   48:3   warning  Missing return type on function                   @typescript-eslint/explicit-function-return-type
+   64:3   warning  Missing return type on function                   @typescript-eslint/explicit-function-return-type
+   96:3   warning  Missing return type on function                   @typescript-eslint/explicit-function-return-type
+   96:26  error    'description' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  105:3   warning  Missing return type on function                   @typescript-eslint/explicit-function-return-type
+  117:3   warning  Missing return type on function                   @typescript-eslint/explicit-function-return-type
+  147:3   warning  Missing return type on function                   @typescript-eslint/explicit-function-return-type
+  147:37  error    'options' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  190:3   warning  Missing return type on function                   @typescript-eslint/explicit-function-return-type
+  214:3   warning  Missing return type on function                   @typescript-eslint/explicit-function-return-type
+  227:3   warning  Missing return type on function                   @typescript-eslint/explicit-function-return-type
+  234:3   warning  Missing return type on function                   @typescript-eslint/explicit-function-return-type
+  250:3   warning  Missing return type on function                   @typescript-eslint/explicit-function-return-type
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/plugins/index.js
+   11:10  error  'spawn' is defined but never used. Allowed unused vars must match /^_/u             no-unused-vars
+  163:37  error  'options' is assigned a value but never used. Allowed unused args must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/plugins/integration.js
+    9:10  error  'printInfo' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  117:52  error  'args' is defined but never used. Allowed unused args must match /^_/u       no-unused-vars
+  117:58  error  'options' is defined but never used. Allowed unused args must match /^_/u    no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/pm/universal-pm.js
+   14:10  error  'validateSafePath' is defined but never used. Allowed unused vars must match /^_/u      no-unused-vars
+  312:21  error  'stderr' is assigned a value but never used. Allowed unused vars must match /^_/u       no-unused-vars
+  689:11  error  'projectDeps' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/protocol/handler.js
+   11:10  error  'spawn' is defined but never used. Allowed unused vars must match /^_/u            no-unused-vars
+   52:17  error  'scheme' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+   70:46  error  'urlObj' is defined but never used. Allowed unused args must match /^_/u           no-unused-vars
+   88:46  error  'urlObj' is defined but never used. Allowed unused args must match /^_/u           no-unused-vars
+  342:43  error  'params' is defined but never used. Allowed unused args must match /^_/u           no-unused-vars
+  395:38  error  'params' is defined but never used. Allowed unused args must match /^_/u           no-unused-vars
+  409:35  error  'params' is defined but never used. Allowed unused args must match /^_/u           no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/providers/claude.js
+  12:10  error  'handleError' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/providers/langchain.js
+   13:16  error  'messages' is defined but never used. Allowed unused args must match /^_/u              no-unused-vars
+   23:11  error  'from' is defined but never used. Allowed unused args must match /^_/u                  no-unused-vars
+   23:17  error  'to' is defined but never used. Allowed unused args must match /^_/u                    no-unused-vars
+   24:17  error  'node' is defined but never used. Allowed unused args must match /^_/u                  no-unused-vars
+   25:18  error  'node' is defined but never used. Allowed unused args must match /^_/u                  no-unused-vars
+   26:11  error  'options' is defined but never used. Allowed unused args must match /^_/u               no-unused-vars
+   37:7   error  'AIMessage' is assigned a value but never used. Allowed unused vars must match /^_/u    no-unused-vars
+   41:7   error  'MemorySaver' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  192:15  error  'query' is assigned a value but never used. Allowed unused vars must match /^_/u        no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/providers/mock.js
+  94:60  error  'options' is assigned a value but never used. Allowed unused args must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/quality/a11y-check.js
+  24:26  error  'context' is assigned a value but never used. Allowed unused args must match /^_/u  no-unused-vars
+  24:46  error  'options' is assigned a value but never used. Allowed unused args must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/quality/automation-21.js
+   22:21  error  'context' is defined but never used. Allowed unused args must match /^_/u            no-unused-vars
+   38:21  error  'context' is defined but never used. Allowed unused args must match /^_/u            no-unused-vars
+   54:21  error  'context' is defined but never used. Allowed unused args must match /^_/u            no-unused-vars
+   72:21  error  'context' is defined but never used. Allowed unused args must match /^_/u            no-unused-vars
+   93:21  error  'context' is defined but never used. Allowed unused args must match /^_/u            no-unused-vars
+  122:21  error  'context' is defined but never used. Allowed unused args must match /^_/u            no-unused-vars
+  124:13  error  'patterns' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  139:21  error  'context' is defined but never used. Allowed unused args must match /^_/u            no-unused-vars
+  164:21  error  'context' is defined but never used. Allowed unused args must match /^_/u            no-unused-vars
+  194:21  error  'context' is defined but never used. Allowed unused args must match /^_/u            no-unused-vars
+  212:21  error  'context' is defined but never used. Allowed unused args must match /^_/u            no-unused-vars
+  231:21  error  'context' is defined but never used. Allowed unused args must match /^_/u            no-unused-vars
+  249:21  error  'context' is defined but never used. Allowed unused args must match /^_/u            no-unused-vars
+  267:21  error  'context' is defined but never used. Allowed unused args must match /^_/u            no-unused-vars
+  283:21  error  'context' is defined but never used. Allowed unused args must match /^_/u            no-unused-vars
+  291:21  error  'context' is defined but never used. Allowed unused args must match /^_/u            no-unused-vars
+  304:21  error  'context' is defined but never used. Allowed unused args must match /^_/u            no-unused-vars
+  317:21  error  'context' is defined but never used. Allowed unused args must match /^_/u            no-unused-vars
+  331:21  error  'context' is defined but never used. Allowed unused args must match /^_/u            no-unused-vars
+  346:21  error  'context' is defined but never used. Allowed unused args must match /^_/u            no-unused-vars
+  363:21  error  'context' is defined but never used. Allowed unused args must match /^_/u            no-unused-vars
+  371:21  error  'context' is defined but never used. Allowed unused args must match /^_/u            no-unused-vars
+  381:11  error  'verbose' is assigned a value but never used. Allowed unused vars must match /^_/u   no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/quality/automation.js
+  109:51  error  'projectDir' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+  220:44  error  'projectDir' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/quality/decision-ledger.js
+  13:10  error  'validateSafePath' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/quality/hooks.js
+  19:3  error  'mutates' is assigned a value but never used. Allowed unused args must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/quality/risk-register.js
+  5:8  error  'chalk' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  6:8  error  'Table' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/quality/scanner.js
+  252:13  error  'p1' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  253:13  error  'p2' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/rag/embeddings.js
+  143:50  error  'rootDir' is assigned a value but never used. Allowed unused args must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/rag/graph.js
+   12:10  error  'execSync' is defined but never used. Allowed unused vars must match /^_/u        no-unused-vars
+  392:25  error  'depth' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/repl/commands.js
+  8:35  error  'printWarning' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/repl/index.js
+  193:11  error  'conversationHistory' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/repl/pty.js
+   11:10  error  'spawn' is defined but never used. Allowed unused vars must match /^_/u         no-unused-vars
+   12:35  error  'printWarning' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  119:29  error  'command' is defined but never used. Allowed unused args must match /^_/u       no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/resilience/self-healing.js
+  490:7  error  'args' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/review/ai-powered.js
+  25:22  error  'context' is assigned a value but never used. Allowed unused args must match /^_/u  no-unused-vars
+  54:28  error  'totalLines' is defined but never used. Allowed unused args must match /^_/u        no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/run-context.ts
+    5:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+   12:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+   25:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+   60:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+   74:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+   89:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+  104:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+  150:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+  181:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+  188:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/sandbox/docker.js
+  406:13  error  'buildResult' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  467:18  error  'stopError' is defined but never used. Allowed unused caught errors must match /^_/u    no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/scaffold/plan.js
+  11:10  error  'execSync' is defined but never used. Allowed unused vars must match /^_/u    no-unused-vars
+  12:49  error  'printError' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/scaling/auto-scale.js
+  9:8  error  'os' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/security/quantum-vault.js
+   6:8   error  'fs' is defined but never used. Allowed unused vars must match /^_/u           no-unused-vars
+   7:8   error  'path' is defined but never used. Allowed unused vars must match /^_/u         no-unused-vars
+  27:15  error  'iv' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/server/middleware/auth.js
+   66:14  error  'error' is defined but never used. Allowed unused caught errors must match /^_/u  no-unused-vars
+  153:36  error  'options' is defined but never used. Allowed unused args must match /^_/u         no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/server/middleware/rate-limit.js
+  8:8  error  'chalk' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/spinner.ts
+  11:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+  24:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+  32:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+  40:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+  48:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+  58:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+  76:8  warning  Missing return type on function  @typescript-eslint/explicit-function-return-type
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/swarm/coordinator.js
+  8:8  error  'chalk' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/swarm/node.js
+  70:21  error  'peerId' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/swarm/orchestrator.js
+   10:8   error  'chalk' is defined but never used. Allowed unused vars must match /^_/u             no-unused-vars
+  307:20  error  'file' is defined but never used. Allowed unused args must match /^_/u              no-unused-vars
+  307:26  error  'lockId' is defined but never used. Allowed unused args must match /^_/u            no-unused-vars
+  421:15  error  'options' is assigned a value but never used. Allowed unused args must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/swarm/p2p.js
+   61:25  error  'peer' is assigned a value but never used. Allowed unused vars must match /^_/u     no-unused-vars
+  304:27  error  'data' is defined but never used. Allowed unused args must match /^_/u              no-unused-vars
+  438:17  error  'agentId' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  548:26  error  'node' is assigned a value but never used. Allowed unused vars must match /^_/u     no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/templates/code/clerk-middleware.ts
+  148:1   warning  Missing return type on function                         @typescript-eslint/explicit-function-return-type
+  148:10  error    'handleClerkmiddlewareError' is defined but never used  @typescript-eslint/no-unused-vars
+  151:12  error    '_' is defined but never used                           @typescript-eslint/no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/templates/code/server-actions.ts
+  15:10  error  'redirect' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/templates/code/trpc-router.ts
+   13:18  error    'publicProcedure' is defined but never used        @typescript-eslint/no-unused-vars
+  269:1   warning  Missing return type on function                    @typescript-eslint/explicit-function-return-type
+  269:10  error    'handleTrpcrouterError' is defined but never used  @typescript-eslint/no-unused-vars
+  272:12  error    '_' is defined but never used                      @typescript-eslint/no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/templates/manager.js
+  220:16  error  'cleanupError' is defined but never used. Allowed unused caught errors must match /^_/u  no-unused-vars
+  242:13  error  'hasNpm' is assigned a value but never used. Allowed unused vars must match /^_/u        no-unused-vars
+  311:17  error  'name' is defined but never used. Allowed unused args must match /^_/u                   no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/templates/nextjs-saas.js
+  10:35  error  'printWarning' is defined but never used. Allowed unused vars must match /^_/u      no-unused-vars
+  22:31  error  'options' is assigned a value but never used. Allowed unused args must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/tools/execution.js
+   11:7   error  'execAsync' is assigned a value but never used. Allowed unused vars must match /^_/u    no-unused-vars
+  150:40  error  'projectRoot' is defined but never used. Allowed unused args must match /^_/u           no-unused-vars
+  151:18  error  'filePattern' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  156:13  error  'spawn' is assigned a value but never used. Allowed unused vars must match /^_/u        no-unused-vars
+  158:34  error  'reject' is defined but never used. Allowed unused args must match /^_/u                no-unused-vars
+  159:13  error  'results' is assigned a value but never used. Allowed unused vars must match /^_/u      no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/ui/TokenBudget.js
+  11:8  error  'chalk' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/ui/components/ArrowMenu.js
+  1:27  error  'useEffect' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/ui/components/banner.js
+  3:10  error  'theme' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/ui/dashboard.js
+   12:10  error  'spawn' is defined but never used. Allowed unused vars must match /^_/u         no-unused-vars
+   14:10  error  'printInfo' is defined but never used. Allowed unused vars must match /^_/u     no-unused-vars
+   14:35  error  'printWarning' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  403:20  error  'options' is defined but never used. Allowed unused args must match /^_/u       no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/utils/enhanced-output.js
+  8:8  error  'chalk' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/utils/error-handler.js
+  244:15  error  'key' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/utils/help.js
+  15:42  error  'options' is assigned a value but never used. Allowed unused args must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/utils/progress.js
+   14:5   error  'multiBar' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  314:47  error  'index' is defined but never used. Allowed unused args must match /^_/u              no-unused-vars
+  372:9   error  'bar' is assigned a value but never used. Allowed unused vars must match /^_/u       no-unused-vars
+  396:13  error  'text' is defined but never used. Allowed unused args must match /^_/u               no-unused-vars
+  397:13  error  'text' is defined but never used. Allowed unused args must match /^_/u               no-unused-vars
+  398:11  error  'text' is defined but never used. Allowed unused args must match /^_/u               no-unused-vars
+  399:10  error  'text' is defined but never used. Allowed unused args must match /^_/u               no-unused-vars
+  400:16  error  'text' is defined but never used. Allowed unused args must match /^_/u               no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/utils/prompts.js
+  11:10  error  'createSpinner' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/utils/reconciler.js
+  10:8  error  'chalk' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/utils/smart-error.js
+    9:47  error  'printSuccess' is defined but never used. Allowed unused vars must match /^_/u       no-unused-vars
+  196:14  error  'e' is defined but never used. Allowed unused caught errors must match /^_/u         no-unused-vars
+  232:12  error  'logError' is defined but never used. Allowed unused caught errors must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/utils/status.js
+  225:11  error  'padding' is assigned a value but never used. Allowed unused vars must match /^_/u      no-unused-vars
+  225:24  error  'margin' is assigned a value but never used. Allowed unused vars must match /^_/u       no-unused-vars
+  225:36  error  'borderStyle' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/utils/stream.js
+  12:10  error  'printSuccess' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/vibe/interface.js
+  16:49  error  'printError' is defined but never used. Allowed unused vars must match /^_/u             no-unused-vars
+  19:7   error  'SESSION_FILE' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/vision/scanner.js
+  105:13  error  'baselineBuffer' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  109:13  error  'prompt' is assigned a value but never used. Allowed unused vars must match /^_/u          no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/vision/vision-agent.js
+    5:10  error  'createReadStream' is defined but never used. Allowed unused vars must match /^_/u    no-unused-vars
+    8:10  error  'z' is defined but never used. Allowed unused vars must match /^_/u                   no-unused-vars
+   12:35  error  'printError' is defined but never used. Allowed unused vars must match /^_/u          no-unused-vars
+   14:7   error  'execAsync' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  382:49  error  'options' is assigned a value but never used. Allowed unused args must match /^_/u    no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/voice/command.js
+  12:10  error  'routeIntent' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  25:14  error  'e2' is defined but never used. Allowed unused caught errors must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/voice/voice-service.js
+   8:10  error  'z' is defined but never used. Allowed unused vars must match /^_/u                   no-unused-vars
+  10:35  error  'printError' is defined but never used. Allowed unused vars must match /^_/u          no-unused-vars
+  12:7   error  'execAsync' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/wasm/runtime.js
+   6:8   error  'path' is defined but never used. Allowed unused vars must match /^_/u              no-unused-vars
+  10:17  error  'options' is assigned a value but never used. Allowed unused args must match /^_/u  no-unused-vars
+
+✖ 574 problems (479 errors, 95 warnings)
+ESLint completed: 611 files, 479 errors, 95 warnings.

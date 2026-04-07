@@ -90,7 +90,7 @@ export class PluginManager {
   /**
    * Register a hook that plugins can attach to
    */
-  registerHook(hookName, description = '') {
+  registerHook(hookName, _description = '') {
     if (!this.hooks.has(hookName)) {
       this.hooks.set(hookName, []);
     }
@@ -141,7 +141,7 @@ export class PluginManager {
   /**
    * Install a plugin from a local file or npm package
    */
-  async installPlugin(pluginSource, options = {}) {
+  async installPlugin(pluginSource, _options = {}) {
     try {
       let pluginPath;
 

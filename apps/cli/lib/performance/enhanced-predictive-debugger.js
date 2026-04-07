@@ -322,7 +322,7 @@ class MLPredictor {
     // Simplified ML prediction model
     const severityWeight = this.model.weights.severity[pattern.severity] || 0.5;
     const confidenceWeight = pattern.confidence;
-    const contextWeight = this.model.weights.context;
+    const _contextWeight = this.model.weights.context;
 
     // Contextual factors that affect probability
     let contextFactor = 1.0;

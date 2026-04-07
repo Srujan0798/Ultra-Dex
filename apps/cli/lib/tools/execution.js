@@ -8,7 +8,7 @@ import { exec, spawn } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 
-const execAsync = promisify(exec);
+const _execAsync = promisify(exec);
 
 // Helper to detect binary content
 function isBinary(buffer) {
@@ -147,16 +147,16 @@ async function executeWriteFile(args, projectRoot) {
  * @param {string} projectRoot - Project root directory
  * @returns {Promise<Object>} - Result of the search operation
  */
-async function executeSearchCode(args, projectRoot) {
-  const { query, filePattern = '*.js' } = args;
+async function executeSearchCode(args, _projectRoot) {
+  const { query, _filePattern = '*.js' } = args;
   
   try {
     // This is a simplified search - in a real implementation, 
     // you might want to use more sophisticated search like ripgrep
-    const { spawn } = await import('child_process');
+    const { _spawn } = await import('child_process');
     
-    return new Promise((resolve, reject) => {
-      const results = [];
+    return new Promise((resolve, _reject) => {
+      const _results = [];
       
       // For now, return a mock response
       resolve({

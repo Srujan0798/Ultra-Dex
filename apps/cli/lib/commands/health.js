@@ -6,8 +6,8 @@
  */
 
 import http from 'http';
-import os from 'os';
-import { createProvider, getDefaultProvider } from '../providers/index.js';
+
+import { getDefaultProvider } from '../providers/index.js';
 import { logger } from '../utils/logger.js';
 import { monitoring } from '../utils/monitoring.js';
 

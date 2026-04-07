@@ -2,7 +2,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import { printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { printInfo, printWarning } from '../utils/output.js';
 
 const POLICY_DIR = path.join(process.cwd(), '.ultra-dex', 'governance');
 const AUDIT_LOG = path.join(POLICY_DIR, 'data-access.jsonl');

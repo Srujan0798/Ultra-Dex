@@ -10,7 +10,7 @@ import { promisify } from 'util';
 import { ultraMemory } from '../mcp/memory.js';
 import { printInfo, printSuccess, printError, printWarning } from '../utils/output.js';
 
-const execAsync = promisify(exec);
+const _execAsync = promisify(exec);
 
 /**
  * Vision Agent - Screenshot-to-Code Conversion
@@ -654,7 +654,7 @@ Output only the code with no explanations unless specifically asked.`;
   /**
    * OCR text extraction from image
    */
-  async extractText(imagePath, options = {}) {
+  async extractText(imagePath, _options = {}) {
     try {
       if (!this.options.enableOCR) {
         throw new Error('OCR is disabled');
@@ -720,7 +720,7 @@ Output only the code with no explanations unless specifically asked.`;
   /**
    * Save generated code to file
    */
-  async saveCodeToFile(generatedCode, filePath, options = {}) {
+  async saveCodeToFile(generatedCode, filePath, _options = {}) {
     try {
       // Extract code blocks from AI response if present
       const code = this.extractCodeBlocks(generatedCode);

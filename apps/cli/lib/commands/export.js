@@ -6,7 +6,7 @@ import ora from '../utils/ora.js';
 import fs from 'fs';
 import { join, basename, resolve, dirname } from 'path';
 import yaml from 'js-yaml';
-import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { printError, printInfo, printSuccess } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 
 const VALID_FORMATS = ['json', 'html', 'markdown', 'md', 'pdf', 'yaml', 'yml', 'notion'];
@@ -320,7 +320,7 @@ function filterSections(content, sectionNumbers, excludeNumbers = null) {
     const sectionMatch = line.match(/^##\s+(?:SECTION\s+)?(\d+)[:.]?\s*/i);
     if (sectionMatch) {
       const num = parseInt(sectionMatch[1]);
-      currentSectionNumber = num;
+      _currentSectionNumber = num;
       const included = sectionNumbers ? sectionNumbers.includes(num) : true;
       const excluded = excludeNumbers ? excludeNumbers.includes(num) : false;
       inTargetSection = included && !excluded;
@@ -635,7 +635,7 @@ function generateHTML(context, options = {}) {
   let toc = '';
   if (includeToc) {
     const tocItems = [];
-    fileEntries.forEach(([file], index) => {
+    fileEntries.forEach(([file], _index) => {
       tocItems.push(`<li><a href="#${file.replace(/\./g, '-')}">${file}</a></li>`);
     });
 

@@ -1,7 +1,7 @@
 import chalk from 'chalk';
 import { MCPRegistry } from '../../../../src/core/mcp/registry.js';
 import { MarketplaceAPI } from '../../../../src/core/mcp/marketplace-api.js';
-import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { printInfo, printSuccess, printWarning } from '../utils/output.js';
 
 function defaultFactories() {
   return {

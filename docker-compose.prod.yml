@@ -1,34 +1,82 @@
+# Ultra-Dex Production Docker Compose
 # All secrets must be set via environment variables. No defaults exist for security.
 version: '3.8'
 
 services:
-  app:
-    image: ultra-dex:latest
+  ultra-dex:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    image: ultra-dex:v3.0.0
+    container_name: ultra-dex-prod
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
     environment:
+      - NODE_ENV=production
       - DATABASE_URL=${DATABASE_URL}
-      - REDIS_URL=${REDIS_URL}
+      - REDIS_URL=redis://redis:6379
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - NVIDIA_API_KEY=${NVIDIA_API_KEY}
       - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
       - NEXTAUTH_URL=${NEXTAUTH_URL}
-      - NVIDIA_API_KEY=${NVIDIA_API_KEY}
-    depends_on:
-      - db
-      - redis
-
-  db:
-    image: postgres:15-alpine
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ultra_dex_data:/app/data
+      - ultra_dex_logs:/app/logs
+    depends_on:
+      - redis
+      - db
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+          cpus: '0.5'
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   redis:
     image: redis:7-alpine
-    command: redis-server --requirepass ${REDIS_PASSWORD}
+    container_name: ultra-dex-redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:-ultra-dex-redis}
     volumes:
       - redis_data:/data
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.2'
+
+  db:
+    image: postgres:15-alpine
+    container_name: ultra-dex-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-ultra_dex}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB:-ultra_dex}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.3'
 
 volumes:
   postgres_data:
+    driver: local
   redis_data:
+    driver: local
+  ultra_dex_data:
+    driver: local
+  ultra_dex_logs:
+    driver: local

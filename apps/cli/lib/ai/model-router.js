@@ -5,7 +5,7 @@
  * Routing Table logic for AI model selection
  */
 
-import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import { printInfo, printSuccess, printError } from '../utils/output.js';
 import { loadRouterConfigSync, resolveOverrides } from './router-config.js';
 
 // Model configurations with capabilities and costs
@@ -379,7 +379,7 @@ class ModelRouter {
    * @param {Object} options - Filter options
    * @returns {string[]} Filtered model IDs
    */
-  filterModels(models, options) {
+  filterModels(models, _options) {
     return models.filter((modelId) => {
       const config = this.modelConfigs[modelId];
       if (!config) return false;
@@ -405,7 +405,7 @@ class ModelRouter {
    * @param {Object} options - Selection options
    * @returns {string} Selected model ID
    */
-  selectModelByPriority(models, options) {
+  selectModelByPriority(models, _options) {
     if (models.length === 0) {
       return this.config.defaultModel;
     }

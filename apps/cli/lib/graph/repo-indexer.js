@@ -8,7 +8,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { glob } from 'glob';
-import { createHash } from 'crypto';
+
 
 // Knowledge graph representation
 class RepoKnowledgeGraph {
@@ -426,7 +426,7 @@ class RepoKnowledgeGraph {
    */
   async analyzeImpact(filePath) {
     const relativePath = path.relative(process.cwd(), filePath);
-    const fileId = `file:${relativePath}`;
+    const _fileId = `file:${relativePath}`;
 
     // Find all files that import this file
     const impactedByImports = [];
@@ -451,7 +451,7 @@ class RepoKnowledgeGraph {
     }
 
     // Find all usages of these functions in other files
-    const functionUsages = [];
+    const _functionUsages = [];
     // This would require more sophisticated analysis in a real implementation
 
     return {
@@ -502,7 +502,7 @@ class RepoKnowledgeGraph {
   /**
    * Find all functions that call a specific function
    */
-  findFunctionCallers(functionName) {
+  findFunctionCallers(_functionName) {
     // This would require more sophisticated analysis in a real implementation
     // For now, return empty array
     return [];
@@ -511,7 +511,7 @@ class RepoKnowledgeGraph {
   /**
    * Find all functions called by a specific function
    */
-  findFunctionCallees(functionName) {
+  findFunctionCallees(_functionName) {
     // This would require more sophisticated analysis in a real implementation
     // For now, return empty array
     return [];

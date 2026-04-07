@@ -5,7 +5,7 @@
  * @module commands/enterprise
  */
 
-import { Command } from 'commander';
+
 import { enterpriseFeatures } from '../enterprise/features.js';
 import { agentSecurityPolicies } from '../enterprise/security-policies.js';
 import { complianceMonitor } from '../enterprise/compliance-monitor.js';
@@ -104,7 +104,7 @@ export function registerEnterpriseCommand(program) {
     .argument('<userId>', 'User ID')
     .argument('<role>', 'New role')
     .description('Update user role')
-    .action(async (userId, role, options) => {
+    .action(async (userId, role, _options) => {
       try {
         await enterpriseFeatures.initialize();
 

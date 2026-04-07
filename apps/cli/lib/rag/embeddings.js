@@ -140,7 +140,7 @@ export class EmbeddingsManager {
 /**
  * Generate embeddings for codebase
  */
-export async function generateCodebaseEmbeddings(rootDir = process.cwd()) {
+export async function generateCodebaseEmbeddings(_rootDir = process.cwd()) {
   const manager = new EmbeddingsManager();
   const initialized = await manager.initialize();
 

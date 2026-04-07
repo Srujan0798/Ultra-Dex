@@ -488,7 +488,7 @@ RULES:
    * Create a mock plan when no provider is available
    * @private
    */
-  _createMockPlan(goal, context = {}) {
+  _createMockPlan(goal, _context = {}) {
     const mockPlan = {
       id: this._generatePlanId(),
       goal,

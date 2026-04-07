@@ -8,7 +8,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { spawn } from 'child_process';
+
 import chalk from 'chalk';
 import ora from '../utils/ora.js';
 
@@ -160,7 +160,7 @@ class PluginRegistry {
   /**
    * Install a plugin from various sources
    */
-  async installPlugin(pluginSource, options = {}) {
+  async installPlugin(pluginSource, _options = {}) {
     const spinner = ora(`Installing plugin: ${pluginSource}`);
     spinner.start();
 

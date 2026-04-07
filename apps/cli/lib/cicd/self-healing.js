@@ -4,12 +4,12 @@ import fs from 'fs/promises';
 import path from 'path';
 import { exec, execSync } from 'child_process';
 import { promisify } from 'util';
-import axios from 'axios';
-import { z } from 'zod';
-import { createOpenAIRunnable, createAnthropicRunnable, createGoogleRunnable } from '../providers/index.js';
+
+
+import { createOpenAIRunnable, createAnthropicRunnable } from '../providers/index.js';
 import { printInfo, printSuccess, printError, printWarning } from '../utils/output.js';
-import { loadState } from '../commands/state.js';
-import { ultraMemory } from '../mcp/memory.js';
+
+
 
 const execAsync = promisify(exec);
 
@@ -166,7 +166,7 @@ export class SelfHealingCICD {
   /**
    * Run comprehensive CI/CD pipeline with self-healing
    */
-  async runPipeline(options = {}) {
+  async runPipeline(_options = {}) {
     try {
       printInfo('🔄 Starting self-healing CI/CD pipeline...');
 
@@ -214,7 +214,7 @@ export class SelfHealingCICD {
       pipeline.stages.test.startTime = new Date();
 
       // Run tests
-      const testResult = await execAsync('npm test', { timeout: this.options.timeout });
+      const _testResult = await execAsync('npm test', { timeout: this.options.timeout });
 
       pipeline.stages.test.status = 'success';
       pipeline.stages.test.endTime = new Date();
@@ -261,7 +261,7 @@ export class SelfHealingCICD {
       pipeline.stages.security.startTime = new Date();
 
       // Run security audit
-      const securityResult = await execAsync('npm audit --audit-level high', { timeout: this.options.timeout });
+      const _securityResult = await execAsync('npm audit --audit-level high', { timeout: this.options.timeout });
 
       pipeline.stages.security.status = 'success';
       pipeline.stages.security.endTime = new Date();
@@ -276,7 +276,7 @@ export class SelfHealingCICD {
         printSuccess('🔧 Security issues fixed');
         pipeline.stages.security.status = 'success';
         pipeline.fixesApplied += 1;
-      } catch (fixError) {
+      } catch (_fixError) {
         printWarning('⚠️  Could not automatically fix security issues');
         pipeline.stages.security.status = 'partial';
       }
@@ -294,7 +294,7 @@ export class SelfHealingCICD {
       pipeline.stages.build.startTime = new Date();
 
       // Run build
-      const buildResult = await execAsync('npm run build', { timeout: this.options.timeout });
+      const _buildResult = await execAsync('npm run build', { timeout: this.options.timeout });
 
       pipeline.stages.build.status = 'success';
       pipeline.stages.build.endTime = new Date();
@@ -341,7 +341,7 @@ export class SelfHealingCICD {
       pipeline.stages.performance.startTime = new Date();
 
       // Run performance tests
-      const perfResult = await execAsync('npm run test:performance || echo "No performance tests"', { timeout: this.options.timeout });
+      const _perfResult = await execAsync('npm run test:performance || echo "No performance tests"', { timeout: this.options.timeout });
 
       pipeline.stages.performance.status = 'success';
       pipeline.stages.performance.endTime = new Date();
@@ -356,7 +356,7 @@ export class SelfHealingCICD {
         printInfo('🔧 Applying performance optimizations...');
         pipeline.fixesApplied += 1;
         pipeline.stages.performance.status = 'partial';
-      } catch (fixError) {
+      } catch (_fixError) {
         printWarning('⚠️  Could not apply performance optimizations');
         pipeline.stages.performance.status = 'failed';
       }
@@ -376,19 +376,19 @@ export class SelfHealingCICD {
       // Determine deployment target
       const deployTarget = await this.detectDeploymentTarget();
 
-      let deployResult;
+      let _deployResult;
       switch (deployTarget) {
         case 'vercel':
-          deployResult = await execAsync('npx vercel --prod', { timeout: this.options.timeout * 2 });
+          _deployResult = await execAsync('npx vercel --prod', { timeout: this.options.timeout * 2 });
           break;
         case 'netlify':
-          deployResult = await execAsync('npx netlify deploy --prod', { timeout: this.options.timeout * 2 });
+          _deployResult = await execAsync('npx netlify deploy --prod', { timeout: this.options.timeout * 2 });
           break;
         case 'aws':
-          deployResult = await execAsync('npx serverless deploy', { timeout: this.options.timeout * 2 });
+          _deployResult = await execAsync('npx serverless deploy', { timeout: this.options.timeout * 2 });
           break;
         default:
-          deployResult = await execAsync('npm run deploy', { timeout: this.options.timeout * 2 });
+          _deployResult = await execAsync('npm run deploy', { timeout: this.options.timeout * 2 });
       }
 
       pipeline.stages.deploy.status = 'success';
@@ -604,7 +604,7 @@ export class SelfHealingCICD {
   /**
    * Handle dependency error
    */
-  async handleDependencyError(error) {
+  async handleDependencyError(_error) {
     try {
       printInfo('🔧 Attempting dependency fix...');
       await execAsync('npm install');

@@ -91,7 +91,7 @@ class MockProviderBase extends BaseProvider {
     };
   }
 
-  async generateWithTools(systemPrompt, userPrompt, tools, options = {}) {
+  async generateWithTools(systemPrompt, userPrompt, tools, _options = {}) {
     const content = this.buildResponse(systemPrompt, userPrompt);
 
     // If tools are provided, simulate a tool call response

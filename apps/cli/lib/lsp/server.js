@@ -10,9 +10,9 @@
 // Project UltraLSP: Lightweight Language Server for ultra-dex.yaml
 // Implements a subset of LSP 3.16 over Stdio
 
-import { TextDocument } from 'vscode-languageserver-textdocument';
 
-const documents = new Map();
+
+const _documents = new Map();
 
 // Completion items for ultra-dex.yaml
 const COMPLETIONS = [

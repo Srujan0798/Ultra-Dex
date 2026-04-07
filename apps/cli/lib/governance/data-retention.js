@@ -8,7 +8,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
-import { enterpriseFeatures } from '../enterprise/features.js';
+
 
 const RETENTION_DIR = path.join(process.cwd(), '.ultra-dex', 'retention');
 const POLICIES_FILE = path.join(RETENTION_DIR, 'policies.json');

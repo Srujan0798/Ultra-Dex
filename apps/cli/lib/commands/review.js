@@ -18,9 +18,9 @@ import {
 import { SYSTEM_PROMPT, generateReviewPrompt } from '../templates/prompts/review-code.js';
 import { validateSafePath } from '../utils/validation.js';
 import { buildGraph } from '../utils/graph.js';
-import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { printError, printInfo, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
-import { AppError, ValidationError } from '../utils/errors.js';
+import { AppError } from '../utils/errors.js';
 
 // File patterns to scan (used for future pattern-based review)
 // eslint-disable-next-line no-unused-vars

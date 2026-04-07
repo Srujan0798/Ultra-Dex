@@ -8,9 +8,9 @@
 import { performance } from 'perf_hooks';
 import { EventEmitter } from 'events';
 import os from 'os';
-import fs from 'fs/promises';
-import path from 'path';
-import { execSync } from 'child_process';
+
+
+
 
 // Performance configuration for maximum efficiency
 const PERFORMANCE_CONFIG = {

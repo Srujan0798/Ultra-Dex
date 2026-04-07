@@ -7,7 +7,7 @@
 
 import fs from 'fs';
 import fsPromises from 'fs/promises';
-import path from 'path';
+
 import { fileURLToPath } from 'url';
 import { historyManager } from './undo.js';
 

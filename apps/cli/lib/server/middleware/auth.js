@@ -63,7 +63,7 @@ export function authMiddleware(options = {}) {
       }
 
       next();
-    } catch (error) {
+    } catch (_error) {
       res.status(500).json({ error: 'Authentication error' });
     }
   };
@@ -150,7 +150,7 @@ export function enterpriseMiddleware(options = {}) {
 /**
  * Create rate limit middleware
  */
-function createRateLimitMiddleware(options) {
+function createRateLimitMiddleware(_options) {
   return async (req, res, next) => {
     const key = req.user?.id || req.ip || 'anonymous';
     const result = await rateLimiter.check(key);

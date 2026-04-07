@@ -47,6 +47,7 @@ logs
 *.swo
 *~
 .cursor
+.claude
 
 # OS files
 .DS_Store
@@ -73,7 +74,9 @@ docs
 .kilo
 upgrade
 
-# Backup files
+# Archive and backup files
+.archive
+**/archive
 *-bak
 **/*-bak
 *.bak
@@ -93,16 +96,12 @@ temp
 
 # Reports and archives
 *-report.json
-archive
-**/archive
 reports
 **/reports
 benchmarks
 **/benchmarks
 benchmark-results
 **/benchmark-results
-!src/benchmarks
-!src/benchmarks/performance-metrics.js
 
 # Business and marketing (not needed in production)
 business
@@ -113,7 +112,7 @@ community
 examples
 **/examples
 
-# Docker files
+# Docker files themselves
 docker-compose.override.yml
 Dockerfile*
 .dockerignore

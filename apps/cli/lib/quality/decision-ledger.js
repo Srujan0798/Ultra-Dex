@@ -10,7 +10,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import inquirer from 'inquirer';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
-import { validateSafePath } from '../utils/validation.js';
+
 
 // Decision ledger file path
 const DECISION_LEDGER_PATH = path.join(process.cwd(), 'DECISION-LEDGER.md');

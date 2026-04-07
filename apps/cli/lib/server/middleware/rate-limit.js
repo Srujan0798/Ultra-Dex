@@ -5,7 +5,7 @@
  * Rate limiting for API and user requests
  */
 
-import chalk from 'chalk';
+
 
 /**
  * Rate Limiter

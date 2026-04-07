@@ -51,7 +51,7 @@ export class WebIDE {
         const filePath = path.join(this.projectDir, req.params.path);
         const content = await fs.readFile(filePath, 'utf8');
         res.json({ content });
-      } catch (error) {
+      } catch (_error) {
         res.status(404).json({ error: 'File not found' });
       }
     });

@@ -56,7 +56,7 @@ export async function recordAndTranscribe(options = {}) {
     // Clean up temporary file
     try {
       await fs.unlink(audioFilePath);
-    } catch (cleanupError) {
+    } catch (_cleanupError) {
       // Ignore cleanup errors
     }
   }
@@ -105,7 +105,7 @@ async function recordAudio(outputPath, duration) {
           );
 
           setupRecorderHandlers(recorder, resolve, reject);
-        } catch (ffmpegErr) {
+        } catch (_ffmpegErr) {
           reject(new Error(`Audio recording failed. Install sox or ffmpeg: ${err.message}`));
         }
       });
@@ -163,7 +163,7 @@ async function recordAudio(outputPath, duration) {
  * Set up handlers for the recorder process
  */
 function setupRecorderHandlers(recorder, resolve, reject) {
-  recorder.stdout.on('data', (data) => {
+  recorder.stdout.on('_data', (_data) => {
     // Optionally log recorder output
   });
 

@@ -222,7 +222,7 @@ export function formatProgress(current, total, message = '') {
  * Format a status badge
  */
 export function formatBadge(text, type = 'info', options = {}) {
-  const { padding = 1, margin = 0, borderStyle = 'round', uppercase = false } = options;
+  const { padding = 1, margin = 0, _borderStyle = 'round', uppercase = false } = options;
 
   const displayText = uppercase ? text.toUpperCase() : text;
   const color = getStatusColor(type);

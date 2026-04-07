@@ -12,10 +12,10 @@ import { execSync } from 'child_process';
 import { routeIntent } from '../nlp/router.js';
 import { session } from './session.js';
 import { tools } from './tools.js';
-import { runQualityScan } from '../quality/scanner.js';
+
 import {
   verifyTypeSafety,
-  verifyLinting,
+  _verifyLinting,
   verifySecurityPatterns,
   verifyConsoleLogs,
 } from '../quality/automation.js';

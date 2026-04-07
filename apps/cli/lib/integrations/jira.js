@@ -6,7 +6,7 @@
  */
 
 import fetch from 'node-fetch';
-import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import { printInfo, printSuccess, printError } from '../utils/output.js';
 import { retryWithBackoff } from './utils.js';
 
 export class JiraClient {

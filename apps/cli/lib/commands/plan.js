@@ -4,7 +4,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import chalk from 'chalk';
 import { marked } from 'marked';
-import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { printInfo, printSuccess, printWarning } from '../utils/output.js';
 import { handleError } from '../utils/error-handler.js';
 import { AppError, ValidationError } from '../utils/errors.js';
 
@@ -163,8 +163,8 @@ export function generateGantt(phases) {
     // Mark milestones in the bar if any
     phase.steps.forEach((step, idx) => {
       if (step.isMilestone) {
-        const pos = Math.floor((idx / totalSteps) * width);
-        const char = step.status === 'completed' ? '⭐' : '☆';
+        const _pos = Math.floor((idx / totalSteps) * width);
+        const _char = step.status === 'completed' ? '⭐' : '☆';
         // Replace characters in the bar - handle emoji width (2 chars usually)
         // This is a bit tricky with ASCII bars, let's just append an icon instead or use a different symbol
       }

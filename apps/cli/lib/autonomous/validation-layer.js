@@ -342,7 +342,7 @@ export class ValidationLayer {
           result = await this._validateAiJudge(output, spec);
           break;
         
-        case 'gate':
+        case 'gate': {
           const gateResult = this._checkGate(spec);
           if (gateResult.passed) {
             gatesPassed.push(spec);
@@ -351,6 +351,7 @@ export class ValidationLayer {
           }
           result = { valid: gateResult.passed, errors: gateResult.pending ? [`Gate "${spec}" requires approval`] : [] };
           break;
+        }
         
         default:
           warnings.push({ rule: type, message: `Unknown validation type: ${type}` });

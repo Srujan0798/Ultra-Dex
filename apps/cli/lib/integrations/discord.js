@@ -5,7 +5,7 @@
  * Discord Integration with Real API Implementation
  */
 
-import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import { printInfo, printSuccess, printError } from '../utils/output.js';
 import { requireConfig, retryWithBackoff } from './utils.js';
 
 const DISCORD_API_BASE = 'https://discord.com/api/v10';
@@ -632,7 +632,7 @@ export async function validateDiscordConfig(config) {
     throw new Error('Discord configuration requires token');
   }
 
-  const client = new DiscordClient(config.token);
+  const _client = new DiscordClient(config.token);
   
   try {
     // Test by fetching bot information

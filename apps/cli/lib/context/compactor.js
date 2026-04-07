@@ -1,6 +1,6 @@
 // Copyright (c) 2026 Ultra-Dex
 
-import { encode, decode } from 'gpt-tokenizer';
+import { encode } from 'gpt-tokenizer';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -277,7 +277,7 @@ class ContextCompactor {
   /**
    * Generate summary from key points
    */
-  generateSummary(keyPoints, originalMessages) {
+  generateSummary(keyPoints, _originalMessages) {
     const summaryParts = [
       `Conversation Summary (${keyPoints.length} key points extracted):`,
       '',
@@ -517,7 +517,7 @@ class ContextCompactor {
       efficiencyRate:
         this.summaryHistory.length > 0
           ? totalTokensSaved /
-            (this.summaryHistory.reduce((sum, s) => sum.tokensBefore || 0, 0) || 1)
+            (this.summaryHistory.reduce((sum, _s) => sum.tokensBefore || 0, 0) || 1)
           : 0,
     };
   }

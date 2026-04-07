@@ -45,7 +45,7 @@ export class BrowserAgent {
 
   async runScript(script = [], options = {}) {
     const { browser, page } = await launchBrowser(options);
-    const timeout = options.timeout || DEFAULT_TIMEOUT;
+    const _timeout = options.timeout || DEFAULT_TIMEOUT;
 
     for (const step of script) {
       const { action, value } = step;

@@ -10,7 +10,7 @@ var __decorateClass = (decorators, target, key, kind) => {
   return result;
 };
 import { singleton } from "tsyringe";
-import { GovernanceEngine } from '../../platform/cli/governance/index.js';
+import { GovernanceEngine } from '../../../apps/cli/lib/governance/index.js';
 import { AuditDatabase } from './audit-db.js';
 import { v4 as uuidv4 } from "uuid";
 let GovernanceDeniedException = class extends Error {

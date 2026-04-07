@@ -523,13 +523,13 @@ export class SessionManager {
   async cleanup() {
     await this.ensureInitialized();
     // Clear all timers
-    for (const [sessionId, timer] of this.checkpointTimers) {
+    for (const [_sessionId, timer] of this.checkpointTimers) {
       clearInterval(timer);
     }
     this.checkpointTimers.clear();
 
     // Stop all daemon processes
-    for (const [sessionId, process] of this.daemonProcesses) {
+    for (const [_sessionId, process] of this.daemonProcesses) {
       if (process.kill) {
         process.kill();
       }

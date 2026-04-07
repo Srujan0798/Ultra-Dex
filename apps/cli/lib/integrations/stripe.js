@@ -8,7 +8,7 @@
 import chalk from 'chalk';
 import fs from 'fs/promises';
 import path from 'path';
-import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+import { printInfo, printSuccess, printError } from '../utils/output.js';
 import { requireConfig, retryWithBackoff } from './utils.js';
 
 const STRIPE_API_BASE = 'https://api.stripe.com/v1';
@@ -2122,7 +2122,7 @@ export class StripeClient {
   /**
    * Generate a comprehensive payment report
    */
-  async generatePaymentReport(options = {}) {
+  async generatePaymentReport(_options = {}) {
     try {
       printInfo(chalk.cyan('\n📊 Generating Stripe Payment Report...\n'));
 

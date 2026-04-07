@@ -5,11 +5,11 @@ import path from 'path';
 import { createReadStream } from 'fs';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { z } from 'zod';
-import { AppError } from '../utils/errors.js';
-import { printInfo, printSuccess, printError } from '../utils/output.js';
 
-const execAsync = promisify(exec);
+import { AppError } from '../utils/errors.js';
+import { printInfo, printSuccess } from '../utils/output.js';
+
+const _execAsync = promisify(exec);
 
 /**
  * Voice-to-Code Service using Whisper API

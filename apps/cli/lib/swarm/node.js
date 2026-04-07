@@ -67,7 +67,7 @@ export class SwarmNode extends EventEmitter {
             message
         };
 
-        for (const [peerId, peer] of this.peers) {
+        for (const [_peerId, peer] of this.peers) {
             peer.node.receive(envelope);
         }
 

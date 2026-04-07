@@ -414,7 +414,7 @@ class AchievementsSystem {
 
     // Check and award achievements
     const results = [];
-    for (const [id, achievement] of this.availableAchievements.entries()) {
+    for (const [id, _achievement] of this.availableAchievements.entries()) {
       if (!this.isUnlocked(id)) {
         const result = await this.awardAchievement(id, context);
         if (result.success) {
@@ -487,7 +487,7 @@ class AchievementsSystem {
 
       unlocked.forEach((ach) => {
         const color = RARITY_COLORS[ach.rarity] || chalk.white;
-        const progress = ach.target > 1 ? ` [${ach.progress}/${ach.target}]` : '';
+        const _progress = ach.target > 1 ? ` [${ach.progress}/${ach.target}]` : '';
         display +=
           chalk.blue('│ ') +
           color(`${ach.icon} ${ach.name} (${ach.rarity})`.padEnd(76)) +
@@ -506,7 +506,7 @@ class AchievementsSystem {
 
       locked.forEach((ach) => {
         const color = RARITY_COLORS[ach.rarity] || chalk.gray;
-        const progress = ach.target > 1 ? ` [${ach.progress}/${ach.target}]` : '';
+        const _progress = ach.target > 1 ? ` [${ach.progress}/${ach.target}]` : '';
         display +=
           chalk.blue('│ ') +
           color(`${ach.icon} ${ach.name} (${ach.rarity})`.padEnd(76)) +
@@ -571,7 +571,7 @@ export function registerAchievementsCommand(program) {
     .action(() => {
       printSuccess('📚 Available Achievements:\n');
 
-      for (const [id, def] of Object.entries(ACHIEVEMENTS)) {
+      for (const [_id, def] of Object.entries(ACHIEVEMENTS)) {
         const color = RARITY_COLORS[def.rarity] || chalk.white;
         printInfo(color(`${def.icon} ${def.name} (${def.rarity})`));
         printInfo(chalk.gray(`  ${def.description}`));

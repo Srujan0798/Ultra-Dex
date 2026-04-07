@@ -2,12 +2,11 @@
 
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { createCanvas, loadImage } from 'canvas';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 import { v4 as uuidv4 } from 'uuid';
-import { printInfo, printSuccess, printError, printWarning } from '../utils/output.js';
+import { printInfo, printSuccess, printError } from '../utils/output.js';
 import { ultraMemory } from '../mcp/memory.js';
 
 const execAsync = promisify(exec);
@@ -85,7 +84,7 @@ export class ComputerUseAgent {
   /**
    * Take a screenshot of the current screen
    */
-  async takeScreenshot(options = {}) {
+  async takeScreenshot(_options = {}) {
     try {
       if (!this.options.enableScreenCapture) {
         throw new Error('Screen capture is disabled');
@@ -148,7 +147,7 @@ export class ComputerUseAgent {
    */
   async analyzeScreenshot(
     screenshotPath,
-    prompt = 'Analyze this UI and describe the elements and functionality'
+    _prompt = 'Analyze this UI and describe the elements and functionality'
   ) {
     try {
       if (!this.options.enableAppControl) {
@@ -1009,7 +1008,7 @@ export class ComputerUseAgent {
    */
   async cleanup() {
     // Kill any active processes
-    for (const [pid, process] of this.activeProcesses) {
+    for (const [_pid, process] of this.activeProcesses) {
       try {
         process.kill();
       } catch (_error) {

@@ -9,7 +9,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import chalk from 'chalk';
-import { execSync } from 'child_process';
+
 import { glob } from 'glob';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -389,7 +389,7 @@ export class GraphRAG {
    * Query the graph for context
    */
   async query(queryText, options = {}) {
-    const { limit = 10, depth = 2 } = options;
+    const { limit = 10, _depth = 2 } = options;
 
     if (this.useInMemory) {
       return this.queryInMemory(queryText, limit);

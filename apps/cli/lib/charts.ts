@@ -41,7 +41,7 @@ export async function createBarChart(data, options = {}) {
  * @returns {string} Text-based pie chart
  */
 export async function createPieChart(data, options = {}) {
-  const radius = options.radius || 5;
+  const _radius = options.radius || 5;
   const total = data.reduce((sum, item) => sum + item.value, 0);
   
   if (total === 0) {
@@ -180,7 +180,7 @@ export async function createGauge(value, maxValue, label = '', options = {}) {
  * @param {object} options - Sparkline options
  * @returns {string} Text-based sparkline
  */
-export async function createSparkline(values, options = {}) {
+export async function createSparkline(values, _options = {}) {
   if (values.length === 0) {
     return '';
   }
@@ -209,7 +209,7 @@ export async function createSparkline(values, options = {}) {
  * @param {object} options - Heatmap options
  * @returns {string} Text-based heatmap
  */
-export async function createHeatmap(matrix, rowLabels = [], colLabels = [], options = {}) {
+export async function createHeatmap(matrix, rowLabels = [], colLabels = [], _options = {}) {
   if (matrix.length === 0) {
     return 'No data to display';
   }
@@ -272,7 +272,7 @@ export async function createHeatmap(matrix, rowLabels = [], colLabels = [], opti
  * @returns {string} Text-based tree diagram
  */
 export async function createTree(nodes, options = {}) {
-  const indentChar = options.indentChar || '  ';
+  const _indentChar = options.indentChar || '  ';
   const expandChar = options.expandChar || '├─';
   const lastChar = options.lastChar || '└─';
   

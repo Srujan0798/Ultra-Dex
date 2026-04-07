@@ -12,7 +12,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import inquirer from 'inquirer';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
-import { validateSafePath } from '../utils/validation.js';
+
 
 const execAsync = promisify(exec);
 
@@ -654,11 +654,11 @@ class DockerManager {
   /**
    * Generate Docker configuration based on project type
    */
-  async generateDockerConfig(projectType = 'generic', options = {}) {
+  async generateDockerConfig(projectType = 'generic', _options = {}) {
     printInfo(chalk.cyan(`\n🐳 Generating Docker configuration for ${projectType} project...\n`));
     
     let dockerfileContent = '';
-    let composeContent = '';
+    let _composeContent = '';
     
     switch (projectType.toLowerCase()) {
       case 'nextjs':

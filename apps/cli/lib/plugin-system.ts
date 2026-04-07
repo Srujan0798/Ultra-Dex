@@ -1,5 +1,5 @@
-import { singleton, inject } from 'tsyringe';
-import { DI_TOKENS } from '../di/tokens.js';
+import { singleton } from 'tsyringe';
+
 // Copyright (c) 2026 Ultra-Dex
 
 /**
@@ -93,7 +93,7 @@ export class PluginManager {
   /**
    * Register a hook that plugins can attach to
    */
-  registerHook(hookName, description = '') {
+  registerHook(hookName, _description = '') {
     if (!this.hooks.has(hookName)) {
       this.hooks.set(hookName, []);
     }
@@ -144,7 +144,7 @@ export class PluginManager {
   /**
    * Install a plugin from a local file or npm package
    */
-  async installPlugin(pluginSource, options = {}) {
+  async installPlugin(pluginSource, _options = {}) {
     try {
       let pluginPath;
 

@@ -8,8 +8,8 @@
 import pty from 'node-pty';
 import os from 'os';
 import { EventEmitter } from 'events';
-import { spawn } from 'child_process';
-import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
+
+import { printInfo, printSuccess, printError } from '../utils/output.js';
 import { AppError } from '../utils/errors.js';
 
 class PTYBridge extends EventEmitter {
@@ -116,7 +116,7 @@ class PTYBridge extends EventEmitter {
   /**
    * Check if a command has completed
    */
-  isCommandComplete(output, command) {
+  isCommandComplete(output, _command) {
     // Simple heuristic: command prompt appears after command execution
     const promptPattern = /[$#%>] $/;
     return promptPattern.test(output);

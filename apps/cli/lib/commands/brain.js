@@ -89,7 +89,7 @@ Setting up the implementation plan.
         execSync('git add CONTEXT.md');
         execSync('git commit -m "feat: sync CONTEXT.md with brain"');
         logger.print(chalk.green('✅ Changes committed to git'));
-      } catch (gitError) {
+      } catch (_gitError) {
         logger.print(chalk.yellow('⚠️  Git commit failed (not in git repo or no changes)'));
       }
     }
@@ -100,7 +100,7 @@ Setting up the implementation plan.
         const { execSync } = await import('child_process');
         execSync('git push');
         logger.print(chalk.green('✅ Changes pushed to remote'));
-      } catch (gitError) {
+      } catch (_gitError) {
         logger.print(chalk.yellow('⚠️  Git push failed'));
       }
     }

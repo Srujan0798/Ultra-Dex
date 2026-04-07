@@ -9,7 +9,7 @@ import { streamText } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import { printSuccess, printWarning, printError } from '../utils/output.js';
+import { printWarning, printError } from '../utils/output.js';
 import chalk from 'chalk';
 import ora from './ora.js';
 
