@@ -1,3 +1,4 @@
+import "reflect-metadata";
 // Copyright (c) 2026 Ultra-Dex
 
 /**

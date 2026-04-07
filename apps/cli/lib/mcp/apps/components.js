@@ -5,8 +5,6 @@
  * Provides UI components that can be rendered in MCP-compatible tools
  */
 
-import { printInfo, printSuccess, printWarning } from '../../utils/output.js';
-
 import { AppError } from '../../utils/errors.js';
 import { Logger } from '../../utils/logger.js';
 

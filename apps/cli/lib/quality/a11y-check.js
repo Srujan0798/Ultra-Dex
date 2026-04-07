@@ -21,7 +21,7 @@ const AXE_SCRIPT = `(${function () {
 
   // Simplified axe-core functionality for demonstration
   window.axe = {
-    run: async function (context = document, _options = {}) {
+    run: async function (_context = document, _options = {}) {
       const violations = [];
 
       // Check for common accessibility issues

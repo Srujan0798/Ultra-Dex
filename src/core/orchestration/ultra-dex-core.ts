@@ -4,7 +4,7 @@ import { UnifiedRegistry as AgentRegistry } from '../agents/unified-registry.js'
 import { AgentAutopsy } from '../reliability/agent-autopsy.js';
 import { AgentCoordinationProtocol } from '../protocols/coordination.js';
 import { MCPServerManager } from '../mcp/server-manager.js';
-import { AIProviderRouter } from '../../services/ai-providers/router.js';
+import { SmartAIRouter as AIProviderRouter } from '../ai/router.js';
 import { ObservabilitySystem } from '../system/observability.js';
 import { ConfigManager } from '../system/config-manager.js';
 import { TokenOptimizer } from '../performance/token-optimizer.js';

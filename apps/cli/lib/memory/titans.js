@@ -3,8 +3,6 @@
 import { memoryManager } from '../../../../src/core/agents/memory-manager.js';
 import { summarizeMemory } from './compression.js';
 
-import { printInfo } from '../utils/output.js';
-
 export class TitansMemory {
   async initialize() {
     await memoryManager.initialize();

@@ -6,7 +6,7 @@
  */
 
 import { Client } from '@notionhq/client';
-import { printInfo, printSuccess, printError } from '../utils/output.js';
+import { printSuccess, printError } from '../utils/output.js';
 import { retryWithBackoff } from './utils.js';
 
 export class NotionClient {

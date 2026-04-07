@@ -6,7 +6,6 @@
  */
 
 import { performance } from 'perf_hooks';
-import { Worker, isMainThread, parentPort } from 'worker_threads';
 import { cpus } from 'os';
 import fs from 'fs/promises';
 import path from 'path';

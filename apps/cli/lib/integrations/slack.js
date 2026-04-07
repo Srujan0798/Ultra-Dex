@@ -6,7 +6,7 @@
  */
 
 import crypto from 'crypto';
-import { printInfo, printSuccess, printError } from '../utils/output.js';
+import { printSuccess, printError } from '../utils/output.js';
 import { requireConfig, retryWithBackoff } from './utils.js';
 import FormData from 'form-data';
 import fs from 'fs/promises';

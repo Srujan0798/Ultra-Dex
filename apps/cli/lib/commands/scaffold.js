@@ -12,7 +12,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import inquirer from 'inquirer';
 import { printError, printInfo, printWarning } from '../utils/output.js';
-import { AppError } from '../utils/errors.js';
 import { validateSafePath } from '../utils/validation.js';
 
 const __filename = fileURLToPath(import.meta.url);

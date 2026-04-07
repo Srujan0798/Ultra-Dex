@@ -15,11 +15,10 @@ import WebSocket from "ws";
 import http from "http";
 import express from "express";
 import { createLogger } from '../../utils/logging.js';
-import { HealthChecker } from '../../services/monitoring/health-checker.js';
+import { SystemHealthChecker } from '../system/health-checker.js';
 import { AgentCoordinationProtocol } from '../protocols/coordination.js';
 import { AgentCommunicationBus } from './communication-bus.js';
 import { AgentRegistry } from './registry.js';
-import { PerformanceMetrics } from '../../benchmarks/performance-metrics.js';
 let DistributedCoordinator = class extends EventEmitter {
   constructor(options = {}) {
     super();
@@ -44,15 +43,13 @@ let DistributedCoordinator = class extends EventEmitter {
       ...options
     };
     this.logger = createLogger("DistributedCoordinator");
-    this.healthChecker = new HealthChecker();
+    this.healthChecker = new SystemHealthChecker();
     this.coordinationProtocol = new AgentCoordinationProtocol();
     this.commBus = new AgentCommunicationBus();
     this.registry = options.agentRegistry || new AgentRegistry();
     this.orchestrator = options.orchestrator;
     this.executionEngine = options.executionEngine;
-    if (this.options.enablePerformanceMetrics) {
-      this.performanceMetrics = options.performanceMetrics || new PerformanceMetrics();
-    }
+    this.performanceMetrics = options.performanceMetrics || null;
     this.instanceId = this.options.instanceId;
     this.status = "initializing";
     this.lastHeartbeat = Date.now();

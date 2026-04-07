@@ -14,7 +14,6 @@ import chalk from 'chalk';
 import ora from '../utils/ora.js';
 import { execSync } from 'child_process';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
-import { AppError } from '../utils/errors.js';
 
 const STEPS_21 = [
   {

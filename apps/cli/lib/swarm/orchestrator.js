@@ -289,11 +289,11 @@ export class ConflictResolver {
   /**
    * Lock file for editing
    */
-  async lockFile(file, agent, timeout = 30000) {
+  async lockFile(_file, agent, timeout = 30000) {
     const lockId = `lock-${Date.now()}-${agent}`;
     // In a real implementation, this would use file locks or distributed locks
     return {
-      file,
+      file: _file,
       agent,
       lockId,
       acquired: true,
@@ -304,7 +304,7 @@ export class ConflictResolver {
   /**
    * Unlock file
    */
-  async unlockFile(file, _lockId) {
+  async unlockFile(_file, _lockId) {
     // Release lock
     return true;
   }

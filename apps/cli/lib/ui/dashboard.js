@@ -11,7 +11,7 @@ import fs from 'fs/promises';
 import path from 'path';
 
 import { logger } from '../utils/logger.js';
-import { printInfo, printSuccess, printError } from '../utils/output.js';
+import { printSuccess, printError } from '../utils/output.js';
 import { ConfigManager } from '../utils/config-manager.js';
 
 /**

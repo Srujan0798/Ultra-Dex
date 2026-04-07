@@ -6,7 +6,7 @@ import ora from '../utils/ora.js';
 import path from 'path';
 import { glob } from 'glob';
 import { PredictiveDebugger } from '../predictive/debugger.js';
-import { printInfo, printSuccess, printError } from '../utils/output.js';
+import { printInfo, printError } from '../utils/output.js';
 import { logger } from '../utils/logger.js';
 
 /**
