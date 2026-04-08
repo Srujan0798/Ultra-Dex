@@ -45,7 +45,7 @@ export class ClerkAuthService {
     }
   }
   
-  async login(email: string, password: string): Promise<{ user: User; sessionToken: string }> {
+  async login(email: string, password: string): Promise<{ user: User; token: string }> {
     try {
       // Get user by email
       const users = await clerk.users.getUserList({
@@ -65,7 +65,7 @@ export class ClerkAuthService {
       
       // If no active session, we can't create one from backend
       // Return a token that can be used with Clerk's verification
-      const sessionToken = await this.createSessionToken(clerkUser.id);
+      const token = await this.createSessionToken(clerkUser.id);
       
       const user: User = {
         id: clerkUser.id,
@@ -77,7 +77,7 @@ export class ClerkAuthService {
       
       logger.userLogin(user.id, user.email);
       
-      return { user, sessionToken };
+      return { user, token };
     } catch (error) {
       logger.error('Login failed', { error: String(error), email });
       throw error;
