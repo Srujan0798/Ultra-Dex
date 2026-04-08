@@ -127,6 +127,8 @@ export default [
     rules: {
       'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
       'no-undef': 'error',
+      'no-useless-assignment': 'off',
+      'preserve-caught-error': 'off',
       'no-console': 'off',
       'no-empty': ['warn', { allowEmptyCatch: true }],
       'no-constant-condition': 'warn',
