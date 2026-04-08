@@ -28,7 +28,7 @@ jobs:
         run: npm ci --ignore-scripts --no-audit --fund=false --legacy-peer-deps
 
       - name: Run tests
-        run: npm test
+        run: npm run test:ci
 
       - name: Governance compliance check
         run: node gitFail/compliance/check-governance-files.js
