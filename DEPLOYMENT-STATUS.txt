@@ -39,9 +39,9 @@ Automation:
   scripts/test-clerk-integration.sh - Clerk auth testing
 
 Documentation:
-  PRODUCTION-DEPLOYMENT-GUIDE.md   - Complete deployment guide
+  docs/internal/archive/root-status/PRODUCTION-DEPLOYMENT-GUIDE.md - Complete deployment guide (archive)
   DEPLOYMENT-STATUS.txt            - This file
-  PRODUCTION-SUMMARY.md            - Architecture summary
+  docs/internal/archive/root-status/PRODUCTION-SUMMARY.md          - Architecture summary (archive)
 
 ═══════════════════════════════════════════════════════════════════════════════
 🚀 NEXT STEPS
