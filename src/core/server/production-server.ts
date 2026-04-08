@@ -7,8 +7,9 @@ import * as Sentry from '@sentry/node';
 import { clerkAuthService } from '../auth/clerk-auth-service.js';
 import { billingService } from '../billing/billing-service.js';
 import { webhookHandler } from '../billing/webhook-handler.js';
+import { usageMeter } from '../billing/usage-meter.js';
 import { logAIRequest, logError, logEvent } from '../monitoring/better-stack-logger.js';
-import { requireAuth, requireAdmin, type AuthRequest } from '../auth/middleware.js';
+import { requireAuth, requireAdmin, enforceUsageLimit, type AuthRequest } from '../auth/middleware.js';
 import { monitoring } from '../system/monitoring.js';
 import { posthog } from '../analytics/posthog-client.js';
 import { sentry } from '../analytics/sentry-client.js';
@@ -154,6 +155,20 @@ app.get('/health/ready', (req, res) => {
   });
 });
 
+app.get('/health/deep', (req, res) => {
+  res.json({
+    status: 'ok',
+    checks: {
+      server: 'pass',
+      memory: process.memoryUsage().heapUsed < 500 * 1024 * 1024 ? 'pass' : 'warn',
+      stripe: Boolean(process.env.STRIPE_SECRET_KEY) ? 'configured' : 'missing',
+      clerk: Boolean(process.env.CLERK_SECRET_KEY) ? 'configured' : 'missing',
+      betterStack: Boolean(process.env.BETTER_STACK_SOURCE_TOKEN) ? 'configured' : 'missing'
+    },
+    timestamp: new Date().toISOString()
+  });
+});
+
 // API status
 app.get('/api/status', (req, res) => {
   res.json({
@@ -218,6 +233,18 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+app.post('/api/auth/apikey', requireAuth(), async (req, res) => {
+  try {
+    const authReq = req as AuthRequest;
+    const apiKey = await clerkAuthService.rotateApiKey(authReq.auth!.userId);
+    res.json({ apiKey });
+  } catch (error) {
+    captureExceptionWithContext(error, req);
+    logError('API key rotation failed', error, { path: req.path });
+    res.status(500).json({ error: 'Failed to generate API key' });
+  }
+});
+
 app.get('/api/user/profile', requireAuth(), async (req, res) => {
   const authReq = req as AuthRequest;
   const userId = authReq.auth!.userId;
@@ -252,6 +279,61 @@ app.get('/api/billing/pricing', (req, res) => {
   res.json(billingService.getPricingTiers());
 });
 
+app.post('/api/billing/checkout', requireAuth(), async (req, res) => {
+  try {
+    const authReq = req as AuthRequest;
+    const { tierId } = req.body as { tierId?: string };
+    if (!tierId) {
+      return res.status(400).json({ error: 'Missing tierId' });
+    }
+
+    const baseUrl = process.env.ULTRA_DEX_WEB_URL || 'https://ultra-dex.onrender.com';
+    const successUrl = `${baseUrl}/billing?success=true`;
+    const cancelUrl = `${baseUrl}/billing?canceled=true`;
+    const email = authReq.auth!.email || 'unknown@ultra-dex.com';
+
+    const session = await billingService.createCheckoutSession(
+      authReq.auth!.userId,
+      tierId,
+      email,
+      email,
+      successUrl,
+      cancelUrl
+    );
+
+    res.json(session);
+  } catch (error) {
+    captureExceptionWithContext(error, req);
+    logError('Checkout session creation failed', error, { path: req.path });
+    res.status(400).json({ error: String(error) });
+  }
+});
+
+app.post('/api/billing/portal', requireAuth(), async (req, res) => {
+  try {
+    const authReq = req as AuthRequest;
+    const baseUrl = process.env.ULTRA_DEX_WEB_URL || 'https://ultra-dex.onrender.com';
+    const session = await billingService.createPortalSession(authReq.auth!.userId, `${baseUrl}/billing`);
+    res.json(session);
+  } catch (error) {
+    captureExceptionWithContext(error, req);
+    logError('Portal session creation failed', error, { path: req.path });
+    res.status(400).json({ error: String(error) });
+  }
+});
+
+app.get('/api/billing/invoices', requireAuth(), async (req, res) => {
+  try {
+    const authReq = req as AuthRequest;
+    const invoices = await billingService.listInvoices(authReq.auth!.userId);
+    res.json(invoices);
+  } catch (error) {
+    captureExceptionWithContext(error, req);
+    logError('Invoice retrieval failed', error, { path: req.path });
+    res.status(500).json({ error: 'Failed to fetch invoices' });
+  }
+});
+
 app.post('/api/billing/subscribe', requireAuth(), async (req, res) => {
   const authReq = req as AuthRequest;
   const userId = authReq.auth!.userId;
@@ -275,23 +357,35 @@ app.get('/api/billing/usage', requireAuth(), async (req, res) => {
   const authReq = req as AuthRequest;
   const userId = authReq.auth!.userId;
   
-  const user = await clerkAuthService.validateSession(token);
-  if (!user) return res.status(401).json({ error: 'Invalid session' });
-  attachUserId(req, user.id);
-  
-  const usage = await billingService.getCurrentMonthUsage(user.id);
-  res.json(usage);
+  attachUserId(req, userId);
+
+  const usage = usageMeter.getUsage(userId);
+  const monthlyUsage = await billingService.getCurrentMonthUsage(userId);
+  const subscription = await billingService.getSubscription(userId);
+
+  res.json({
+    requests: usage.requestCount,
+    tokens: usage.tokenCount,
+    agents: usage.agentRunCount,
+    resetAt: usage.resetAt,
+    tier: monthlyUsage.tier,
+    withinLimits: monthlyUsage.withinLimits,
+    subscription: subscription
+      ? {
+          currentPeriodEnd: subscription.currentPeriodEnd,
+          status: subscription.status
+        }
+      : null
+  });
 });
 
-app.post('/api/billing/cancel', async (req, res) => {
-  const token = req.headers.authorization?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ error: 'Unauthorized' });
-  
-  const user = await clerkAuthService.validateSession(token);
-  if (!user) return res.status(401).json({ error: 'Invalid session' });
-  attachUserId(req, user.id);
-  
-  await billingService.cancelSubscription(user.id);
+app.post('/api/billing/cancel', requireAuth(), async (req, res) => {
+  const authReq = req as AuthRequest;
+  const userId = authReq.auth!.userId;
+
+  attachUserId(req, userId);
+
+  await billingService.cancelSubscription(userId);
   res.json({ status: 'canceled' });
 });
 
@@ -317,7 +411,7 @@ app.get('/api/marketplace/plugins', requireAuth(), async (req, res) => {
 });
 
 // Phase 7: Autonomous agent endpoints
-app.post('/api/agents/autonomous/goal', requireAuth(), async (req, res) => {
+app.post('/api/agents/autonomous/goal', requireAuth(), enforceUsageLimit(), async (req, res) => {
   const { autonomousAgent } = await import('../agents/autonomous-agent.js');
   const { description } = req.body;
   const result = await autonomousAgent.setGoal(description);
@@ -325,8 +419,10 @@ app.post('/api/agents/autonomous/goal', requireAuth(), async (req, res) => {
 });
 
 // Phase 8: Multi-modal endpoints
-app.post('/api/multimodal/process', requireAuth(), async (req, res) => {
+app.post('/api/multimodal/process', requireAuth(), enforceUsageLimit(), async (req, res) => {
   const startTime = Date.now();
+  const authReq = req as AuthRequest;
+  const userId = authReq.auth?.userId;
 
   try {
     const { multimodalService } = await import('../multimodal/multimodal-service.js');
@@ -336,14 +432,18 @@ app.post('/api/multimodal/process', requireAuth(), async (req, res) => {
     const model = typeof body.model === 'string' ? body.model : 'unknown';
     const tokens = typeof body.tokens === 'number' ? body.tokens : 0;
     const cost = typeof body.cost === 'number' ? body.cost : 0;
+    const latency = Date.now() - startTime;
+
+    // Expose tokens to the enforceUsageLimit middleware via response header
+    res.setHeader('x-tokens-used', tokens);
 
     logAIRequest({
-      userId: extractUserId(req),
+      userId,
       provider,
       model,
       tokens,
       cost,
-      latency: Date.now() - startTime,
+      latency,
       metadata: {
         path: req.path
       }

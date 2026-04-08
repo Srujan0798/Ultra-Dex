@@ -110,6 +110,7 @@ export interface AuditStats {
 export class AuditLogger {
   private initialized: boolean = false;
   private version: string = '6.0.0';
+  private inMemoryEvents: AuditEvent[] = [];
 
   async initialize(): Promise<void> {
     if (this.initialized) return;
@@ -140,7 +141,7 @@ export class AuditLogger {
 
     // Store in persistent memory
     await ppmManager.add({
-      content: `Audit: ${event.action} on ${event.resource}`,
+      content: `audit:${event.type} ${event.action} on ${event.resource}`,
       type: `audit:${event.type}`,
       importance: this.getImportanceForSeverity(event.severity),
       metadata: {
@@ -150,6 +151,11 @@ export class AuditLogger {
         projectId: event.projectId,
       },
     });
+
+    this.inMemoryEvents.push(auditEvent);
+    if (this.inMemoryEvents.length > 1000) {
+      this.inMemoryEvents.shift();
+    }
 
     // Log to stderr for critical events (avoid self-reference)
     if (event.severity === 'critical' || event.severity === 'error') {
@@ -331,12 +337,14 @@ export class AuditLogger {
       const metadata = result.metadata as { auditEvent?: AuditEvent };
       if (metadata?.auditEvent) {
         const event = metadata.auditEvent;
-
-        // Apply filters
         if (this.matchesFilter(event, filter)) {
           events.push(event);
         }
       }
+    }
+
+    if (events.length === 0 && this.inMemoryEvents.length > 0) {
+      events = this.inMemoryEvents.filter((event) => this.matchesFilter(event, filter));
     }
 
     // Sort by timestamp descending

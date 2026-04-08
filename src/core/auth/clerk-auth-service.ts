@@ -9,7 +9,15 @@ export interface User {
   apiKey: string;
 }
 
+const apiKeyIndex = new Map<string, User>();
+
 export class ClerkAuthService {
+  private indexUser(user: User): void {
+    if (user.apiKey) {
+      apiKeyIndex.set(user.apiKey, user);
+    }
+  }
+
   async register(email: string, password: string, name: string): Promise<{ user: User; message: string }> {
     try {
       // Create user in Clerk
@@ -33,6 +41,7 @@ export class ClerkAuthService {
       };
       
       logger.userSignup(user.id, user.email, 'free');
+      this.indexUser(user);
       
       // Return user - client must authenticate via Clerk's frontend SDK
       return { 
@@ -76,6 +85,7 @@ export class ClerkAuthService {
       };
       
       logger.userLogin(user.id, user.email);
+      this.indexUser(user);
       
       return { user, token };
     } catch (error) {
@@ -108,13 +118,17 @@ export class ClerkAuthService {
       // Get user from Clerk
       const clerkUser = await clerk.users.getUser(userId);
       
-      return {
+      const user: User = {
         id: clerkUser.id,
         email: clerkUser.emailAddresses[0]?.emailAddress || '',
         name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim(),
         tier: (clerkUser.publicMetadata.tier as string) || 'free',
         apiKey: (clerkUser.publicMetadata.apiKey as string) || ''
       };
+
+      this.indexUser(user);
+
+      return user;
     } catch (error) {
       logger.error('Session validation failed', { error: String(error) });
       return null;
@@ -140,7 +154,34 @@ export class ClerkAuthService {
       logger.error('Logout failed', { error: String(error) });
     }
   }
-  
+
+  getUserByApiKey(apiKey: string): User | null {
+    return apiKeyIndex.get(apiKey) || null;
+  }
+
+  async rotateApiKey(userId: string): Promise<string> {
+    const user = await clerk.users.getUser(userId);
+    const existingPublicMetadata = (user.publicMetadata || {}) as Record<string, unknown>;
+    const apiKey = this.generateApiKey();
+
+    await clerk.users.updateUserMetadata(userId, {
+      publicMetadata: {
+        ...existingPublicMetadata,
+        apiKey
+      }
+    });
+
+    this.indexUser({
+      id: userId,
+      email: user.emailAddresses[0]?.emailAddress || '',
+      name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+      tier: (user.publicMetadata.tier as string) || 'free',
+      apiKey
+    });
+
+    return apiKey;
+  }
+
   private generateApiKey(): string {
     const prefix = 'ud_';
     const random = Array.from({ length: 32 }, () => 

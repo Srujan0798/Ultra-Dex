@@ -213,6 +213,33 @@ function formatError(error, command) {
   lines.push(chalk.gray("Or visit: https://github.com/Srujan0798/Ultra-Dex#readme"));
   return lines.join("\n");
 }
+
+/**
+ * Create a structured application error
+ */
+export function createError(code, message, details = {}) {
+  const error = new Error(message);
+  error.code = code;
+  error.details = details;
+  
+  // Assign status codes based on common error codes
+  const statusCodes = {
+    'VALIDATION_ERROR': 400,
+    'AUTHENTICATION_ERROR': 401,
+    'FORBIDDEN': 403,
+    'AUTHORIZATION_ERROR': 403,
+    'NOT_FOUND': 404,
+    'RESOURCE_NOT_FOUND': 404,
+    'CONFLICT': 409,
+    'INTERNAL_ERROR': 500,
+    'SERVICE_UNAVAILABLE': 503,
+    'TIMEOUT_ERROR': 504
+  };
+  
+  error.statusCode = statusCodes[code] || 500;
+  return error;
+}
+
 const RECOVERY_STRATEGIES = {
   /**
    * Retry an operation with exponential backoff and jitter

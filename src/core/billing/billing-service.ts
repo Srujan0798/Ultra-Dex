@@ -14,6 +14,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy', {
 export interface Subscription {
   id: string;
   userId: string;
+  customerId?: string;
   tierId: string;
   status: 'active' | 'canceled' | 'past_due' | 'unpaid';
   currentPeriodStart: Date;
@@ -30,6 +31,7 @@ export interface UsageRecord {
 
 // In-memory stores (replace with database in production)
 const subscriptions = new Map<string, Subscription>();
+const customerIds = new Map<string, string>();
 const usageRecords: UsageRecord[] = [];
 
 export class BillingService {
@@ -48,6 +50,17 @@ export class BillingService {
       throw error;
     }
   }
+
+  private async getOrCreateCustomer(userId: string, email: string, name: string): Promise<string> {
+    const existing = customerIds.get(userId);
+    if (existing) {
+      return existing;
+    }
+
+    const customerId = await this.createCustomer(email, name);
+    customerIds.set(userId, customerId);
+    return customerId;
+  }
   
   async createSubscription(userId: string, tierId: string, customerId: string): Promise<Subscription> {
     const tier = getTierById(tierId);
@@ -63,6 +76,7 @@ export class BillingService {
         const subscription: Subscription = {
           id: `sub_free_${userId}`,
           userId,
+          customerId,
           tierId,
           status: 'active',
           currentPeriodStart: new Date(),
@@ -70,6 +84,7 @@ export class BillingService {
           cancelAtPeriodEnd: false
         };
         subscriptions.set(userId, subscription);
+        customerIds.set(userId, customerId);
         
         logSubscriptionCreated(userId, tierId, subscription.id, { tier: tier.name });
         return subscription;
@@ -94,6 +109,7 @@ export class BillingService {
       const subscription: Subscription = {
         id: stripeSubscription.id,
         userId,
+        customerId,
         tierId,
         status: stripeSubscription.status as any,
         currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
@@ -102,6 +118,7 @@ export class BillingService {
       };
       
       subscriptions.set(userId, subscription);
+      customerIds.set(userId, customerId);
       
       logSubscriptionCreated(userId, tierId, subscription.id, { 
         tier: tier.name,
@@ -127,6 +144,79 @@ export class BillingService {
   
   async getSubscription(userId: string): Promise<Subscription | null> {
     return subscriptions.get(userId) || null;
+  }
+
+  async createCheckoutSession(
+    userId: string,
+    tierId: string,
+    email: string,
+    name: string,
+    successUrl: string,
+    cancelUrl: string
+  ): Promise<{ url: string }> {
+    const tier = getTierById(tierId);
+    if (!tier || tierId === 'free') {
+      throw new Error('Invalid or free tier selected');
+    }
+
+    const priceId = this.getStripePriceId(tierId);
+    if (!priceId) {
+      throw new Error('Stripe price ID not configured for tier: ' + tierId);
+    }
+
+    const customerId = await this.getOrCreateCustomer(userId, email, name);
+    customerIds.set(userId, customerId);
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      customer: customerId,
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      metadata: { userId, tierId },
+      subscription_data: {
+        metadata: { userId, tierId }
+      }
+    });
+
+    if (!session.url) {
+      throw new Error('Stripe checkout session URL missing');
+    }
+
+    return { url: session.url };
+  }
+
+  async createPortalSession(userId: string, returnUrl: string): Promise<{ url: string }> {
+    const subscription = subscriptions.get(userId);
+    const customerId = subscription?.customerId || customerIds.get(userId);
+
+    if (!customerId) {
+      throw new Error('Customer not found for user');
+    }
+
+    const session = await stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: returnUrl
+    });
+
+    return { url: session.url };
+  }
+
+  async listInvoices(userId: string): Promise<Array<{ date: string; amount: number; status: string; pdfUrl?: string }>> {
+    const subscription = subscriptions.get(userId);
+    const customerId = subscription?.customerId || customerIds.get(userId);
+
+    if (!customerId) {
+      return [];
+    }
+
+    const invoices = await stripe.invoices.list({ customer: customerId, limit: 10 });
+    return invoices.data.map((invoice) => ({
+      date: new Date(invoice.created * 1000).toISOString(),
+      amount: invoice.amount_paid || invoice.amount_due,
+      status: invoice.status || 'unknown',
+      pdfUrl: invoice.invoice_pdf || invoice.hosted_invoice_url || undefined
+    }));
   }
   
   async cancelSubscription(userId: string): Promise<void> {

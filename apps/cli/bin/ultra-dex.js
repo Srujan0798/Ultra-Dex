@@ -13,10 +13,14 @@ const envLocalPath = path.join(projectRoot, '.env.local');
 const envPath = path.join(projectRoot, '.env');
 
 const dotenv = require('dotenv');
-if (fs.existsSync(envLocalPath)) {
-  dotenv.config({ path: envLocalPath, override: true });
-} else {
-  dotenv.config({ path: envPath, override: true });
+const shouldLoadDotenv =
+  process.env.ULTRA_DEX_LOAD_DOTENV === '1' || process.env.NODE_ENV !== 'test';
+if (shouldLoadDotenv) {
+  if (fs.existsSync(envLocalPath)) {
+    dotenv.config({ path: envLocalPath, override: true });
+  } else {
+    dotenv.config({ path: envPath, override: true });
+  }
 }
 
 const args = process.argv.slice(2);

@@ -69,18 +69,25 @@ export class EncryptionService {
 
     // Initialize master key
     if (masterKeyHex) {
-      this.masterKey = Buffer.from(masterKeyHex, 'hex');
+      const normalizedKey = masterKeyHex.trim();
+      const isHexKey = /^[0-9a-fA-F]+$/.test(normalizedKey);
+
+      this.masterKey =
+        isHexKey && normalizedKey.length === KEY_LENGTH * 2
+          ? Buffer.from(normalizedKey, 'hex')
+          : crypto.createHash('sha256').update(normalizedKey).digest();
     } else {
       // Generate master key if not provided (in production, this should come from KMS)
       this.masterKey = crypto.randomBytes(KEY_LENGTH);
       console.warn('⚠️ Generated new master key - in production, use external KMS');
     }
 
+    this.initialized = true;
+
     // Generate initial data encryption key
     await this.generateKey('data');
 
     console.log('✓ Encryption service initialized');
-    this.initialized = true;
   }
 
   /**

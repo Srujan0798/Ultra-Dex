@@ -12,10 +12,13 @@ import {
   BarChart3,
   Activity,
   Package,
+  CreditCard,
+  Sparkles,
 } from 'lucide-react';
 
 const navItems = [
   { path: '/', label: 'Overview', icon: LayoutDashboard },
+  { path: '/onboarding', label: 'Onboarding', icon: Sparkles },
   { path: '/memory', label: 'Memory', icon: Brain },
   { path: '/agents', label: 'Agents', icon: Bot },
   { path: '/tasks', label: 'Tasks', icon: ListTodo },
@@ -23,6 +26,7 @@ const navItems = [
   { path: '/marketplace', label: 'Marketplace', icon: Package },
   { path: '/analytics', label: 'Analytics', icon: BarChart3 },
   { path: '/traces', label: 'Traces', icon: Activity },
+  { path: '/billing', label: 'Billing', icon: CreditCard },
   { path: '/settings', label: 'Settings', icon: SettingsIcon },
   { path: '/hologram', label: 'Hologram', icon: Box },
 ];

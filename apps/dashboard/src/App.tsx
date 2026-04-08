@@ -1,12 +1,12 @@
 import React, { Suspense, lazy, memo, useEffect, useState } from 'react';
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { OnboardingTour } from './components/OnboardingTour';
 import { useWebSocket } from './hooks/useWebSocket';
 import { trackPageView } from './lib/analytics';
-import { isAuthenticated, hasRole, getCurrentUser } from './lib/api';
+import { hasRole, isAuthenticated } from './lib/api';
 
 const OverviewPage = lazy(() =>
   import('./pages/Overview').then((module) => ({ default: module.Overview }))
@@ -38,6 +38,15 @@ const MarketplacePage = lazy(() =>
   import('./pages/Marketplace').then((module) => ({ default: module.Marketplace }))
 );
 const LoginPage = lazy(() => import('./pages/Login').then((module) => ({ default: module.Login })));
+const BillingPage = lazy(() =>
+  import('./pages/Billing').then((module) => ({ default: module.Billing }))
+);
+const LandingPage = lazy(() =>
+  import('./pages/Landing').then((module) => ({ default: module.Landing }))
+);
+const OnboardingPage = lazy(() =>
+  import('./pages/Onboarding').then((module) => ({ default: module.Onboarding }))
+);
 
 function RouteTracker() {
   const location = useLocation();
@@ -73,7 +82,11 @@ function AppShell() {
   if (!authenticated) {
     return (
       <Suspense fallback={<RouteFallback />}>
-        <LoginPage />
+        <Routes>
+          <Route path="/landing" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="*" element={<Navigate to="/landing" replace />} />
+        </Routes>
       </Suspense>
     );
   }
@@ -104,7 +117,11 @@ function AppShell() {
                 <Route path="/analytics" element={<AnalyticsPage />} />
                 <Route path="/marketplace" element={<MarketplacePage />} />
                 <Route path="/traces" element={<TracesPage />} />
+                <Route path="/billing" element={<BillingPage />} />
+                <Route path="/onboarding" element={<OnboardingPage />} />
+                <Route path="/landing" element={<LandingPage />} />
                 <Route path="/hologram" element={<HologramPage />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Suspense>
           </main>

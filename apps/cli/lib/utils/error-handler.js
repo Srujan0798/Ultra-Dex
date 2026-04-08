@@ -477,9 +477,32 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/**
+ * Create a typed error with code for governance/approval workflows
+ * @param {string} code - Error code (e.g., 'FORBIDDEN', 'VALIDATION_ERROR')
+ * @param {string} message - Error message
+ * @returns {Error} Error object with code property
+ */
+function createError(code, message) {
+  const error = new Error(message);
+  error.code = code;
+  error.name = `${code}Error`;
+  return error;
+}
+
+// Named export for errorHandler object
+export const errorHandler = {
+  handleError,
+  withErrorHandling,
+  formatError,
+  createError,
+  RECOVERY_STRATEGIES,
+};
+
 export default {
   handleError,
   withErrorHandling,
   formatError,
+  createError,
   RECOVERY_STRATEGIES,
 };

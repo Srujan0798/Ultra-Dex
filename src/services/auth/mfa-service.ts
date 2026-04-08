@@ -12,7 +12,7 @@ import qrcode from 'qrcode';
 import { v4 as uuidv4 } from 'uuid';
 import { ppmManager } from '../../core/memory/manager.js';
 import { auditLogger } from '../audit/audit-logger.js';
-import { errorHandler } from '../../../apps/cli/lib/utils/error-handler.js';
+import errorHandler from '../../../apps/cli/lib/utils/error-handler.js';
 
 export type MFAType = 'totp' | 'sms' | 'email';
 export type MFAStatus = 'enabled' | 'disabled' | 'pending';
