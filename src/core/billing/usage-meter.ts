@@ -5,6 +5,7 @@
 
 import { getTierById, PricingTier } from './pricing-tiers.js';
 import { logError, logEvent } from '../monitoring/better-stack-logger.js';
+import { getRedisClient } from './redis-client.js';
 
 export interface UsageCounter {
   requestCount: number;
@@ -210,6 +211,23 @@ export class UsageMeter {
         agentRuns: counter.agentRunCount
       }
     });
+
+    // Persist increments to Redis if available (fire-and-forget)
+    (async () => {
+      try {
+        const client = await getRedisClient();
+        if (!client) return;
+        const key = `usage:${userId}:${counter.resetAt.toISOString().slice(0,10)}`; // day-keyed
+        if (usage.requests) await client.hIncrBy(key, 'requestCount', usage.requests);
+        if (usage.tokens) await client.hIncrBy(key, 'tokenCount', usage.tokens);
+        if (usage.agentRuns) await client.hIncrBy(key, 'agentRunCount', usage.agentRuns);
+        await client.hSet(key, 'resetAt', counter.resetAt.toISOString());
+        const ttl = Math.max(60, Math.floor((counter.resetAt.getTime() - Date.now()) / 1000));
+        await client.expire(key, ttl);
+      } catch (err) {
+        logError('Failed to persist usage to Redis', err as Error, { userId });
+      }
+    })();
   }
 
   /**

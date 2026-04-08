@@ -1,27 +1,34 @@
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __decorateClass = (decorators, target, key, kind) => {
-  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
-  for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
-      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
-  return result;
-};
-import { singleton } from "tsyringe";
+import { singleton, inject } from "tsyringe";
 import { logger } from '../../utils/logging.js';
 import { performance } from "perf_hooks";
 import { RateLimiter } from '../infrastructure/rate-limiter.js';
 import { StreamPipeline } from '../infrastructure/stream-pipeline.js';
+import { RedisCache } from '../cache/redis-cache.js';
 import {
   registerAlias,
   registerSingleton,
   resolveFromContainer
 } from '../di/container.js';
 import { DI_TOKENS } from '../di/tokens.js';
+
+interface BatchRequest {
+  model: string;
+  messages: any[];
+  options: any;
+  resolve: (value: any) => void;
+  reject: (reason?: any) => void;
+}
+
 let AIMetaLayer = class {
-  constructor(config = {}) {
+  private batchQueue: BatchRequest[] = [];
+  private batchTimer: NodeJS.Timeout | null = null;
+  private readonly batchWindowMs = 50;
+  private readonly maxBatchSize = 10;
+
+  constructor(
+    @inject(DI_TOKENS.RedisCache) private redisCache?: RedisCache,
+    config: any = {}
+  ) {
     this.providers = /* @__PURE__ */ new Map();
     this.activeProvider = null;
     this.config = {
@@ -30,6 +37,7 @@ let AIMetaLayer = class {
       enableFallback: config.enableFallback !== false,
       enableCaching: config.enableCaching !== false,
       enableMonitoring: config.enableMonitoring !== false,
+      enableBatching: config.enableBatching || false,
       ...config
     };
     this.metrics = {
@@ -41,7 +49,7 @@ let AIMetaLayer = class {
       cacheHits: 0,
       cacheMisses: 0
     };
-    this.cache = /* @__PURE__ */ new Map();
+    this.cache = /* @__PURE__ */ new Map(); // Local fallback cache
     this.cacheExpiry = config.cacheExpiry || 3e5;
     this.mockMode = config.mockMode || process.env.MOCK_AI === "true";
     this.rateLimiter = config.rateLimiter instanceof RateLimiter ? config.rateLimiter : config.rateLimiter ? new RateLimiter(config.rateLimiter) : null;
@@ -230,12 +238,21 @@ let AIMetaLayer = class {
    * Main method to call AI providers with unified interface
    */
   async call(model, messages, options = {}) {
+    if (this.config.enableBatching && !options.noBatch) {
+      return new Promise((resolve, reject) => {
+        this.addToBatchQueue({ model, messages, options, resolve, reject });
+      });
+    }
+    return this.executeCall(model, messages, options);
+  }
+
+  private async executeCall(model, messages, options = {}) {
     const startTime = performance.now();
     this.metrics.totalRequests++;
     try {
       const cacheKey = this.generateCacheKey(model, messages, options);
       if (this.config.enableCaching) {
-        const cachedResult = this.getFromCache(cacheKey);
+        const cachedResult = await this.getFromCache(cacheKey);
         if (cachedResult) {
           this.metrics.cacheHits++;
           this.metrics.successfulRequests++;
@@ -254,7 +271,7 @@ let AIMetaLayer = class {
       const providerName = this.getProviderName(provider) || this.config.defaultProvider;
       const result = await this.executeProviderCall(providerName, provider, model, messages, options);
       if (this.config.enableCaching) {
-        this.putInCache(cacheKey, result);
+        await this.putInCache(cacheKey, result);
       }
       this.metrics.successfulRequests++;
       this.updateMetrics(startTime, result.usage);
@@ -281,6 +298,43 @@ let AIMetaLayer = class {
       throw error;
     }
   }
+
+  private addToBatchQueue(request: BatchRequest) {
+    this.batchQueue.push(request);
+    
+    if (this.batchQueue.length >= this.maxBatchSize) {
+      this.processBatch();
+    } else if (!this.batchTimer) {
+      this.batchTimer = setTimeout(() => this.processBatch(), this.batchWindowMs);
+    }
+  }
+
+  private async processBatch() {
+    if (this.batchTimer) {
+      clearTimeout(this.batchTimer);
+      this.batchTimer = null;
+    }
+
+    if (this.batchQueue.length === 0) return;
+
+    const currentBatch = [...this.batchQueue];
+    this.batchQueue = [];
+
+    logger.info(`Processing AI request batch of size ${currentBatch.length}`);
+
+    // Process each request in the batch
+    // In a real implementation, some providers support actual batch APIs
+    // Here we parallelize them but could combine them if the provider supports it
+    await Promise.all(currentBatch.map(async (req) => {
+      try {
+        const result = await this.executeCall(req.model, req.messages, { ...req.options, noBatch: true });
+        req.resolve(result);
+      } catch (error) {
+        req.reject(error);
+      }
+    }));
+  }
+
   /**
    * Call with fallback to other providers
    */
@@ -425,9 +479,14 @@ let AIMetaLayer = class {
       hash = (hash << 5) - hash + char;
       hash |= 0;
     }
-    return hash.toString();
+    return `ai_cache:${hash.toString()}`;
   }
-  getFromCache(key) {
+  async getFromCache(key) {
+    if (this.redisCache) {
+      const cached = await this.redisCache.get(key);
+      if (cached) return JSON.parse(cached);
+    }
+    
     const cached = this.cache.get(key);
     if (cached && Date.now() - cached.timestamp < this.cacheExpiry) {
       return cached.value;
@@ -435,7 +494,11 @@ let AIMetaLayer = class {
     this.cache.delete(key);
     return null;
   }
-  putInCache(key, value) {
+  async putInCache(key, value) {
+    if (this.redisCache) {
+      await this.redisCache.set(key, JSON.stringify(value), Math.floor(this.cacheExpiry / 1000));
+    }
+    
     this.cache.set(key, {
       value,
       timestamp: Date.now()
@@ -492,7 +555,7 @@ let AIMetaLayer = class {
       messageCount,
       responseTime: Math.round(responseTime),
       tokens: result.usage?.totalTokens,
-      provider: this.selectProvider({ metadata: { model } }),
+      provider: this.selectProvider({ metadata: { model } })?.defaultModel,
       timestamp: (/* @__PURE__ */ new Date()).toISOString()
     });
   }
@@ -521,7 +584,7 @@ let AIMetaLayer = class {
 AIMetaLayer = __decorateClass([
   singleton()
 ], AIMetaLayer);
-registerSingleton(AIMetaLayer, () => new AIMetaLayer());
+registerSingleton(AIMetaLayer, () => resolveFromContainer(AIMetaLayer));
 registerAlias(DI_TOKENS.aiMetaLayer, AIMetaLayer);
 const aiMetaLayer = resolveFromContainer(AIMetaLayer);
 var ai_meta_layer_default = aiMetaLayer;

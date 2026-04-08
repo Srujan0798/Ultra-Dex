@@ -6,6 +6,7 @@
 import Stripe from 'stripe';
 import { clerk } from '../auth/clerk-client.js';
 import { usageMeter } from './usage-meter.js';
+import { getRedisClient } from './redis-client.js';
 import { 
   logSubscriptionCreated, 
   logPaymentSucceeded, 
@@ -75,7 +76,22 @@ export class WebhookHandler {
    * Handle webhook event with idempotency
    */
   async handleEvent(event: Stripe.Event): Promise<void> {
-    // Check if event already processed (idempotency)
+    // Check idempotency using Redis if available, fallback to in-memory Set
+    const redisClient = await getRedisClient();
+    const redisKey = `stripe:processed:${event.id}`;
+    try {
+      if (redisClient) {
+        const exists = await redisClient.get(redisKey);
+        if (exists) {
+          logEvent('webhook_duplicate', { eventId: event.id, type: event.type });
+          return;
+        }
+      }
+    } catch (err) {
+      logError('Redis idempotency check failed', err as Error, { eventId: event.id });
+      // fall through to in-memory check
+    }
+
     if (processedEvents.has(event.id)) {
       logEvent('webhook_duplicate', { eventId: event.id, type: event.type });
       return;
@@ -83,10 +99,17 @@ export class WebhookHandler {
 
     try {
       await this.dispatchEvent(event);
-      
-      // Mark as processed
+
+      // Mark as processed (Redis with TTL if available)
+      try {
+        if (redisClient) {
+          await redisClient.set(redisKey, '1', { EX: 7 * 24 * 60 * 60 });
+        }
+      } catch (err) {
+        logError('Failed to set Redis processed event', err as Error, { eventId: event.id });
+      }
       processedEvents.add(event.id);
-      
+
       logEvent('webhook_processed', { 
         eventId: event.id, 
         type: event.type,
