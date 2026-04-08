@@ -1,113 +1,171 @@
-# Ultra-Dex v3.1.0
+# Ultra-Dex v3.0.0
 
-AI orchestration meta-layer for multi-provider model routing, autonomous agent execution, persistent memory, and enterprise governance.
+> AI orchestration meta-layer — route tasks across 17+ providers, coordinate autonomous agent swarms, and maintain persistent memory with semantic search.
 
+[![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)](https://github.com/Srujan0798/Ultra-Dex)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Node](https://img.shields.io/badge/node-%3E%3D22.12.0-brightgreen.svg)](https://nodejs.org/)
+[![Node](https://img.shields.io/badge/node-%3E%3D22.0.0-brightgreen.svg)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue.svg)](tsconfig.json)
 
-## Product summary
+Ultra-Dex is the **connective tissue between AI models, memory, and tools**. It coordinates multiple AI providers, manages agent swarms with enterprise governance, and provides persistent memory across distributed nodes.
 
-Ultra-Dex gives one control plane for AI-heavy engineering workflows:
+## ✨ Features
 
-- Selects the best provider/model per request (cost, latency, capability).
-- Runs single-agent and multi-agent execution patterns.
-- Tracks context with tiered memory (instant, session, persistent).
-- Enforces governance, auditability, and production controls.
-- Exposes CLI + API + dashboard surfaces for operators and builders.
+- **Multi-Provider Semantic Routing** — Automatically route tasks to the best model (OpenAI, Anthropic, DeepSeek, etc.) based on cost, latency, and capability requirements.
+- **Autonomous Agent Swarms** — Capability-based agent selection with self-healing loops, distributed mesh scaling, and sandboxed execution environments.
+- **Tiered Persistent Memory** — Intelligent memory management (Instant → Session → Persistent) with vector-based semantic search and graph-based relationship mapping.
+- **Enterprise Governance & Audit** — Comprehensive policy enforcement, full audit trails for all AI interactions, and multi-tenant security isolation.
+- **Distributed Mesh Infrastructure** — Horizontal scaling across regions using Redis or Kafka message buses, ensuring high availability for global agent deployments.
+- **MCP & Plugin Ecosystem** — Full support for the Model Context Protocol (MCP) with a plugin marketplace for extending agent capabilities with third-party tools.
 
-## Core capabilities
+## 🏗️ Architecture
 
-| Capability | What you get | Primary implementation |
-| --- | --- | --- |
-| AI routing | Provider/model selection with fallback and caching | `src/core/ai/`, `src/services/ai-providers/` |
-| Agent orchestration | Task decomposition, role execution, autonomous loops | `src/core/orchestration/`, `src/core/agents/` |
-| Memory system | Persistent context and retrieval across workflows | `src/core/memory/` |
-| Governance | Policy checks, constraints, audit events | `src/core/governance/` |
-| Billing/metering | Usage tracking + Stripe webhook lifecycle | `src/core/billing/` |
+```mermaid
+graph TD
+    subgraph Client Layer
+        CLI[CLI Tool]
+        Dash[Web Dashboard]
+        API[REST/WebSocket API]
+    end
 
-## Quick start (local)
+    subgraph Orchestration Meta-Layer
+        Router[Semantic Router]
+        Swarm[Agent Swarm Manager]
+        Memory[Persistent Memory Tier]
+        Gov[Governance & Policy]
+    end
 
-### Prerequisites
+    subgraph Infrastructure
+        Mesh[Distributed Mesh Bus - Redis/Kafka]
+        Sandbox[Docker/WASM Sandbox]
+        MCP[MCP Server Registry]
+    end
 
-- Node.js `22.12+` (or `20.19+`)
-- npm `10+`
+    subgraph AI Providers
+        OpenAI[OpenAI]
+        Anthropic[Anthropic]
+        Google[Google Gemini]
+        DeepSeek[DeepSeek R1/V3]
+        Mistral[Mistral/Mixtral]
+        Local[Local Models - Ollama/Llama.cpp]
+        Other[12+ More Providers]
+    end
 
-### Setup
-
-```bash
-npm install
-cp .env.example .env
-npm run build
-npm run start:server
+    CLI --> Router
+    Dash --> API
+    API --> Router
+    Router --> Swarm
+    Swarm --> Sandbox
+    Swarm --> MCP
+    Swarm --> Memory
+    Router --> Mesh
+    Swarm --> AI Providers
+    Memory --> Mesh
 ```
 
-Server default: `http://localhost:3000`
+## 🚀 Quick Start
 
-## Essential commands
-
-| Command | Purpose |
-| --- | --- |
-| `npm start` | Run CLI from built output |
-| `npm run dev` | Dev/watch mode |
-| `npm run build` | Build core + CLI + dashboard |
-| `npm run lint` | Lint checks |
-| `npm run typecheck` | Type checks |
-| `npm test` | Full tests (core + integration + CLI) |
-| `npm run start:server` | Start production Express server entrypoint |
-
-## Minimal environment configuration
-
-At least one provider key is required:
+### Installation
 
 ```bash
-OPENAI_API_KEY=...
-# or ANTHROPIC_API_KEY / GOOGLE_API_KEY / etc.
+# Install globally
+npm install -g @ultra-dex/cli
+
+# Or initialize a project locally
+npx ultra-dex init my-agent-project
 ```
 
-Common production values:
+### Configure Providers
+
+Ultra-Dex supports 17+ AI providers. Set your API keys in a `.env` file or via the CLI:
 
 ```bash
-NODE_ENV=production
+# Interactive configuration wizard
+ultra-dex config --wizard
+```
+
+### Run Your First Task
+
+```bash
+# Execute a single task with the best available model
+ultra-dex run "Analyze this codebase for security vulnerabilities"
+
+# Start an autonomous swarm for complex engineering tasks
+ultra-dex swarm "Build a production-ready authentication system"
+```
+
+## 🤖 Supported Providers
+
+Ultra-Dex provides a unified interface for the following AI providers:
+
+| Provider | Status | Models Supported |
+| :--- | :--- | :--- |
+| **OpenAI** | ✅ Production | GPT-4o, GPT-4 Turbo, o1-preview |
+| **Anthropic** | ✅ Production | Claude 3.5 Sonnet, 3 Opus, 3 Haiku |
+| **DeepSeek** | ✅ Production | DeepSeek-V3, DeepSeek-R1 |
+| **Google** | ✅ Production | Gemini 1.5 Pro, Flash |
+| **Mistral** | ✅ Production | Mistral Large, Mixtral 8x22B |
+| **Groq** | ✅ Production | Llama 3 70B, Mixtral 8x7B (Ultra-fast) |
+| **Local / Ollama** | ✅ Production | Llama 3.1, Phi-3, Qwen 2 |
+| **Others** | ✅ Active | Cohere, Together, Yi, Zhipu, Kimi |
+
+## 💻 CLI Reference
+
+| Command | Description |
+| :--- | :--- |
+| `ultra-dex init` | Initialize a new workspace and configuration. |
+| `ultra-dex run` | Execute a task using the semantic router. |
+| `ultra-dex swarm` | Launch an autonomous agent swarm. |
+| `ultra-dex config` | Manage API keys and system settings. |
+| `ultra-dex doctor` | Diagnose system health and provider connectivity. |
+| `ultra-dex serve` | Launch the API server and management dashboard. |
+| `ultra-dex generate`| Generate code, assets, or documentation. |
+| `ultra-dex quality` | Run quality gates and project-wide linting. |
+
+Run `ultra-dex --help` for a full list of commands and options.
+
+## ⚙️ Configuration
+
+Create a `.env` file in your project root:
+
+```bash
+# --- AI Providers ---
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
+DEEPSEEK_API_KEY=sk-...
+GOOGLE_GENERATIVE_AI_API_KEY=...
+
+# --- Infrastructure ---
 PORT=3000
-REDIS_URL=redis://127.0.0.1:6379
+NODE_ENV=production
+BUS_TYPE=redis # 'redis' or 'kafka'
+REDIS_URL=redis://localhost:6379
+
+# --- Features ---
+ENABLE_SANDBOX=true
+LOG_LEVEL=info
 ```
 
-Billing/auth stack (optional unless enabled):
+For advanced configuration including K8s deployment and mesh scaling, see the [Configuration Guide](docs/DEPLOYMENT.md).
 
-```bash
-CLERK_SECRET_KEY=...
-STRIPE_SECRET_KEY=...
-STRIPE_WEBHOOK_SECRET=...
-```
+## 📚 Documentation
 
-## Documentation map
+Detailed documentation is available in the `docs/` directory:
 
-| If you need | Read |
-| --- | --- |
-| Full docs index | `docs/README.md` |
-| Architecture overview | `docs/ARCHITECTURE.md` |
-| API reference | `docs/API.md` |
-| Deployment details | `docs/DEPLOYMENT.md` |
-| Operations and runbook | `docs/OPERATIONS.md` |
-| Security policy | `SECURITY.md` |
-| Contribution workflow | `CONTRIBUTING.md` |
+- [**Architecture**](docs/ARCHITECTURE.md) — Deep dive into the meta-layer design.
+- [**Deployment**](docs/DEPLOYMENT.md) — Production setup, Docker, and Kubernetes.
+- [**API Reference**](docs/API.md) — REST and WebSocket API documentation.
+- [**Operations**](docs/OPERATIONS.md) — Monitoring, scaling, and maintenance.
+- [**Agent Integration**](docs/AGENT_INTEGRATION_GUIDE.md) — Building custom agents.
 
-## Repository structure
+## 🤝 Contributing
 
-| Path | Responsibility |
-| --- | --- |
-| `apps/` | CLI and dashboard applications |
-| `src/core/` | Orchestration, memory, governance, billing, server |
-| `src/services/` | Provider and service integrations |
-| `tests/` | Unit, integration, and CLI tests |
-| `docs/` | Product, operator, and internal documentation |
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for our development workflow and code standards.
 
-## Notes on archived docs
+## 📄 License
 
-Historical milestone/handoff root documents are preserved in:
+MIT — see [LICENSE](LICENSE)
 
-`docs/internal/archive/root-status/`
+---
 
-## License
-
-MIT — see [LICENSE](LICENSE).
+**Ultra-Dex v3.0.0** — The Diamond State of AI Orchestration.
