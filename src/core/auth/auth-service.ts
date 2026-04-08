@@ -1,65 +1,119 @@
 import { User, UserCredentials, UserSession, createNewUser } from './user-model.js';
+import { clerkClient } from '@clerk/clerk-sdk-node';
+import { logUserSignup, logUserLogin, logError } from '../monitoring/better-stack-logger.js';
 
-// In-memory user store (replace with database in production)
+// In-memory user store for API keys and usage (Clerk handles auth)
 const users = new Map<string, User>();
 const sessions = new Map<string, UserSession>();
 
 export class AuthService {
   async register(email: string, password: string, name: string): Promise<{ user: User; session: UserSession }> {
-    // Check if user exists
-    const existing = Array.from(users.values()).find(u => u.email === email);
-    if (existing) {
-      throw new Error('User already exists');
+    try {
+      // Create user in Clerk
+      const clerkUser = await clerkClient.users.createUser({
+        emailAddress: [email],
+        password,
+        firstName: name.split(' ')[0],
+        lastName: name.split(' ').slice(1).join(' ') || undefined,
+      });
+
+      // Create local user record
+      const user = createNewUser(email, name);
+      user.id = clerkUser.id; // Use Clerk's ID
+      users.set(user.id, user);
+
+      // Create Clerk session
+      const clerkSession = await clerkClient.sessions.createSession({
+        userId: clerkUser.id,
+      });
+
+      const session: UserSession = {
+        userId: user.id,
+        token: clerkSession.id,
+        expiresAt: new Date(clerkSession.expireAt),
+        createdAt: new Date(clerkSession.createdAt)
+      };
+      sessions.set(session.token, session);
+
+      // Log signup event
+      logUserSignup(user.id, email, { name });
+
+      return { user, session };
+    } catch (error) {
+      logError('User registration failed', error as Error, { email });
+      throw new Error('User registration failed: ' + (error as Error).message);
     }
-    
-    // Create user
-    const user = createNewUser(email, name);
-    users.set(user.id, user);
-    
-    // Create session
-    const session: UserSession = {
-      userId: user.id,
-      token: crypto.randomUUID(),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-      createdAt: new Date()
-    };
-    sessions.set(session.token, session);
-    
-    return { user, session };
   }
   
   async login(email: string, password: string): Promise<{ user: User; session: UserSession }> {
-    // Find user
-    const user = Array.from(users.values()).find(u => u.email === email);
-    if (!user) {
+    try {
+      // Get user from Clerk by email
+      const clerkUsers = await clerkClient.users.getUserList({ emailAddress: [email] });
+      const clerkUser = clerkUsers.data[0];
+      
+      if (!clerkUser) {
+        throw new Error('Invalid credentials');
+      }
+
+      // Create Clerk session
+      const clerkSession = await clerkClient.sessions.createSession({
+        userId: clerkUser.id,
+      });
+
+      // Get or create local user record
+      let user = users.get(clerkUser.id);
+      if (!user) {
+        user = createNewUser(
+          clerkUser.emailAddresses[0]?.emailAddress || email,
+          `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim() || 'User'
+        );
+        user.id = clerkUser.id;
+        users.set(user.id, user);
+      }
+
+      const session: UserSession = {
+        userId: user.id,
+        token: clerkSession.id,
+        expiresAt: new Date(clerkSession.expireAt),
+        createdAt: new Date(clerkSession.createdAt)
+      };
+      sessions.set(session.token, session);
+
+      // Log login event
+      logUserLogin(user.id, email);
+
+      return { user, session };
+    } catch (error) {
+      logError('User login failed', error as Error, { email });
       throw new Error('Invalid credentials');
     }
-    
-    // In production: verify password hash
-    // For now: simple check
-    
-    // Create session
-    const session: UserSession = {
-      userId: user.id,
-      token: crypto.randomUUID(),
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      createdAt: new Date()
-    };
-    sessions.set(session.token, session);
-    
-    return { user, session };
   }
   
   async validateSession(token: string): Promise<User | null> {
-    const session = sessions.get(token);
-    if (!session || session.expiresAt < new Date()) {
+    try {
+      // Validate session with Clerk
+      const clerkSession = await clerkClient.sessions.getSession(token);
+      
+      if (!clerkSession || clerkSession.status !== 'active') {
+        return null;
+      }
+
+      // Get local user record
+      const user = users.get(clerkSession.userId);
+      return user || null;
+    } catch (error) {
       return null;
     }
-    return users.get(session.userId) || null;
   }
   
   async logout(token: string): Promise<void> {
-    sessions.delete(token);
+    try {
+      // Revoke Clerk session
+      await clerkClient.sessions.revokeSession(token);
+      sessions.delete(token);
+    } catch (error) {
+      logError('Logout failed', error as Error, { token });
+    }
   }
   
   async getUserByApiKey(apiKey: string): Promise<User | null> {
