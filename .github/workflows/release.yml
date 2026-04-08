@@ -39,7 +39,8 @@ jobs:
             --external:ink \
             --external:ink-spinner \
             --external:@modelcontextprotocol/sdk \
-            --external:neo4j-driver
+            --external:neo4j-driver \
+            --external:kafkajs
 
       - name: Verify bundle exists
         run: |
