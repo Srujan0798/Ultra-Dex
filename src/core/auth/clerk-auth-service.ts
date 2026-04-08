@@ -151,3 +151,5 @@ export class ClerkAuthService {
 }
 
 export const clerkAuthService = new ClerkAuthService();
+// Deploy timestamp: $(date +%s)
+// Force refresh: v3.0.1
