@@ -1,10 +1,13 @@
+# Render Deployment Configuration
 services:
   - type: web
     name: ultra-dex
     runtime: node
-    plan: standard
-    buildCommand: npm install && npm run build
-    startCommand: node --import=tsx src/core/server/production-server.ts
+    plan: free
+    region: oregon
+    buildCommand: npm ci && npm run build:core && npm run build:cli
+    startCommand: npm run start:prod
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production
@@ -14,9 +17,19 @@ services:
         value: memory
       - key: LOG_LEVEL
         value: info
-      - key: OPENAI_API_KEY
+      - key: CLERK_PUBLISHABLE_KEY
         sync: false
-      - key: ANTHROPIC_API_KEY
+      - key: CLERK_SECRET_KEY
         sync: false
-    healthCheckPath: /health
-    autoDeploy: true
+      - key: BETTER_STACK_SOURCE_TOKEN
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: NVIDIA_API_KEY
+        sync: false

@@ -37,7 +37,7 @@
 **Task:** Complete Better Stack setup with logging
 
 ```bash
-claude --model sonnet --effort high \
+claude --model sonnet --effort high -p \
   "Ultra-Dex deployed at https://ultra-dex.onrender.com
 
    Better Stack is already monitoring uptime. Now complete the integration:
@@ -66,7 +66,7 @@ claude --model sonnet --effort high \
 **Task:** Replace in-memory auth with Clerk
 
 ```bash
-claude --model sonnet --effort high \
+claude --model sonnet --effort high -p \
   "Integrate Clerk authentication into Ultra-Dex.
 
    Current: src/core/auth/auth-service.ts uses in-memory Map
