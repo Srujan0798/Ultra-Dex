@@ -191,6 +191,7 @@ export function enforceUsageLimit() {
           error: 'LIMIT_EXCEEDED',
           plan,
           remaining: 0,
+          reason: limit.reason || 'Usage limit exceeded',
           resetAt: limit.resetAt instanceof Date ? limit.resetAt.toISOString() : new Date(limit.resetAt).toISOString()
         });
         return;
@@ -199,6 +200,9 @@ export function enforceUsageLimit() {
       // After response finishes, record usage (reads tokens from x-tokens-used header)
       res.on('finish', () => {
         try {
+          // Only count successful requests.
+          if (res.statusCode >= 400) return;
+
           let tokens = 0;
           const header = res.getHeader('x-tokens-used');
           if (typeof header === 'string') tokens = parseInt(header, 10) || 0;
