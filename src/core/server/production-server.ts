@@ -395,3 +395,12 @@ app.get('/api/test-token', async (req, res) => {
   const testToken = Buffer.from('test:user:123456').toString('base64');
   res.json({ token: testToken, timestamp: Date.now() });
 });
+
+// Debug endpoint - shows running version
+app.get('/api/debug/version', (req, res) => {
+  res.json({ 
+    version: '3.0.1-test',
+    commit: 'test-deploy',
+    timestamp: Date.now()
+  });
+});
