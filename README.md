@@ -1,70 +1,112 @@
 # Ultra-Dex v3.1.0
 
-AI orchestration meta-layer for routing model calls, coordinating multi-agent execution, and preserving long-term memory.
+AI orchestration meta-layer for multi-provider model routing, autonomous agent execution, persistent memory, and enterprise governance.
 
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D22.12.0-brightgreen.svg)](https://nodejs.org/)
 
-## What it does
+## Product summary
 
-- Routes requests across multiple AI providers using cost/latency/capability signals.
-- Coordinates autonomous and role-based agent execution workflows.
-- Persists memory across instant, session, and long-term storage layers.
-- Enforces governance, auditing, and enterprise security controls.
+Ultra-Dex gives one control plane for AI-heavy engineering workflows:
 
-## Quick start
+- Selects the best provider/model per request (cost, latency, capability).
+- Runs single-agent and multi-agent execution patterns.
+- Tracks context with tiered memory (instant, session, persistent).
+- Enforces governance, auditability, and production controls.
+- Exposes CLI + API + dashboard surfaces for operators and builders.
+
+## Core capabilities
+
+| Capability | What you get | Primary implementation |
+| --- | --- | --- |
+| AI routing | Provider/model selection with fallback and caching | `src/core/ai/`, `src/services/ai-providers/` |
+| Agent orchestration | Task decomposition, role execution, autonomous loops | `src/core/orchestration/`, `src/core/agents/` |
+| Memory system | Persistent context and retrieval across workflows | `src/core/memory/` |
+| Governance | Policy checks, constraints, audit events | `src/core/governance/` |
+| Billing/metering | Usage tracking + Stripe webhook lifecycle | `src/core/billing/` |
+
+## Quick start (local)
+
+### Prerequisites
+
+- Node.js `22.12+` (or `20.19+`)
+- npm `10+`
+
+### Setup
 
 ```bash
 npm install
+cp .env.example .env
 npm run build
 npm run start:server
 ```
 
-## Common commands
+Server default: `http://localhost:3000`
+
+## Essential commands
 
 | Command | Purpose |
 | --- | --- |
-| `npm start` | Run CLI from `dist/ultra-dex.js` |
-| `npm run dev` | Run in watch mode |
+| `npm start` | Run CLI from built output |
+| `npm run dev` | Dev/watch mode |
 | `npm run build` | Build core + CLI + dashboard |
-| `npm run lint` | Run ESLint |
-| `npm run typecheck` | Run TypeScript checks |
-| `npm test` | Run unit + integration + CLI tests |
+| `npm run lint` | Lint checks |
+| `npm run typecheck` | Type checks |
+| `npm test` | Full tests (core + integration + CLI) |
+| `npm run start:server` | Start production Express server entrypoint |
+
+## Minimal environment configuration
+
+At least one provider key is required:
+
+```bash
+OPENAI_API_KEY=...
+# or ANTHROPIC_API_KEY / GOOGLE_API_KEY / etc.
+```
+
+Common production values:
+
+```bash
+NODE_ENV=production
+PORT=3000
+REDIS_URL=redis://127.0.0.1:6379
+```
+
+Billing/auth stack (optional unless enabled):
+
+```bash
+CLERK_SECRET_KEY=...
+STRIPE_SECRET_KEY=...
+STRIPE_WEBHOOK_SECRET=...
+```
 
 ## Documentation map
 
-### Start here
+| If you need | Read |
+| --- | --- |
+| Full docs index | `docs/README.md` |
+| Architecture overview | `docs/ARCHITECTURE.md` |
+| API reference | `docs/API.md` |
+| Deployment details | `docs/DEPLOYMENT.md` |
+| Operations and runbook | `docs/OPERATIONS.md` |
+| Security policy | `SECURITY.md` |
+| Contribution workflow | `CONTRIBUTING.md` |
 
-- `docs/README.md` - documentation index
-- `docs/ARCHITECTURE.md` - architecture overview
-- `docs/API.md` - API reference
-- `docs/DEPLOYMENT.md` - deployment guide
-- `docs/OPERATIONS.md` - operations runbook
+## Repository structure
 
-### Root-level docs (concise)
-
-- `DEPLOYMENT.md` - deployment quick guide
-- `INTEGRATIONS.md` - integration overview
-- `IMPLEMENTATION-PLAN.md` - current implementation roadmap
-- `SECURITY.md` - security policy
-- `CONTRIBUTING.md` - contribution workflow
-- `CHANGELOG.md` - release history
-
-### Archived historical root docs
-
-Legacy milestone and handoff documents were moved to:
-
-`docs/internal/archive/root-status/`
-
-## Repository layout
-
-| Path | Purpose |
+| Path | Responsibility |
 | --- | --- |
 | `apps/` | CLI and dashboard applications |
-| `src/core/` | orchestration, memory, governance, billing, server |
-| `src/services/` | provider integrations and service adapters |
-| `tests/` | unit, integration, and CLI tests |
-| `docs/` | user, operator, and internal documentation |
+| `src/core/` | Orchestration, memory, governance, billing, server |
+| `src/services/` | Provider and service integrations |
+| `tests/` | Unit, integration, and CLI tests |
+| `docs/` | Product, operator, and internal documentation |
+
+## Notes on archived docs
+
+Historical milestone/handoff root documents are preserved in:
+
+`docs/internal/archive/root-status/`
 
 ## License
 
