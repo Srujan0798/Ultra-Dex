@@ -10,9 +10,13 @@ import { stripIndent } from 'common-tags';
  * @param {Array<string>} headers - Column headers
  * @param {Array<Array<string>>} rows - Table rows
  * @param {object} options - Table options
- * @returns {string} Formatted table
+ * @returns {Promise<string>} Formatted table
  */
-export async function createTable(headers, rows, options = {}) {
+export async function createTable(
+  headers: string[],
+  rows: string[][],
+  options: { colWidths?: number[]; compact?: boolean } & Record<string, unknown> = {}
+): Promise<string> {
   const { default: Table } = await import('cli-table3');
   const table = new Table({
     head: headers.map(h => chalk.bold.blue(h)),
@@ -38,7 +42,10 @@ export async function createTable(headers, rows, options = {}) {
  * @param {Array<{key: string, value: string}>} items - Key-value pairs to display
  * @returns {string} Formatted summary card
  */
-export function createSummaryCard(title, items) {
+export function createSummaryCard(
+  title: string,
+  items: Array<{ key: string; value: string }>
+): string {
   const maxLength = Math.max(...items.map(item => item.key.length));
   const paddedItems = items.map(item => ({
     key: item.key.padEnd(maxLength),
@@ -61,13 +68,15 @@ export function createSummaryCard(title, items) {
  * @param {Array<{status: string, message: string, details?: string}>} items - Status items
  * @returns {string} Formatted status panel
  */
-export function createStatusPanel(items) {
+export function createStatusPanel(
+  items: Array<{ status: string; message: string; details?: string }>
+): string {
   let output = '';
-  
+
   items.forEach((item, index) => {
     let statusIcon = '';
     let statusColor = chalk.gray;
-    
+
     switch (item.status.toLowerCase()) {
       case 'success':
       case 'completed':
@@ -99,18 +108,18 @@ export function createStatusPanel(items) {
         statusIcon = 'ℹ️';
         statusColor = chalk.blue;
     }
-    
+
     output += `${statusColor(statusIcon)} ${chalk.bold(item.message)}\n`;
-    
+
     if (item.details) {
       output += `   ${chalk.gray(stripIndent(item.details))}\n`;
     }
-    
+
     if (index < items.length - 1) {
       output += '\n';
     }
   });
-  
+
   return output;
 }
 
@@ -122,24 +131,29 @@ export function createStatusPanel(items) {
  * @param {object} options - Options for the progress bar
  * @returns {string} Formatted progress bar
  */
-export function createProgressBar(current, total, label = '', options = {}) {
+export function createProgressBar(
+  current: number,
+  total: number,
+  label: string = '',
+  options: { width?: number; filledChar?: string; emptyChar?: string } = {}
+): string {
   const width = options.width || 30;
   const filledChar = options.filledChar || '█';
   const emptyChar = options.emptyChar || '░';
   const percentage = Math.round((current / total) * 100);
-  
+
   const filledLength = Math.round((current / total) * width);
   const emptyLength = width - filledLength;
-  
-  const progressBar = chalk.green(filledChar.repeat(filledLength)) + 
-                     chalk.gray(emptyChar.repeat(emptyLength));
-  
+
+  const progressBar = chalk.green(filledChar.repeat(filledLength)) +
+    chalk.gray(emptyChar.repeat(emptyLength));
+
   const progressText = chalk.bold(`${current}/${total} (${percentage}%)`);
-  
+
   if (label) {
     return `${chalk.blue(label)}\n[${progressBar}] ${progressText}`;
   }
-  
+
   return `[${progressBar}] ${progressText}`;
 }
 
@@ -149,13 +163,16 @@ export function createProgressBar(current, total, label = '', options = {}) {
  * @param {object} options - Options for the list
  * @returns {string} Formatted list
  */
-export function createList(items, options = {}) {
+export function createList(
+  items: string[],
+  options: { style?: 'bullet' | 'numbered' | 'arrow' } = {}
+): string {
   const style = options.style || 'bullet'; // 'bullet', 'numbered', 'arrow'
   let output = '';
-  
+
   items.forEach((item, index) => {
     let prefix = '';
-    
+
     switch (style) {
       case 'numbered':
         prefix = chalk.blue(`${index + 1}. `);
@@ -167,10 +184,10 @@ export function createList(items, options = {}) {
       default:
         prefix = chalk.green('• ');
     }
-    
+
     output += `${prefix}${item}\n`;
   });
-  
+
   return output;
 }
 
@@ -180,11 +197,11 @@ export function createList(items, options = {}) {
  * @param {string} language - Language for syntax highlighting
  * @returns {string} Formatted code block
  */
-export function createCodeBlock(code, language = '') {
+export function createCodeBlock(code: string, language: string = ''): string {
   let output = chalk.gray('┌─ ') + chalk.bold.blue(language) + '\n';
   output += chalk.gray('│ ') + code.split('\n').join('\n' + chalk.gray('│ ')) + '\n';
   output += chalk.gray('└' + '─'.repeat(Math.max(20, code.split('\n')[0]?.length || 20)));
-  
+
   return output;
 }
 
@@ -195,10 +212,10 @@ export function createCodeBlock(code, language = '') {
  * @param {string} details - Optional details
  * @returns {string} Formatted notification
  */
-export function createNotification(type, message, details = '') {
+export function createNotification(type: string, message: string, details: string = ''): string {
   let icon = 'ℹ️';
   let color = chalk.blue;
-  
+
   switch (type.toLowerCase()) {
     case 'success':
       icon = '✅';
@@ -217,13 +234,13 @@ export function createNotification(type, message, details = '') {
       icon = 'ℹ️';
       color = chalk.blue;
   }
-  
+
   let output = color(icon) + ' ' + chalk.bold(message) + '\n';
-  
+
   if (details) {
     output += chalk.gray(stripIndent(details)) + '\n';
   }
-  
+
   return output;
 }
 
@@ -234,11 +251,19 @@ export function createNotification(type, message, details = '') {
  * @param {object} options - Options for formatting
  * @returns {string} Formatted key-value pair
  */
-export function formatKeyValue(key, value, options = {}) {
+export function formatKeyValue(
+  key: string,
+  value: string,
+  options: {
+    separator?: string;
+    keyStyle?: (text: string) => string;
+    valueStyle?: (text: string) => string;
+  } = {}
+): string {
   const separator = options.separator || ': ';
   const keyStyle = options.keyStyle || chalk.bold.blue;
   const valueStyle = options.valueStyle || chalk.white;
-  
+
   return keyStyle(key) + chalk.gray(separator) + valueStyle(value);
 }
 
@@ -248,7 +273,7 @@ export function formatKeyValue(key, value, options = {}) {
  * @param {number} width - Width of the divider
  * @returns {string} Formatted divider
  */
-export function createDivider(text = '', width = 60) {
+export function createDivider(text: string = '', width: number = 60): string {
   if (text) {
     const padding = Math.floor((width - text.length) / 2);
     const leftPadding = '='.repeat(padding);
@@ -264,7 +289,7 @@ export function createDivider(text = '', width = 60) {
  * @param {Date|string} timestamp - Timestamp to format
  * @returns {string} Formatted timestamp
  */
-export function formatTimestamp(timestamp) {
+export function formatTimestamp(timestamp: Date | string): string {
   const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
   return chalk.gray(date.toLocaleString());
 }
@@ -274,13 +299,13 @@ export function formatTimestamp(timestamp) {
  * @param {number} bytes - Number of bytes
  * @returns {string} Human readable format
  */
-export function formatBytes(bytes) {
+export function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 Bytes';
-  
+
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
+
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
@@ -289,21 +314,21 @@ export function formatBytes(bytes) {
  * @param {number} ms - Duration in milliseconds
  * @returns {string} Human readable format
  */
-export function formatDuration(ms) {
+export function formatDuration(ms: number): string {
   if (ms < 1000) {
     return `${ms}ms`;
   }
-  
+
   const seconds = Math.floor(ms / 1000);
   if (seconds < 60) {
     return `${seconds}s`;
   }
-  
+
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) {
     return `${minutes}m ${seconds % 60}s`;
   }
-  
+
   const hours = Math.floor(minutes / 60);
   return `${hours}h ${minutes % 60}m`;
 }
@@ -314,24 +339,24 @@ export function formatDuration(ms) {
  * @param {string} title - Optional title for the box
  * @returns {string} Styled box
  */
-export function createBox(content, title = '') {
+export function createBox(content: string, title: string = ''): string {
   const lines = content.split('\n');
   const maxWidth = Math.max(...lines.map(line => line.length), title.length);
-  
+
   let output = '';
-  
+
   if (title) {
     output += chalk.blue('┌─ ') + chalk.bold(title) + chalk.blue(' ' + '─'.repeat(maxWidth - title.length)) + '┐\n';
   } else {
     output += chalk.blue('┌' + '─'.repeat(maxWidth + 2) + '┐\n');
   }
-  
+
   lines.forEach(line => {
     output += chalk.blue('│ ') + line.padEnd(maxWidth) + chalk.blue(' │\n');
   });
-  
+
   output += chalk.blue('└' + '─'.repeat(maxWidth + 2) + '┘');
-  
+
   return output;
 }
 

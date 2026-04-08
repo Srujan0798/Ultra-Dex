@@ -65,13 +65,21 @@ HealthCheck = __decorateClass([
   singleton()
 ], HealthCheck);
 let HealthService = class extends EventEmitter {
-  constructor({ appName = "ultra-dex", version = "1.0.0" } = {}) {
+  constructor({ appName = "ultra-dex", version = "1.0.0", readinessChecks = [], deepChecks = [] } = {}) {
     super();
     this.appName = appName;
     this.version = version;
     this.checks = /* @__PURE__ */ new Map();
+    this.readinessChecks = /* @__PURE__ */ new Map();
+    this.deepChecks = /* @__PURE__ */ new Map();
     this.startTime = Date.now();
     this.running = false;
+    for (const check of readinessChecks) {
+      this.addReadinessCheck(check);
+    }
+    for (const check of deepChecks) {
+      this.addDeepCheck(check);
+    }
   }
   /**
    * Register a health check
@@ -80,6 +88,29 @@ let HealthService = class extends EventEmitter {
     const check = config instanceof HealthCheck ? config : new HealthCheck(config);
     this.checks.set(check.name, check);
     return this;
+  }
+  /**
+   * Register a readiness dependency check
+   */
+  addReadinessCheck(config) {
+    const check = config instanceof HealthCheck ? config : new HealthCheck({ critical: true, ...config });
+    this.readinessChecks.set(check.name, check);
+    return this;
+  }
+  /**
+   * Register a deep health dependency check
+   */
+  addDeepCheck(config) {
+    const check = config instanceof HealthCheck ? config : new HealthCheck({ critical: true, ...config });
+    this.deepChecks.set(check.name, check);
+    return this;
+  }
+  async runChecks(checkMap) {
+    const results = {};
+    for (const [name, check] of checkMap) {
+      results[name] = await check.run();
+    }
+    return results;
   }
   /**
    * Start periodic health checking
@@ -115,11 +146,13 @@ let HealthService = class extends EventEmitter {
    * Run all health checks now
    */
   async checkAll() {
-    const results = {};
-    for (const [name, check] of this.checks) {
-      results[name] = await check.run();
-    }
-    return results;
+    return this.runChecks(this.checks);
+  }
+  async checkReadinessDependencies() {
+    return this.runChecks(this.readinessChecks);
+  }
+  async checkDeepDependencies() {
+    return this.runChecks(this.deepChecks);
   }
   /**
    * Liveness probe — is the process alive?
@@ -138,9 +171,13 @@ let HealthService = class extends EventEmitter {
    */
   async readiness() {
     const results = await this.checkAll();
-    const criticalChecks = [...this.checks.values()].filter((c) => c.critical);
+    const readinessResults = await this.checkReadinessDependencies();
+    const serviceChecks = [...this.checks.values()];
+    const dependencyChecks = [...this.readinessChecks.values()];
+    const allChecks = [...serviceChecks, ...dependencyChecks];
+    const criticalChecks = allChecks.filter((c) => c.critical);
     const allCriticalHealthy = criticalChecks.every((c) => c.status === "healthy");
-    const anyUnhealthy = [...this.checks.values()].some((c) => c.status === "unhealthy");
+    const anyUnhealthy = allChecks.some((c) => c.status === "unhealthy");
     let status;
     if (!allCriticalHealthy) {
       status = "not_ready";
@@ -155,9 +192,32 @@ let HealthService = class extends EventEmitter {
       version: this.version,
       uptime: Date.now() - this.startTime,
       checks: Object.fromEntries(
-        [...this.checks.values()].map((c) => [c.name, c.toJSON()])
+        allChecks.map((c) => [c.name, c.toJSON()])
       ),
+      probes: {
+        service: results,
+        readiness: readinessResults
+      },
       timestamp: Date.now()
+    };
+  }
+  /**
+   * Deep readiness probe — verifies external infrastructure dependencies.
+   */
+  async deep() {
+    const readiness = await this.readiness();
+    const deepResults = await this.checkDeepDependencies();
+    const deepChecks = [...this.deepChecks.values()];
+    const deepHealthy = deepChecks.every((check) => check.status === "healthy");
+    const status = readiness.status === "ready" && deepHealthy ? "ready" : "not_ready";
+    return {
+      ...readiness,
+      status,
+      deepChecks: Object.fromEntries(deepChecks.map((check) => [check.name, check.toJSON()])),
+      probes: {
+        ...readiness.probes,
+        deep: deepResults
+      }
     };
   }
   /**
@@ -173,14 +233,27 @@ let HealthService = class extends EventEmitter {
         const statusCode = result.status === "not_ready" ? 503 : 200;
         res.status(statusCode).json(result);
       },
+      deep: async (req, res) => {
+        const result = await this.deep();
+        const statusCode = result.status === "ready" ? 200 : 503;
+        res.status(statusCode).json(result);
+      },
       full: async (req, res) => {
-        const results = await this.checkAll();
+        const results = await this.deep();
         res.json({
           ...this.liveness(),
-          checks: results
+          checks: results.checks,
+          probes: results.probes
         });
       }
     };
+  }
+  registerRoutes(app, { basePath = "/health" } = {}) {
+    const handlers = this.middleware();
+    app.get(basePath, handlers.liveness);
+    app.get(`${basePath}/ready`, handlers.readiness);
+    app.get(`${basePath}/deep`, handlers.deep);
+    return app;
   }
   /**
    * Get compact dashboard

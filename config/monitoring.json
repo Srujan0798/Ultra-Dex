@@ -1,0 +1,31 @@
+{
+  "uptime": {
+    "enabled": true,
+    "interval": 30000,
+    "endpoints": [
+      "/health",
+      "/health/ready",
+      "/api/status"
+    ]
+  },
+  "alerts": {
+    "enabled": true,
+    "channels": ["email", "webhook"],
+    "thresholds": {
+      "error_rate": 0.05,
+      "latency_p95": 2000,
+      "memory_usage": 0.9
+    }
+  },
+  "metrics": {
+    "enabled": true,
+    "retention_days": 30,
+    "collect": [
+      "request_count",
+      "response_time",
+      "error_count",
+      "ai_provider_latency",
+      "memory_usage"
+    ]
+  }
+}

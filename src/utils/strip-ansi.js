@@ -1,3 +1,4 @@
+// @ts-check
 // Copyright (c) 2026 Ultra-Dex
 
 import ansiRegex from 'ansi-regex';

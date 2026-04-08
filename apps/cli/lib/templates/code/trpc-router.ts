@@ -266,7 +266,7 @@ export type AppRouter = typeof appRouter;
  * Error handler for trpc-router
  * @param {Error} error - Error to handle
  */
-function _handleTrpcrouterError(error) {
+function _handleTrpcrouterError(error: unknown): void {
   try {
     console.error('[trpc-router]', error instanceof Error ? error.message : String(error));
   } catch (_) {

@@ -1,3 +1,4 @@
+// @ts-check
 /**
  * Colors utility for Ultra-Dex CLI
  * Provides consistent color schemes and formatting

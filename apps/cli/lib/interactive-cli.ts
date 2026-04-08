@@ -6,6 +6,8 @@ import { colors, gradients, formatMessage, formatTitle, formatSection, formatLis
 import { performance } from 'perf_hooks';
 import chalk from 'chalk';
 
+type AnyFunction = (...args: unknown[]) => unknown;
+
 /**
  * Interactive CLI utilities for Ultra-Dex
  */
@@ -18,7 +20,7 @@ export class InteractiveCLI {
   /**
    * Show a welcome message with Ultra-Dex branding
    */
-  showWelcome() {
+  showWelcome(): void {
     console.log('\n' + gradients.brand(`
    __  ____  __               ____            
   / / / / / / /__________ _  / __ \\___  _  __ 
@@ -38,7 +40,7 @@ export class InteractiveCLI {
    * @param {any} defaultChoice - Default value
    * @returns {Promise<any>} Selected value
    */
-  async promptList(message, choices, defaultChoice = null) {
+  async promptList(message: string, choices: Array<{ name: string, value: unknown, short?: string }>, defaultChoice: unknown = null): Promise<unknown> {
     const question = {
       type: 'list',
       name: 'selection',
@@ -61,7 +63,7 @@ export class InteractiveCLI {
    * @param {Array<{name: string, value: any, checked?: boolean}>} choices - Options to choose from
    * @returns {Promise<Array<any>>} Selected values
    */
-  async promptCheckbox(message, choices) {
+  async promptCheckbox(message: string, choices: Array<{ name: string, value: unknown, checked?: boolean }>): Promise<unknown[]> {
     const question = {
       type: 'checkbox',
       name: 'selections',
@@ -84,7 +86,7 @@ export class InteractiveCLI {
    * @param {Function} validateFn - Validation function
    * @returns {Promise<string>} User input
    */
-  async promptInput(message, defaultValue = '', validateFn = null) {
+  async promptInput(message: string, defaultValue: string = '', validateFn: AnyFunction | null = null): Promise<string> {
     const question = {
       type: 'input',
       name: 'input',
@@ -105,7 +107,7 @@ export class InteractiveCLI {
    * @param {string} message - Question to ask
    * @returns {Promise<string>} Password input
    */
-  async promptPassword(message) {
+  async promptPassword(message: string): Promise<string> {
     const question = {
       type: 'password',
       name: 'password',
@@ -123,7 +125,7 @@ export class InteractiveCLI {
    * @param {boolean} defaultAnswer - Default answer
    * @returns {Promise<boolean>} True if confirmed
    */
-  async promptConfirm(message, defaultAnswer = true) {
+  async promptConfirm(message: string, defaultAnswer: boolean = true): Promise<boolean> {
     const question = {
       type: 'confirm',
       name: 'confirmed',
@@ -142,12 +144,12 @@ export class InteractiveCLI {
    * @param {Function} taskFn - Function that performs the task
    * @returns {Promise<any>} Task result
    */
-  async withProgressBar(message, total, taskFn) {
+  async withProgressBar(message: string, total: number, taskFn: AnyFunction): Promise<unknown> {
     const spinner = createSpinner(`${message} (0/${total})`);
     spinner.start();
 
     let current = 0;
-    const updateProgress = () => {
+    const updateProgress = (): void => {
       current++;
       spinner.text = ` ${message} (${current}/${total})`;
     };
@@ -167,7 +169,7 @@ export class InteractiveCLI {
    * @param {Array<string>} headers - Table headers
    * @param {Array<Array<string>>} rows - Table rows
    */
-  async showTable(headers, rows) {
+  async showTable(headers: string[], rows: string[][]): Promise<void> {
     const { default: Table } = await import('cli-table3');
 
     const table = new Table({
@@ -197,7 +199,7 @@ export class InteractiveCLI {
   /**
    * Run a suite of tasks
    */
-  async runTasks(title, tasks) {
+  async runTasks(title: string, tasks: Array<{ name: string, fn: AnyFunction }>): Promise<unknown> {
     return await runTaskSuite(title, tasks);
   }
 
@@ -207,19 +209,19 @@ export class InteractiveCLI {
    * @param {Function} fn - Function to execute
    * @returns {Promise<any>} Function result
    */
-  async measureTime(operation, fn) {
+  async measureTime(operation: string, fn: AnyFunction): Promise<unknown> {
     const start = performance.now();
     try {
       const result = await fn();
       const end = performance.now();
       const duration = Math.round(end - start);
-      
+
       showInfo(`${operation} completed in ${chalk.bold(duration + 'ms')}`);
       return result;
     } catch (error) {
       const end = performance.now();
       const duration = Math.round(end - start);
-      
+
       showError(`${operation} failed after ${duration}ms: ${error.message}`);
       throw error;
     }
@@ -228,28 +230,28 @@ export class InteractiveCLI {
   /**
    * Display a formatted message
    */
-  showMessage(type, message) {
+  showMessage(type: string, message: string): void {
     console.log(formatMessage(type, message));
   }
 
   /**
    * Display a formatted title
    */
-  showTitle(title) {
+  showTitle(title: string): void {
     console.log(formatTitle(title));
   }
 
   /**
    * Display a formatted section
    */
-  showSection(header) {
+  showSection(header: string): void {
     console.log(formatSection(header));
   }
 
   /**
    * Display a list of items
    */
-  showList(items) {
+  showList(items: string[]): void {
     items.forEach((item, index) => {
       console.log(formatListItem(item, index));
     });
@@ -259,7 +261,7 @@ export class InteractiveCLI {
    * Show a success message with celebration
    * @param {string} message - Success message
    */
-  showCelebration(message) {
+  showCelebration(message: string): void {
     console.log('\n' + colors.celebrate(`✨ ${message} ✨`) + '\n');
   }
 }

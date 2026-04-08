@@ -14,7 +14,7 @@ export interface LedgerBlock {
   timestamp: string;
   task_id: string;
   agent: string;
-  decision: any;
+  decision: unknown;
   constraints_checked: string[];
   previous_hash: string;
   hash: string;
@@ -25,7 +25,7 @@ const LEDGER_PATH = path.resolve(process.cwd(), '.ultra/ledger.jsonl');
 /**
  * Generate a hash for a ledger block
  */
-function calculateHash(data: any): string {
+function calculateHash(data: unknown): string {
   return createHash('sha256').update(JSON.stringify(data)).digest('hex');
 }
 
@@ -34,7 +34,7 @@ function calculateHash(data: any): string {
  */
 export async function appendBlock(
   data: Omit<LedgerBlock, 'block_id' | 'timestamp' | 'hash' | 'previous_hash'>
-) {
+): Promise<LedgerBlock> {
   const ultraDir = path.dirname(LEDGER_PATH);
 
   // Ensure storage directory exists

@@ -392,6 +392,18 @@ describe('HealthService', () => {
         const mw = service.middleware();
         assert.ok(typeof mw.liveness === 'function');
         assert.ok(typeof mw.readiness === 'function');
+        assert.ok(typeof mw.deep === 'function');
         assert.ok(typeof mw.full === 'function');
+    });
+
+    it('should run deep readiness checks', async () => {
+        service.addReadinessCheck({ name: 'di-resolved', check: async () => true, critical: true });
+        service.addReadinessCheck({ name: 'memory-initialized', check: async () => true, critical: true });
+        service.addDeepCheck({ name: 'redis-connected', check: async () => true, critical: true });
+        service.addDeepCheck({ name: 'audit-db-writable', check: async () => true, critical: true });
+        service.addDeepCheck({ name: 'provider-reachable', check: async () => true, critical: true });
+        const deep = await service.deep();
+        assert.equal(deep.status, 'ready');
+        assert.ok('redis-connected' in deep.deepChecks);
     });
 });
