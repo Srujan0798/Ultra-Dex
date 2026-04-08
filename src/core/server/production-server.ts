@@ -158,3 +158,25 @@ app.listen(PORT, '0.0.0.0', () => {
 });
 
 export default app;
+
+// Sprint 6: Marketplace endpoints
+app.get('/api/marketplace/plugins', async (req, res) => {
+  const { marketplace } = await import('../marketplace/plugin-marketplace.js');
+  const plugins = await marketplace.searchPlugins();
+  res.json(plugins);
+});
+
+// Phase 7: Autonomous agent endpoints
+app.post('/api/agents/autonomous/goal', async (req, res) => {
+  const { autonomousAgent } = await import('../agents/autonomous-agent.js');
+  const { description } = req.body;
+  const result = await autonomousAgent.setGoal(description);
+  res.json({ result });
+});
+
+// Phase 8: Multi-modal endpoints
+app.post('/api/multimodal/process', async (req, res) => {
+  const { multimodalService } = await import('../multimodal/multimodal-service.js');
+  const result = await multimodalService.process(req.body);
+  res.json({ result });
+});
