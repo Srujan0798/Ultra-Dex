@@ -230,7 +230,7 @@ When reviewing:
 Expertise:
 - GitHub Actions, GitLab CI
 - Docker, Kubernetes
-- Vercel, Railway, AWS
+- Vercel, Render, AWS
 - Monitoring (Sentry, DataDog)
 - Infrastructure as Code
 

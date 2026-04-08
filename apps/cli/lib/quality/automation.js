@@ -318,7 +318,7 @@ export async function verifyDeploymentReadiness(projectDir) {
   const deployFiles = [
     'Dockerfile',
     'vercel.json',
-    'railway.json',
+    'render.yaml',
     'fly.toml',
     'docker-compose.yml',
     'Procfile',

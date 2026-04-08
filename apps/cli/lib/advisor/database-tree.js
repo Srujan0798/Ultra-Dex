@@ -22,7 +22,7 @@ export const DATABASE_OPTIONS = [
   {
     useCase: 'analytics',
     recommendation: 'PostgreSQL + TimescaleDB',
-    hosting: 'Railway',
+    hosting: 'Render',
     note: 'Time-series + SQL',
   },
 ];
@@ -31,4 +31,3 @@ export function recommendDatabase(useCase) {
   const normalized = useCase.toLowerCase();
   return DATABASE_OPTIONS.find((entry) => entry.useCase === normalized) || DATABASE_OPTIONS[0];
 }
-

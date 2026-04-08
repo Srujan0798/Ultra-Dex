@@ -301,7 +301,7 @@ async function handleInteractiveInit(options) {
       type: 'list',
       name: 'hosting',
       message: 'Select Deployment Grid:',
-      choices: ['Vercel', 'Railway', 'Fly.io', 'AWS', 'Other'],
+      choices: ['Vercel', 'Render', 'Fly.io', 'AWS', 'Other'],
     },
     {
       type: 'confirm',
