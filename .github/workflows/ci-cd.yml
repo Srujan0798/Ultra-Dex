@@ -21,26 +21,14 @@ jobs:
       with:
         node-version: '20'
 
-    - name: Remove desktop app from workspaces
-      run: |
-        rm -rf apps/desktop node_modules apps/*/node_modules packages/*/node_modules
-        node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync('package.json')); p.workspaces=['apps/cli','apps/cloud','apps/core-api','apps/dashboard','apps/docs-site','apps/github-integration','apps/mobile','apps/website','apps/white-label','packages/*']; fs.writeFileSync('package.json', JSON.stringify(p,null,2));"
-        node -e "const fs=require('fs'); if(fs.existsSync('package-lock.json')){const p=JSON.parse(fs.readFileSync('package-lock.json')); if(p.packages&&p.packages['apps/desktop']){delete p.packages['apps/desktop'];} fs.writeFileSync('package-lock.json', JSON.stringify(p,null,2));}" 2>/dev/null || true
-
     - name: Install dependencies
-      run: |
-        for i in 1 2 3; do
-          echo "Attempt $i..."
-          npm install --force --legacy-peer-deps && break || sleep 15
-        done
+      run: npm ci --ignore-scripts --no-audit --fund=false --legacy-peer-deps
 
     - name: Run linters
       run: npm run lint || echo "No lint issues"
 
     - name: Run smoke tests
-      run: NODE_ENV=test node --test --test-force-exit --test-timeout=30000 tests/core/ai-providers-registry.test.js tests/core/approval-workflow.test.js
-      env:
-        NODE_ENV: test
+      run: npm run test:push:smoke
 
   build-and-test:
     runs-on: ubuntu-latest
@@ -57,26 +45,14 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
 
-    - name: Remove desktop app from workspaces
-      run: |
-        rm -rf apps/desktop node_modules apps/*/node_modules packages/*/node_modules
-        node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync('package.json')); p.workspaces=['apps/cli','apps/cloud','apps/core-api','apps/dashboard','apps/docs-site','apps/github-integration','apps/mobile','apps/website','apps/white-label','packages/*']; fs.writeFileSync('package.json', JSON.stringify(p,null,2));"
-        node -e "const fs=require('fs'); if(fs.existsSync('package-lock.json')){const p=JSON.parse(fs.readFileSync('package-lock.json')); if(p.packages&&p.packages['apps/desktop']){delete p.packages['apps/desktop'];} fs.writeFileSync('package-lock.json', JSON.stringify(p,null,2));}" 2>/dev/null || true
-
     - name: Install dependencies
-      run: |
-        for i in 1 2 3; do
-          echo "Attempt $i..."
-          npm install --force --legacy-peer-deps && break || sleep 15
-        done
+      run: npm ci --ignore-scripts --no-audit --fund=false --legacy-peer-deps
 
     - name: Build project
       run: npm run build || echo "Build skipped (optional components)"
 
     - name: Run smoke tests
-      run: NODE_ENV=test node --test --test-force-exit --test-timeout=30000 tests/core/ai-providers-registry.test.js tests/core/approval-workflow.test.js
-      env:
-        NODE_ENV: test
+      run: npm run test:push:smoke
 
   bundle:
     runs-on: ubuntu-latest
@@ -92,18 +68,8 @@ jobs:
         node-version: '20'
         registry-url: 'https://registry.npmjs.org'
 
-    - name: Remove desktop app from workspaces
-      run: |
-        rm -rf apps/desktop node_modules apps/*/node_modules packages/*/node_modules
-        node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync('package.json')); p.workspaces=['apps/cli','apps/cloud','apps/core-api','apps/dashboard','apps/docs-site','apps/github-integration','apps/mobile','apps/website','apps/white-label','packages/*']; fs.writeFileSync('package.json', JSON.stringify(p,null,2));"
-        node -e "const fs=require('fs'); if(fs.existsSync('package-lock.json')){const p=JSON.parse(fs.readFileSync('package-lock.json')); if(p.packages&&p.packages['apps/desktop']){delete p.packages['apps/desktop'];} fs.writeFileSync('package-lock.json', JSON.stringify(p,null,2));}" 2>/dev/null || true
-
     - name: Install dependencies
-      run: |
-        for i in 1 2 3; do
-          echo "Attempt $i..."
-          npm install --force --legacy-peer-deps && break || sleep 15
-        done
+      run: npm ci --ignore-scripts --no-audit --fund=false --legacy-peer-deps
 
     - name: Build CLI bundle
       run: npx esbuild apps/cli/bin/ultra-dex.js --bundle --platform=node --outfile=dist/ultra-dex.js --external:chokidar --external:fsevents || echo "esbuild not available"

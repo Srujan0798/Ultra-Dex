@@ -16,14 +16,8 @@ jobs:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Install CLI dependencies
-        run: |
-          cd apps/cli
-          npm install --force --legacy-peer-deps --omit=optional
-        continue-on-error: false
-
-      - name: Install esbuild
-        run: npm install --force --legacy-peer-deps esbuild
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --fund=false --legacy-peer-deps
 
       - name: Create dist directory
         run: mkdir -p apps/cli/dist
