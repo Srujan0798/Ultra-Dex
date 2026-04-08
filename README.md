@@ -22,26 +22,27 @@ Ultra-Dex is the **connective tissue between AI models, memory, and tools**. It 
 
 ```mermaid
 graph TD
-    subgraph Client Layer
+    subgraph ClientLayer["Client Layer"]
         CLI[CLI Tool]
         Dash[Web Dashboard]
         API[REST/WebSocket API]
     end
 
-    subgraph Orchestration Meta-Layer
+    subgraph OrchestrationLayer["Orchestration Meta-Layer"]
         Router[Semantic Router]
         Swarm[Agent Swarm Manager]
         Memory[Persistent Memory Tier]
         Gov[Governance & Policy]
     end
 
-    subgraph Infrastructure
+    subgraph InfrastructureLayer["Infrastructure"]
         Mesh[Distributed Mesh Bus - Redis/Kafka]
         Sandbox[Docker/WASM Sandbox]
         MCP[MCP Server Registry]
     end
 
-    subgraph AI Providers
+    subgraph AIProviders["AI Providers"]
+        ProviderHub[Provider Hub]
         OpenAI[OpenAI]
         Anthropic[Anthropic]
         Google[Google Gemini]
@@ -49,6 +50,13 @@ graph TD
         Mistral[Mistral/Mixtral]
         Local[Local Models - Ollama/Llama.cpp]
         Other[12+ More Providers]
+        ProviderHub --> OpenAI
+        ProviderHub --> Anthropic
+        ProviderHub --> Google
+        ProviderHub --> DeepSeek
+        ProviderHub --> Mistral
+        ProviderHub --> Local
+        ProviderHub --> Other
     end
 
     CLI --> Router
@@ -59,7 +67,7 @@ graph TD
     Swarm --> MCP
     Swarm --> Memory
     Router --> Mesh
-    Swarm --> AI Providers
+    Swarm --> ProviderHub
     Memory --> Mesh
 ```
 
