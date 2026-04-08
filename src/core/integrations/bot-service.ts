@@ -53,7 +53,9 @@ export class BotService {
       const result = await aiMetaLayer.call('gpt-4o', [
         { role: 'system', content: 'You are Ultra-Dex Bot, a helpful AI orchestration assistant.' },
         { role: 'user', content: text }
-      ]);
+      ], {
+        metadata: { userId }
+      });
       
       return result.text || 'I processed your request but have no text response.';
     } catch (error) {

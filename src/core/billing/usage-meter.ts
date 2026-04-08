@@ -218,10 +218,10 @@ export class UsageMeter {
         const client = await getRedisClient();
         if (!client) return;
         const key = `usage:${userId}:${counter.resetAt.toISOString().slice(0,10)}`; // day-keyed
-        if (usage.requests) await client.hIncrBy(key, 'requestCount', usage.requests);
-        if (usage.tokens) await client.hIncrBy(key, 'tokenCount', usage.tokens);
-        if (usage.agentRuns) await client.hIncrBy(key, 'agentRunCount', usage.agentRuns);
-        await client.hSet(key, 'resetAt', counter.resetAt.toISOString());
+        if (usage.requests) await client.hincrby(key, 'requestCount', usage.requests);
+        if (usage.tokens) await client.hincrby(key, 'tokenCount', usage.tokens);
+        if (usage.agentRuns) await client.hincrby(key, 'agentRunCount', usage.agentRuns);
+        await client.hset(key, 'resetAt', counter.resetAt.toISOString());
         const ttl = Math.max(60, Math.floor((counter.resetAt.getTime() - Date.now()) / 1000));
         await client.expire(key, ttl);
       } catch (err) {
