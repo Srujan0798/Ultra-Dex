@@ -52,13 +52,14 @@ describe('UsageMeter', () => {
     const userId = 'user-pro-1';
     const proPlan = 'pro';
     
-    // Pro tier: 10,000 req/day
-    meter.increment(userId, { requests: 100 });
+    // Pro tier: 10,000 req/day. Before processing the 10,000th request,
+    // the user has consumed 9,999 requests and should still be allowed.
+    meter.increment(userId, { requests: 9999 });
     
     const result = meter.checkLimit(userId, proPlan);
     
     assert.equal(result.allowed, true);
-    assert.ok(result.remaining.requests > 0);
+    assert.equal(result.remaining.requests, 1);
   });
 
   it('should allow unlimited requests for enterprise users', () => {
