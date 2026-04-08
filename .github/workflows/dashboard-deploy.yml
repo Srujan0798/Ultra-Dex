@@ -23,16 +23,8 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Remove desktop app from workspaces
-        run: |
-          rm -rf apps/desktop
-          node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync('package.json')); p.workspaces=['apps/cli','apps/cloud','apps/core-api','apps/dashboard','apps/docs-site','apps/github-integration','apps/mobile','apps/website','apps/white-label','packages/*']; fs.writeFileSync('package.json', JSON.stringify(p,null,2));"
-          node -e "const fs=require('fs'); if(fs.existsSync('package-lock.json')){const p=JSON.parse(fs.readFileSync('package-lock.json')); if(p.packages&&p.packages['apps/desktop']){delete p.packages['apps/desktop'];} fs.writeFileSync('package-lock.json', JSON.stringify(p,null,2));}" 2>/dev/null || true
-
       - name: Install dependencies
-        run: |
-          npm cache clean --force
-          npm install --force --legacy-peer-deps
+        run: npm ci --ignore-scripts --no-audit --fund=false --legacy-peer-deps
 
       - name: Dashboard tests
         run: cd apps/dashboard && npm run test
@@ -50,6 +42,10 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: dashboard-verify
     runs-on: ubuntu-latest
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -59,28 +55,21 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Remove desktop app from workspaces
-        run: |
-          rm -rf apps/desktop
-          node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync('package.json')); p.workspaces=['apps/cli','apps/cloud','apps/core-api','apps/dashboard','apps/docs-site','apps/github-integration','apps/mobile','apps/website','apps/white-label','packages/*']; fs.writeFileSync('package.json', JSON.stringify(p,null,2));"
-          node -e "const fs=require('fs'); if(fs.existsSync('package-lock.json')){const p=JSON.parse(fs.readFileSync('package-lock.json')); if(p.packages&&p.packages['apps/desktop']){delete p.packages['apps/desktop'];} fs.writeFileSync('package-lock.json', JSON.stringify(p,null,2));}" 2>/dev/null || true
-
       - name: Install dependencies
-        run: |
-          npm cache clean --force
-          npm install --force --legacy-peer-deps
+        run: npm ci --ignore-scripts --no-audit --fund=false --legacy-peer-deps
 
       - name: Build dashboard
         run: cd apps/dashboard && npm run build
         continue-on-error: true
 
       - name: Deploy to Vercel
-        if: env.VERCEL_TOKEN != ''
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        if: ${{ env.VERCEL_TOKEN != '' && env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != '' }}
         run: |
           npm i -g vercel@latest
           vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
           vercel deploy --prod --token="$VERCEL_TOKEN"
+
+      - name: Skip Vercel deploy (missing secrets)
+        if: ${{ env.VERCEL_TOKEN == '' || env.VERCEL_ORG_ID == '' || env.VERCEL_PROJECT_ID == '' }}
+        run: |
+          echo "Skipping deploy: VERCEL_TOKEN / VERCEL_ORG_ID / VERCEL_PROJECT_ID not configured."
