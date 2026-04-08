@@ -8,6 +8,7 @@ import { billingService } from '../billing/billing-service.js';
 export interface AuthRequest extends Request {
   auth?: {
     userId: string;
+    orgId?: string;
     email: string;
     role: string;
     plan: 'free' | 'pro' | 'enterprise';
@@ -33,6 +34,7 @@ export function requireAuth(roles?: string[]) {
 
         (req as AuthRequest).auth = {
           userId: user.id,
+          orgId: user.organizationId,
           email: user.email,
           role: 'user',
           plan: user.tier
@@ -53,6 +55,7 @@ export function requireAuth(roles?: string[]) {
       if (!process.env.CLERK_SECRET_KEY && token === 'dev-token') {
         (req as AuthRequest).auth = {
           userId: 'dev-user-id',
+          orgId: 'dev-org-id',
           email: 'dev@ultra-dex.com',
           role: 'user',
           plan: 'free'
@@ -76,6 +79,7 @@ export function requireAuth(roles?: string[]) {
         const metadata = user.publicMetadata as Record<string, unknown>;
         const userRole = (metadata.role as string) || 'user';
         const userPlan = (metadata.tier as 'free' | 'pro' | 'enterprise') || 'free';
+        const orgId = (metadata.organizationId as string) || session.organizationId;
 
         // Check role requirements
         if (roles && roles.length > 0 && !roles.includes(userRole)) {
@@ -95,6 +99,7 @@ export function requireAuth(roles?: string[]) {
         // Attach auth info to request
         (req as AuthRequest).auth = {
           userId: user.id,
+          orgId,
           email: user.emailAddresses[0]?.emailAddress || '',
           role: userRole,
           plan: userPlan
@@ -111,6 +116,25 @@ export function requireAuth(roles?: string[]) {
       res.status(500).json({ error: 'Internal server error during authentication' });
       return;
     }
+  };
+}
+
+/**
+ * Middleware to require a specific organization context
+ */
+export function requireOrg() {
+  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const authReq = req as AuthRequest;
+    
+    if (!authReq.auth?.orgId) {
+      res.status(403).json({ 
+        error: 'Forbidden: Organization context required',
+        message: 'This endpoint must be called within an organization context'
+      });
+      return;
+    }
+
+    next();
   };
 }
 
