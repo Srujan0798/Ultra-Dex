@@ -1,8 +1,8 @@
-# Ultra-Dex v3.0.0
+# Ultra-Dex v3.1.0
 
 > AI orchestration meta-layer — route tasks across 17+ providers, coordinate autonomous agent swarms, and maintain persistent memory with semantic search.
 
-[![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)](https://github.com/Srujan0798/Ultra-Dex)
+[![Version](https://img.shields.io/badge/version-3.1.0-blue.svg)](https://github.com/Srujan0798/Ultra-Dex)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D22.0.0-brightgreen.svg)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-100%25-blue.svg)](tsconfig.json)
@@ -133,7 +133,7 @@ Create a `.env` file in your project root:
 OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-...
 DEEPSEEK_API_KEY=sk-...
-GOOGLE_GENERATIVE_AI_API_KEY=...
+GOOGLE_API_KEY=...
 
 # --- Infrastructure ---
 PORT=3000
@@ -168,4 +168,4 @@ MIT — see [LICENSE](LICENSE)
 
 ---
 
-**Ultra-Dex v3.0.0** — The Diamond State of AI Orchestration.
+**Ultra-Dex v3.1.0** — The Diamond State of AI Orchestration.
