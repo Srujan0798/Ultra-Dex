@@ -1,38 +1,45 @@
-# Ultra-Dex Documentation Index
+# Ultra-Dex Documentation Hub
 
-Use this file as the primary documentation entrypoint.
+Use this page to navigate docs by goal, not by folder guessing.
 
-## Core documents
+## Start here (recommended path)
 
-| Need | File |
+1. `ARCHITECTURE.md` — understand system shape.
+2. `API.md` — understand exposed interfaces.
+3. `DEPLOYMENT.md` — understand deployment/runtime requirements.
+4. `OPERATIONS.md` — understand production operations.
+5. `PROJECT_STRUCTURE.md` — map code to responsibility.
+
+## Quick navigation by intent
+
+| I need to... | Read |
 | --- | --- |
-| Architecture overview | `ARCHITECTURE.md` |
-| API reference | `API.md` |
-| Deployment | `DEPLOYMENT.md` |
-| Operations | `OPERATIONS.md` |
-| Project structure | `PROJECT_STRUCTURE.md` |
+| Understand system design | `ARCHITECTURE.md`, `core/ARCHITECTURE.md` |
+| Use API endpoints | `API.md`, `api/` |
+| Deploy and run in production | `DEPLOYMENT.md`, `ops/`, `enterprise/DEPLOYMENT_GUIDE.md` |
+| Operate and monitor | `OPERATIONS.md`, `quality/`, `verification-logs/` |
+| Integrate external tools/providers | `specs/`, `api/specs/`, `AGENT_INTEGRATION_GUIDE.md` |
+| Review security posture | `security/`, root `SECURITY.md` |
+| Review roadmap/planning | `planning/`, `core/ROADMAP.md`, `strategy/` |
 
-## Domain-specific docs
+## Documentation domains
 
-| Domain | Directory |
-| --- | --- |
-| Security | `security/` |
-| Enterprise | `enterprise/` |
-| Guides | `guides/` |
-| Specs | `specs/` |
-| APIs and schemas | `api/`, `schemas/`, `udcf/` |
-| Planning and roadmap | `planning/`, `core/`, `strategy/` |
+| Domain | Directory | What it contains |
+| --- | --- | --- |
+| API and contracts | `api/`, `specs/`, `schemas/`, `udcf/` | Interfaces, protocols, schema definitions |
+| Product and architecture | `core/`, `architecture/`, `project/` | Design, implementation model, structure |
+| Operations and quality | `ops/`, `quality/`, `testing/`, `verification-logs/` | Runtime operations, quality checks, testing practices |
+| Security and compliance | `security/`, `compliance/`, `governance/` | Security guides, controls, policy artifacts |
+| Enterprise and business | `enterprise/`, `investors/`, `strategy/`, `marketing/` | Enterprise rollout, strategy, messaging |
+| Internal execution | `internal/`, `reports/`, `analysis/` | Internal planning and completion artifacts |
 
-## Internal and historical docs
+## Root vs docs policy
 
-| Type | Directory |
-| --- | --- |
-| Internal execution notes | `internal/` |
-| Archived planning history | `archive-planning/` |
-| Archived root milestone docs | `internal/archive/root-status/` |
+- Root docs are concise operational entrypoints.
+- `docs/` contains full-depth technical and operational documentation.
+- Historical or milestone-heavy documents are archived under `docs/internal/archive/`.
 
-## Root documentation policy
+## Historical archives
 
-- Keep root docs short and high-signal.
-- Keep detailed long-form content under `docs/`.
-- Move completed milestone/handoff documents into archive folders.
+- Archived root milestone/handoff docs: `internal/archive/root-status/`
+- Legacy planning snapshots: `archive-planning/`

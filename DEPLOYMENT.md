@@ -1,42 +1,54 @@
-# Deployment Quick Guide
+# Deployment Guide (Root Quick Ops)
 
-This root file is the compact deployment entrypoint.  
-For full details, use `docs/DEPLOYMENT.md`.
+This root guide is optimized for fast deployment and verification.  
+For platform-specific depth, use `docs/DEPLOYMENT.md`.
 
-## 1) Runtime requirements
+## 1. Runtime baseline
 
-- Node.js `22.12+` (or `20.19+` for Vite compatibility)
-- npm `10+`
-- Optional for scale: Redis (`REDIS_URL`)
+| Requirement | Value |
+| --- | --- |
+| Node.js | `22.12+` (or `20.19+`) |
+| npm | `10+` |
+| Build artifacts | CLI + dashboard via `npm run build` |
+| Optional infra | Redis (`REDIS_URL`) for distributed caching/metering paths |
 
-## 2) Build and run
+## 2. Fast local/prod startup
 
 ```bash
 npm install
+cp .env.example .env
 npm run build
 npm run start:server
 ```
 
-Server default: `http://localhost:3000`
+Default address: `http://localhost:3000`
 
-## 3) Minimum environment variables
+## 3. Environment variable checklist
 
-At least one AI provider key:
+### Required (minimum)
+
+At least one provider key:
 
 ```bash
 OPENAI_API_KEY=...
-# or ANTHROPIC_API_KEY=..., GOOGLE_API_KEY=..., etc.
+# or ANTHROPIC_API_KEY / GOOGLE_API_KEY / others
 ```
 
-Core production settings:
+Core runtime:
 
 ```bash
 NODE_ENV=production
 PORT=3000
-REDIS_URL=redis://127.0.0.1:6379
 ```
 
-If using auth/billing:
+### Recommended production
+
+```bash
+REDIS_URL=redis://127.0.0.1:6379
+LOG_LEVEL=info
+```
+
+### If auth + billing are enabled
 
 ```bash
 CLERK_SECRET_KEY=...
@@ -44,20 +56,38 @@ STRIPE_SECRET_KEY=...
 STRIPE_WEBHOOK_SECRET=...
 ```
 
-## 4) Verify deployment
+## 4. Post-deploy health checks
 
-- `GET /api/status` returns healthy response
-- Billing webhook endpoint reachable: `POST /api/billing/webhook`
-- Dashboard assets serve correctly from `apps/dashboard/dist`
+Run these checks after each deploy:
 
-## 5) Canonical deployment docs
+1. `GET /api/status` returns healthy payload.
+2. API routes require auth where expected.
+3. Billing webhook endpoint responds on `POST /api/billing/webhook`.
+4. Dashboard static assets load from `apps/dashboard/dist`.
+5. Logs appear in your configured monitoring stack.
 
-- `docs/DEPLOYMENT.md` — full deployment guide
-- `docs/OPERATIONS.md` — operations, monitoring, maintenance
-- `SECURITY.md` — security and disclosure policy
+## 5. Release quality gates
 
-## Historical deployment docs
+Before promoting a build:
 
-Previous long-form deployment notes are archived in:
+```bash
+npm run lint
+npx tsc --noEmit
+npm test
+npm run build
+```
 
-`docs/internal/archive/root-status/`
+## 6. Operational references
+
+| Need | File |
+| --- | --- |
+| Full deployment flows | `docs/DEPLOYMENT.md` |
+| Ops procedures | `docs/OPERATIONS.md` |
+| Security process | `SECURITY.md` |
+| Integration dependencies | `INTEGRATIONS.md` |
+
+## 7. Known pitfalls
+
+- Running Node below `22.12` may trigger Vite engine warnings.
+- Missing `REDIS_URL` is supported, but Redis-backed features become best-effort/fallback.
+- Missing Stripe/Clerk variables will break billing/auth routes if those features are enabled.
