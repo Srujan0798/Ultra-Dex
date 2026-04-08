@@ -22,14 +22,14 @@ jobs:
       - name: Verify fast-path CLI commands
         run: |
           set -euo pipefail
-          timeout 45s node apps/cli/bin/ultra-dex.js --help
-          timeout 45s node apps/cli/bin/ultra-dex.js run planner --help
-          timeout 45s node apps/cli/bin/ultra-dex.js quality --help
-          timeout 45s node apps/cli/bin/ultra-dex.js mcp-remote --help
-          timeout 45s node apps/cli/bin/ultra-dex.js env --help
+          timeout 45s ./apps/cli/bin/ultra-dex.js --help
+          timeout 45s ./apps/cli/bin/ultra-dex.js run planner --help
+          timeout 45s ./apps/cli/bin/ultra-dex.js quality --help
+          timeout 45s ./apps/cli/bin/ultra-dex.js mcp-remote --help
+          timeout 45s ./apps/cli/bin/ultra-dex.js env --help
       - name: Verify full-entrypoint CLI commands
         run: |
           set -euo pipefail
-          timeout 45s node apps/cli/bin/ultra-dex.js status --help
-          timeout 45s node apps/cli/bin/ultra-dex.js security --help
-          timeout 45s node apps/cli/bin/ultra-dex.js architect --help
+          timeout 45s ./apps/cli/bin/ultra-dex.js status --help
+          timeout 45s ./apps/cli/bin/ultra-dex.js security --help
+          timeout 45s ./apps/cli/bin/ultra-dex.js architect --help
