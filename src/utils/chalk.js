@@ -5,6 +5,9 @@ function identity(value) {
   return value;
 }
 
+// Pattern for hex color codes (e.g., #ff0000, #f00)
+const HEX_COLOR_PATTERN = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
+
 const passthrough = new Proxy(identity, {
   get() {
     return passthrough;
@@ -14,7 +17,8 @@ const passthrough = new Proxy(identity, {
       return passthrough;
     }
 
-    if (typeof args[0] === 'string' && args[0].startsWith('#')) {
+    // Handle chalk.hex('#ff0000') style calls - only for actual hex colors
+    if (typeof args[0] === 'string' && HEX_COLOR_PATTERN.test(args[0])) {
       return passthrough;
     }
 
