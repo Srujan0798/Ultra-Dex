@@ -8,6 +8,7 @@ import "reflect-metadata";
 
 import { describe, it, beforeEach, mock } from 'node:test';
 import assert from 'node:assert';
+import Stripe from 'stripe';
 import { WebhookHandler } from '../../src/core/billing/webhook-handler.js';
 import { usageMeter } from '../../src/core/billing/usage-meter.js';
 import { clerk } from '../../src/core/auth/clerk-client.js';
@@ -61,6 +62,36 @@ describe('WebhookHandler', () => {
     // Restore
     if (originalSecret) {
       process.env.STRIPE_WEBHOOK_SECRET = originalSecret;
+    }
+  });
+
+  it('should verify webhook with valid signature', () => {
+    const originalSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test_secret';
+
+    try {
+      const stripe = new Stripe('sk_test_dummy', { apiVersion: '2024-12-18.acacia' });
+      const payload = JSON.stringify({
+        id: 'evt_test_valid',
+        object: 'event',
+        type: 'checkout.session.completed',
+        created: Math.floor(Date.now() / 1000),
+        data: { object: {} }
+      });
+      const signature = stripe.webhooks.generateTestHeaderString({
+        payload,
+        secret: process.env.STRIPE_WEBHOOK_SECRET
+      });
+
+      const event = handler.verifyWebhook(Buffer.from(payload), signature);
+      assert.equal(event.id, 'evt_test_valid');
+      assert.equal(event.type, 'checkout.session.completed');
+    } finally {
+      if (originalSecret) {
+        process.env.STRIPE_WEBHOOK_SECRET = originalSecret;
+      } else {
+        delete process.env.STRIPE_WEBHOOK_SECRET;
+      }
     }
   });
 

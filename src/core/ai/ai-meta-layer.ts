@@ -15,6 +15,8 @@ import { performance } from "perf_hooks";
 import { RateLimiter } from '../infrastructure/rate-limiter.js';
 import { StreamPipeline } from '../infrastructure/stream-pipeline.js';
 import { RedisCache } from '../cache/redis-cache.js';
+import { usageMeter } from '../billing/usage-meter.js';
+import { billingService } from '../billing/billing-service.js';
 import {
   container,
   registerAlias,
@@ -277,6 +279,7 @@ let AIMetaLayer = class {
           this.metrics.cacheHits++;
           this.metrics.successfulRequests++;
           this.updateMetrics(startTime, cachedResult.usage);
+          this.recordUsageFromResult(options, cachedResult);
           return cachedResult;
         }
         this.metrics.cacheMisses++;
@@ -298,6 +301,7 @@ let AIMetaLayer = class {
       if (this.config.enableMonitoring) {
         this.logCall(model, messages.length, result, performance.now() - startTime);
       }
+      this.recordUsageFromResult(options, result);
       return result;
     } catch (error) {
       this.metrics.failedRequests++;
@@ -577,6 +581,35 @@ let AIMetaLayer = class {
       tokens: result.usage?.totalTokens,
       provider: this.selectProvider({ metadata: { model } })?.defaultModel,
       timestamp: (/* @__PURE__ */ new Date()).toISOString()
+    });
+  }
+  extractUsageTokens(result) {
+    const usage = result?.usage;
+    if (!usage) return 0;
+    if (typeof usage.totalTokens === "number") return usage.totalTokens;
+    if (typeof usage.total_tokens === "number") return usage.total_tokens;
+    if (typeof usage.outputTokens === "number") return usage.outputTokens;
+    return 0;
+  }
+  recordUsageFromResult(options, result) {
+    const userId = options?.metadata?.userId;
+    if (typeof userId !== "string" || userId.length === 0) {
+      return;
+    }
+    const tokens = this.extractUsageTokens(result);
+    try {
+      usageMeter.increment(userId, { requests: 1, tokens });
+    } catch (error) {
+      logger.warn("Failed to increment usage meter", {
+        userId,
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+    billingService.recordUsage(userId, 1, tokens).catch((error) => {
+      logger.warn("Failed to record billing usage from AI call", {
+        userId,
+        error: error instanceof Error ? error.message : String(error)
+      });
     });
   }
   /**

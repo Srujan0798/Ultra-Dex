@@ -1,6 +1,6 @@
 /**
  * Redis client helper (dynamic import)
- * Returns a connected redis client when REDIS_URL is set and the redis package is available.
+ * Returns a connected redis client when REDIS_URL is set and ioredis is available.
  * Placed in src/core/billing so other billing modules can import with './redis-client.js'
  */
 
@@ -22,16 +22,30 @@ export async function getRedisClient(): Promise<any | null> {
 
   initializing = true;
   try {
-    const redisModule = await import('redis');
-    const client = redisModule.createClient({ url: process.env.REDIS_URL });
+    const { default: Redis } = await import('ioredis');
+    const client = new Redis(process.env.REDIS_URL, {
+      maxRetriesPerRequest: 3
+    });
     client.on('error', (err: Error) => {
       logError('Redis client error', err);
     });
 
-    await client.connect();
-    cachedClient = client;
+    await new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error('Redis connection timeout')), 5000);
+      client.once('ready', () => {
+        clearTimeout(timeout);
+        resolve();
+      });
+      client.once('error', (err: Error) => {
+        clearTimeout(timeout);
+        reject(err);
+      });
+    });
 
-    logEvent('redis_client_connected', { url: process.env.REDIS_URL });
+    cachedClient = client;
+    initializing = false;
+
+    logEvent('redis_client_connected', { configured: true });
     return cachedClient;
   } catch (err) {
     logError('Failed to initialize redis client', err as Error);

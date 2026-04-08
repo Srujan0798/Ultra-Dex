@@ -76,37 +76,34 @@ export class WebhookHandler {
    * Handle webhook event with idempotency
    */
   async handleEvent(event: Stripe.Event): Promise<void> {
-    // Check idempotency using Redis if available, fallback to in-memory Set
-    const redisClient = await getRedisClient();
-    const redisKey = `stripe:processed:${event.id}`;
-    try {
-      if (redisClient) {
-        const exists = await redisClient.get(redisKey);
-        if (exists) {
-          logEvent('webhook_duplicate', { eventId: event.id, type: event.type });
-          return;
-        }
-      }
-    } catch (err) {
-      logError('Redis idempotency check failed', err as Error, { eventId: event.id });
-      // fall through to in-memory check
-    }
-
+    // In-memory duplicate guard (fallback path)
     if (processedEvents.has(event.id)) {
       logEvent('webhook_duplicate', { eventId: event.id, type: event.type });
       return;
     }
 
+    // Redis duplicate guard (atomic claim when available)
+    const redisClient = await getRedisClient();
+    const redisKey = `stripe:processed:${event.id}`;
+    let redisClaimed = false;
+    try {
+      if (redisClient) {
+        const claim = await redisClient.set(redisKey, 'processing', 'EX', 7 * 24 * 60 * 60, 'NX');
+        if (claim === null) {
+          logEvent('webhook_duplicate', { eventId: event.id, type: event.type });
+          return;
+        }
+        redisClaimed = true;
+      }
+    } catch (err) {
+      logError('Redis idempotency check failed', err as Error, { eventId: event.id });
+    }
+
     try {
       await this.dispatchEvent(event);
 
-      // Mark as processed (Redis with TTL if available)
-      try {
-        if (redisClient) {
-          await redisClient.set(redisKey, '1', { EX: 7 * 24 * 60 * 60 });
-        }
-      } catch (err) {
-        logError('Failed to set Redis processed event', err as Error, { eventId: event.id });
+      if (redisClient && redisClaimed) {
+        await redisClient.set(redisKey, 'processed', 'EX', 7 * 24 * 60 * 60);
       }
       processedEvents.add(event.id);
 
@@ -116,6 +113,13 @@ export class WebhookHandler {
         created: event.created 
       });
     } catch (error) {
+      if (redisClient && redisClaimed) {
+        try {
+          await redisClient.del(redisKey);
+        } catch (cleanupError) {
+          logError('Failed to rollback Redis processed event marker', cleanupError as Error, { eventId: event.id });
+        }
+      }
       logError('Webhook event processing failed', error as Error, { 
         eventId: event.id, 
         type: event.type 
