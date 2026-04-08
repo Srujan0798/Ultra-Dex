@@ -1,3 +1,4 @@
+// @ts-check
 // Copyright (c) 2026 Ultra-Dex
 // src/utils/config-loader.js
 

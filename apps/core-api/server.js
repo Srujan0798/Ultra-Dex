@@ -8,6 +8,8 @@ import { Server } from 'socket.io';
 import { ultraDex } from '../../src/core/index.js';
 import { agentOrchestrator } from '../../src/core/orchestration/index.js';
 import { ppmManager } from '../../src/core/memory/manager.js';
+import { HealthService } from '../../src/core/system/health-service.js';
+import { getAuditDB } from '../../src/core/governance/audit-db.js';
 import { createDefaultRegistry } from '../../mcp/servers/index.js';
 import { config } from './config.js';
 import { errorHandler } from './middleware/error-handler.js';
@@ -31,6 +33,7 @@ class UltraDexAPIServer {
     this.port = options.port || process.env.PORT || 4000;
     this.app = express();
     this.server = http.createServer(this.app);
+    this.healthService = new HealthService({ appName: 'ultra-dex-api', version: config.version });
     this.io = new Server(this.server, {
       cors: {
         origin: process.env.CORS_ORIGIN || '*',
@@ -38,10 +41,101 @@ class UltraDexAPIServer {
       }
     });
     
+    this.setupHealthChecks();
     this.setupMiddlewares();
     this.setupRoutes();
     this.setupSocketIO();
     this.setupErrorHandling();
+  }
+
+  setupHealthChecks() {
+    this.healthService.addReadinessCheck({
+      name: 'di-resolved',
+      check: async () => {
+        const resolved = {
+          ultraDex: Boolean(ultraDex),
+          agentOrchestrator: Boolean(agentOrchestrator),
+          memoryManager: Boolean(ppmManager)
+        };
+        const unresolved = Object.entries(resolved)
+          .filter(([, ok]) => !ok)
+          .map(([name]) => name);
+        if (unresolved.length > 0) {
+          throw new Error(`DI unresolved dependencies: ${unresolved.join(', ')}`);
+        }
+        return { resolved };
+      }
+    });
+
+    this.healthService.addReadinessCheck({
+      name: 'memory-initialized',
+      check: async () => {
+        const initialized = ppmManager?.initialized === true;
+        if (!initialized) {
+          throw new Error('Memory manager is not initialized');
+        }
+        return { initialized };
+      }
+    });
+
+    this.healthService.addDeepCheck({
+      name: 'redis-connected',
+      check: async () => {
+        const redisUrl = process.env.REDIS_URL;
+        if (!redisUrl) {
+          throw new Error('REDIS_URL is not configured');
+        }
+        const { default: Redis } = await import('ioredis');
+        const client = new Redis(redisUrl, {
+          lazyConnect: true,
+          connectTimeout: 2000,
+          maxRetriesPerRequest: 1,
+          enableOfflineQueue: false
+        });
+        try {
+          await client.connect();
+          const pong = await client.ping();
+          if (pong !== 'PONG') {
+            throw new Error(`Unexpected Redis ping response: ${pong}`);
+          }
+          return { response: pong };
+        } finally {
+          await client.quit().catch(() => {
+            client.disconnect();
+          });
+        }
+      }
+    });
+
+    this.healthService.addDeepCheck({
+      name: 'audit-db-writable',
+      check: async () => {
+        const db = getAuditDB();
+        const entry = await db.insert({
+          action: 'health_probe',
+          agentId: 'system',
+          task: 'audit_db_writable',
+          outcome: 'ok',
+          details: { source: 'health/deep' }
+        });
+        return { entryId: entry.id };
+      }
+    });
+
+    this.healthService.addDeepCheck({
+      name: 'provider-reachable',
+      check: async () => {
+        const providerStatus = ultraDex?.ai?.getProviderStatus?.();
+        if (!providerStatus) {
+          throw new Error('Provider status is unavailable');
+        }
+        const reachable = Object.values(providerStatus).some((provider) => provider?.available);
+        if (!reachable) {
+          throw new Error('No reachable provider configured');
+        }
+        return { reachable, providerStatus };
+      }
+    });
   }
 
   setupMiddlewares() {
@@ -87,21 +181,7 @@ class UltraDexAPIServer {
   }
 
   setupRoutes() {
-    // Health check endpoint
-    this.app.get('/health', (req, res) => {
-      res.status(200).json({
-        status: 'OK',
-        timestamp: new Date().toISOString(),
-        version: config.version,
-        uptime: process.uptime(),
-        memory: {
-          rss: process.memoryUsage().rss,
-          heapTotal: process.memoryUsage().heapTotal,
-          heapUsed: process.memoryUsage().heapUsed,
-          external: process.memoryUsage().external
-        }
-      });
-    });
+    this.healthService.registerRoutes(this.app, { basePath: '/health' });
     
     // API routes with authentication
     this.app.use('/api/v1/agents', authenticateToken, agentsRouter);

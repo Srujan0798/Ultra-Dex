@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: ultra-dex
+    runtime: node
+    plan: standard
+    buildCommand: npm install && npm run build
+    startCommand: node --import=tsx src/core/server/production-server.ts
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: BUS_TYPE
+        value: memory
+      - key: LOG_LEVEL
+        value: info
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+    healthCheckPath: /health
+    autoDeploy: true

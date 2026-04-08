@@ -22,7 +22,7 @@ export class EnvironmentDetector {
    * Get comprehensive system information
    * @returns {Promise<object>} System information
    */
-  async getSystemInfo() {
+  async getSystemInfo(): Promise<Record<string, unknown>> {
     if (this.systemInfo) {
       return this.systemInfo;
     }
@@ -49,7 +49,7 @@ export class EnvironmentDetector {
    * @param {string} command - Command to check
    * @returns {Promise<boolean>} True if available
    */
-  async isCommandAvailable(command) {
+  async isCommandAvailable(command: string): Promise<boolean> {
     try {
       await execAsync(`which ${command} || true`);
       return true;
@@ -64,7 +64,7 @@ export class EnvironmentDetector {
    * @param {string} versionFlag - Version flag (e.g., '--version', '-v')
    * @returns {Promise<string|null>} Version string or null if not available
    */
-  async getCommandVersion(command, versionFlag = '--version') {
+  async getCommandVersion(command: string, versionFlag: string = '--version'): Promise<string | null> {
     try {
       const { stdout } = await execAsync(`${command} ${versionFlag}`);
       return stdout.trim().split('\n')[0]; // Take first line to avoid extra output
@@ -77,7 +77,7 @@ export class EnvironmentDetector {
    * Detect development environment
    * @returns {Promise<object>} Environment details
    */
-  async detectDevEnvironment() {
+  async detectDevEnvironment(): Promise<Record<string, unknown>> {
     const env = {
       node: await this.getNodeInfo(),
       npm: await this.getNpmInfo(),
@@ -98,7 +98,7 @@ export class EnvironmentDetector {
    * Get Node.js information
    * @returns {Promise<object>} Node info
    */
-  async getNodeInfo() {
+  async getNodeInfo(): Promise<Record<string, unknown>> {
     const available = await this.isCommandAvailable('node');
     if (!available) {
       return { available: false };
@@ -120,7 +120,7 @@ export class EnvironmentDetector {
    * Get NPM information
    * @returns {Promise<object>} NPM info
    */
-  async getNpmInfo() {
+  async getNpmInfo(): Promise<Record<string, unknown>> {
     const available = await this.isCommandAvailable('npm');
     if (!available) {
       return { available: false };
@@ -139,7 +139,7 @@ export class EnvironmentDetector {
    * Get Git information
    * @returns {Promise<object>} Git info
    */
-  async getGitInfo() {
+  async getGitInfo(): Promise<Record<string, unknown>> {
     const available = await this.isCommandAvailable('git');
     if (!available) {
       return { available: false };
@@ -172,7 +172,7 @@ export class EnvironmentDetector {
    * Get Docker information
    * @returns {Promise<object>} Docker info
    */
-  async getDockerInfo() {
+  async getDockerInfo(): Promise<Record<string, unknown>> {
     const available = await this.isCommandAvailable('docker');
     if (!available) {
       return { available: false };
@@ -183,7 +183,7 @@ export class EnvironmentDetector {
 
     try {
       version = await this.getCommandVersion('docker', '--version');
-      
+
       // Check if daemon is running
       await execAsync('docker ps');
       daemonRunning = true;
@@ -203,10 +203,10 @@ export class EnvironmentDetector {
    * Get Python information
    * @returns {Promise<object>} Python info
    */
-  async getPythonInfo() {
+  async getPythonInfo(): Promise<Record<string, unknown>> {
     const py3Available = await this.isCommandAvailable('python3');
     const py2Available = await this.isCommandAvailable('python');
-    
+
     if (py3Available) {
       const version = await this.getCommandVersion('python3', '--version');
       return {
@@ -233,7 +233,7 @@ export class EnvironmentDetector {
    * @param {object} env - Environment info
    * @returns {Promise<object>} Capabilities
    */
-  async detectCapabilities(env) {
+  async detectCapabilities(env: Record<string, unknown>): Promise<Record<string, boolean>> {
     const capabilities = {
       canRunDocker: env.docker?.available && env.docker.daemonRunning,
       canRunNode: env.node?.available,
@@ -252,7 +252,7 @@ export class EnvironmentDetector {
    * Check network connectivity
    * @returns {Promise<boolean>} True if network is accessible
    */
-  async checkNetworkConnectivity() {
+  async checkNetworkConnectivity(): Promise<boolean> {
     try {
       await execAsync('ping -c 1 -W 1 8.8.8.8 || ping -c 1 -t 1 8.8.8.8');
       return true;
@@ -265,7 +265,7 @@ export class EnvironmentDetector {
    * Check internet access
    * @returns {Promise<boolean>} True if internet is accessible
    */
-  async checkInternetAccess() {
+  async checkInternetAccess(): Promise<boolean> {
     try {
       await execAsync('curl -s --connect-timeout 5 https://www.google.com');
       return true;
@@ -278,7 +278,7 @@ export class EnvironmentDetector {
    * Check write permissions in current directory
    * @returns {Promise<boolean>} True if writable
    */
-  async checkWritePermissions() {
+  async checkWritePermissions(): Promise<boolean> {
     const testFile = path.join(process.cwd(), '.ultra-dex-write-test');
     try {
       await fs.writeFile(testFile, 'test');
@@ -294,7 +294,7 @@ export class EnvironmentDetector {
    * @param {string} command - Command to find
    * @returns {Promise<string|null>} Path or null if not found
    */
-  async getCommandPath(command) {
+  async getCommandPath(command: string): Promise<string | null> {
     try {
       const { stdout } = await execAsync(`which ${command}`);
       return stdout.trim();
@@ -307,13 +307,13 @@ export class EnvironmentDetector {
    * Detect project type based on files in current directory
    * @returns {Promise<string>} Project type
    */
-  async detectProjectType() {
+  async detectProjectType(): Promise<string> {
     try {
       const files = await fs.readdir(process.cwd());
-      
+
       if (files.includes('package.json')) {
         const packageJson = JSON.parse(await fs.readFile('package.json', 'utf8'));
-        
+
         if (packageJson.dependencies?.react || packageJson.devDependencies?.react) {
           return 'react';
         }
@@ -337,27 +337,27 @@ export class EnvironmentDetector {
         }
         return 'node';
       }
-      
+
       if (files.includes('requirements.txt') || files.includes('setup.py')) {
         return 'python';
       }
-      
+
       if (files.includes('go.mod')) {
         return 'go';
       }
-      
+
       if (files.includes('Cargo.toml')) {
         return 'rust';
       }
-      
+
       if (files.includes('Gemfile')) {
         return 'ruby';
       }
-      
+
       if (files.includes('composer.json')) {
         return 'php';
       }
-      
+
       return 'generic';
     } catch {
       return 'generic';
@@ -368,7 +368,7 @@ export class EnvironmentDetector {
    * Get detailed environment report
    * @returns {Promise<string>} Environment report
    */
-  async getEnvironmentReport() {
+  async getEnvironmentReport(): Promise<string> {
     const env = await this.detectDevEnvironment();
     const projectType = await this.detectProjectType();
 

@@ -1,3 +1,4 @@
+// @ts-check
 /**
  * Safe File System Utilities
  * Provides atomic write operations and safe file handling

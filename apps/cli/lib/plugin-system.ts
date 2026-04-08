@@ -26,7 +26,7 @@ export class PluginManager {
   /**
    * Initialize the plugin system
    */
-  async initialize() {
+  async initialize(): Promise<void> {
     await this.ensurePluginDirectory();
     await this.loadInstalledPlugins();
   }
@@ -34,7 +34,7 @@ export class PluginManager {
   /**
    * Ensure the plugin directory exists
    */
-  async ensurePluginDirectory() {
+  async ensurePluginDirectory(): Promise<void> {
     try {
       await fs.mkdir(this.pluginDir, { recursive: true });
     } catch (error) {
@@ -45,7 +45,7 @@ export class PluginManager {
   /**
    * Load all installed plugins
    */
-  async loadInstalledPlugins() {
+  async loadInstalledPlugins(): Promise<void> {
     try {
       const files = await fs.readdir(this.pluginDir);
       for (const file of files) {
@@ -61,7 +61,7 @@ export class PluginManager {
   /**
    * Load a plugin from a file
    */
-  async loadPlugin(pluginPath) {
+  async loadPlugin(pluginPath: string): Promise<void> {
     try {
       const pluginModule = await import(pluginPath);
       const plugin = pluginModule.default || pluginModule;
@@ -93,7 +93,7 @@ export class PluginManager {
   /**
    * Register a hook that plugins can attach to
    */
-  registerHook(hookName, _description = '') {
+  registerHook(hookName: string, _description = ''): void {
     if (!this.hooks.has(hookName)) {
       this.hooks.set(hookName, []);
     }
@@ -102,7 +102,7 @@ export class PluginManager {
   /**
    * Attach a function to a hook
    */
-  attachToHook(hookName, pluginName, callback) {
+  attachToHook(hookName: string, pluginName: string, callback: (...args: unknown[]) => unknown): void {
     if (!this.hooks.has(hookName)) {
       this.hooks.set(hookName, []);
     }
@@ -114,7 +114,7 @@ export class PluginManager {
   /**
    * Execute all functions attached to a hook
    */
-  async executeHook(hookName, ...args) {
+  async executeHook(hookName: string, ...args: unknown[]): Promise<unknown> {
     if (!this.hooks.has(hookName)) {
       return args[0]; // Return original value if no hooks
     }
@@ -144,7 +144,7 @@ export class PluginManager {
   /**
    * Install a plugin from a local file or npm package
    */
-  async installPlugin(pluginSource, _options = {}) {
+  async installPlugin(pluginSource: string, _options = {}): Promise<{ success: boolean; path?: string; error?: string }> {
     try {
       let pluginPath;
 
@@ -155,12 +155,12 @@ export class PluginManager {
         // NPM package installation coming in v3.6.0
         throw new Error(
           `NPM plugin installation coming in v3.6.0 (March 2026).\n\n` +
-            `For now, install plugins from local files:\n` +
-            `  ultra-dex plugin install ./path/to/plugin.js\n\n` +
-            `Or clone from GitHub:\n` +
-            `  git clone https://github.com/user/ultra-dex-plugin-name\n` +
-            `  ultra-dex plugin install ./ultra-dex-plugin-name/index.js\n\n` +
-            `Community plugins: https://github.com/topics/ultra-dex-plugin`
+          `For now, install plugins from local files:\n` +
+          `  ultra-dex plugin install ./path/to/plugin.js\n\n` +
+          `Or clone from GitHub:\n` +
+          `  git clone https://github.com/user/ultra-dex-plugin-name\n` +
+          `  ultra-dex plugin install ./ultra-dex-plugin-name/index.js\n\n` +
+          `Community plugins: https://github.com/topics/ultra-dex-plugin`
         );
       }
 
@@ -187,7 +187,7 @@ export class PluginManager {
   /**
    * Uninstall a plugin
    */
-  async uninstallPlugin(pluginName) {
+  async uninstallPlugin(pluginName: string): Promise<{ success: boolean; error?: string }> {
     const plugin = this.plugins.get(pluginName);
     if (!plugin) {
       throw new Error(`Plugin ${pluginName} not found`);
@@ -211,7 +211,7 @@ export class PluginManager {
   /**
    * Get list of installed plugins
    */
-  getInstalledPlugins() {
+  getInstalledPlugins(): Array<Record<string, unknown>> {
     return Array.from(this.plugins.values()).map((plugin) => ({
       name: plugin.name,
       version: plugin.version,
@@ -224,14 +224,14 @@ export class PluginManager {
   /**
    * Get plugin by name
    */
-  getPlugin(name) {
+  getPlugin(name: string): unknown {
     return this.plugins.get(name);
   }
 
   /**
    * Activate all loaded plugins
    */
-  async activatePlugins(cliProgram) {
+  async activatePlugins(cliProgram: unknown): Promise<void> {
     for (const [name, plugin] of this.plugins) {
       try {
         if (typeof plugin.activate === 'function') {
@@ -247,7 +247,7 @@ export class PluginManager {
   /**
    * Get all registered hooks
    */
-  getHooks() {
+  getHooks(): string[] {
     return Array.from(this.hooks.keys());
   }
 }

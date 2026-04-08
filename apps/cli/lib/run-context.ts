@@ -2,14 +2,14 @@
 
 const TOOL_PATTERN = />>\s*(READ_CODE|WRITE_CODE|RUN_SHELL|DELEGATE)\s*:/i;
 
-export function truncateText(value, maxChars = 600) {
+export function truncateText(value: unknown, maxChars = 600): string {
   if (value === undefined || value === null) return '';
   const text = String(value).replace(/\s+/g, ' ').trim();
   if (text.length <= maxChars) return text;
   return `${text.slice(0, Math.max(0, maxChars - 3)).trim()}...`;
 }
 
-export function summarizePlan(planMarkdown, maxLines = 12) {
+export function summarizePlan(planMarkdown: string, maxLines = 12): string {
   if (!planMarkdown) return '';
 
   const lines = String(planMarkdown)
@@ -22,7 +22,7 @@ export function summarizePlan(planMarkdown, maxLines = 12) {
   return lines.join('\n');
 }
 
-export function summarizeState(state, { maxPhases = 6, maxRecentSteps = 5 } = {}) {
+export function summarizeState(state: unknown, { maxPhases = 6, maxRecentSteps = 5 }: { maxPhases?: number; maxRecentSteps?: number } = {}): string {
   if (!state || typeof state !== 'object') return '';
 
   const lines = [];
@@ -57,7 +57,7 @@ export function summarizeState(state, { maxPhases = 6, maxRecentSteps = 5 } = {}
   return lines.join('\n');
 }
 
-export function summarizeGraph(graph) {
+export function summarizeGraph(graph: unknown): string {
   if (!graph) return '';
 
   const parts = [];
@@ -71,7 +71,7 @@ export function summarizeGraph(graph) {
   return parts.join('\n');
 }
 
-export function summarizeMemories(memories, maxItems = 5) {
+export function summarizeMemories(memories: Array<Record<string, unknown>>, maxItems = 5): string {
   if (!Array.isArray(memories) || memories.length === 0) return '';
 
   return memories
@@ -79,14 +79,14 @@ export function summarizeMemories(memories, maxItems = 5) {
     .map((memory) => {
       const text = truncateText(memory.text || memory.content || '', 180);
       const tags = Array.isArray(memory.tags) && memory.tags.length > 0
-        ? ` [tags: ${memory.tags.slice(0, 4).join(', ')}]`
+        ? ` [tags: ${(memory.tags as string[]).slice(0, 4).join(', ')}]`
         : '';
       return `- ${text}${tags}`;
     })
     .join('\n');
 }
 
-export function summarizeInteractionHistory(interactionHistory, maxItems = 6) {
+export function summarizeInteractionHistory(interactionHistory: Array<Record<string, unknown>>, maxItems = 6): string {
   if (!Array.isArray(interactionHistory) || interactionHistory.length === 0) return '';
 
   return interactionHistory
@@ -109,7 +109,15 @@ export function buildPromptContextSection({
   memories,
   interactionHistory,
   history,
-} = {}) {
+}: {
+  contextMarkdown?: string;
+  planMarkdown?: string;
+  state?: unknown;
+  graph?: unknown;
+  memories?: Array<Record<string, unknown>>;
+  interactionHistory?: Array<Record<string, unknown>>;
+  history?: string;
+} = {}): string {
   const sections = [];
 
   if (contextMarkdown) {
@@ -147,7 +155,7 @@ export function buildPromptContextSection({
   return sections.length > 0 ? `${sections.join('\n\n')}\n\n` : '';
 }
 
-export function extractDecision(content = '') {
+export function extractDecision(content: string = ''): string {
   const text = String(content || '').trim();
   if (!text) {
     return 'Respond directly to the user.';
@@ -178,7 +186,7 @@ export function extractDecision(content = '') {
   return 'Respond directly to the user.';
 }
 
-export function stripDecisionLine(content = '') {
+export function stripDecisionLine(content: string = ''): string {
   return String(content || '')
     .replace(/^\s*DECISION:\s*.+$/gim, '')
     .replace(/\n{3,}/g, '\n\n')
@@ -192,7 +200,14 @@ export function createInteractionSummary({
   status,
   output,
   timestamp,
-} = {}) {
+}: {
+  agent?: string;
+  decision?: string;
+  action?: string;
+  status?: string;
+  output?: string;
+  timestamp?: string;
+} = {}): Record<string, string> {
   return {
     timestamp: timestamp || new Date().toISOString(),
     agent: agent || 'unknown',

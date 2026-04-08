@@ -1,3 +1,5 @@
+import type { Ora } from 'ora';
+
 import ora from './utils/ora.js';
 import chalk from 'chalk';
 import { gradients, colors } from './colors.js';
@@ -8,7 +10,7 @@ import { gradients, colors } from './colors.js';
  * @param {object} options - Spinner options
  * @returns {ora.Ora} Spinner instance
  */
-export function createSpinner(text = 'Processing...', options = {}) {
+export function createSpinner(text = 'Processing...', options = {}): Ora {
   return ora({
     text: ` ${text}`,
     spinner: 'dots',
@@ -21,7 +23,7 @@ export function createSpinner(text = 'Processing...', options = {}) {
  * Shows a success message with consistent checkmark
  * @param {string} text - Success message
  */
-export function showSuccess(text) {
+export function showSuccess(text: string): void {
   console.log(`${chalk.green('✔')} ${text}`);
 }
 
@@ -29,7 +31,7 @@ export function showSuccess(text) {
  * Shows an info message with consistent icon
  * @param {string} text - Info message
  */
-export function showInfo(text) {
+export function showInfo(text: string): void {
   console.log(`${chalk.blue('ℹ')} ${text}`);
 }
 
@@ -37,7 +39,7 @@ export function showInfo(text) {
  * Shows a warning message with consistent icon
  * @param {string} text - Warning message
  */
-export function showWarning(text) {
+export function showWarning(text: string): void {
   console.log(`${chalk.yellow('⚠')} ${text}`);
 }
 
@@ -45,7 +47,7 @@ export function showWarning(text) {
  * Shows an error message with consistent icon
  * @param {string} text - Error message
  */
-export function showError(text) {
+export function showError(text: string): void {
   console.log(`${chalk.red('✖')} ${text}`);
 }
 
@@ -55,9 +57,9 @@ export function showError(text) {
  * @param {Function} promiseFn - Async function to execute
  * @returns {Promise<any>} Result of the promise
  */
-export async function withLoading(text, promiseFn) {
+export async function withLoading(text: string, promiseFn: (spinner: Ora) => Promise<unknown>): Promise<unknown> {
   const spinner = createSpinner(text).start();
-  
+
   try {
     const result = await promiseFn(spinner);
     spinner.succeed(chalk.green(` ${text}`));
@@ -73,14 +75,14 @@ export async function withLoading(text, promiseFn) {
  * @param {string} title - Overall task title
  * @param {Array<{name: string, fn: Function}>} tasks - List of tasks to run
  */
-export async function runTaskSuite(title, tasks) {
+export async function runTaskSuite(title: string, tasks: Array<{ name: string, fn: () => unknown }>): Promise<void> {
   console.log(`\n${colors.brand(title)}`);
-  
+
   for (let i = 0; i < tasks.length; i++) {
     const task = tasks[i];
     const prefix = chalk.dim(`[${i + 1}/${tasks.length}]`);
     const spinner = createSpinner(`${prefix} ${task.name}`).start();
-    
+
     try {
       await task.fn();
       spinner.succeed(`${prefix} ${chalk.green(task.name)}`);
@@ -89,6 +91,6 @@ export async function runTaskSuite(title, tasks) {
       throw error;
     }
   }
-  
+
   console.log(gradients.success(`\n✨ ${title} completed successfully!\n`));
 }

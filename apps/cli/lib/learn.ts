@@ -17,7 +17,7 @@ class InteractiveTutorial {
     this.currentStep = 0;
   }
 
-  async start() {
+  async start(): Promise<void> {
     console.log(`\x1b[36m${tutorialData.title}\x1b[0m`);
     console.log(`${tutorialData.description}`);
     console.log(`Estimated duration: ${tutorialData.estimated_duration}`);
@@ -45,7 +45,7 @@ class InteractiveTutorial {
     this.rl.close();
   }
 
-  async showStep(step) {
+  async showStep(step: { id: number; title: string; description: string; explanation?: string; command?: string; challenge?: string }): Promise<void> {
     console.log(`\x1b[33mStep ${step.id}/${tutorialData.steps.length}: ${step.title}\x1b[0m`);
     console.log(step.description);
     console.log('');
@@ -75,7 +75,7 @@ class InteractiveTutorial {
     console.log('');
   }
 
-  async executeCommand(command) {
+  async executeCommand(command: string): Promise<void> {
     console.log(`\x1b[33mExecuting:\x1b[0m ${command}`);
     console.log('--- OUTPUT ---');
 
@@ -109,14 +109,14 @@ class InteractiveTutorial {
     }
   }
 
-  askQuestion(question) {
+  askQuestion(question: string): Promise<string> {
     return new Promise((resolve) => {
       this.rl.question(question, resolve);
     });
   }
 }
 
-async function runTutorial() {
+async function runTutorial(): Promise<void> {
   const tutorial = new InteractiveTutorial();
   await tutorial.start();
 }
