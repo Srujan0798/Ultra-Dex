@@ -3,18 +3,18 @@ import express from 'express';
 import type { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import Stripe from 'stripe';
 import * as Sentry from '@sentry/node';
 import { clerkAuthService } from '../auth/clerk-auth-service.js';
 import { billingService } from '../billing/billing-service.js';
+import { webhookHandler } from '../billing/webhook-handler.js';
 import { logAIRequest, logError, logEvent } from '../monitoring/better-stack-logger.js';
+import { requireAuth, requireAdmin, type AuthRequest } from '../auth/middleware.js';
+import { monitoring } from '../system/monitoring.js';
+import { posthog } from '../analytics/posthog-client.js';
+import { sentry } from '../analytics/sentry-client.js';
 
 const app = express();
 const sentryDsn = process.env.SENTRY_DSN;
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy', {
-  apiVersion: '2024-12-18.acacia'
-});
-const stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 if (sentryDsn) {
   Sentry.init({
@@ -83,10 +83,6 @@ function captureExceptionWithContext(error: unknown, req: Request, context: Reco
 }
 
 app.post('/api/billing/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
-  if (!stripeWebhookSecret) {
-    return res.status(500).json({ error: 'Stripe webhook secret not configured' });
-  }
-
   const signature = req.headers['stripe-signature'];
   if (typeof signature !== 'string') {
     return res.status(400).json({ error: 'Missing Stripe signature' });
@@ -97,8 +93,8 @@ app.post('/api/billing/webhook', express.raw({ type: 'application/json' }), asyn
   }
 
   try {
-    const event = stripe.webhooks.constructEvent(req.body, signature, stripeWebhookSecret);
-    await billingService.handleWebhook(event);
+    const event = webhookHandler.verifyWebhook(req.body, signature);
+    await webhookHandler.handleEvent(event);
     res.json({ received: true });
   } catch (error) {
     captureExceptionWithContext(error, req);
@@ -116,12 +112,29 @@ app.use((req, res, next) => {
 
   res.on('finish', () => {
     const latency = Date.now() - startTime;
+    const userId = extractUserId(req);
+    
+    // Track in monitoring service
+    monitoring.trackRequest(latency);
+    if (res.statusCode >= 400) {
+      monitoring.trackError();
+    }
+    
+    // Track in PostHog
+    posthog.track('http_request', {
+      method: req.method,
+      path: req.path,
+      statusCode: res.statusCode,
+      latency
+    }, userId);
+    
+    // Log to Better Stack
     logEvent('request', {
       method: req.method,
       path: req.path,
       statusCode: res.statusCode,
       latency,
-      userId: extractUserId(req)
+      userId
     });
   });
 
@@ -151,7 +164,13 @@ app.get('/api/status', (req, res) => {
   });
 });
 
-// Auth endpoints (previous)
+// Metrics endpoint (admin only)
+app.get('/metrics', requireAdmin, (req, res) => {
+  const metrics = monitoring.getMetrics();
+  res.json(metrics);
+});
+
+// Auth endpoints (public - no middleware)
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { email, password, name } = req.body;
@@ -192,16 +211,18 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-app.get('/api/user/profile', async (req, res) => {
-  const token = req.headers.authorization?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+app.get('/api/user/profile', requireAuth(), async (req, res) => {
+  const authReq = req as AuthRequest;
+  const userId = authReq.auth!.userId;
   
-  const user = await clerkAuthService.validateSession(token);
+  // Get user data from Clerk
+  const user = await clerkAuthService.validateSession(req.headers.authorization!.replace('Bearer ', ''));
   if (!user) return res.status(401).json({ error: 'Invalid session' });
+  
   attachUserId(req, user.id);
   
   // Get subscription
-  const subscription = await billingService.getSubscription(user.id);
+  const subscription = await billingService.getSubscription(userId);
   
   res.json({
     id: user.id,
@@ -224,30 +245,28 @@ app.get('/api/billing/pricing', (req, res) => {
   res.json(billingService.getPricingTiers());
 });
 
-app.post('/api/billing/subscribe', async (req, res) => {
-  const token = req.headers.authorization?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+app.post('/api/billing/subscribe', requireAuth(), async (req, res) => {
+  const authReq = req as AuthRequest;
+  const userId = authReq.auth!.userId;
   
-  const user = await clerkAuthService.validateSession(token);
-  if (!user) return res.status(401).json({ error: 'Invalid session' });
-  attachUserId(req, user.id);
+  attachUserId(req, userId);
   
   const { tierId } = req.body;
   if (!tierId) return res.status(400).json({ error: 'Missing tierId' });
   
   try {
-    const subscription = await billingService.createSubscription(user.id, tierId, 'cus_test');
+    const subscription = await billingService.createSubscription(userId, tierId, 'cus_test');
     res.json({ subscription });
   } catch (error) {
-    captureExceptionWithContext(error, req, { userId: user.id, tierId });
-    logError('Subscription creation failed', error, { userId: user.id, tierId });
+    captureExceptionWithContext(error, req, { userId, tierId });
+    logError('Subscription creation failed', error, { userId, tierId });
     res.status(400).json({ error: String(error) });
   }
 });
 
-app.get('/api/billing/usage', async (req, res) => {
-  const token = req.headers.authorization?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ error: 'Unauthorized' });
+app.get('/api/billing/usage', requireAuth(), async (req, res) => {
+  const authReq = req as AuthRequest;
+  const userId = authReq.auth!.userId;
   
   const user = await clerkAuthService.validateSession(token);
   if (!user) return res.status(401).json({ error: 'Invalid session' });
@@ -284,14 +303,14 @@ app.listen(PORT, '0.0.0.0', () => {
 export default app;
 
 // Sprint 6: Marketplace endpoints
-app.get('/api/marketplace/plugins', async (req, res) => {
+app.get('/api/marketplace/plugins', requireAuth(), async (req, res) => {
   const { marketplace } = await import('../marketplace/plugin-marketplace.js');
   const plugins = await marketplace.searchPlugins();
   res.json(plugins);
 });
 
 // Phase 7: Autonomous agent endpoints
-app.post('/api/agents/autonomous/goal', async (req, res) => {
+app.post('/api/agents/autonomous/goal', requireAuth(), async (req, res) => {
   const { autonomousAgent } = await import('../agents/autonomous-agent.js');
   const { description } = req.body;
   const result = await autonomousAgent.setGoal(description);
@@ -299,7 +318,7 @@ app.post('/api/agents/autonomous/goal', async (req, res) => {
 });
 
 // Phase 8: Multi-modal endpoints
-app.post('/api/multimodal/process', async (req, res) => {
+app.post('/api/multimodal/process', requireAuth(), async (req, res) => {
   const startTime = Date.now();
 
   try {
@@ -332,17 +351,34 @@ app.post('/api/multimodal/process', async (req, res) => {
 });
 
 app.use((error: unknown, req: Request, res: Response, _next: NextFunction) => {
+  monitoring.trackError();
   captureExceptionWithContext(error, req);
+  sentry.captureException(error, { path: req.path });
   logError('Unhandled server error', error, { path: req.path });
   res.status(500).json({ error: 'Internal server error' });
 });
 
 process.on('uncaughtException', (error) => {
+  monitoring.trackError();
+  sentry.captureException(error);
   Sentry.captureException(normalizeError(error));
   logError('Uncaught exception', error);
 });
 
 process.on('unhandledRejection', (reason) => {
+  monitoring.trackError();
+  sentry.captureException(reason);
   Sentry.captureException(normalizeError(reason));
   logError('Unhandled rejection', reason);
 });
+
+// Graceful shutdown - flush analytics
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM received, flushing analytics...');
+  await Promise.all([
+    posthog.flush(),
+    sentry.flush()
+  ]);
+  process.exit(0);
+});
+// Render cache buster: 1775658985
