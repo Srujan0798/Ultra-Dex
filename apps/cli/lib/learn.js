@@ -2,6 +2,7 @@ import fs from 'fs';
 
 import readline from 'readline';
 import { spawn } from 'child_process';
+import { logger } from './utils/logger.js';
 
 
 const tutorialData = JSON.parse(
@@ -18,48 +19,48 @@ class InteractiveTutorial {
   }
 
   async start() {
-    console.log(`\x1b[36m${tutorialData.title}\x1b[0m`);
-    console.log(`${tutorialData.description}`);
-    console.log(`Estimated duration: ${tutorialData.estimated_duration}`);
-    console.log('');
+    logger.info(`${tutorialData.title}`);
+    logger.info(`${tutorialData.description}`);
+    logger.info(`Estimated duration: ${tutorialData.estimated_duration}`);
+    logger.spacer();
 
     const confirm = await this.askQuestion(`Start the tutorial? (y/N): `);
     if (!confirm.toLowerCase().startsWith('y')) {
-      console.log('Tutorial cancelled.');
+      logger.info('Tutorial cancelled.');
       return;
     }
 
-    console.log('');
+    logger.spacer();
 
     for (this.currentStep = 0; this.currentStep < tutorialData.steps.length; this.currentStep++) {
       await this.showStep(tutorialData.steps[this.currentStep]);
 
       if (this.currentStep < tutorialData.steps.length - 1) {
         await this.askQuestion('Press Enter to continue to the next step...');
-        console.log('');
+        logger.spacer();
       }
     }
 
-    console.log('\x1b[32m🎉 Congratulations! You have completed the Ultra-Dex tutorial.\x1b[0m');
-    console.log('Continue exploring Ultra-Dex with advanced features!');
+    logger.success('🎉 Congratulations! You have completed the Ultra-Dex tutorial.');
+    logger.info('Continue exploring Ultra-Dex with advanced features!');
     this.rl.close();
   }
 
   async showStep(step) {
-    console.log(`\x1b[33mStep ${step.id}/${tutorialData.steps.length}: ${step.title}\x1b[0m`);
-    console.log(step.description);
-    console.log('');
+    logger.step(step.id, tutorialData.steps.length, step.title);
+    logger.info(step.description);
+    logger.spacer();
 
     if (step.explanation) {
-      console.log(`💡 \x1b[36mExplanation:\x1b[0m ${step.explanation}`);
+      logger.info(`💡 Explanation: ${step.explanation}`);
     }
 
     if (step.command) {
-      console.log(`💻 \x1b[36mCommand:\x1b[0m \x1b[35m${step.command}\x1b[0m`);
+      logger.info(`💻 Command: ${step.command}`);
     }
 
     if (step.challenge) {
-      console.log(`🎯 \x1b[36mChallenge:\x1b[0m ${step.challenge}`);
+      logger.info(`🎯 Challenge: ${step.challenge}`);
 
       // If there's a command, suggest running it
       if (step.command) {
@@ -72,12 +73,12 @@ class InteractiveTutorial {
       }
     }
 
-    console.log('');
+    logger.spacer();
   }
 
   async executeCommand(command) {
-    console.log(`\x1b[33mExecuting:\x1b[0m ${command}`);
-    console.log('--- OUTPUT ---');
+    logger.info(`Executing: ${command}`);
+    logger.info('--- OUTPUT ---');
 
     try {
       const [cmd, ...args] = command.split(' ');
@@ -97,15 +98,15 @@ class InteractiveTutorial {
 
       await new Promise((resolve) => {
         child.on('close', (code) => {
-          console.log('--- END OUTPUT ---');
+          logger.info('--- END OUTPUT ---');
           if (code !== 0) {
-            console.log(`\x1b[31mCommand failed with exit code ${code}\x1b[0m`);
+            logger.error(`Command failed with exit code ${code}`);
           }
           resolve();
         });
       });
     } catch (error) {
-      console.log(`\x1b[31mError executing command: ${error.message}\x1b[0m`);
+      logger.error(`Error executing command: ${error.message}`);
     }
   }
 
