@@ -94,11 +94,11 @@ export async function commitCommand(options = {}) {
     const status = await gitIntegration.getStatus();
 
     if (status.files.length === 0) {
-      console.log(colors.info('Nothing to commit. Working directory clean.'));
+      logger.info('Nothing to commit. Working directory clean.');
       return;
     }
 
-    console.log(colors.info(`Found ${status.files.length} changed files:`));
+    logger.info(`Found ${status.files.length} changed files:`);
     status.files.forEach((file) => {
       const statusSymbol =
         file.index === '?'
@@ -110,7 +110,7 @@ export async function commitCommand(options = {}) {
               : file.index === 'D'
                 ? 'deleted'
                 : 'changed';
-      console.log(`  ${colors.subtle(file.index)} ${file.path} (${statusSymbol})`);
+      logger.info(`  ${colors.subtle(file.index)} ${file.path} (${statusSymbol})`);
     });
 
     // Get diff summary
@@ -128,26 +128,26 @@ export async function commitCommand(options = {}) {
         // Ask user for commit message
         commitMessage = await interactiveCLI.promptInput('Enter commit message:', '');
         if (!commitMessage.trim()) {
-          console.log(colors.warning('No commit message provided. Exiting.'));
+          logger.warn('No commit message provided. Exiting.');
           return;
         }
       }
     }
 
-    console.log(colors.info(`Commit message: ${colors.highlight(commitMessage)}`));
+    logger.info(`Commit message: ${colors.highlight(commitMessage)}`);
 
     // Confirm before committing
     if (!options.force) {
       const confirmed = await interactiveCLI.promptConfirm('Commit changes?', true);
       if (!confirmed) {
-        console.log(colors.info('Commit cancelled.'));
+        logger.info('Commit cancelled.');
         return;
       }
     }
 
     // Stage all changes if auto-stage is enabled
     if (options.all || options.a) {
-      console.log(colors.info('Staging all changes...'));
+      logger.info('Staging all changes...');
       await gitIntegration.stageFiles(['.']);
     }
 

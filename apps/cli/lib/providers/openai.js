@@ -109,8 +109,13 @@ export class OpenAIProvider extends BaseProvider {
 
         const data = await response.json();
 
+        // Handle NVIDIA Nemotron models that return reasoning_content instead of content
+        const messageContent = data.choices[0]?.message?.content 
+          || data.choices[0]?.message?.reasoning_content 
+          || '';
+
         return {
-          content: data.choices[0]?.message?.content || '',
+          content: messageContent,
           usage: {
             inputTokens: data.usage?.prompt_tokens || 0,
             outputTokens: data.usage?.completion_tokens || 0,

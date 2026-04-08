@@ -1,55 +1,74 @@
 {
-  "cycle": 4,
-  "title": "PRODUCTION LAUNCH — Fix Everything, Test Everything, Ship Everything",
+  "cycle": 5,
+  "title": "GO LIVE — Deploy, Wire Auth/Analytics, Activate Billing",
   "initiated": "2026-04-08",
-  "source": "Brutal audit of v3.0.0 Diamond State. 306 TS files compiled clean but 64/81 tests fail (import .js → .ts mismatch). 485 lint errors. Dashboard build broken. Zero production infra.",
-  "thesis": "This is the LAST cycle before production launch. No new features. Fix the TS migration test breakage (one root cause: .js imports in tests). ESLint zero. Dashboard build green. Production configs, Docker, docs. After this: startup-ready.",
+  "source": "MASTER_HANDOFF_PROMPT.md roadmap (by agent Kimi). Cycle 4 tech debt completed. v3.0.0 production-ready codebase with existing scaffold modules for auth (470 LOC, in-memory stubs), billing (750 LOC, dummy Stripe), analytics (771 LOC, local-only). Production infra (Docker, configs, deployment scripts, health checks, docs) all in place from Cycle 4.",
+  "thesis": "Stop building infrastructure. Start serving users. Deploy v3.0.0 to Railway/Render. Replace in-memory auth stubs with Clerk. Replace local analytics with PostHog + Sentry. Replace dummy Stripe with live billing. After this: real users paying real money.",
   "phases": {
     "P0": {
-      "label": "TEST RESURRECTION — Fix .js→.ts import mismatch across all 64 failing tests",
+      "label": "DEPLOY — Get v3.0.0 running on a live URL with SSL, monitoring, and health checks",
       "windows": ["W1", "W2"],
       "status": "ready",
-      "note": "ONE root cause: tests import from .js but files are now .ts. Fix all imports OR configure ts-node/tsx loader."
+      "note": "Dockerfile.prod, docker-compose.prod.yml, deploy scripts, health checks all exist. Just need to wire to cloud provider."
     },
     "P1": {
-      "label": "ESLINT ZERO — Kill 485 errors across 270 files",
+      "label": "AUTH — Replace in-memory auth stubs with Clerk SDK. Login/signup/session/API-key flows",
       "windows": ["W3", "W4"],
-      "status": "ready"
+      "status": "queued",
+      "note": "src/core/auth/ has 470 LOC scaffold. Replace Map<string,User> with Clerk. Wire RBAC + SSO stubs to real provider."
     },
     "P2": {
-      "label": "BUILD GREEN — Fix dashboard vite build + npm audit",
+      "label": "ANALYTICS + OBSERVABILITY — PostHog for product analytics, Sentry for errors, structured logging",
       "windows": ["W5", "W6"],
-      "status": "ready"
+      "status": "queued",
+      "note": "src/core/analytics/ has 771 LOC scaffold. Replace local event store with PostHog. Add Sentry for unhandled exceptions. Wire to dashboard."
     },
     "P3": {
-      "label": "PRODUCTION INFRA — Docker, configs, deployment scripts, health checks",
+      "label": "BILLING — Activate Stripe, wire usage metering, pricing tiers, subscription flows",
       "windows": ["W7", "W8", "W9"],
-      "status": "queued"
+      "status": "queued",
+      "note": "src/core/billing/ has 750 LOC scaffold with pricing-tiers.ts already defining Free/Pro/Enterprise. Replace dummy key with live Stripe. Add webhook handler."
     },
     "P4": {
-      "label": "DOCS & SEAL — Deployment guide, operations guide, README, changelog, final verification",
+      "label": "ONBOARDING + LAUNCH — User onboarding wizard, landing page, public launch checklist",
       "windows": ["W10", "W11", "W12"],
-      "status": "queued"
+      "status": "queued",
+      "note": "First 10 beta users. ProductHunt prep. Social announcement. README already polished from Cycle 4."
     }
   },
-  "manual_actions_required": [],
-  "gate": "npm run build → 0 errors (including dashboard). npm test → 0 failures, 100+ tests. npm run lint → 0 errors. npx tsc --noEmit → 0 errors. npm audit --audit-level high → 0 high/critical. Docker builds. Health checks pass.",
+  "manual_actions_required": [
+    "OWNER: Create Railway/Render account and link GitHub repo",
+    "OWNER: Create Clerk account → get CLERK_PUBLISHABLE_KEY + CLERK_SECRET_KEY",
+    "OWNER: Create PostHog account → get POSTHOG_API_KEY + POSTHOG_HOST",
+    "OWNER: Create Sentry project → get SENTRY_DSN",
+    "OWNER: Create Stripe account → get STRIPE_SECRET_KEY + STRIPE_PUBLISHABLE_KEY + STRIPE_WEBHOOK_SECRET",
+    "OWNER: Register domain and point DNS to deployment",
+    "OWNER: Set up UptimeRobot monitors for /health endpoints"
+  ],
+  "env_vars_needed": {
+    "deployment": ["RAILWAY_TOKEN", "PORT", "NODE_ENV"],
+    "auth": ["CLERK_PUBLISHABLE_KEY", "CLERK_SECRET_KEY", "CLERK_WEBHOOK_SECRET"],
+    "analytics": ["POSTHOG_API_KEY", "POSTHOG_HOST", "SENTRY_DSN"],
+    "billing": ["STRIPE_SECRET_KEY", "STRIPE_PUBLISHABLE_KEY", "STRIPE_WEBHOOK_SECRET"],
+    "infra": ["REDIS_URL", "BUS_TYPE", "AUDIT_DB_PATH"]
+  },
+  "gate": "Live URL responds 200 at /health. Clerk login/signup works. PostHog receiving events. Sentry catching errors. Stripe checkout completes test payment. Dashboard loads authenticated.",
   "completion_criteria": [
-    "npm run test:unit → 0 failures (fix all 64 ERR_MODULE_NOT_FOUND)",
-    "npm run test:integration → 0 failures",
-    "npm run test:cli → 0 failures",
-    "npm run lint → 0 errors (from 485)",
-    "npm run build → 0 errors (including dashboard)",
-    "npx tsc --noEmit → 0 errors",
-    "npm audit --audit-level high → 0 high/critical",
-    "Dockerfile.prod builds successfully",
-    "docker-compose.prod.yml validated",
-    "config/production.json exists with env-var references",
-    "Health check endpoints: /health, /health/ready, /health/deep",
-    "docs/DEPLOYMENT.md complete",
-    "docs/OPERATIONS.md complete",
-    "README.md polished for public",
-    "Version: 3.0.0 (already tagged)",
-    "CHANGELOG.md includes Cycle 4 production hardening"
+    "https://ultra-dex.{domain} responds 200 OK",
+    "SSL certificate valid (HTTPS enforced)",
+    "Health checks passing every 5 min (UptimeRobot)",
+    "/health/deep reports all services connected",
+    "Clerk: user can register, login, logout, get API key",
+    "RBAC: Free/Pro/Enterprise roles enforced on routes",
+    "PostHog: events visible in dashboard (page_view, ai_request, agent_run)",
+    "Sentry: test error appears in Sentry dashboard",
+    "Stripe: test checkout completes ($0 test mode)",
+    "Stripe webhooks: subscription.created, invoice.paid handled",
+    "Usage metering: token count, request count, agent count tracked per user",
+    "Billing dashboard: user sees plan, usage, invoices",
+    "Onboarding wizard: new user guided through first AI request",
+    "10 beta users successfully onboarded",
+    "All existing tests still passing (no regressions)",
+    "npm run build exits 0"
   ]
 }
