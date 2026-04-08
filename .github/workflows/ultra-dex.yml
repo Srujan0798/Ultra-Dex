@@ -45,10 +45,10 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm install --force --legacy-peer-deps
+        run: npm ci --ignore-scripts --no-audit --fund=false --legacy-peer-deps
 
       - name: Run smoke tests
-        run: NODE_ENV=test node --test --test-force-exit --test-timeout=30000 tests/core/ai-providers-registry.test.js tests/core/approval-workflow.test.js
+        run: npm run test:push:smoke
 
   deploy:
     needs: [review, test]
