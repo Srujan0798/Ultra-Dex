@@ -7,6 +7,8 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     permissions:
       contents: write
@@ -35,13 +37,11 @@ jobs:
         run: npm run build
 
       - name: Publish to npm
-        if: secrets.NPM_TOKEN != ''
+        if: env.NODE_AUTH_TOKEN != ''
         run: npm publish --provenance || echo "Publish skipped (token requires automation or OTP setup)."
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Skip npm publish (missing token)
-        if: secrets.NPM_TOKEN == ''
+        if: env.NODE_AUTH_TOKEN == ''
         run: echo "Skipping npm publish: NPM_TOKEN is not configured."
 
       - name: Install VS Code extension dependencies
