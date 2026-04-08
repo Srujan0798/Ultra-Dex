@@ -389,3 +389,9 @@ process.on('SIGTERM', async () => {
   process.exit(0);
 });
 // Render cache buster: 1775658985
+
+// Test endpoint to verify deployment
+app.get('/api/test-token', async (req, res) => {
+  const testToken = Buffer.from('test:user:123456').toString('base64');
+  res.json({ token: testToken, timestamp: Date.now() });
+});
