@@ -1,10 +1,22 @@
-import { singleton, inject } from "tsyringe";
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __decorateClass = (decorators, target, key, kind) => {
+  var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
+  for (var i = decorators.length - 1, decorator; i >= 0; i--)
+    if (decorator = decorators[i])
+      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+  if (kind && result)
+    __defProp(target, key, result);
+  return result;
+};
+import { singleton } from "tsyringe";
 import { logger } from '../../utils/logging.js';
 import { performance } from "perf_hooks";
 import { RateLimiter } from '../infrastructure/rate-limiter.js';
 import { StreamPipeline } from '../infrastructure/stream-pipeline.js';
 import { RedisCache } from '../cache/redis-cache.js';
 import {
+  container,
   registerAlias,
   registerSingleton,
   resolveFromContainer
@@ -24,11 +36,9 @@ let AIMetaLayer = class {
   private batchTimer: NodeJS.Timeout | null = null;
   private readonly batchWindowMs = 50;
   private readonly maxBatchSize = 10;
+  private redisCache?: RedisCache;
 
-  constructor(
-    @inject(DI_TOKENS.RedisCache) private redisCache?: RedisCache,
-    config: any = {}
-  ) {
+  constructor(config: any = {}) {
     this.providers = /* @__PURE__ */ new Map();
     this.activeProvider = null;
     this.config = {
@@ -54,6 +64,16 @@ let AIMetaLayer = class {
     this.mockMode = config.mockMode || process.env.MOCK_AI === "true";
     this.rateLimiter = config.rateLimiter instanceof RateLimiter ? config.rateLimiter : config.rateLimiter ? new RateLimiter(config.rateLimiter) : null;
     this.streamPipeline = config.streamPipeline instanceof StreamPipeline ? config.streamPipeline : config.streamPipeline ? new StreamPipeline(config.streamPipeline) : null;
+    
+    // Resolve RedisCache manually from container
+    try {
+      if (container.isRegistered(DI_TOKENS.RedisCache)) {
+        this.redisCache = container.resolve(DI_TOKENS.RedisCache);
+      }
+    } catch {
+      // Optional dependency
+    }
+
     this.initializeProviders();
   }
   /**
