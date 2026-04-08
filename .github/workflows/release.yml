@@ -65,7 +65,7 @@ jobs:
 
       - name: Skip npm publish (missing token)
         if: startsWith(github.ref, 'refs/tags/v') && env.NODE_AUTH_TOKEN == ''
-        run: echo "Skipping npm publish: NPM_TOKEN is not configured."
+        run: echo "Skipping npm publish - NPM_TOKEN is not configured."
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')

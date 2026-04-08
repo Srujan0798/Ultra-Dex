@@ -42,7 +42,7 @@ jobs:
 
       - name: Skip npm publish (missing token)
         if: env.NODE_AUTH_TOKEN == ''
-        run: echo "Skipping npm publish: NPM_TOKEN is not configured."
+        run: echo "Skipping npm publish - NPM_TOKEN is not configured."
 
       - name: Install VS Code extension dependencies
         working-directory: packages/extensions/vscode
