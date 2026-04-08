@@ -1,45 +1,45 @@
-# Ultra-Dex Documentation Hub
+# Ultra-Dex Documentation
 
-Use this page to navigate docs by goal, not by folder guessing.
+Welcome to the Ultra-Dex documentation hub. This directory contains all project documentation organized by category.
 
-## Start here (recommended path)
+## Core Documentation
+- **Architecture**: System architecture and design decisions
+- **Roadmaps**: Implementation roadmaps and strategic plans
+- **Core Concepts**: Fundamental concepts and principles
 
-1. `ARCHITECTURE.md` — understand system shape.
-2. `API.md` — understand exposed interfaces.
-3. `DEPLOYMENT.md` — understand deployment/runtime requirements.
-4. `OPERATIONS.md` — understand production operations.
-5. `PROJECT_STRUCTURE.md` — map code to responsibility.
+## Development Documentation
+- **API Reference**: API documentation and specifications
+- **Guides**: Step-by-step guides for various features
+- **Tutorials**: Learning resources for beginners
 
-## Quick navigation by intent
+## Strategic Documentation
+- **Business Strategy**: Business plans and strategic initiatives
+- **AI Agent Strategies**: Specific strategies for AI agents
+- **Planning Documents**: Short and long-term planning materials
 
-| I need to... | Read |
-| --- | --- |
-| Understand system design | `ARCHITECTURE.md`, `core/ARCHITECTURE.md` |
-| Use API endpoints | `API.md`, `api/` |
-| Deploy and run in production | `DEPLOYMENT.md`, `ops/`, `enterprise/DEPLOYMENT_GUIDE.md` |
-| Operate and monitor | `OPERATIONS.md`, `quality/`, `verification-logs/` |
-| Integrate external tools/providers | `specs/`, `api/specs/`, `AGENT_INTEGRATION_GUIDE.md` |
-| Review security posture | `security/`, root `SECURITY.md` |
-| Review roadmap/planning | `planning/`, `core/ROADMAP.md`, `strategy/` |
+## Reports and Analytics
+- **Completion Reports**: Project completion and milestone reports
+- **Verification Reports**: Quality assurance and verification reports
 
-## Documentation domains
+## Navigation
 
-| Domain | Directory | What it contains |
-| --- | --- | --- |
-| API and contracts | `api/`, `specs/`, `schemas/`, `udcf/` | Interfaces, protocols, schema definitions |
-| Product and architecture | `core/`, `architecture/`, `project/` | Design, implementation model, structure |
-| Operations and quality | `ops/`, `quality/`, `testing/`, `verification-logs/` | Runtime operations, quality checks, testing practices |
-| Security and compliance | `security/`, `compliance/`, `governance/` | Security guides, controls, policy artifacts |
-| Enterprise and business | `enterprise/`, `investors/`, `strategy/`, `marketing/` | Enterprise rollout, strategy, messaging |
-| Internal execution | `internal/`, `reports/`, `analysis/` | Internal planning and completion artifacts |
+| Directory | Purpose | Key Files |
+|-----------|---------|-----------|
+| [core/](./core/) | Core architecture and strategic docs | ARCHITECTURE.md, ROADMAP.md, MASTER-IMPLEMENTATION-ROADMAP.md |
+| [planning/](./planning/) | Planning documents and strategies | AGENT-30DAY-DETAILED-PLAN.md, EXECUTION_PLAN.md |
+| [reports/](./reports/) | Project reports and analytics | COMPLETION_CERTIFICATION.md, VERIFICATION-REPORT.md |
+| [strategy/](./strategy/) | Business and technical strategies | BUSINESS_PLAN.md, PRODUCT_STRATEGY.md |
+| [ai-agents/](./ai-agents/) | AI agent specific strategies | Copilot.md, Devin.md, gemini.md |
+| [api/](./api/) | API documentation | API specifications and references |
+| [guides/](./guides/) | User guides | Step-by-step instructions |
+| [architecture/](./architecture/) | Architectural decisions | ADRs and design docs |
 
-## Root vs docs policy
+## Important Files
+- [ARCHITECTURE.md](./core/ARCHITECTURE.md) - System architecture overview
+- [MASTER-IMPLEMENTATION-ROADMAP.md](./core/MASTER-IMPLEMENTATION-ROADMAP.md) - Complete implementation roadmap
+- [CHANGELOG.md](./core/CHANGELOG.md) - Version history and changes
+- [ROADMAP.md](./core/ROADMAP.md) - High-level project roadmap
 
-- Root docs are concise operational entrypoints.
-- `docs/` contains full-depth technical and operational documentation.
-- Historical or milestone-heavy documents are archived under `docs/internal/archive/`.
-
-## Historical archives
-
-- Archived root milestone/handoff docs: `internal/archive/root-status/`
-- Legacy planning snapshots: `archive-planning/`
+For technical questions, refer to the [core/](./core/) directory.
+For business strategy, see the [strategy/](./strategy/) directory.
+For implementation plans, check the [planning/](./planning/) directory.
