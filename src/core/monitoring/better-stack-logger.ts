@@ -146,3 +146,42 @@ export class BetterStackLogger {
 }
 
 export const logger = new BetterStackLogger();
+
+// Named exports for production-server.ts compatibility
+export function logEvent(event: string, properties?: Record<string, unknown>): void {
+  logger.track(event, properties);
+}
+
+export function logError(message: string, error: unknown, metadata?: Record<string, unknown>): void {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  const errorStack = error instanceof Error ? error.stack : undefined;
+  logger.error(message, { ...metadata, error: errorMessage, stack: errorStack });
+}
+
+export function logAIRequest(params: {
+  userId?: string;
+  provider: string;
+  model: string;
+  tokens: number;
+  cost?: number;
+  latency: number;
+  metadata?: Record<string, unknown>;
+}): void {
+  logger.aiRequest(params.provider, params.model, params.tokens, params.latency, params.cost);
+}
+
+// Billing-specific logging functions for billing-service.ts
+export function logSubscriptionCreated(userId: string, tierId: string, subscriptionId: string): void {
+  logger.billingEvent('subscription_created', userId, undefined, tierId);
+  logger.track('subscription_created', { userId, tierId, subscriptionId });
+}
+
+export function logPaymentSucceeded(userId: string, amount: number, currency: string): void {
+  logger.billingEvent('payment_succeeded', userId, amount);
+  logger.track('payment_succeeded', { userId, amount, currency });
+}
+
+export function logSubscriptionCancelled(userId: string, subscriptionId: string): void {
+  logger.billingEvent('subscription_cancelled', userId);
+  logger.track('subscription_cancelled', { userId, subscriptionId });
+}

@@ -183,7 +183,7 @@ app.post('/api/auth/login', async (req, res) => {
     const { user, token } = await clerkAuthService.login(email, password);
     res.json({
       user: { id: user.id, email: user.email, name: user.name, tier: user.tier, apiKey: user.apiKey },
-      session: { token: session.token, expiresAt: session.expiresAt }
+      session: { token, expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) }
     });
   } catch (error) {
     captureExceptionWithContext(error, req);
