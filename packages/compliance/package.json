@@ -22,16 +22,16 @@
     "lint:fix": "eslint src/**/*.ts --fix"
   },
   "dependencies": {
-    "uuid": "^11.0.3",
+    "uuid": "^13.0.0",
     "crypto": "^1.0.1",
-    "winston": "^3.17.0",
-    "zod": "^3.24.1"
+    "winston": "^3.19.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@types/node": "^22.10.10",
+    "@types/node": "^25.5.2",
     "@types/uuid": "^10.0.0",
-    "typescript": "^5.7.3",
-    "eslint": "^9.20.0"
+    "typescript": "^6.0.2",
+    "eslint": "^10.2.0"
   },
   "files": [
     "dist",

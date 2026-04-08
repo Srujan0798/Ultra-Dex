@@ -40,16 +40,16 @@
     "url": "https://github.com/Srujan0798/Ultra-Dex"
   },
   "dependencies": {
-    "chart.js": "^4.4.0",
-    "d3": "^7.8.0",
-    "lodash": "^4.17.0",
-    "moment": "^2.29.0",
-    "simple-statistics": "^7.8.0",
-    "winston": "^3.17.0"
+    "chart.js": "^4.5.1",
+    "d3": "^7.9.0",
+    "lodash": "^4.18.1",
+    "moment": "^2.30.1",
+    "simple-statistics": "^7.8.9",
+    "winston": "^3.19.0"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "@types/lodash": "^4.14.0",
-    "typescript": "^5.7.0"
+    "@types/node": "^25.5.2",
+    "@types/lodash": "^4.17.24",
+    "typescript": "^6.0.2"
   }
 }

@@ -24,6 +24,7 @@
     "isolatedModules": true,
     "allowImportingTsExtensions": true,
     "downlevelIteration": true,
+    "ignoreDeprecations": "6.0",
     "experimentalDecorators": true
   },
   "include": [

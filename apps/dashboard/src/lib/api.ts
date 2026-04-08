@@ -39,7 +39,7 @@ export const TraceSchema = z.object({
     z.object({
       timestamp: z.string(),
       event: z.string(),
-      data: z.record(z.any()),
+      data: z.record(z.string(), z.any()),
     })
   ),
 });

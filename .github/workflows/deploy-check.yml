@@ -1,0 +1,28 @@
+name: Auto Deploy Check
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  check-deployment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for Render Deploy
+        run: |
+          echo "Waiting for Render deployment..."
+          for i in {1..30}; do
+            echo "Check $i/30..."
+            if curl -sf https://ultra-dex.onrender.com/health; then
+              echo "✅ Deployment LIVE!"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "❌ Deployment timeout"
+          exit 1
+          
+      - name: Notify Success
+        if: success()
+        run: |
+          echo "🎉 Ultra-Dex is live at https://ultra-dex.onrender.com"
