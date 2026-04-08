@@ -79,7 +79,7 @@
 | Analytics dashboard | apps/dashboard/src/pages/Analytics.tsx | Medium — charts + tables |
 | Billing dashboard | apps/dashboard/src/pages/Billing.tsx | Medium — plan + usage + invoices |
 | Landing page | apps/dashboard/src/pages/Landing.tsx | Low — hero + features + pricing |
-| Railway config | railway.json, Procfile | Low — deployment config |
+| Render config | render.json, Procfile | Low — deployment config |
 | Stripe setup script | scripts/setup-stripe.sh | Low — CLI commands |
 | Billing docs | docs/BILLING.md | Low — setup + usage guide |
 | CLI login command | apps/cli/lib/commands/login.ts | Medium — browser auth + local token |
@@ -106,7 +106,7 @@
 
 **"Deploy. Get users. Iterate. Scale. Win."**
 
-No new architecture. No new core modules. Wire existing scaffolds to real SaaS services (Clerk, PostHog, Sentry, Stripe). Deploy to Railway. Create onboarding flow. Launch publicly.
+No new architecture. No new core modules. Wire existing scaffolds to real SaaS services (Clerk, PostHog, Sentry, Stripe). Deploy to Render. Create onboarding flow. Launch publicly.
 
 After Cycle 5: Ultra-Dex is a live product with paying users.
 
@@ -119,9 +119,9 @@ After Cycle 5: Ultra-Dex is a live product with paying users.
 cat .protocol/state/dispatches.md
 
 # 2. Complete OWNER pre-requisites first (35 min)
-#    - Create Railway, Clerk, PostHog, Sentry, Stripe accounts
+#    - Create Render, Clerk, PostHog, Sentry, Stripe accounts
 #    - Get all API keys
-#    - Set env vars in Railway
+#    - Set env vars in Render
 
 # 3. Execute Phase 0 first (deployment)
 #    Copy W1 command → run with Claude

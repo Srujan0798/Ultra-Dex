@@ -58,7 +58,7 @@
 | **Backend**  | [Node.js / Python / Go / etc]  | [Why you chose this] |
 | **Database** | [PostgreSQL / MongoDB / MySQL] | [Why you chose this] |
 | **Cache**    | [Redis / Memcached / etc]      | [Why you chose this] |
-| **Hosting**  | [Vercel / AWS / Railway / etc] | [Why you chose this] |
+| **Hosting**  | [Vercel / AWS / Render / etc] | [Why you chose this] |
 
 ### Advanced Stack
 
@@ -89,7 +89,7 @@
 - [ ] GitHub repository created
 - [ ] Domain purchased (optional)
 - [ ] Database provider account ([Neon / PlanetScale / Supabase])
-- [ ] Hosting provider account ([Vercel / Railway / Render])
+- [ ] Hosting provider account ([Vercel / Render / Render])
 - [ ] Environment variables documented
 
 ### Phase 1: Database Setup
@@ -114,7 +114,7 @@ MONGODB_URI=mongodb+srv://[user]:[password]@[cluster].mongodb.net/[database]
 
 ### Phase 2: Backend Deployment
 
-#### Option A: Node.js on Railway/Render
+#### Option A: Node.js on Render/Render
 
 **Build Command:** `npm install && npm run build`
 **Start Command:** `npm start`
@@ -168,7 +168,7 @@ NEXT_PUBLIC_APP_URL=[your-frontend-url]
 | Service  | Platform         | Status  | URL |
 | -------- | ---------------- | ------- | --- |
 | Frontend | [Vercel/Netlify] | ⏳ Pending | -   |
-| Backend  | [Railway/Render] | ⏳ Pending | -   |
+| Backend  | [Render/Render] | ⏳ Pending | -   |
 | Database | [Provider]       | ⏳ Pending | -   |
 | Cache    | [Provider]       | ⏳ Pending | -   |
 

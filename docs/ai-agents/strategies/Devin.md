@@ -932,7 +932,7 @@ program
         type: 'list',
         name: 'hosting',
         message: 'Hosting:',
-        choices: ['Vercel', 'Railway', 'Fly.io', 'AWS', 'Other'],
+        choices: ['Vercel', 'Render', 'Fly.io', 'AWS', 'Other'],
       },
     ]);
 

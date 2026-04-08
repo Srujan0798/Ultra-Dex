@@ -225,7 +225,7 @@ You: "Act as @DevOps from .agents/devops.md. Deploy authentication to staging."
 Cursor:
 
 - Sets `JWT_SECRET` in environment
-- Deploys to Vercel/Railway
+- Deploys to Vercel/Render
 - Runs smoke tests
 - Verifies auth flow works
 

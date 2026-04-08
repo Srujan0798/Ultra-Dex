@@ -14,7 +14,7 @@ WebSocket-based chat application with presence, typing indicators, and file shar
 - Auth: Clerk
 - File Storage: S3-compatible
 - Real-time: WebSocket + Redis Pub/Sub
-- Deployment: Railway
+- Deployment: Render
 
 ## Core Features
 
@@ -244,7 +244,7 @@ socket.on('user_joined', ({ userId, channelId }) => {
 - [ ] Performance optimization
 - [ ] Security audit
 - [ ] Documentation
-- [ ] Deploy to Railway
+- [ ] Deploy to Render
 
 ## Getting Started
 

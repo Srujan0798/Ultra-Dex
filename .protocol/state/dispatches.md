@@ -434,7 +434,7 @@ See:
 **Next steps:**
 1. Get API keys from Better Stack, Clerk, Stripe
 2. Set environment variables in hosting platform
-3. Deploy to Render/Heroku/Railway
+3. Deploy to Render/Heroku/Render
 4. Configure Stripe webhook URL
 5. Run integration tests
 6. Monitor logs in Better Stack

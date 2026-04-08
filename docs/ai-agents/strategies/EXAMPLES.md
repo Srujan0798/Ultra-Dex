@@ -324,7 +324,7 @@ Deploying authentication feature.
 
 \`\`\`bash
 
-# Added to Vercel/Railway
+# Added to Vercel/Render
 
 JWT_SECRET=<generated-32-char-secret>
 JWT_EXPIRES_IN=7d

@@ -159,7 +159,7 @@ export async function GET(request: Request) {
 All examples are configured for:
 
 - **Vercel** (Frontend)
-- **Railway** or **Render** (Backend + Database)
+- **Render** or **Render** (Backend + Database)
 - **Supabase** (PostgreSQL)
 - **Upstash** (Redis)
 

@@ -152,7 +152,7 @@ export async function POST(request: Request) {
                         │  ┌───────▼────────┐  │
                         │  │ Prisma ORM     │  │
                         │  └───────┬────────┘  │
-                        │  (Railway/Render)    │
+                        │  (Render/Render)    │
                         └──────────┼───────────┘
                                    │
                              ┌─────▼──────┐
@@ -167,7 +167,7 @@ export async function POST(request: Request) {
 - **Database:** PostgreSQL + Prisma
 - **Deployment:**
   - Frontend: Vercel
-  - Backend: Railway, Render, or AWS
+  - Backend: Render, Render, or AWS
 
 **Pros:**
 
@@ -490,7 +490,7 @@ export class UserController {
 **Tech Stack:**
 
 - Frontend: Next.js (Vercel)
-- Backend: Node.js + Express + Socket.io (Railway)
+- Backend: Node.js + Express + Socket.io (Render)
 - Database: PostgreSQL (Neon)
 - Cache: Redis (Upstash)
 
@@ -562,7 +562,7 @@ export class UserController {
 2. Move API route logic to Express endpoints
 3. Add CORS configuration
 4. Update frontend to call new backend API
-5. Deploy backend to Railway/Render
+5. Deploy backend to Render/Render
 6. Gradually migrate all API routes
 
 ---

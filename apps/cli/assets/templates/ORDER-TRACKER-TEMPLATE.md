@@ -634,7 +634,7 @@ Read agents/4-devops/devops.md and continue as that agent.
 
 Task: Deploy to staging environment.
 
-Platform: [Vercel / Railway / etc.]
+Platform: [Vercel / Render / etc.]
 
 Steps:
 1. Set environment variables

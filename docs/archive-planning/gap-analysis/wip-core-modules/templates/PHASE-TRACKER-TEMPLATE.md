@@ -36,7 +36,7 @@
 - Frontend: [Next.js / React / Vue]
 - Backend: [Node.js / Python / Go]
 - Database: [PostgreSQL / MongoDB / MySQL]
-- Hosting: [Vercel / Railway / AWS]
+- Hosting: [Vercel / Render / AWS]
 
 ---
 
@@ -137,7 +137,7 @@ Questions:
 1. Database choice (PostgreSQL, MongoDB, MySQL)?
 2. API design (REST, GraphQL, tRPC)?
 3. Authentication approach (defer to Phase 2)?
-4. Hosting platform (Vercel, Railway, AWS)?
+4. Hosting platform (Vercel, Render, AWS)?
 
 Expected Output:
 - Approved architecture decisions
@@ -410,7 +410,7 @@ Task: Deploy MVP to staging environment.
 
 Environment:
 - Frontend: [Vercel / Netlify / etc]
-- Backend: [Railway / Render / etc]
+- Backend: [Render / Render / etc]
 - Database: [Neon / PlanetScale / etc]
 
 Environment variables:

@@ -325,44 +325,44 @@ Create `vercel.json`:
 
 ---
 
-### Railway Setup
+### Render Setup
 
 ```bash
-# Install Railway CLI
-npm install -g @railway/cli
+# Install Render CLI
+npm install -g @render/cli
 
-# Login to Railway
-railway login
+# Login to Render
+render login
 
 # Initialize project
-railway init
+render init
 
 # Link to existing project
-railway link
+render link
 
 # Add PostgreSQL
-railway add --database postgres
+render add --database postgres
 
 # Set environment variables
-railway variables set NODE_ENV=production
-railway variables set JWT_SECRET=$(openssl rand -base64 32)
-railway variables set DATABASE_URL=$RAILWAY_DATABASE_URL
+render variables set NODE_ENV=production
+render variables set JWT_SECRET=$(openssl rand -base64 32)
+render variables set DATABASE_URL=$RENDER_DATABASE_URL
 
 # Deploy
-railway up
+render up
 
 # View logs
-railway logs
+render logs
 
 # Open deployed app
-railway open
+render open
 ```
 
-**railway.json:**
+**render.json:**
 
 ```json
 {
-  "$schema": "https://railway.app/railway.schema.json",
+  "$schema": "https://render.app/render.schema.json",
   "build": {
     "builder": "NIXPACKS",
     "buildCommand": "npm ci && npm run build && npx prisma migrate deploy"

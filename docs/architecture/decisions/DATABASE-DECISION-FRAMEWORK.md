@@ -50,7 +50,7 @@ Are you building a SaaS with structured data (users, products, orders)?
 
 - **Neon** (Serverless, free tier, auto-scaling) - Best for MVPs
 - **Supabase** (PostgreSQL + Auth + Storage) - All-in-one
-- **Railway** (Simple, affordable) - Good for production
+- **Render** (Simple, affordable) - Good for production
 - **AWS RDS** (Enterprise-grade) - For scale
 
 **Example Schema (Prisma):**
@@ -111,7 +111,7 @@ model Post {
 **Best Hosting:**
 
 - **MongoDB Atlas** (Official, free tier)
-- **Railway** (Simplified deployment)
+- **Render** (Simplified deployment)
 
 **Example Schema (Mongoose):**
 
@@ -164,7 +164,7 @@ const UserSchema = new mongoose.Schema({
 **Best Hosting:**
 
 - **PlanetScale** (Serverless MySQL, great free tier)
-- **Railway** (Simple deployment)
+- **Render** (Simple deployment)
 - **AWS RDS** (Production-grade)
 
 **Verdict:** PostgreSQL is better for modern SaaS. Use MySQL only if you have specific legacy requirements.
@@ -249,7 +249,7 @@ await redis.set(`user:${userId}`, JSON.stringify(user), 'EX', 3600); // 1 hour
 - Relational data (products ← orders ← users)
 - Inventory requires consistency
 
-**Hosting:** Neon (free tier) → Railway (production)
+**Hosting:** Neon (free tier) → Render (production)
 
 ---
 
@@ -302,7 +302,7 @@ await redis.set(`user:${userId}`, JSON.stringify(user), 'EX', 3600); // 1 hour
 - Or ClickHouse for very large scale
 - Optimized for time-series queries
 
-**Hosting:** Railway (PostgreSQL) or ClickHouse Cloud
+**Hosting:** Render (PostgreSQL) or ClickHouse Cloud
 
 ---
 
@@ -405,7 +405,7 @@ const prisma = new PrismaClient();
 | ---------------- | ----------- | ------------------------------------ |
 | **Neon Scale**   | $19/mo      | 10 GB storage, branch deploys        |
 | **Supabase Pro** | $25/mo      | 8 GB storage + auth + edge functions |
-| **Railway**      | ~$5-20/mo   | Pay for usage, simple pricing        |
+| **Render**      | ~$5-20/mo   | Pay for usage, simple pricing        |
 | **AWS RDS**      | $15-100+/mo | Enterprise features                  |
 
 ---

@@ -267,14 +267,14 @@ graph TD
     MongoDB --> D{Hosting?}
 
     C -->|MVP| Neon[Neon - Free Tier]
-    C -->|Production| Railway[Railway/Supabase]
+    C -->|Production| Render[Render/Supabase]
 
     D -->|Any| Atlas[MongoDB Atlas]
 
     style PostgreSQL fill:#4caf50,color:#fff
     style PostgreSQL2 fill:#4caf50,color:#fff
     style Neon fill:#81c784
-    style Railway fill:#81c784
+    style Render fill:#81c784
     style MongoDB fill:#66bb6a
     style Atlas fill:#81c784
 ```

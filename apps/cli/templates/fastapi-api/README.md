@@ -450,8 +450,8 @@ docker build -t ultra-dex-fastapi-api .
 docker run -d -p 8000:8000 --env-file .env ultra-dex-fastapi-api
 
 # Or deploy to cloud platforms
-# Deploy to Railway
-npx ultra-dex deploy --platform railway
+# Deploy to Render
+npx ultra-dex deploy --platform render
 
 # Deploy to Fly.io
 flyctl deploy

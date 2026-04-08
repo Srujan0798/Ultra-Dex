@@ -14,7 +14,7 @@ Real-time analytics dashboard for SaaS applications using Ultra-Dex methodology.
 - Cache: Redis
 - Queue: BullMQ (background jobs)
 - Real-time: WebSocket + SSE
-- Deployment: Railway
+- Deployment: Render
 
 ## Core Value Proposition
 
@@ -305,7 +305,7 @@ npx ultra-dex run frontend "Build dashboard with Tremor"
 npx ultra-dex align
 
 # Deploy
-npx ultra-dex deploy --platform railway
+npx ultra-dex deploy --platform render
 ```
 
 ## License

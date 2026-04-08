@@ -70,7 +70,7 @@ Agents are organized into **6 tiers** representing the production pipeline:
 
 - **[@DevOps](./4-devops/devops.md)** - CI/CD & deployment
   - Use for: Shipping to production, deployment pipelines
-  - Example: "Deploy to Vercel with PostgreSQL on Railway"
+  - Example: "Deploy to Vercel with PostgreSQL on Render"
 
 ### 5. Quality Tier (`5-quality/`)
 

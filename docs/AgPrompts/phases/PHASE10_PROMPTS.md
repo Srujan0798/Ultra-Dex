@@ -299,7 +299,7 @@ ultra-dex db-advisor
    | E-commerce | PostgreSQL | Neon |
    | CMS | MongoDB | Atlas |
    | SaaS Project | PostgreSQL | Supabase |
-   | Analytics | PostgreSQL + TimescaleDB | Railway |
+   | Analytics | PostgreSQL + TimescaleDB | Render |
 
 3. Output Prisma setup commands:
 

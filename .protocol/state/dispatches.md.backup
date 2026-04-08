@@ -24,7 +24,7 @@ CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY
 POSTHOG_API_KEY, POSTHOG_HOST
 SENTRY_DSN
 STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET
-RAILWAY_TOKEN (or Render/Fly equivalent)
+RENDER_TOKEN (or Render/Fly equivalent)
 ```
 **Owner setup: ~35 min. After that, agents run autonomously.**
 
@@ -36,14 +36,14 @@ RAILWAY_TOKEN (or Render/Fly equivalent)
 
 [WINDOW 1] CLAUDE — claude-sonnet-4
 Task ID: P0-W1
-Objective: Deploy Ultra-Dex v3.0.0 to Railway. Live HTTPS URL. Health checks green.
-Target Files: railway.json (new), Procfile (new), .env.production.template (new)
+Objective: Deploy Ultra-Dex v3.0.0 to Render. Live HTTPS URL. Health checks green.
+Target Files: render.json (new), Procfile (new), .env.production.template (new)
 Why this lane: Deployment config requires judgment on provider mapping, env var strategy. Sonnet.
 Power Tier: HIGH
 Command:
 ```bash
 claude --model sonnet --effort high -p \
-  "Deploy Ultra-Dex v3.0.0 to Railway.
+  "Deploy Ultra-Dex v3.0.0 to Render.
 
    CURRENT STATE:
    - Dockerfile.prod: multi-stage alpine, node:22
@@ -53,7 +53,7 @@ claude --model sonnet --effort high -p \
    - Health endpoints: /health, /health/ready, /health/deep
 
    CREATE:
-   1) railway.json:
+   1) render.json:
       { 'build': { 'builder': 'DOCKERFILE', 'dockerfilePath': 'Dockerfile.prod' },
         'deploy': { 'startCommand': 'node dist/ultra-dex.js serve',
           'healthcheckPath': '/health', 'healthcheckTimeout': 30,
@@ -65,7 +65,7 @@ claude --model sonnet --effort high -p \
    3) .env.production.template (all required vars with descriptions):
       PORT=3000
       NODE_ENV=production
-      REDIS_URL=redis://default:xxx@xxx.railway.internal:6379
+      REDIS_URL=redis://default:xxx@xxx.render.internal:6379
       AI_DEFAULT_PROVIDER=openai
       OPENAI_API_KEY=sk-xxx
       ANTHROPIC_API_KEY=sk-ant-xxx
@@ -77,8 +77,8 @@ claude --model sonnet --effort high -p \
       STRIPE_PUBLISHABLE_KEY=pk_live_xxx
       STRIPE_WEBHOOK_SECRET=whsec_xxx
 
-   4) Verify deploy script supports Railway CLI:
-      railway up --detach && railway domain
+   4) Verify deploy script supports Render CLI:
+      render up --detach && render domain
       curl -sf https://\$DOMAIN/health || exit 1
 
    5) Local Docker test:
@@ -86,13 +86,13 @@ claude --model sonnet --effort high -p \
       docker run -p 3000:3000 -e NODE_ENV=production ultra-dex:3.0.0 &
       sleep 3 && curl http://localhost:3000/health
 
-   DELIVERABLES: railway.json + Procfile + .env.production.template + Docker test passes"
+   DELIVERABLES: render.json + Procfile + .env.production.template + Docker test passes"
 ```
-Expected Output: Railway config files + local Docker test passes
+Expected Output: Render config files + local Docker test passes
 Validation: `docker build -f Dockerfile.prod .` exits 0. `curl localhost:3000/health` → 200.
 Fallback #1: claude --model sonnet --effort high -p "same — target Render instead, create render.yaml"
-Fallback #2: codex --full-auto -m o1 exec "same — Railway config only, skip Docker test"
-Fallback #3: opencode run -p "Create railway.json + Procfile + .env.production.template for Ultra-Dex Docker deployment to Railway. Use Dockerfile.prod. railway.json: builder DOCKERFILE, healthcheckPath /health, startCommand 'node dist/ultra-dex.js serve'."
+Fallback #2: codex --full-auto -m o1 exec "same — Render config only, skip Docker test"
+Fallback #3: opencode run -p "Create render.json + Procfile + .env.production.template for Ultra-Dex Docker deployment to Render. Use Dockerfile.prod. render.json: builder DOCKERFILE, healthcheckPath /health, startCommand 'node dist/ultra-dex.js serve'."
 Cost Class: SUBSCRIPTION-INCLUDED
 
 ---
@@ -519,7 +519,7 @@ gemini -y -p \
    3) Create docs/BILLING.md:
       Pricing table: Free / Pro \$29/mo / Enterprise \$99/mo with limits + features
       Setup guide: Stripe account → API keys → run setup-stripe.sh → add IDs to env vars → configure webhook
-      Webhook guide: Railway webhook URL, how to test with 'stripe trigger checkout.session.completed'
+      Webhook guide: Render webhook URL, how to test with 'stripe trigger checkout.session.completed'
       Usage metering: what happens at 80% and 100% of limit
       Upgrade flow: click Upgrade → Stripe Checkout → webhook → role updated automatically
       Troubleshooting: signature verification failure, duplicate events, failed payments
@@ -655,7 +655,7 @@ gemini -p \
    ## [3.1.0] - 2026-04-XX — GO LIVE
    ### Cycle 5: Live Product
    #### Added
-   - Railway deployment: railway.json + Procfile + .env.production.template
+   - Render deployment: render.json + Procfile + .env.production.template
    - Structured JSON logging: src/core/system/structured-logger.ts
    - Monitoring: /metrics endpoint, per-provider + per-user tracking
    - Clerk auth: register, login, session, API keys, middleware, RBAC
@@ -716,7 +716,7 @@ Cost Class: FREE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 PHASE 0 — DEPLOY FIRST
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  W1 (Claude Sonnet: Railway + Docker)
+  W1 (Claude Sonnet: Render + Docker)
     ↓
   W2 (Codex o1: logging + monitoring)
 
@@ -764,12 +764,12 @@ FINAL
 
 | # | Action | Output |
 |---|--------|--------|
-| 1 | Create Railway account, link GitHub repo | RAILWAY_TOKEN |
+| 1 | Create Render account, link GitHub repo | RENDER_TOKEN |
 | 2 | Create Clerk app at clerk.com | CLERK_PUBLISHABLE_KEY + CLERK_SECRET_KEY |
 | 3 | Create PostHog project at posthog.com | POSTHOG_API_KEY + POSTHOG_HOST |
 | 4 | Create Sentry project at sentry.io | SENTRY_DSN |
 | 5 | Create Stripe account (test mode) | STRIPE_SECRET_KEY + STRIPE_PUBLISHABLE_KEY |
-| 6 | Add all keys to Railway env vars | Verified in Railway dashboard |
+| 6 | Add all keys to Render env vars | Verified in Render dashboard |
 
 ---
 

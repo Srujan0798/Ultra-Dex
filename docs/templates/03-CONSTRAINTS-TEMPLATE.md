@@ -13,7 +13,7 @@
 | Frontend | [React/Vue/Next.js] | [Why this choice] |
 | Backend | [Node.js/Python/Go] | [Why this choice] |
 | Database | [PostgreSQL/MongoDB] | [Why this choice] |
-| Hosting | [Vercel/AWS/Railway] | [Why this choice] |
+| Hosting | [Vercel/AWS/Render] | [Why this choice] |
 
 ### Performance Targets
 | Metric | Target | Hard Limit |

@@ -496,7 +496,7 @@ Task: Deploy authentication feature to staging.
 
 Environment:
 - Frontend: Vercel
-- Backend: Railway
+- Backend: Render
 - Database: Already on Neon
 
 Requirements:
@@ -514,25 +514,25 @@ Action: Provide deployment steps.
 
 Step 1: Set Environment Variables
 
-Backend (Railway):
+Backend (Render):
 JWT_SECRET=<generate-random-64-char-string>
 DATABASE_URL=<your-neon-postgres-url>
 FRONTEND_URL=https://your-app.vercel.app
 NODE_ENV=production
 
 Frontend (Vercel):
-NEXT_PUBLIC_API_URL=https://your-backend.railway.app
+NEXT_PUBLIC_API_URL=https://your-backend.render.app
 
 Step 2: Deploy Backend
 git push origin main
-# Railway auto-deploys from main branch
+# Render auto-deploys from main branch
 
 Step 3: Deploy Frontend
 git push origin main
 # Vercel auto-deploys from main branch
 
 Step 4: Smoke Test
-curl https://your-backend.railway.app/api/auth/signup -X POST \
+curl https://your-backend.render.app/api/auth/signup -X POST \
   -H "Content-Type: application/json" \
   -d '{"email":"test@example.com","password":"test123"}'
 
@@ -543,7 +543,7 @@ Test signup → login → dashboard flow
 
 Step 5: Production Deployment
 (If staging tests pass)
-Promote staging to production in Railway + Vercel dashboards
+Promote staging to production in Render + Vercel dashboards
 
 Handoff to Team:
 - Feature live in production

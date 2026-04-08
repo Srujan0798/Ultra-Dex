@@ -17,7 +17,7 @@
 - **Frontend:** Next.js 14, React, Tailwind CSS
 - **Backend:** Node.js, Express, PostgreSQL
 - **AI/ML:** Custom Vastu analysis engine, climate risk scoring
-- **Infrastructure:** Vercel, Railway, Neon
+- **Infrastructure:** Vercel, Render, Neon
 
 **Ultra-Dex Usage:**
 

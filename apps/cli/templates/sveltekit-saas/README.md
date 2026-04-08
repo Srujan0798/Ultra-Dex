@@ -338,10 +338,10 @@ my-sveltekit-saas/
 npm run deploy
 ```
 
-### Railway Deployment
+### Render Deployment
 ```bash
-# Deploy to Railway
-npx ultra-dex deploy --platform railway
+# Deploy to Render
+npx ultra-dex deploy --platform render
 ```
 
 ### Docker Deployment

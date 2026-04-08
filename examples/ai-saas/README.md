@@ -195,7 +195,7 @@ Don't forget to:
 
 The app can be deployed to any platform supporting Next.js:
 
-- Railway
+- Render
 - Render
 - AWS
 - DigitalOcean

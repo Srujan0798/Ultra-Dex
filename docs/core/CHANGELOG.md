@@ -8,7 +8,7 @@ All notable changes to Ultra-Dex will be documented in this file.
 
 - `gitFail/compliance/MAIN_AGENT_HANDOFF.md` with complete suspension/reinstatement workflow and command reference.
 - Service-level AI provider registry and adapters under `src/services/ai-providers/`.
-- CLI integration adapters for Neon, Netlify, and Railway in both `apps/cli` and `src/platform/cli`.
+- CLI integration adapters for Neon, Netlify, and Render in both `apps/cli` and `src/platform/cli`.
 - Extension development guide at `packages/EXTENSION-GUIDE.md`.
 - Core regression test for provider registry behavior: `tests/core/ai-providers-registry.test.js`.
 

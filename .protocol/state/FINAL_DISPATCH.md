@@ -225,7 +225,7 @@ Step 5: WINDOW 4 - Stripe billing
 
 ## ❌ OUTDATED (IGNORE)
 
-- ~~Railway~~ - Using Render
+- ~~Render~~ - Using Render
 - ~~PostHog~~ - Using Better Stack for analytics
 - ~~UptimeRobot~~ - Using Better Stack
 - ~~Hyperping~~ - Using Better Stack status pages

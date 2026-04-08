@@ -182,7 +182,7 @@ curl -X POST http://localhost:4000/api/stripe/create-checkout-session \
 ### @DevOps: Deployment
 
 ```bash
-# 1. Set Stripe environment variables on Vercel/Railway
+# 1. Set Stripe environment variables on Vercel/Render
 STRIPE_SECRET_KEY=ST_LIVE_xxx
 STRIPE_WEBHOOK_SECRET=whsec_xxx
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_live_xxx
@@ -370,7 +370,7 @@ curl -X PUT http://localhost:4000/api/user/profile \
 @Frontend: Add Socket.io client + notification toast UI
 @Testing: Test connection handling, reconnection, event delivery
 @Reviewer: Check performance (1000+ concurrent connections)
-@DevOps: Deploy with WebSocket support on Railway/Render
+@DevOps: Deploy with WebSocket support on Render/Render
 ```
 
 **Key Implementation:**
@@ -964,7 +964,7 @@ Handoff to @DevOps for deployment.
 **Step 2: Set environment variables**
 
 ```bash
-# In Vercel/Railway dashboard or .env.local
+# In Vercel/Render dashboard or .env.local
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 ```
@@ -975,8 +975,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 # Deploy to Vercel
 vercel --prod
 
-# Or deploy to Railway
-railway up
+# Or deploy to Render
+render up
 ```
 
 **Step 4: Test production authentication**
@@ -2362,7 +2362,7 @@ module.exports = withSentryConfig(
 **Step 2: Set environment variables**
 
 ```bash
-# In Vercel/Railway dashboard
+# In Vercel/Render dashboard
 SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
 NEXT_PUBLIC_SENTRY_DSN=https://xxx@xxx.ingest.sentry.io/xxx
 SENTRY_AUTH_TOKEN=your-auth-token-here
@@ -3566,7 +3566,7 @@ Handoff to @DevOps for deployment and dashboard setup.
 **Step 1: Set environment variables**
 
 ```bash
-# In Vercel/Railway dashboard
+# In Vercel/Render dashboard
 POSTHOG_API_KEY=phc_xxxxxxxxxxxxxxxx
 NEXT_PUBLIC_POSTHOG_KEY=phc_xxxxxxxxxxxxxxxx
 NEXT_PUBLIC_POSTHOG_HOST=https://app.posthog.com

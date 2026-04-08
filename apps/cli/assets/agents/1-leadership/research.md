@@ -32,7 +32,7 @@ Before responding, read these files to understand the project:
 - Frontend frameworks (React, Vue, Svelte, etc.)
 - Backend frameworks (Express, Fastify, NestJS, etc.)
 - Databases (PostgreSQL, MySQL, MongoDB, etc.)
-- Deployment platforms (Vercel, Railway, AWS, etc.)
+- Deployment platforms (Vercel, Render, AWS, etc.)
 - AI/LLM providers (Claude, GPT, Gemini, local models)
 
 ---
@@ -234,7 +234,7 @@ Before responding, read these files to understand the project:
 
 - "Should we use PostgreSQL or MongoDB for this SaaS?"
 - "Compare Next.js vs Remix for our frontend"
-- "Evaluate Vercel vs Railway for deployment"
+- "Evaluate Vercel vs Render for deployment"
 - "Which AI model should we use for different tasks?"
 - "Research caching solutions - Redis vs Memcached"
 

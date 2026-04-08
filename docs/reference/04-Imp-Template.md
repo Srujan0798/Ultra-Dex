@@ -899,7 +899,7 @@ ORM/ODM: [Prisma / TypeORM / Mongoose]
 
 ### 15.4 DevOps & Infrastructure
 
-**Hosting:** [Vercel / AWS / Railway / Render]
+**Hosting:** [Vercel / AWS / Render / Render]
 **Database Hosting:** [Supabase / PlanetScale / MongoDB Atlas]
 CI/CD: [GitHub Actions / GitLab CI / CircleCI]
 **Monitoring:** [Sentry / LogRocket / Datadog]
@@ -2250,7 +2250,7 @@ If behind by Week 10: Delay launch, extend testing
 ### 19.1 Hosting Provider Selection
 
 Recommended Options:
-Option 1: Vercel (Frontend) + Railway (Backend) + Supabase (DB)
+Option 1: Vercel (Frontend) + Render (Backend) + Supabase (DB)
 
 **Best for:** Next.js/React apps
 **Pros:** Easy deployment, great DX, generous free tier
@@ -2274,7 +2274,7 @@ Option 3: Render (All-in-One)
 Chosen Stack (Example):
 
 **Frontend:** Vercel
-**Backend:** Railway / Render
+**Backend:** Render / Render
 **Database:** Supabase / PlanetScale
 **Storage:** AWS S3 / Cloudinary
 **CDN:** Cloudflare
@@ -4317,7 +4317,7 @@ export async function handler(req, res) {
 
 | Resource | Provider | Pricing Model | Estimated Cost |
 |----------|----------|---------------|----------------|
-| Web Server | [Vercel/Railway/AWS] | [Per request / Per hour] | $[X]/month |
+| Web Server | [Vercel/Render/AWS] | [Per request / Per hour] | $[X]/month |
 | API Server | [Same or different] | [Compute hours] | $[X]/month |
 | Database | [Supabase/PlanetScale/RDS] | [Storage + Connections] | $[X]/month |
 | Cache Layer | [Upstash Redis/ElastiCache] | [Commands + Storage] | $[X]/month |

@@ -322,7 +322,7 @@ Integrate Ultra-Dex directly into development platforms.
 **2. Platform Integrations**
 
 - Vercel: One-click Ultra-Dex setup
-- Railway: Built-in agent prompts
+- Render: Built-in agent prompts
 - Supabase: Automated schema generation
 - Netlify: Deployment agent integration
 
