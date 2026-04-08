@@ -13,6 +13,7 @@ import { requireAuth, requireAdmin, enforceUsageLimit, type AuthRequest } from '
 import { monitoring } from '../system/monitoring.js';
 import { posthog } from '../analytics/posthog-client.js';
 import { sentry } from '../analytics/sentry-client.js';
+import { ssoService } from '../../services/auth/sso-service.js';
 
 const app = express();
 const sentryDsn = process.env.SENTRY_DSN;
@@ -144,7 +145,7 @@ app.use((req, res, next) => {
 
 // Health endpoints
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', version: '3.0.0', timestamp: new Date().toISOString(), uptime: process.uptime() });
+  res.json({ status: 'ok', version: '3.1.0', timestamp: new Date().toISOString(), uptime: process.uptime() });
 });
 
 app.get('/health/ready', (req, res) => {
@@ -173,9 +174,9 @@ app.get('/health/deep', (req, res) => {
 app.get('/api/status', (req, res) => {
   res.json({
     name: 'Ultra-Dex',
-    version: '3.0.0',
+    version: '3.1.0',
     status: 'operational',
-    features: ['ai_providers', 'agent_orchestration', 'memory_system', 'mcp_ecosystem', 'user_authentication', 'billing']
+    features: ['ai_providers', 'agent_orchestration', 'memory_system', 'mcp_ecosystem', 'user_authentication', 'billing', 'sso']
   });
 });
 
@@ -183,6 +184,49 @@ app.get('/api/status', (req, res) => {
 app.get('/metrics', requireAdmin, (req, res) => {
   const metrics = monitoring.getMetrics();
   res.json(metrics);
+});
+
+// Audit Log endpoints (admin only)
+app.get('/api/admin/audit/report', requireAdmin, async (req, res) => {
+  try {
+    const { format = 'json', days = '30' } = req.query;
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - parseInt(days as string, 10));
+
+    const report = await auditLogger.generateComplianceReport(
+      startDate,
+      endDate,
+      format as 'json' | 'csv'
+    );
+
+    if (format === 'csv') {
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename=audit-report-${Date.now()}.csv`);
+    } else {
+      res.setHeader('Content-Type', 'application/json');
+    }
+
+    res.send(report);
+  } catch (error) {
+    logError('Audit report generation failed', error);
+    res.status(500).json({ error: 'Failed to generate audit report' });
+  }
+});
+
+app.get('/api/admin/audit/stats', requireAdmin, async (req, res) => {
+  try {
+    const { days = '30' } = req.query;
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - parseInt(days as string, 10));
+
+    const stats = await auditLogger.getStats(startDate, endDate);
+    res.json(stats);
+  } catch (error) {
+    logError('Audit stats retrieval failed', error);
+    res.status(500).json({ error: 'Failed to fetch audit stats' });
+  }
 });
 
 // Auth endpoints (public - no middleware)
@@ -243,6 +287,40 @@ app.post('/api/auth/apikey', requireAuth(), async (req, res) => {
     logError('API key rotation failed', error, { path: req.path });
     res.status(500).json({ error: 'Failed to generate API key' });
   }
+});
+
+// SSO Routes
+app.get('/api/auth/sso/:orgId/login', async (req, res) => {
+  try {
+    const { orgId } = req.params;
+    const configs = await ssoService.getOrganizationConfigs(orgId);
+    const activeConfig = configs.find(c => c.isActive);
+    
+    if (!activeConfig) {
+      return res.status(404).json({ error: 'SSO not configured for this organization' });
+    }
+
+    let url: string;
+    if (activeConfig.providerType === 'oidc') {
+      url = await ssoService.generateOIDCAuthUrl(activeConfig.id);
+    } else if (activeConfig.providerType === 'oauth2') {
+      url = await ssoService.generateOAuth2AuthUrl(activeConfig.id);
+    } else if (activeConfig.providerType === 'saml') {
+      url = await ssoService.generateSAMLRequest(activeConfig.id);
+    } else {
+      return res.status(400).json({ error: 'Unsupported SSO provider type' });
+    }
+
+    res.redirect(url);
+  } catch (error) {
+    logError('SSO login initiation failed', error);
+    res.status(500).json({ error: 'Failed to initiate SSO login' });
+  }
+});
+
+app.post('/api/auth/sso/callback', async (req, res) => {
+  // Real implementation would handle multiple provider types
+  res.status(501).json({ error: 'SSO callback handling not fully implemented in this version' });
 });
 
 app.get('/api/user/profile', requireAuth(), async (req, res) => {
@@ -397,7 +475,7 @@ app.listen(PORT, '0.0.0.0', () => {
   logEvent('server_started', {
     port: PORT,
     env: process.env.NODE_ENV || 'development',
-    features: ['better_stack', 'clerk_auth', 'stripe_billing']
+    features: ['better_stack', 'clerk_auth', 'stripe_billing', 'sso_enabled']
   });
 });
 
