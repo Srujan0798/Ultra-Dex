@@ -4,6 +4,7 @@ import { MemoryManager } from './memory/manager.js';
 import { UnifiedRegistry } from './agents/unified-registry.js';
 import { AIMetaLayer } from './ai/ai-meta-layer.js';
 import { EnterpriseAnalytics } from './analytics/enterprise-analytics.js';
+import { RedisCache } from './cache/redis-cache.js';
 
 let SystemMonitor: any;
 try {
@@ -23,6 +24,17 @@ async function bootstrap(options: any = {}) {
   }
 
   console.log("[Bootstrap] Initializing DI container...");
+
+  // 0. Redis Cache
+  registerSingleton(DI_TOKENS.RedisCache, () => {
+    const redisCache = new RedisCache();
+    const cleanup = async () => {
+      if (typeof (redisCache as any).disconnect === 'function') await (redisCache as any).disconnect();
+      if (typeof (redisCache as any).shutdown === 'function') await (redisCache as any).shutdown();
+    };
+    shutdownCallbacks.push(cleanup);
+    return redisCache;
+  });
 
   // 1. Memory Manager
   registerSingleton(DI_TOKENS.memoryManager, () => {
@@ -106,6 +118,10 @@ async function bootstrap(options: any = {}) {
 
   // Initialize services
   try {
+    // Connect Redis first
+    const redis = container.resolve(DI_TOKENS.RedisCache) as any;
+    if (typeof redis.connect === 'function') await redis.connect();
+
     const memory = container.resolve(DI_TOKENS.memoryManager) as any;
     if (typeof memory.initialize === 'function') await memory.initialize();
     else if (typeof memory.init === 'function') await memory.init();

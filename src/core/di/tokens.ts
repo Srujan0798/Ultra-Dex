@@ -32,6 +32,7 @@ const DI_TOKENS = {
   // Predictive
   PredictiveEngine: Symbol("PredictiveEngine"),
   ContextCache: Symbol("ContextCache"),
+  RedisCache: Symbol("RedisCache"),
   // AI Layer
   ModelRouter: Symbol("ModelRouter"),
   SmartAIRouter: Symbol("SmartAIRouter"),
