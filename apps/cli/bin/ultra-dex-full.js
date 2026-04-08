@@ -50,6 +50,7 @@ const commandRegistrars = [
   { path: '../lib/commands/mcp.js', register: 'registerMcpCommand' },
   { path: '../lib/commands/github.js', register: 'registerGithubCommand' },
   { path: '../lib/commands/serve.js', register: 'registerServeCommand' },
+  { path: '../lib/commands/login.ts', register: 'registerLoginCommand' },
   { path: '../lib/commands/auto-implement.js', register: 'registerAutoImplementCommand' },
   { path: '../lib/commands/check.js', register: 'registerCheckCommand' },
   { path: '../lib/commands/enterprise.js', register: 'registerEnterpriseCommand' },

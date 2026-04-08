@@ -1,3 +1,6 @@
+import { posthog } from './posthog-client.js';
+import { sentry } from './sentry-client.js';
+
 export interface AnalyticsEvent {
   event: string;
   userId?: string;
@@ -18,13 +21,36 @@ export class AnalyticsService {
     
     this.events.push(analyticsEvent);
     
-    // Log to console (replace with PostHog/Segment in production)
-    console.log('[Analytics]', analyticsEvent);
+    // Track in PostHog
+    posthog.track(event, properties, userId);
     
     // Keep only last 1000 events in memory
     if (this.events.length > 1000) {
       this.events = this.events.slice(-1000);
     }
+  }
+
+  identify(userId: string, traits: Record<string, unknown>): void {
+    posthog.identify(userId, traits);
+    sentry.setUser(userId, traits);
+  }
+
+  trackAIRequest(userId: string, provider: string, model: string, tokens: number, cost: number, latencyMs: number): void {
+    this.track('ai_request', { provider, model, tokens, cost, latencyMs }, userId);
+  }
+
+  trackError(error: unknown, context?: Record<string, unknown>, userId?: string): void {
+    // Send to both PostHog and Sentry
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    this.track('error', { error: errorMessage, ...context }, userId);
+    sentry.captureException(error, context);
+  }
+
+  async flush(): Promise<void> {
+    await Promise.all([
+      posthog.flush(),
+      sentry.flush()
+    ]);
   }
   
   getEvents(filter?: { event?: string; userId?: string }): AnalyticsEvent[] {

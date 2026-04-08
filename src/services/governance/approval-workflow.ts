@@ -9,7 +9,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import { ppmManager } from '../../core/memory/manager.js';
 import { auditLogger } from '../audit/audit-logger.js';
-import { errorHandler } from '../../../apps/cli/lib/utils/error-handler.js';
+import errorHandler from '../../../apps/cli/lib/utils/error-handler.js';
 
 /**
  * Approval status types
@@ -108,6 +108,7 @@ export interface ApprovalPolicy {
 export class ApprovalWorkflowManager {
   private initialized: boolean = false;
   private policies: Map<string, ApprovalPolicy> = new Map();
+  private inMemoryRequests: Map<string, ApprovalRequest> = new Map();
 
   async initialize(): Promise<void> {
     if (this.initialized) return;
@@ -256,7 +257,10 @@ export class ApprovalWorkflowManager {
       comments: [],
     };
 
-    // Store in memory
+    // Store in internal memory for fast lookup
+    this.inMemoryRequests.set(request.id, request);
+
+    // Store in ppmManager for persistence
     await ppmManager.add({
       content: `Approval request submitted: ${title}`,
       type: 'approval-request',
@@ -301,16 +305,15 @@ export class ApprovalWorkflowManager {
   ): Promise<ApprovalRequest> {
     await this.initialize();
 
-    // Retrieve request
-    const results = await ppmManager.search(`approval-request:${requestId}`);
-    if (!results || results.length === 0) {
+    // Retrieve request from memory
+    const request = this.inMemoryRequests.get(requestId);
+    
+    if (!request) {
       throw errorHandler.createError(
         'RESOURCE_NOT_FOUND',
         `Approval request ${requestId} not found`
       );
     }
-
-    const request = results[0].metadata?.request as ApprovalRequest;
 
     // Check if approver is authorized
     if (!request.approverIds.includes(approverId)) {
@@ -471,15 +474,15 @@ export class ApprovalWorkflowManager {
   async escalateRequest(requestId: string, reason: string): Promise<ApprovalRequest> {
     await this.initialize();
 
-    const results = await ppmManager.search(`approval-request:${requestId}`);
-    if (!results || results.length === 0) {
+    const request = this.inMemoryRequests.get(requestId);
+    
+    if (!request) {
       throw errorHandler.createError(
         'RESOURCE_NOT_FOUND',
         `Approval request ${requestId} not found`
       );
     }
 
-    const request = results[0].metadata?.request as ApprovalRequest;
     request.escalationLevel++;
     request.updatedAt = new Date();
 
@@ -516,15 +519,11 @@ export class ApprovalWorkflowManager {
   async getPendingRequestsForUser(userId: string): Promise<ApprovalRequest[]> {
     await this.initialize();
 
-    const results = await ppmManager.search('approval-request:pending');
     const requests: ApprovalRequest[] = [];
 
-    for (const result of results || []) {
-      if (result.metadata?.request) {
-        const request = result.metadata.request as ApprovalRequest;
-        if (request.approverIds.includes(userId) && request.status === 'pending') {
-          requests.push(request);
-        }
+    for (const request of this.inMemoryRequests.values()) {
+      if (request.approverIds.includes(userId) && request.status === 'pending') {
+        requests.push(request);
       }
     }
 
@@ -548,8 +547,7 @@ export class ApprovalWorkflowManager {
     await this.initialize();
 
     const cutoff = new Date(Date.now() - timeWindowDays * 86400000);
-    const results = await ppmManager.search('approval-request');
-
+    
     let total = 0;
     let approved = 0;
     let rejected = 0;
@@ -557,23 +555,20 @@ export class ApprovalWorkflowManager {
     let totalResponseTime = 0;
     let completedRequests = 0;
 
-    for (const result of results || []) {
-      if (result.metadata?.request) {
-        const request = result.metadata.request as ApprovalRequest;
-        if (request.createdAt >= cutoff) {
-          total++;
+    for (const request of this.inMemoryRequests.values()) {
+      if (request.createdAt >= cutoff) {
+        total++;
 
-          if (request.status === 'approved') approved++;
-          else if (request.status === 'rejected') rejected++;
-          else if (request.status === 'pending') pending++;
+        if (request.status === 'approved') approved++;
+        else if (request.status === 'rejected') rejected++;
+        else if (request.status === 'pending') pending++;
 
-          // Calculate response time for completed requests
-          if (request.status !== 'pending' && request.decisions.length > 0) {
-            const firstDecision = request.decisions[0];
-            const responseTime = firstDecision.timestamp.getTime() - request.createdAt.getTime();
-            totalResponseTime += responseTime;
-            completedRequests++;
-          }
+        // Calculate response time for completed requests
+        if (request.status !== 'pending' && request.decisions.length > 0) {
+          const firstDecision = request.decisions[0];
+          const responseTime = firstDecision.timestamp.getTime() - request.createdAt.getTime();
+          totalResponseTime += responseTime;
+          completedRequests++;
         }
       }
     }

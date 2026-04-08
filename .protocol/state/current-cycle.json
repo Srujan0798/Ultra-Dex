@@ -1,74 +1,82 @@
 {
-  "cycle": 5,
-  "title": "GO LIVE — Deploy, Wire Auth/Analytics, Activate Billing",
+  "cycle": 6,
+  "title": "COMPLETE ALL REMAINING WORK — Zero Gaps, Ship v3.1.0",
   "initiated": "2026-04-08",
-  "source": "MASTER_HANDOFF_PROMPT.md roadmap (by agent Kimi). Cycle 4 tech debt completed. v3.0.0 production-ready codebase with existing scaffold modules for auth (470 LOC, in-memory stubs), billing (750 LOC, dummy Stripe), analytics (771 LOC, local-only). Production infra (Docker, configs, deployment scripts, health checks, docs) all in place from Cycle 4.",
-  "thesis": "Stop building infrastructure. Start serving users. Deploy v3.0.0 to Railway/Render. Replace in-memory auth stubs with Clerk. Replace local analytics with PostHog + Sentry. Replace dummy Stripe with live billing. After this: real users paying real money.",
+  "source": "Live codebase audit. Cycle 5 (Better Stack + Clerk + Stripe integrations) COMPLETE. 56 tests still failing (esbuild platform mismatch). 14 files missing. Auth routes unprotected. Usage metering absent. No PostHog/Sentry. No billing/landing/onboarding UI.",
+  "thesis": "One esbuild rebuild unblocks 56 tests. Then: auth middleware, usage metering, PostHog/Sentry, dashboard pages, CLI login, docs. After this: v3.1.0 shipped with zero gaps.",
   "phases": {
     "P0": {
-      "label": "DEPLOY — Get v3.0.0 running on a live URL with SSL, monitoring, and health checks",
-      "windows": ["W1", "W2"],
+      "label": "ESBUILD FIX — npm rebuild esbuild → 56 test failures → 0",
+      "windows": ["SELF"],
       "status": "ready",
-      "note": "Dockerfile.prod, docker-compose.prod.yml, deploy scripts, health checks all exist. Just need to wire to cloud provider."
+      "note": "5 minutes. @esbuild/darwin-arm64 installed but linux-arm64 needed. ONE command."
     },
     "P1": {
-      "label": "AUTH — Replace in-memory auth stubs with Clerk SDK. Login/signup/session/API-key flows",
-      "windows": ["W3", "W4"],
-      "status": "queued",
-      "note": "src/core/auth/ has 470 LOC scaffold. Replace Map<string,User> with Clerk. Wire RBAC + SSO stubs to real provider."
+      "label": "AUTH MIDDLEWARE — Route protection + 401/403 enforcement",
+      "windows": ["W1"],
+      "status": "ready"
     },
     "P2": {
-      "label": "ANALYTICS + OBSERVABILITY — PostHog for product analytics, Sentry for errors, structured logging",
-      "windows": ["W5", "W6"],
-      "status": "queued",
-      "note": "src/core/analytics/ has 771 LOC scaffold. Replace local event store with PostHog. Add Sentry for unhandled exceptions. Wire to dashboard."
+      "label": "USAGE METERING + WEBHOOK HANDLER — Limits + Stripe events",
+      "windows": ["W2"],
+      "status": "ready"
     },
     "P3": {
-      "label": "BILLING — Activate Stripe, wire usage metering, pricing tiers, subscription flows",
-      "windows": ["W7", "W8", "W9"],
-      "status": "queued",
-      "note": "src/core/billing/ has 750 LOC scaffold with pricing-tiers.ts already defining Free/Pro/Enterprise. Replace dummy key with live Stripe. Add webhook handler."
+      "label": "ANALYTICS — PostHog + Sentry integration",
+      "windows": ["W3"],
+      "status": "queued"
     },
     "P4": {
-      "label": "ONBOARDING + LAUNCH — User onboarding wizard, landing page, public launch checklist",
-      "windows": ["W10", "W11", "W12"],
-      "status": "queued",
-      "note": "First 10 beta users. ProductHunt prep. Social announcement. README already polished from Cycle 4."
+      "label": "MONITORING — /metrics endpoint",
+      "windows": ["W4"],
+      "status": "queued"
+    },
+    "P5": {
+      "label": "DASHBOARD — Billing.tsx + Landing.tsx + Onboarding.tsx",
+      "windows": ["W5", "W6", "W7"],
+      "status": "queued"
+    },
+    "P6": {
+      "label": "CLI + DOCS — login.ts + BILLING.md + setup-stripe.sh + FUNDING.yml",
+      "windows": ["W8"],
+      "status": "queued"
+    },
+    "P7": {
+      "label": "SEAL — Version 3.1.0 + CHANGELOG + full verification + tag + push",
+      "windows": ["W9"],
+      "status": "queued"
     }
   },
   "manual_actions_required": [
-    "OWNER: Create Railway/Render account and link GitHub repo",
-    "OWNER: Create Clerk account → get CLERK_PUBLISHABLE_KEY + CLERK_SECRET_KEY",
-    "OWNER: Create PostHog account → get POSTHOG_API_KEY + POSTHOG_HOST",
-    "OWNER: Create Sentry project → get SENTRY_DSN",
-    "OWNER: Create Stripe account → get STRIPE_SECRET_KEY + STRIPE_PUBLISHABLE_KEY + STRIPE_WEBHOOK_SECRET",
-    "OWNER: Register domain and point DNS to deployment",
-    "OWNER: Set up UptimeRobot monitors for /health endpoints"
+    "OWNER: npm rebuild esbuild (or delegate to any agent — Phase 0)",
+    "OWNER: Create PostHog account → POSTHOG_API_KEY + POSTHOG_HOST",
+    "OWNER: Create Sentry project → SENTRY_DSN",
+    "OWNER: Configure Stripe webhook URL in Stripe Dashboard"
   ],
-  "env_vars_needed": {
-    "deployment": ["RAILWAY_TOKEN", "PORT", "NODE_ENV"],
-    "auth": ["CLERK_PUBLISHABLE_KEY", "CLERK_SECRET_KEY", "CLERK_WEBHOOK_SECRET"],
-    "analytics": ["POSTHOG_API_KEY", "POSTHOG_HOST", "SENTRY_DSN"],
-    "billing": ["STRIPE_SECRET_KEY", "STRIPE_PUBLISHABLE_KEY", "STRIPE_WEBHOOK_SECRET"],
-    "infra": ["REDIS_URL", "BUS_TYPE", "AUDIT_DB_PATH"]
-  },
-  "gate": "Live URL responds 200 at /health. Clerk login/signup works. PostHog receiving events. Sentry catching errors. Stripe checkout completes test payment. Dashboard loads authenticated.",
+  "gate": "npm test → 0 failures. All 14 new files exist. Auth middleware wired. Usage metering active. PostHog + Sentry integrated. Dashboard pages render. Version 3.1.0.",
   "completion_criteria": [
-    "https://ultra-dex.{domain} responds 200 OK",
-    "SSL certificate valid (HTTPS enforced)",
-    "Health checks passing every 5 min (UptimeRobot)",
-    "/health/deep reports all services connected",
-    "Clerk: user can register, login, logout, get API key",
-    "RBAC: Free/Pro/Enterprise roles enforced on routes",
-    "PostHog: events visible in dashboard (page_view, ai_request, agent_run)",
-    "Sentry: test error appears in Sentry dashboard",
-    "Stripe: test checkout completes ($0 test mode)",
-    "Stripe webhooks: subscription.created, invoice.paid handled",
-    "Usage metering: token count, request count, agent count tracked per user",
-    "Billing dashboard: user sees plan, usage, invoices",
-    "Onboarding wizard: new user guided through first AI request",
-    "10 beta users successfully onboarded",
-    "All existing tests still passing (no regressions)",
-    "npm run build exits 0"
+    "npm rebuild esbuild → tests unblocked",
+    "npm run test:unit → 0 failures",
+    "npm run test:integration → 0 failures",
+    "npm run test:cli → 0 failures",
+    "npx tsc --noEmit → 0 errors",
+    "npm run lint → 0 errors",
+    "npm run build → exits 0",
+    "src/core/auth/middleware.ts exists + wired to routes",
+    "src/core/billing/usage-meter.ts exists + enforcing limits",
+    "src/core/billing/webhook-handler.ts exists + handling events",
+    "src/core/analytics/posthog-client.ts exists + tracking events",
+    "src/core/analytics/sentry-client.ts exists + catching errors",
+    "src/core/system/monitoring.ts exists + /metrics endpoint live",
+    "apps/dashboard/src/pages/Billing.tsx exists",
+    "apps/dashboard/src/pages/Landing.tsx exists",
+    "apps/dashboard/src/pages/Onboarding.tsx exists",
+    "apps/cli/lib/commands/login.ts exists",
+    "docs/BILLING.md exists",
+    "scripts/setup-stripe.sh exists + executable",
+    ".github/FUNDING.yml exists",
+    "Version: 3.1.0 in package.json",
+    "CHANGELOG.md includes v3.1.0",
+    "git tag v3.1.0 pushed"
   ]
 }

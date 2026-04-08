@@ -62,13 +62,25 @@ let RBACManager = class {
       ],
       [ROLES.VIEWER]: [PERMISSIONS.PROJECT_READ]
     };
+    this.customRoles.set("role-developer", [
+      PERMISSIONS.PROJECT_READ,
+      PERMISSIONS.PROJECT_CREATE,
+      PERMISSIONS.PROJECT_UPDATE
+    ]);
     this.defaultRole = ROLES.VIEWER;
   }
-  assignRole(userId, role) {
+  assignRole(userId, role, scope = null, assignedBy = null) {
     if (role !== ROLES.ADMIN && role !== ROLES.EDITOR && role !== ROLES.VIEWER && !this.customRoles.has(role)) {
-      throw new Error("Invalid role: ${role}");
+      throw new Error(`Invalid role: ${role}`);
     }
     this.roles.set(userId, role);
+    return {
+      userId,
+      roleId: role,
+      scope,
+      assignedBy,
+      assignedAt: /* @__PURE__ */ new Date()
+    };
   }
   getRole(userId) {
     return this.roles.get(userId) || this.defaultRole;
@@ -97,3 +109,5 @@ export {
   ROLE_PERMISSIONS,
   rbac_manager_default as default
 };
+
+export const rbacManager = new RBACManager();

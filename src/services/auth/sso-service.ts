@@ -11,7 +11,7 @@ import crypto from 'crypto';
 import axios from 'axios';
 import { ppmManager } from '../../core/memory/manager.js';
 import { auditLogger } from '../audit/audit-logger.js';
-import { errorHandler } from '../../../apps/cli/lib/utils/error-handler.js';
+import errorHandler from '../../../apps/cli/lib/utils/error-handler.js';
 import { jwtService, TokenPair } from './jwt-service.js';
 import { userService, User } from './user-service.js';
 import { sessionService, Session } from './session-service.js';

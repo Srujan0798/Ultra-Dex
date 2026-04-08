@@ -45,12 +45,14 @@ let TeamManager = class {
           userId: ownerId,
           email: null,
           role: "owner",
+          status: "active",
           joinedAt: (/* @__PURE__ */ new Date()).toISOString()
         }
       ],
       workspaces: [],
       activeWorkspace: null,
       agentAccess: options.agentAccess || {},
+      projectShares: [],
       createdAt: (/* @__PURE__ */ new Date()).toISOString(),
       updatedAt: (/* @__PURE__ */ new Date()).toISOString()
     };
@@ -67,7 +69,7 @@ let TeamManager = class {
     await fs.writeFile(this.teamFile, JSON.stringify(team, null, 2));
     return team;
   }
-  async addMember(teamId, userId, role = "member") {
+  async addMember(teamId, userId, role = "member", invitedBy = null) {
     const team = await this.getTeam();
     if (!team || team.id !== teamId) {
       throw new Error("Team not found");
@@ -78,15 +80,19 @@ let TeamManager = class {
     if (existingMember) {
       throw new Error("Member already exists");
     }
-    team.members.push({
+    const newMember = {
       userId,
       email: null,
       role,
+      status: "pending",
+      invitedBy,
+      invitedAt: (/* @__PURE__ */ new Date()).toISOString(),
       joinedAt: (/* @__PURE__ */ new Date()).toISOString()
-    });
+    };
+    team.members.push(newMember);
     team.updatedAt = (/* @__PURE__ */ new Date()).toISOString();
     await fs.writeFile(this.teamFile, JSON.stringify(team, null, 2));
-    return team;
+    return newMember;
   }
   async removeMember(teamId, email) {
     const team = await this.getTeam();
@@ -108,6 +114,28 @@ let TeamManager = class {
       return [];
     }
     return team.members || [];
+  }
+
+  async shareProject(projectId, teamId, sharedBy, permissions) {
+    const team = await this.getTeam();
+    if (!team || team.id !== teamId) {
+      throw new Error("Team not found");
+    }
+
+    const share = {
+      id: uuidv4(),
+      projectId,
+      teamId,
+      sharedBy,
+      permissions,
+      sharedAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+
+    team.projectShares = team.projectShares || [];
+    team.projectShares.push(share);
+    team.updatedAt = (/* @__PURE__ */ new Date()).toISOString();
+    await fs.writeFile(this.teamFile, JSON.stringify(team, null, 2));
+    return share;
   }
 };
 TeamManager = __decorateClass([

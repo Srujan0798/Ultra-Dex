@@ -19,8 +19,8 @@ export const PRICING_TIERS: PricingTier[] = [
     price: 0,
     description: 'Perfect for trying out Ultra-Dex',
     features: [
-      '100 requests/month',
-      '10,000 tokens/month',
+      '100 requests/day',
+      '10,000 tokens/day',
       '3 agents',
       'Community support'
     ],
@@ -37,8 +37,8 @@ export const PRICING_TIERS: PricingTier[] = [
     price: 2900, // $29/month
     description: 'For serious developers and teams',
     features: [
-      '10,000 requests/month',
-      '1M tokens/month',
+      '10,000 requests/day',
+      '1M tokens/day',
       'Unlimited agents',
       'Priority support',
       'Advanced analytics',

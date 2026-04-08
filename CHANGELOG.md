@@ -5,6 +5,29 @@ All notable changes to Ultra-Dex will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.0] - 2026-04-08 — PRODUCTION LIVE
+
+### Added
+- Better Stack logging (Logtail + Winston)
+- Clerk authentication (register/login/session)
+- Stripe billing (checkout/webhooks/subscriptions)
+- Auth middleware: requireAuth() on all /api/* routes
+- Usage metering: free/pro/enterprise limits enforced
+- PostHog analytics: AI + agent + billing events tracked
+- Sentry error tracking
+- /metrics endpoint (admin only)
+- Billing dashboard (plan/usage/invoices)
+- Landing page (hero/features/pricing)
+- Onboarding wizard (5 steps)
+- CLI: login/logout/whoami/apikey
+- docs/BILLING.md
+- scripts/setup-stripe.sh
+
+### Changed
+- Auth: in-memory Map → Clerk SDK
+- Analytics: local array → PostHog
+- Billing: dummy key → real Stripe
+
 ## [3.0.0] - 2026-04-08 — Production Launch
 
 ### Cycle 4: Production Perfection
