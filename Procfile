@@ -1,0 +1,1 @@
+web: node dist/ultra-dex.js serve
