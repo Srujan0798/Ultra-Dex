@@ -5,34 +5,44 @@ All notable changes to Ultra-Dex will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [3.1.0] - 2026-04-08 — PRODUCTION LIVE
+## [3.1.0] - 2026-04-09
 
 ### Added
-- Better Stack logging (Logtail + Winston)
-- Clerk authentication (register/login/session)
-- Stripe billing (checkout/webhooks/subscriptions)
-- Auth middleware: requireAuth() on all /api/* routes
-- Usage metering: free/pro/enterprise limits enforced
-- PostHog analytics: AI + agent + billing events tracked
-- Sentry error tracking
-- /metrics endpoint (admin only)
-- Billing dashboard (plan/usage/invoices)
-- Landing page (hero/features/pricing)
-- Onboarding wizard (5 steps)
-- CLI: login/logout/whoami/apikey
-- docs/BILLING.md
-- scripts/setup-stripe.sh
+
+- Auth middleware (`requireAuth`, `requireAdmin`, `enforceUsageLimit`)
+- Usage metering service with tier-based limits
+- Webhook handler for Stripe events (extracted from production-server)
+- PostHog analytics client with graceful degradation
+- Sentry error tracking with graceful degradation
+- Monitoring service with Prometheus-compatible `/metrics` endpoint
+- Dashboard: Billing page, Landing page, Onboarding wizard
+- CLI: `login`/`logout`/`whoami` commands
+- Billing documentation (`docs/BILLING.md`)
+- Stripe product setup script
+- GitHub `FUNDING.yml`
+
+### Fixed
+
+- esbuild platform mismatch (55 test failures resolved)
+- CLI `--help` crash (registry.js import)
+- RBAC blocking local execution (default role fix)
+- Architecture violation (core→CLI import removed)
+- Dashboard build failure (rolldown native binding)
+- 24 stub files implemented or removed
+- Fake features (`--stream`, `--cache`) removed or marked
 
 ### Changed
-- Auth: in-memory Map → Clerk SDK
-- Analytics: local array → PostHog
-- Billing: dummy key → real Stripe
+
+- Better Stack logging migration completed
+- Execution trace verified and hardened
+- All tests passing (unit + integration + CLI)
 
 ## [3.0.0] - 2026-04-08 — Production Launch
 
 ### Cycle 4: Production Perfection
 
 #### Fixed
+
 - **Test Runner**: Restored 100% test coverage by implementing `tsx` loader and `reflect-metadata` polyfills for `.js` → `.ts` resolution.
 - **ESLint**: Achieved "Zero Error" state across 270+ files in `apps/cli/lib/` (from 485 errors).
 - **Dashboard**: Fixed Vite build pipeline and resolved React/TypeScript component conflicts.
@@ -40,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Bootstrap Lifecycle**: Fixed asynchronous race conditions and lingering timers in the DI container initialization.
 
 #### Added
+
 - **Production Infrastructure**:
   - Multi-stage `Dockerfile.prod` for optimized alpine-based deployments.
   - Hardened `docker-compose.prod.yml` with Redis mesh integration and resource limits.
@@ -55,6 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Diamond State - The Unstoppable Enterprise Titan
 
 #### Architecture Overhaul
+
 - **Dependency Injection**: Full tsyringe-based IoC container with 100% type-safe service injection
 - **Semantic Router**: Vector-based routing with all-MiniLM-L6-v2 embeddings and hybrid capability matching
 - **Distributed Mesh**: Multi-node support with Redis/Kafka adapters and 5 load balancing strategies
@@ -63,11 +75,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Self-Healing**: Automatic failover, circuit breakers, and Site Reliability Agent
 
 #### TypeScript Migration
+
 - Complete migration: 559 files from JavaScript to TypeScript (including utils and agents layers).
 - Zero type errors with strict mode enabled.
 - Full DI decorator coverage.
 
 #### New Components
+
 - RedisMessageBus, KafkaMessageBus
 - WorkerPool with heartbeat monitoring
 - LoadBalancer (round-robin, least-loaded, geographic, capability, weighted)
@@ -77,6 +91,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SemanticRouter with 384-dimensional embeddings
 
 #### Performance
+
 - Sub-5s provider failover
 - Millisecond agent startup with predictive memory
 - 1000+ concurrent sessions supported
@@ -88,11 +103,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 #### Session Closure (2026-04-08)
 
 **Parallel Agent Work (Apr 5-8)**:
+
 - ✅ Gemini CLI: 100% success - Created 4 test files, 4 MCP tools, fixed ESLint, organized docs
 - ⚠️ Qwen CLI: CLI migration deferred (0/597 files) - Core migration priority achieved
 - 📝 Documentation: Full session closure analysis in `.agent-tasks/SESSION_CLOSURE_REPORT.md`
 
 **Project Status**:
+
 - Core TypeScript migration: 100% (289 files, 0 JS remaining)
 - Utils TypeScript migration: 100% (27 files)
 - All quality gates passing (build, tests, typecheck, audit)
@@ -194,14 +211,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **TypeScript Strict Mode**: Enabled `noImplicitAny` with all strict flags
   - 210+ files now type-safe
   - Interfaces defined for all public APIs
-- **SystemMonitor Refactor**: 
+- **SystemMonitor Refactor**:
   - 1,480 LOC → 197 LOC facade + 4 focused classes
   - Separation of concerns: MemoryMonitor, TaskMonitor, HealthMonitor, EventMonitor
 - **Ralph Loop Hardening**:
   - Wall-clock timeout (5min default, configurable)
   - Checkpoint/resume for interrupted loops
   - Graceful degradation on provider failures
-- **MCP Server**: 
+- **MCP Server**:
   - Auto-start timeout (5s) to prevent hanging
   - Graceful degradation when unavailable
 - **Governance Layer**:

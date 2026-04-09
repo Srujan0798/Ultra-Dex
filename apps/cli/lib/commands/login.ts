@@ -97,7 +97,8 @@ export function registerLoginCommand(program: Command): void {
             name: 'token',
             message: 'Paste your Clerk session token',
             mask: '*',
-            validate: (value: string): true | string => (value?.trim().length > 0 ? true : 'Token is required'),
+            validate: (value: string): true | string =>
+              value?.trim().length > 0 ? true : 'Token is required',
           },
         ]);
         token = answers.token;
@@ -158,7 +159,10 @@ export function registerLoginCommand(program: Command): void {
 
   const apikeyCommand = program.command('apikey').description('API key operations');
 
-  apikeyCommand.command('generate').description('Generate an API key via /api/auth/apikey').action(async () => {
+  apikeyCommand
+    .command('generate')
+    .description('Generate an API key via /api/auth/apikey')
+    .action(async () => {
       const session = readSession();
       if (!session) {
         printError('No active session. Run: ultra-dex login');

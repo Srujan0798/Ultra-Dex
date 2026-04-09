@@ -6,7 +6,10 @@ const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001';
 const steps = ['Welcome', 'API Key', 'First AI Request', 'Explore Features', 'Done'];
 
 const featureCards = [
-  { title: 'Providers', description: 'Route requests across multiple AI providers with fallback logic.' },
+  {
+    title: 'Providers',
+    description: 'Route requests across multiple AI providers with fallback logic.',
+  },
   { title: 'Agents', description: 'Coordinate specialist agents for complex workflows.' },
   { title: 'Memory', description: 'Persist and search context across sessions.' },
   { title: 'Governance', description: 'Enforce policies, audit actions, and control risk.' },
@@ -79,7 +82,9 @@ export const Onboarding = memo(function Onboarding() {
         }
       } else {
         const data = (await response.json()) as { result?: unknown };
-        setStreamOutput(typeof data.result === 'string' ? data.result : JSON.stringify(data.result, null, 2));
+        setStreamOutput(
+          typeof data.result === 'string' ? data.result : JSON.stringify(data.result, null, 2)
+        );
       }
     } catch (error) {
       setStreamOutput(error instanceof Error ? error.message : String(error));
@@ -105,7 +110,8 @@ export const Onboarding = memo(function Onboarding() {
         <article className="rounded-xl border border-slate-800 bg-slate-950/40 p-5">
           <h2 className="text-lg font-semibold">Welcome to Ultra-Dex</h2>
           <p className="mt-2 text-slate-300">
-            This quick setup validates your key, runs your first AI request, and highlights core platform features.
+            This quick setup validates your key, runs your first AI request, and highlights core
+            platform features.
           </p>
         </article>
       )}
@@ -158,7 +164,10 @@ export const Onboarding = memo(function Onboarding() {
       {step === 3 && (
         <article className="grid grid-cols-1 gap-3 md:grid-cols-2">
           {featureCards.map((card) => (
-            <div key={card.title} className="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+            <div
+              key={card.title}
+              className="rounded-xl border border-slate-800 bg-slate-950/40 p-4"
+            >
               <h3 className="font-semibold">{card.title}</h3>
               <p className="mt-1 text-sm text-slate-300">{card.description}</p>
             </div>
@@ -169,7 +178,9 @@ export const Onboarding = memo(function Onboarding() {
       {step === 4 && (
         <article className="relative overflow-hidden rounded-xl border border-emerald-600/40 bg-emerald-900/10 p-6">
           <h2 className="text-xl font-semibold text-emerald-200">You are all set.</h2>
-          <p className="mt-2 text-slate-200">Onboarding is complete. Launching mission control next.</p>
+          <p className="mt-2 text-slate-200">
+            Onboarding is complete. Launching mission control next.
+          </p>
           <div className="pointer-events-none absolute inset-0">
             {Array.from({ length: 32 }).map((_, index) => (
               <span

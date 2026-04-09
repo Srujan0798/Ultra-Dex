@@ -75,7 +75,7 @@ export class SessionService {
     // Start cleanup task
     this.startCleanupTask();
 
-    process.stdout.write('✓ Session service initialized\n');
+    console.log('✓ Session service initialized');
     this.initialized = true;
   }
 
@@ -455,7 +455,7 @@ export class SessionService {
     const cutoff = new Date(Date.now() - this.activityLogRetention);
     // Implementation would remove old activity logs
     // For now, just log that cleanup ran
-    process.stdout.write(`Session cleanup completed at ${new Date().toISOString()}\n`);
+    console.log(`Session cleanup completed at ${new Date().toISOString()}`);
   }
 }
 

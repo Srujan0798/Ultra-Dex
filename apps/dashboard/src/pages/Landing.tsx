@@ -22,7 +22,8 @@ export const Landing = memo(function Landing() {
       <section className="mx-auto max-w-6xl px-6 pt-20 pb-16 text-center">
         <h1 className="text-5xl font-bold tracking-tight">AI Orchestration. Done Right.</h1>
         <p className="mx-auto mt-5 max-w-2xl text-lg text-slate-300">
-          Run multi-agent workflows across providers with governance, memory, and production-grade observability.
+          Run multi-agent workflows across providers with governance, memory, and production-grade
+          observability.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <Link
@@ -54,7 +55,10 @@ export const Landing = memo(function Landing() {
         <h2 className="mb-4 text-2xl font-semibold">Pricing</h2>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {pricing.map((tier) => (
-            <article key={tier.plan} className="rounded-xl border border-slate-800 bg-slate-900/70 p-6">
+            <article
+              key={tier.plan}
+              className="rounded-xl border border-slate-800 bg-slate-900/70 p-6"
+            >
               <div className="text-sm text-slate-400">{tier.plan}</div>
               <div className="mt-2 text-3xl font-bold">{tier.price}</div>
             </article>
@@ -63,10 +67,20 @@ export const Landing = memo(function Landing() {
       </section>
 
       <footer className="border-t border-slate-800 px-6 py-6 text-center text-sm text-slate-400">
-        <a href="https://github.com/Srujan0798/Ultra-Dex" target="_blank" rel="noreferrer" className="mr-4 hover:text-slate-200">
+        <a
+          href="https://github.com/Srujan0798/Ultra-Dex"
+          target="_blank"
+          rel="noreferrer"
+          className="mr-4 hover:text-slate-200"
+        >
           GitHub
         </a>
-        <a href="https://github.com/Srujan0798/Ultra-Dex/tree/main/docs" target="_blank" rel="noreferrer" className="hover:text-slate-200">
+        <a
+          href="https://github.com/Srujan0798/Ultra-Dex/tree/main/docs"
+          target="_blank"
+          rel="noreferrer"
+          className="hover:text-slate-200"
+        >
           Docs
         </a>
       </footer>

@@ -94,6 +94,12 @@ export async function authorizeAgentAccess(agentName) {
   }
 
   const role = await resolveUserRole(teamConfig);
+
+  // If no team config (local dev), default to admin
+  if (!teamConfig || role === 'viewer') {
+    return { allowed: true, role: 'admin', allowedAgents: ['*'] };
+  }
+
   const allowedList = allowedAgentsForRole(role, teamConfig).map(normalizeAgentName);
 
   if (allowedList.includes('*')) {

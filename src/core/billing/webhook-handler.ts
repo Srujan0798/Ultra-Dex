@@ -4,61 +4,95 @@
  */
 
 import Stripe from 'stripe';
+import type { Request, Response } from 'express';
 import { clerk } from '../auth/clerk-client.js';
 import { usageMeter } from './usage-meter.js';
 import { getRedisClient } from './redis-client.js';
-import { 
-  logSubscriptionCreated, 
-  logPaymentSucceeded, 
+import {
+  logSubscriptionCreated,
+  logPaymentSucceeded,
   logSubscriptionCancelled,
   logError,
-  logEvent
+  logEvent,
 } from '../monitoring/better-stack-logger.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy', {
-  apiVersion: '2024-12-18.acacia'
+  apiVersion: '2024-12-18.acacia',
 });
 
 // Track processed event IDs for idempotency (in-memory, replace with Redis in production)
 const processedEvents = new Set<string>();
 
 // Clean up old processed events after 7 days
-setInterval(() => {
-  const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
-  const toDelete: string[] = [];
-  
-  processedEvents.forEach(eventId => {
-    // Event IDs contain timestamp, extract and check
-    const parts = eventId.split('_');
-    if (parts.length >= 3) {
-      const timestamp = parseInt(parts[2], 16);
-      if (timestamp < cutoff) {
-        toDelete.push(eventId);
+setInterval(
+  () => {
+    const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const toDelete: string[] = [];
+
+    processedEvents.forEach((eventId) => {
+      // Event IDs contain timestamp, extract and check
+      const parts = eventId.split('_');
+      if (parts.length >= 3) {
+        const timestamp = parseInt(parts[2], 16);
+        if (timestamp < cutoff) {
+          toDelete.push(eventId);
+        }
       }
-    }
-  });
-  
-  toDelete.forEach(id => processedEvents.delete(id));
-}, 24 * 60 * 60 * 1000); // Run daily
+    });
+
+    toDelete.forEach((id) => processedEvents.delete(id));
+  },
+  24 * 60 * 60 * 1000
+); // Run daily
 
 export class WebhookHandler {
-  private async updateUserMetadata(userId: string, updates: Record<string, unknown>): Promise<void> {
+  /**
+   * Main entry point for the Express route
+   */
+  async handleWebhook(req: Request, res: Response): Promise<void> {
+    const signature = req.headers['stripe-signature'];
+
+    if (typeof signature !== 'string') {
+      res.status(400).json({ error: 'Missing Stripe signature' });
+      return;
+    }
+
+    if (!Buffer.isBuffer(req.body)) {
+      res.status(400).json({ error: 'Invalid webhook payload' });
+      return;
+    }
+
+    try {
+      const event = this.verifyWebhook(req.body, signature);
+      await this.handleEvent(event);
+      res.json({ received: true });
+    } catch (error) {
+      logError('Stripe webhook processing failed', error as Error, { path: req.path });
+      res.status(400).json({ error: 'Webhook signature verification failed' });
+    }
+  }
+
+  private async updateUserMetadata(
+    userId: string,
+    updates: Record<string, unknown>
+  ): Promise<void> {
     const user = await clerk.users.getUser(userId);
     const existingPublicMetadata = (user.publicMetadata || {}) as Record<string, unknown>;
 
     await clerk.users.updateUserMetadata(userId, {
       publicMetadata: {
         ...existingPublicMetadata,
-        ...updates
-      }
+        ...updates,
+      },
     });
   }
+
   /**
    * Verify webhook signature from Stripe
    */
   verifyWebhook(rawBody: Buffer, signature: string): Stripe.Event {
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-    
+
     if (!webhookSecret) {
       throw new Error('STRIPE_WEBHOOK_SECRET not configured');
     }
@@ -107,22 +141,24 @@ export class WebhookHandler {
       }
       processedEvents.add(event.id);
 
-      logEvent('webhook_processed', { 
-        eventId: event.id, 
+      logEvent('webhook_processed', {
+        eventId: event.id,
         type: event.type,
-        created: event.created 
+        created: event.created,
       });
     } catch (error) {
       if (redisClient && redisClaimed) {
         try {
           await redisClient.del(redisKey);
         } catch (cleanupError) {
-          logError('Failed to rollback Redis processed event marker', cleanupError as Error, { eventId: event.id });
+          logError('Failed to rollback Redis processed event marker', cleanupError as Error, {
+            eventId: event.id,
+          });
         }
       }
-      logError('Webhook event processing failed', error as Error, { 
-        eventId: event.id, 
-        type: event.type 
+      logError('Webhook event processing failed', error as Error, {
+        eventId: event.id,
+        type: event.type,
       });
       throw error;
     }
@@ -172,28 +208,22 @@ export class WebhookHandler {
     const tierId = session.metadata?.tierId;
 
     if (!userId || !tierId) {
-      logError(
-        'Missing metadata in checkout session',
-        new Error('userId or tierId not found'),
-        { sessionId: session.id }
-      );
+      logError('Missing metadata in checkout session', new Error('userId or tierId not found'), {
+        sessionId: session.id,
+      });
       return;
     }
 
     // Reset usage counters on new subscription
     usageMeter.resetUser(userId);
 
-    logSubscriptionCreated(userId, tierId, session.subscription as string, {
-      sessionId: session.id,
-      customerEmail: session.customer_email,
-      mode: session.mode
-    });
+    logSubscriptionCreated(userId, tierId, session.subscription as string);
 
     logEvent('checkout_completed', {
       userId,
       tierId,
       sessionId: session.id,
-      subscriptionId: session.subscription
+      subscriptionId: session.subscription,
     });
   }
 
@@ -211,7 +241,7 @@ export class WebhookHandler {
       if (subscriptionId) {
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
         const subUserId = subscription.metadata?.userId;
-        
+
         if (subUserId) {
           await this.processInvoicePaid(subUserId, invoice, subscriptionId);
         }
@@ -223,25 +253,21 @@ export class WebhookHandler {
   }
 
   private async processInvoicePaid(
-    userId: string, 
-    invoice: Stripe.Invoice, 
+    userId: string,
+    invoice: Stripe.Invoice,
     subscriptionId: string
   ): Promise<void> {
     // Reset usage counters on successful payment
     usageMeter.resetUser(userId);
 
-    logPaymentSucceeded(userId, (invoice.amount_paid || 0) / 100, subscriptionId, {
-      invoiceId: invoice.id,
-      currency: invoice.currency,
-      billingReason: invoice.billing_reason
-    });
+    logPaymentSucceeded(userId, (invoice.amount_paid || 0) / 100, invoice.currency || 'usd');
 
     logEvent('invoice_paid', {
       userId,
       amount: invoice.amount_paid,
       currency: invoice.currency,
       invoiceId: invoice.id,
-      subscriptionId
+      subscriptionId,
     });
   }
 
@@ -257,7 +283,7 @@ export class WebhookHandler {
     if (!userId && subscriptionId) {
       const subscription = await stripe.subscriptions.retrieve(subscriptionId);
       const subUserId = subscription.metadata?.userId;
-      
+
       if (subUserId) {
         await this.processPaymentFailed(subUserId, invoice, subscriptionId);
       }
@@ -274,28 +300,24 @@ export class WebhookHandler {
     invoice: Stripe.Invoice,
     subscriptionId: string
   ): Promise<void> {
-    logError(
-      'Payment failed for subscription',
-      new Error('Invoice payment failed'),
-      {
-        userId,
-        invoiceId: invoice.id,
-        subscriptionId,
-        attemptCount: invoice.attempt_count,
-        nextPaymentAttempt: invoice.next_payment_attempt
-      }
-    );
+    logError('Payment failed for subscription', new Error('Invoice payment failed'), {
+      userId,
+      invoiceId: invoice.id,
+      subscriptionId,
+      attemptCount: invoice.attempt_count,
+      nextPaymentAttempt: invoice.next_payment_attempt,
+    });
 
     logEvent('payment_failed', {
       userId,
       invoiceId: invoice.id,
       subscriptionId,
       amount: invoice.amount_due,
-      attemptCount: invoice.attempt_count
+      attemptCount: invoice.attempt_count,
     });
 
     await this.updateUserMetadata(userId, {
-      billingStatus: 'past_due'
+      billingStatus: 'past_due',
     });
   }
 
@@ -308,29 +330,27 @@ export class WebhookHandler {
     const userId = subscription.metadata?.userId;
 
     if (!userId) {
-      logError(
-        'Missing userId in subscription metadata',
-        new Error('userId not found'),
-        { subscriptionId: subscription.id }
-      );
+      logError('Missing userId in subscription metadata', new Error('userId not found'), {
+        subscriptionId: subscription.id,
+      });
       return;
     }
 
     // Reset to free tier limits
     usageMeter.resetUser(userId);
 
-    logSubscriptionCancelled(userId, subscription.id, 'subscription_deleted');
+    logSubscriptionCancelled(userId, subscription.id);
 
     logEvent('subscription_deleted', {
       userId,
       subscriptionId: subscription.id,
       canceledAt: subscription.canceled_at,
-      cancelAtPeriodEnd: subscription.cancel_at_period_end
+      cancelAtPeriodEnd: subscription.cancel_at_period_end,
     });
 
     await this.updateUserMetadata(userId, {
       tier: 'free',
-      billingStatus: 'canceled'
+      billingStatus: 'canceled',
     });
   }
 
@@ -346,15 +366,11 @@ export class WebhookHandler {
       return;
     }
 
-    logSubscriptionCreated(userId, tierId, subscription.id, {
-      status: subscription.status,
-      currentPeriodStart: subscription.current_period_start,
-      currentPeriodEnd: subscription.current_period_end
-    });
+    logSubscriptionCreated(userId, tierId, subscription.id);
 
     await this.updateUserMetadata(userId, {
       tier: tierId,
-      billingStatus: subscription.status
+      billingStatus: subscription.status,
     });
   }
 
@@ -373,13 +389,13 @@ export class WebhookHandler {
       userId,
       subscriptionId: subscription.id,
       status: subscription.status,
-      cancelAtPeriodEnd: subscription.cancel_at_period_end
+      cancelAtPeriodEnd: subscription.cancel_at_period_end,
     });
 
     const tierId = subscription.metadata?.tierId;
     await this.updateUserMetadata(userId, {
       tier: tierId || 'free',
-      billingStatus: subscription.status
+      billingStatus: subscription.status,
     });
   }
 }

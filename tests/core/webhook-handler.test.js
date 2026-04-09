@@ -1,4 +1,4 @@
-import "reflect-metadata";
+import 'reflect-metadata';
 // Copyright (c) 2026 Ultra-Dex
 
 /**
@@ -24,20 +24,20 @@ describe('WebhookHandler', () => {
     clerk.users = {
       getUser: mock.fn(async (userId) => ({
         id: userId,
-        publicMetadata: {}
+        publicMetadata: {},
       })),
-      updateUserMetadata: mock.fn(async () => {})
+      updateUserMetadata: mock.fn(async () => {}),
     };
   });
 
   it('should reject webhook with invalid signature', () => {
     const originalSecret = process.env.STRIPE_WEBHOOK_SECRET;
     process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test_secret';
-    
+
     try {
       const rawBody = Buffer.from(JSON.stringify({ type: 'test.event' }));
       const invalidSignature = 'invalid_signature_12345';
-      
+
       assert.throws(
         () => handler.verifyWebhook(rawBody, invalidSignature),
         /Unable to extract|timestamp|signature/i
@@ -50,15 +50,15 @@ describe('WebhookHandler', () => {
   it('should throw error if STRIPE_WEBHOOK_SECRET not configured', () => {
     const originalSecret = process.env.STRIPE_WEBHOOK_SECRET;
     delete process.env.STRIPE_WEBHOOK_SECRET;
-    
+
     const rawBody = Buffer.from(JSON.stringify({ type: 'test.event' }));
     const signature = 'some_signature';
-    
+
     assert.throws(
       () => handler.verifyWebhook(rawBody, signature),
       /STRIPE_WEBHOOK_SECRET not configured/
     );
-    
+
     // Restore
     if (originalSecret) {
       process.env.STRIPE_WEBHOOK_SECRET = originalSecret;
@@ -76,11 +76,11 @@ describe('WebhookHandler', () => {
         object: 'event',
         type: 'checkout.session.completed',
         created: Math.floor(Date.now() / 1000),
-        data: { object: {} }
+        data: { object: {} },
       });
       const signature = stripe.webhooks.generateTestHeaderString({
         payload,
-        secret: process.env.STRIPE_WEBHOOK_SECRET
+        secret: process.env.STRIPE_WEBHOOK_SECRET,
       });
 
       const event = handler.verifyWebhook(Buffer.from(payload), signature);
@@ -108,15 +108,15 @@ describe('WebhookHandler', () => {
           customer_email: 'test@example.com',
           metadata: {
             userId: 'user_test_123',
-            tierId: 'pro'
-          }
-        }
-      }
+            tierId: 'pro',
+          },
+        },
+      },
     };
 
     // Should not throw
     await handler.handleEvent(event);
-    
+
     // Verify usage was reset for the user
     const usage = usageMeter.getUsage('user_test_123');
     assert.equal(usage.requestCount, 0);
@@ -126,10 +126,10 @@ describe('WebhookHandler', () => {
   it('should handle invoice.paid event', async () => {
     const userId = 'user_invoice_paid_123';
     const subscriptionId = 'sub_test_456';
-    
+
     // Set up some usage first
     usageMeter.increment(userId, { requests: 50, tokens: 10000 });
-    
+
     const event = {
       id: 'evt_invoice_' + Date.now(),
       type: 'invoice.paid',
@@ -142,14 +142,14 @@ describe('WebhookHandler', () => {
           billing_reason: 'subscription_cycle',
           subscription: subscriptionId,
           metadata: {
-            userId
-          }
-        }
-      }
+            userId,
+          },
+        },
+      },
     };
 
     await handler.handleEvent(event);
-    
+
     // Verify usage was reset
     const usage = usageMeter.getUsage(userId);
     assert.equal(usage.requestCount, 0);
@@ -169,10 +169,10 @@ describe('WebhookHandler', () => {
           next_payment_attempt: Math.floor(Date.now() / 1000) + 86400,
           subscription: 'sub_test_789',
           metadata: {
-            userId: 'user_payment_failed_123'
-          }
-        }
-      }
+            userId: 'user_payment_failed_123',
+          },
+        },
+      },
     };
 
     // Should not throw
@@ -181,10 +181,10 @@ describe('WebhookHandler', () => {
 
   it('should handle customer.subscription.deleted event', async () => {
     const userId = 'user_sub_deleted_123';
-    
+
     // Set up some usage
     usageMeter.increment(userId, { requests: 100, tokens: 50000 });
-    
+
     const event = {
       id: 'evt_sub_deleted_' + Date.now(),
       type: 'customer.subscription.deleted',
@@ -195,14 +195,14 @@ describe('WebhookHandler', () => {
           canceled_at: Math.floor(Date.now() / 1000),
           cancel_at_period_end: false,
           metadata: {
-            userId
-          }
-        }
-      }
+            userId,
+          },
+        },
+      },
     };
 
     await handler.handleEvent(event);
-    
+
     // Verify usage was reset (downgraded to free tier)
     const usage = usageMeter.getUsage(userId);
     assert.equal(usage.requestCount, 0);
@@ -222,10 +222,10 @@ describe('WebhookHandler', () => {
           current_period_end: Math.floor(Date.now() / 1000) + 2592000,
           metadata: {
             userId: 'user_sub_created_123',
-            tierId: 'pro'
-          }
-        }
-      }
+            tierId: 'pro',
+          },
+        },
+      },
     };
 
     // Should not throw
@@ -243,10 +243,10 @@ describe('WebhookHandler', () => {
           status: 'active',
           cancel_at_period_end: true,
           metadata: {
-            userId: 'user_sub_updated_123'
-          }
-        }
-      }
+            userId: 'user_sub_updated_123',
+          },
+        },
+      },
     };
 
     // Should not throw
@@ -267,22 +267,22 @@ describe('WebhookHandler', () => {
           customer_email: 'duplicate@example.com',
           metadata: {
             userId: 'user_duplicate_123',
-            tierId: 'pro'
-          }
-        }
-      }
+            tierId: 'pro',
+          },
+        },
+      },
     };
 
     // Process first time
     await handler.handleEvent(event);
     usageMeter.increment('user_duplicate_123', { requests: 10 });
-    
+
     const usageAfterFirst = usageMeter.getUsage('user_duplicate_123');
     assert.equal(usageAfterFirst.requestCount, 10);
 
     // Process second time (should be skipped)
     await handler.handleEvent(event);
-    
+
     const usageAfterSecond = usageMeter.getUsage('user_duplicate_123');
     // Usage should remain the same (not reset again)
     assert.equal(usageAfterSecond.requestCount, 10);
@@ -294,8 +294,8 @@ describe('WebhookHandler', () => {
       type: 'unknown.event.type',
       created: Math.floor(Date.now() / 1000),
       data: {
-        object: {}
-      }
+        object: {},
+      },
     };
 
     // Should not throw
@@ -313,9 +313,9 @@ describe('WebhookHandler', () => {
           mode: 'subscription',
           subscription: 'sub_test_no_metadata',
           customer_email: 'no-metadata@example.com',
-          metadata: {} // Empty metadata
-        }
-      }
+          metadata: {}, // Empty metadata
+        },
+      },
     };
 
     // Should not throw
@@ -332,9 +332,9 @@ describe('WebhookHandler', () => {
           id: 'sub_test_no_user',
           canceled_at: Math.floor(Date.now() / 1000),
           cancel_at_period_end: false,
-          metadata: {} // No userId
-        }
-      }
+          metadata: {}, // No userId
+        },
+      },
     };
 
     // Should not throw, just log error

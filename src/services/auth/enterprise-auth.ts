@@ -57,7 +57,7 @@ export class EnterpriseAuthSystem {
     await sessionService.initialize();
     await ssoService.initialize();
 
-    process.stdout.write('✓ Enterprise authentication system initialized\n');
+    console.log('✓ Enterprise authentication system initialized');
     this.initialized = true;
   }
 

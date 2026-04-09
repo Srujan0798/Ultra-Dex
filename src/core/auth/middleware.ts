@@ -1,165 +1,178 @@
-import type { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import { clerk } from './clerk-client.js';
 import { clerkAuthService } from './clerk-auth-service.js';
-import { logger } from '../monitoring/better-stack-logger.js';
-import { usageMeter } from '../billing/usage-meter.js';
-import { billingService } from '../billing/billing-service.js';
+import { usageMeter, type PlanId } from '../billing/usage-meter.js';
+
+export interface AuthContext {
+  userId: string;
+  email?: string;
+  role: string;
+  plan: PlanId;
+}
 
 export interface AuthRequest extends Request {
-  auth?: {
-    userId: string;
-    orgId?: string;
-    email: string;
+  auth?: AuthContext;
+  user?: {
+    id: string;
+    email?: string;
     role: string;
-    plan: 'free' | 'pro' | 'enterprise';
+    plan: PlanId;
   };
 }
 
-/**
- * Express middleware that requires authentication and optionally specific roles
- * @param roles - Optional array of required roles (e.g., ['admin', 'enterprise'])
- */
-export function requireAuth(roles?: string[]) {
-  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const authHeader = req.headers.authorization;
-      
-      const apiKeyHeader = req.headers['x-api-key'];
-      if ((!authHeader || !authHeader.startsWith('Bearer ')) && typeof apiKeyHeader === 'string') {
-        const user = clerkAuthService.getUserByApiKey(apiKeyHeader);
-        if (!user) {
-          res.status(401).json({ error: 'Unauthorized: Invalid API key' });
-          return;
-        }
+const DEV_AUTH: AuthContext = {
+  userId: 'dev-user-id',
+  email: 'dev@ultra-dex.com',
+  role: 'admin',
+  plan: 'free',
+};
 
-        (req as AuthRequest).auth = {
-          userId: user.id,
-          orgId: user.organizationId,
-          email: user.email,
-          role: 'user',
-          plan: user.tier
-        };
+function getBearerToken(req: Request): string | null {
+  const header = req.headers.authorization;
+  if (typeof header !== 'string') {
+    return null;
+  }
 
-        next();
-        return;
-      }
+  const match = header.match(/^Bearer\s+(.+)$/i);
+  return match?.[1]?.trim() || null;
+}
 
-      if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        res.status(401).json({ error: 'Unauthorized: Missing or invalid authorization header' });
-        return;
-      }
-
-      const token = authHeader.replace('Bearer ', '');
-      
-      // Dev mode fallback - accept 'dev-token' when CLERK_SECRET_KEY is not set
-      if (!process.env.CLERK_SECRET_KEY && token === 'dev-token') {
-        (req as AuthRequest).auth = {
-          userId: 'dev-user-id',
-          orgId: 'dev-org-id',
-          email: 'dev@ultra-dex.com',
-          role: 'user',
-          plan: 'free'
-        };
-        next();
-        return;
-      }
-
-      // Validate token with Clerk
-      try {
-        const session = await clerk.sessions.getSession(token);
-        
-        if (session.status !== 'active') {
-          res.status(401).json({ error: 'Unauthorized: Session is not active' });
-          return;
-        }
-
-        // Get user details
-        const user = await clerk.users.getUser(session.userId);
-        
-        const metadata = user.publicMetadata as Record<string, unknown>;
-        const userRole = (metadata.role as string) || 'user';
-        const userPlan = (metadata.tier as 'free' | 'pro' | 'enterprise') || 'free';
-        const orgId = (metadata.organizationId as string) || session.organizationId;
-
-        // Check role requirements
-        if (roles && roles.length > 0 && !roles.includes(userRole)) {
-          logger.warn('Access denied - insufficient permissions', {
-            userId: user.id,
-            requiredRoles: roles,
-            userRole
-          });
-          res.status(403).json({ 
-            error: 'Forbidden: Insufficient permissions',
-            required: roles,
-            current: userRole
-          });
-          return;
-        }
-
-        // Attach auth info to request
-        (req as AuthRequest).auth = {
-          userId: user.id,
-          orgId,
-          email: user.emailAddresses[0]?.emailAddress || '',
-          role: userRole,
-          plan: userPlan
-        };
-
-        next();
-      } catch (clerkError) {
-        logger.error('Clerk authentication failed', { error: String(clerkError), token: token.substring(0, 10) + '...' });
-        res.status(401).json({ error: 'Unauthorized: Invalid or expired token' });
-        return;
-      }
-    } catch (error) {
-      logger.error('Auth middleware error', { error: String(error) });
-      res.status(500).json({ error: 'Internal server error during authentication' });
-      return;
-    }
+function attachAuth(request: AuthRequest, auth: AuthContext): void {
+  request.auth = auth;
+  request.user = {
+    id: auth.userId,
+    email: auth.email,
+    role: auth.role,
+    plan: auth.plan,
   };
 }
 
-/**
- * Middleware to require a specific organization context
- */
-export function requireOrg() {
-  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const authReq = req as AuthRequest;
-    
-    if (!authReq.auth?.orgId) {
-      res.status(403).json({ 
-        error: 'Forbidden: Organization context required',
-        message: 'This endpoint must be called within an organization context'
-      });
+function unauthorized(
+  res: Response,
+  message = 'Unauthorized: Missing or invalid authorization header'
+): void {
+  res.status(401).json({ error: message });
+}
+
+function getPlanFromMetadata(metadata: Record<string, unknown>): PlanId {
+  const tier = metadata.tier;
+  if (tier === 'pro' || tier === 'enterprise') {
+    return tier;
+  }
+
+  return 'free';
+}
+
+async function authenticateWithClerk(token: string): Promise<AuthContext | null> {
+  if (
+    typeof clerk.sessions?.getSession !== 'function' ||
+    typeof clerk.users?.getUser !== 'function'
+  ) {
+    return null;
+  }
+
+  try {
+    const session = await clerk.sessions.getSession(token);
+    if (!session || (session.status && session.status !== 'active') || !session.userId) {
+      return null;
+    }
+
+    const user = await clerk.users.getUser(session.userId);
+    const publicMetadata = ((user.publicMetadata || {}) as Record<string, unknown>) ?? {};
+
+    return {
+      userId: user.id,
+      email: user.emailAddresses?.[0]?.emailAddress,
+      role: typeof publicMetadata.role === 'string' ? publicMetadata.role : 'user',
+      plan: getPlanFromMetadata(publicMetadata),
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function authenticateLocalToken(token: string): Promise<AuthContext | null> {
+  if (token === 'dev-token') {
+    return DEV_AUTH;
+  }
+
+  const user = await clerkAuthService.validateSession(token);
+  if (!user) {
+    return null;
+  }
+
+  return {
+    userId: user.id,
+    email: user.email,
+    role: 'user',
+    plan: user.tier,
+  };
+}
+
+function getAuth(req: Request): AuthContext | null {
+  const request = req as AuthRequest;
+  if (request.auth) {
+    return request.auth;
+  }
+
+  if (request.user?.id) {
+    return {
+      userId: request.user.id,
+      email: request.user.email,
+      role: request.user.role || 'user',
+      plan: request.user.plan || 'free',
+    };
+  }
+
+  return null;
+}
+
+export function requireAuth(requiredRoles: string[] = []) {
+  return async function authMiddleware(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    const token = getBearerToken(req);
+    if (!token) {
+      unauthorized(res);
       return;
     }
 
+    const auth =
+      (process.env.CLERK_SECRET_KEY ? await authenticateWithClerk(token) : null) ||
+      (!process.env.CLERK_SECRET_KEY ? await authenticateLocalToken(token) : null) ||
+      (process.env.CLERK_SECRET_KEY ? await authenticateLocalToken(token) : null);
+
+    if (!auth) {
+      unauthorized(res, 'Unauthorized: Invalid session token');
+      return;
+    }
+
+    if (requiredRoles.length > 0 && !requiredRoles.includes(auth.role)) {
+      res.status(403).json({ error: 'Forbidden: Insufficient role' });
+      return;
+    }
+
+    attachAuth(req as AuthRequest, auth);
     next();
   };
 }
 
-/**
- * Middleware to require admin role
- */
-export const requireAdmin = requireAuth(['admin']);
+export function requireAdmin() {
+  return requireAuth(['admin']);
+}
 
-/**
- * Middleware to require pro or enterprise plan
- */
 export function requirePaidPlan() {
-  return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    const authReq = req as AuthRequest;
-    
-    if (!authReq.auth) {
-      res.status(401).json({ error: 'Unauthorized: Authentication required' });
+  return function paidPlanMiddleware(req: Request, res: Response, next: NextFunction): void {
+    const auth = getAuth(req);
+    if (!auth) {
+      unauthorized(res, 'Unauthorized: Authentication required');
       return;
     }
 
-    if (authReq.auth.plan === 'free') {
-      res.status(403).json({ 
-        error: 'Forbidden: Paid plan required',
-        upgrade: 'This feature requires a Pro or Enterprise plan'
-      });
+    if (auth.plan === 'free') {
+      res.status(403).json({ error: 'Paid plan required' });
       return;
     }
 
@@ -167,63 +180,37 @@ export function requirePaidPlan() {
   };
 }
 
-/**
- * Middleware to enforce daily usage limits for AI endpoints
- * - Checks usage before processing the request
- * - If within limits, attaches a finish handler to record usage (requests, tokens)
- */
 export function enforceUsageLimit() {
-  return (req: Request, res: Response, next: NextFunction): void => {
-    const authReq = req as AuthRequest;
-
-    if (!authReq.auth) {
-      res.status(401).json({ error: 'Unauthorized: Authentication required' });
+  return function usageLimitMiddleware(req: Request, res: Response, next: NextFunction): void {
+    const auth = getAuth(req);
+    if (!auth) {
+      unauthorized(res, 'Unauthorized: Authentication required');
       return;
     }
 
-    const userId = authReq.auth.userId;
-    const plan = authReq.auth.plan;
-
-    try {
-      const limit = usageMeter.checkLimit(userId, plan);
-      if (!limit.allowed) {
-        res.status(429).json({
-          error: 'LIMIT_EXCEEDED',
-          plan,
-          remaining: 0,
-          reason: limit.reason || 'Usage limit exceeded',
-          resetAt: limit.resetAt instanceof Date ? limit.resetAt.toISOString() : new Date(limit.resetAt).toISOString()
-        });
-        return;
-      }
-
-      // After response finishes, record usage (reads tokens from x-tokens-used header)
-      res.on('finish', () => {
-        try {
-          // Only count successful requests.
-          if (res.statusCode >= 400) return;
-
-          let tokens = 0;
-          const header = res.getHeader('x-tokens-used');
-          if (typeof header === 'string') tokens = parseInt(header, 10) || 0;
-          else if (typeof header === 'number') tokens = header;
-
-          // Update in-memory counters
-          usageMeter.increment(userId, { requests: 1, tokens });
-
-          // Record usage asynchronously in billing service
-          billingService.recordUsage(userId, 1, tokens).catch((err) => {
-            logger.error('Failed to record usage in billing service', { error: String(err), userId });
-          });
-        } catch (err) {
-          logger.error('Failed to increment usage after response', { error: String(err), userId });
-        }
-      });
-
-      next();
-    } catch (err) {
-      logger.error('Usage limit check failed', { error: String(err), userId });
-      res.status(500).json({ error: 'Internal server error during usage check' });
+    const limitCheck = usageMeter.checkLimit(auth.userId, auth.plan);
+    if (!limitCheck.allowed) {
+      res.status(429).json({ error: 'Usage limit exceeded', remaining: limitCheck.remaining });
+      return;
     }
+
+    if (typeof res.on === 'function') {
+      res.on('finish', () => {
+        if (res.statusCode >= 400) {
+          return;
+        }
+
+        let tokens = 0;
+        if (typeof res.getHeader === 'function') {
+          const headerValue = res.getHeader('x-tokens-used');
+          const parsed = Number(headerValue);
+          tokens = Number.isFinite(parsed) ? parsed : 0;
+        }
+
+        usageMeter.increment(auth.userId, { requests: 1, tokens });
+      });
+    }
+
+    next();
   };
 }

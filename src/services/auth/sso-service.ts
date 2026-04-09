@@ -148,7 +148,7 @@ export class SSOService {
     await ppmManager.init();
     await auditLogger.initialize();
 
-    process.stdout.write('✓ SSO service initialized\n');
+    console.log('✓ SSO service initialized');
     this.initialized = true;
   }
 
@@ -204,7 +204,7 @@ export class SSOService {
       },
     });
 
-    process.stdout.write(`✓ SAML SSO configured: ${name}\n`);
+    console.log(`✓ SAML SSO configured: ${name}`);
     return ssoConfig;
   }
 
@@ -260,7 +260,7 @@ export class SSOService {
       },
     });
 
-    process.stdout.write(`✓ OAuth2 SSO configured: ${name}\n`);
+    console.log(`✓ OAuth2 SSO configured: ${name}`);
     return ssoConfig;
   }
 
@@ -316,7 +316,7 @@ export class SSOService {
       },
     });
 
-    process.stdout.write(`✓ OIDC SSO configured: ${name}\n`);
+    console.log(`✓ OIDC SSO configured: ${name}`);
     return ssoConfig;
   }
 
@@ -603,7 +603,11 @@ export class SSOService {
         return { success: false, error: 'Invalid state parameter' };
       }
 
-      const stateData = stateResult[0].metadata as { state: string; configId: string; expiresAt: Date };
+      const stateData = stateResult[0].metadata as {
+        state: string;
+        configId: string;
+        expiresAt: Date;
+      };
       if (new Date() > stateData.expiresAt) {
         return { success: false, error: 'State expired' };
       }
@@ -1074,7 +1078,7 @@ export class SSOService {
       },
     });
 
-    process.stdout.write(`✓ SSO configuration disabled: ${config.name}\n`);
+    console.log(`✓ SSO configuration disabled: ${config.name}`);
     return true;
   }
 }

@@ -8,8 +8,7 @@
 import { program } from 'commander';
 import chalk from 'chalk';
 import { VERSION } from '../lib/utils/version.js';
-
-program.name('ultra-dex').description('AI Orchestration Meta-Layer for SaaS Development').version(VERSION);
+import { pathToFileURL } from 'url';
 
 const commandRegistrars = [
   { path: '../lib/commands/run.js', register: 'registerRunCommand' },
@@ -56,21 +55,37 @@ const commandRegistrars = [
   { path: '../lib/commands/enterprise.js', register: 'registerEnterpriseCommand' },
 ];
 
-for (const { path: cmdPath, register: fnName } of commandRegistrars) {
-  try {
-    const mod = await import(cmdPath);
-    const fn = mod[fnName];
-    if (typeof fn === 'function') {
-      fn(program);
-    }
-  } catch (err) {
-    // Skip commands that fail to load (missing deps, timeout, etc.)
-    if (process.env.ULTRA_DEX_DEBUG === '1') {
-      console.error(chalk.yellow(`Warning: Failed to register command from ${cmdPath}: ${err.message}`));
+export async function registerFullProgram(targetProgram = program) {
+  for (const { path: cmdPath, register: fnName } of commandRegistrars) {
+    try {
+      const mod = await import(cmdPath);
+      const fn = mod[fnName];
+      if (typeof fn === 'function') {
+        fn(targetProgram);
+      }
+    } catch (err) {
+      // Skip commands that fail to load (missing deps, timeout, etc.)
+      if (process.env.ULTRA_DEX_DEBUG === '1') {
+        console.error(
+          chalk.yellow(`Warning: Failed to register command from ${cmdPath}: ${err.message}`)
+        );
+      }
     }
   }
 }
 
-const argv = process.argv.length > 2 ? process.argv : [...process.argv, '--help'];
-await program.parseAsync(argv);
-process.exit(process.exitCode ?? 0);
+const isEntrypoint =
+  Boolean(process.argv[1]) && import.meta.url === pathToFileURL(process.argv[1]).href;
+
+if (isEntrypoint) {
+  program
+    .name('ultra-dex')
+    .description('AI Orchestration Meta-Layer for SaaS Development')
+    .version(VERSION);
+
+  await registerFullProgram(program);
+
+  const argv = process.argv.length > 2 ? process.argv : [...process.argv, '--help'];
+  await program.parseAsync(argv);
+  process.exit(process.exitCode ?? 0);
+}

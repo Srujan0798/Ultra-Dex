@@ -12,7 +12,7 @@ var __decorateParam = (index, decorator) => (target, key) => decorator(target, k
 import { singleton, inject } from 'tsyringe';
 import { DI_TOKENS } from '../di/tokens.js';
 import { VirtualFileSystem, NullFileSystem } from './virtual-fs.js';
-const { DockerSandbox } = await import('../../../apps/cli/lib/sandbox/docker.js');
+import { DockerSandbox } from '../../platform/docker-sandbox.js';
 let SandboxRouter = class {
   constructor(vmSandbox, config, logger) {
     this.config = config;

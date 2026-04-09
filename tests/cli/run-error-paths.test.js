@@ -8,6 +8,8 @@ import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
 const CLI_PATH = path.resolve(process.cwd(), 'apps/cli/bin/ultra-dex.js');
+const PROJECT_ROOT = process.cwd();
+const TSX_PATH = path.resolve(PROJECT_ROOT, 'node_modules/tsx/dist/loader.mjs');
 
 describe('CLI Command: run error paths', () => {
   let tmpDir;
@@ -23,7 +25,7 @@ describe('CLI Command: run error paths', () => {
   test('shows clear error when no AI provider configured', async () => {
     const error = await execFileAsync(
       process.execPath,
-      [CLI_PATH, 'run', 'planner', '-t', 'Test task'],
+      ['--import', TSX_PATH, CLI_PATH, 'run', 'planner', '-t', 'Test task'],
       {
         cwd: tmpDir,
         env: {
@@ -64,7 +66,7 @@ describe('CLI Command: run error paths', () => {
   test('shows clear error when provider specified but not configured', async () => {
     const error = await execFileAsync(
       process.execPath,
-      [CLI_PATH, 'run', 'planner', '-t', 'Test task', '--provider', 'openai'],
+      ['--import', TSX_PATH, CLI_PATH, 'run', 'planner', '-t', 'Test task', '--provider', 'openai'],
       {
         cwd: tmpDir,
         env: {
@@ -97,7 +99,7 @@ describe('CLI Command: run error paths', () => {
   test('exits with code 1 when no provider available', async () => {
     const error = await execFileAsync(
       process.execPath,
-      [CLI_PATH, 'run', 'planner', '-t', 'Test task'],
+      ['--import', TSX_PATH, CLI_PATH, 'run', 'planner', '-t', 'Test task'],
       {
         cwd: tmpDir,
         env: {

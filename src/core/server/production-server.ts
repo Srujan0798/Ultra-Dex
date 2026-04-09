@@ -3,29 +3,25 @@ import express from 'express';
 import type { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import * as Sentry from '@sentry/node';
 import { clerkAuthService } from '../auth/clerk-auth-service.js';
 import { billingService } from '../billing/billing-service.js';
 import { webhookHandler } from '../billing/webhook-handler.js';
 import { usageMeter } from '../billing/usage-meter.js';
-import { logAIRequest, logError, logEvent } from '../monitoring/better-stack-logger.js';
-import { requireAuth, requireAdmin, enforceUsageLimit, type AuthRequest } from '../auth/middleware.js';
+import { logger, logAIRequest, logError, logEvent } from '../monitoring/better-stack-logger.js';
+import {
+  requireAuth,
+  requireAdmin,
+  enforceUsageLimit,
+  type AuthRequest,
+} from '../auth/middleware.js';
 import { monitoring } from '../system/monitoring.js';
 import { posthog } from '../analytics/posthog-client.js';
 import { sentry } from '../analytics/sentry-client.js';
 import { ssoService } from '../../services/auth/sso-service.js';
+import { resolveDashboardDistPath } from '../../platform/dashboard-static.js';
 
 const app = express();
 const sentryDsn = process.env.SENTRY_DSN;
-
-if (sentryDsn) {
-  Sentry.init({
-    dsn: sentryDsn,
-    environment: process.env.NODE_ENV || 'development',
-    release: process.env.npm_package_version,
-    tracesSampleRate: Number(process.env.SENTRY_TRACES_SAMPLE_RATE || 0)
-  });
-}
 
 function normalizeError(error: unknown): Error {
   return error instanceof Error ? error : new Error(String(error));
@@ -39,7 +35,10 @@ function extractAiProvider(req: Request): string | undefined {
 
 function extractUserId(req: Request): string | undefined {
   const requestWithUser = req as Request & { ultraDexUserId?: string };
-  if (typeof requestWithUser.ultraDexUserId === 'string' && requestWithUser.ultraDexUserId.length > 0) {
+  if (
+    typeof requestWithUser.ultraDexUserId === 'string' &&
+    requestWithUser.ultraDexUserId.length > 0
+  ) {
     return requestWithUser.ultraDexUserId;
   }
 
@@ -57,52 +56,42 @@ function attachUserId(req: Request, userId: string): void {
   requestWithUser.ultraDexUserId = userId;
 }
 
-function captureExceptionWithContext(error: unknown, req: Request, context: Record<string, unknown> = {}): void {
+function captureExceptionWithContext(
+  error: unknown,
+  req: Request,
+  context: Record<string, unknown> = {}
+): void {
   if (!sentryDsn) {
     return;
   }
 
-  const normalizedError = normalizeError(error);
   const userId = extractUserId(req);
   const aiProvider = extractAiProvider(req);
 
-  Sentry.withScope((scope) => {
-    scope.setTag('path', req.path);
-    if (aiProvider) scope.setTag('ai_provider', aiProvider);
-    if (userId) scope.setUser({ id: userId });
+  const tags: Record<string, string> = {
+    path: req.path,
+  };
+  if (aiProvider) tags.ai_provider = aiProvider;
 
-    scope.setContext('request', {
-      method: req.method,
-      path: req.path
-    });
+  if (userId) {
+    sentry.setUser(userId);
+  }
 
-    if (Object.keys(context).length > 0) {
-      scope.setContext('context', context);
-    }
-
-    Sentry.captureException(normalizedError);
-  });
+  sentry.captureException(
+    error,
+    {
+      ...context,
+      request: {
+        method: req.method,
+        path: req.path,
+      },
+    },
+    tags
+  );
 }
 
 app.post('/api/billing/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
-  const signature = req.headers['stripe-signature'];
-  if (typeof signature !== 'string') {
-    return res.status(400).json({ error: 'Missing Stripe signature' });
-  }
-
-  if (!Buffer.isBuffer(req.body)) {
-    return res.status(400).json({ error: 'Invalid webhook payload' });
-  }
-
-  try {
-    const event = webhookHandler.verifyWebhook(req.body, signature);
-    await webhookHandler.handleEvent(event);
-    res.json({ received: true });
-  } catch (error) {
-    captureExceptionWithContext(error, req);
-    logError('Stripe webhook processing failed', error, { path: req.path });
-    res.status(400).json({ error: 'Webhook signature verification failed' });
-  }
+  await webhookHandler.handleWebhook(req, res);
 });
 
 app.use(helmet());
@@ -115,28 +104,32 @@ app.use((req, res, next) => {
   res.on('finish', () => {
     const latency = Date.now() - startTime;
     const userId = extractUserId(req);
-    
+
     // Track in monitoring service
     monitoring.trackRequest(latency);
     if (res.statusCode >= 400) {
       monitoring.trackError();
     }
-    
+
     // Track in PostHog
-    posthog.track('http_request', {
-      method: req.method,
-      path: req.path,
-      statusCode: res.statusCode,
-      latency
-    }, userId);
-    
+    posthog.track(
+      'http_request',
+      {
+        method: req.method,
+        path: req.path,
+        statusCode: res.statusCode,
+        latency,
+      },
+      userId
+    );
+
     // Log to Better Stack
     logEvent('request', {
       method: req.method,
       path: req.path,
       statusCode: res.statusCode,
       latency,
-      userId
+      userId,
     });
   });
 
@@ -145,14 +138,22 @@ app.use((req, res, next) => {
 
 // Health endpoints
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', version: '3.1.0', timestamp: new Date().toISOString(), uptime: process.uptime() });
+  res.json({
+    status: 'ok',
+    version: '3.1.0',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+  });
 });
 
 app.get('/health/ready', (req, res) => {
   res.json({
     status: 'ready',
-    checks: { server: 'pass', memory: process.memoryUsage().heapUsed < 500 * 1024 * 1024 ? 'pass' : 'warn' },
-    timestamp: new Date().toISOString()
+    checks: {
+      server: 'pass',
+      memory: process.memoryUsage().heapUsed < 500 * 1024 * 1024 ? 'pass' : 'warn',
+    },
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -164,9 +165,9 @@ app.get('/health/deep', (req, res) => {
       memory: process.memoryUsage().heapUsed < 500 * 1024 * 1024 ? 'pass' : 'warn',
       stripe: Boolean(process.env.STRIPE_SECRET_KEY) ? 'configured' : 'missing',
       clerk: Boolean(process.env.CLERK_SECRET_KEY) ? 'configured' : 'missing',
-      betterStack: Boolean(process.env.BETTER_STACK_SOURCE_TOKEN) ? 'configured' : 'missing'
+      betterStack: Boolean(process.env.BETTER_STACK_SOURCE_TOKEN) ? 'configured' : 'missing',
     },
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -176,57 +177,22 @@ app.get('/api/status', (req, res) => {
     name: 'Ultra-Dex',
     version: '3.1.0',
     status: 'operational',
-    features: ['ai_providers', 'agent_orchestration', 'memory_system', 'mcp_ecosystem', 'user_authentication', 'billing', 'sso']
+    features: [
+      'ai_providers',
+      'agent_orchestration',
+      'memory_system',
+      'mcp_ecosystem',
+      'user_authentication',
+      'billing',
+      'sso',
+    ],
   });
 });
 
 // Metrics endpoint (admin only)
-app.get('/metrics', requireAdmin, (req, res) => {
+app.get('/metrics', requireAdmin(), (req, res) => {
   const metrics = monitoring.getMetrics();
   res.json(metrics);
-});
-
-// Audit Log endpoints (admin only)
-app.get('/api/admin/audit/report', requireAdmin, async (req, res) => {
-  try {
-    const { format = 'json', days = '30' } = req.query;
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(endDate.getDate() - parseInt(days as string, 10));
-
-    const report = await auditLogger.generateComplianceReport(
-      startDate,
-      endDate,
-      format as 'json' | 'csv'
-    );
-
-    if (format === 'csv') {
-      res.setHeader('Content-Type', 'text/csv');
-      res.setHeader('Content-Disposition', `attachment; filename=audit-report-${Date.now()}.csv`);
-    } else {
-      res.setHeader('Content-Type', 'application/json');
-    }
-
-    res.send(report);
-  } catch (error) {
-    logError('Audit report generation failed', error);
-    res.status(500).json({ error: 'Failed to generate audit report' });
-  }
-});
-
-app.get('/api/admin/audit/stats', requireAdmin, async (req, res) => {
-  try {
-    const { days = '30' } = req.query;
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(endDate.getDate() - parseInt(days as string, 10));
-
-    const stats = await auditLogger.getStats(startDate, endDate);
-    res.json(stats);
-  } catch (error) {
-    logError('Audit stats retrieval failed', error);
-    res.status(500).json({ error: 'Failed to fetch audit stats' });
-  }
 });
 
 // Auth endpoints (public - no middleware)
@@ -237,13 +203,19 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
     const { user, token } = await clerkAuthService.register(email, password, name);
-    
+
     // Create free subscription
     await billingService.createSubscription(user.id, 'free', 'cus_test');
-    
+
     res.status(201).json({
-      user: { id: user.id, email: user.email, name: user.name, tier: user.tier, apiKey: user.apiKey },
-      session: { token, expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) }
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        tier: user.tier,
+        apiKey: user.apiKey,
+      },
+      session: { token, expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) },
     });
   } catch (error) {
     captureExceptionWithContext(error, req);
@@ -261,14 +233,20 @@ app.post('/api/auth/login', async (req, res) => {
     const loginResult = await clerkAuthService.login(email, password);
     const user = loginResult.user;
     const token = loginResult.token;
-    
+
     if (!token) {
       return res.status(500).json({ error: 'Token generation failed' });
     }
-    
+
     res.json({
-      user: { id: user.id, email: user.email, name: user.name, tier: user.tier, apiKey: user.apiKey },
-      session: { token, expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) }
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        tier: user.tier,
+        apiKey: user.apiKey,
+      },
+      session: { token, expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) },
     });
   } catch (error) {
     captureExceptionWithContext(error, req);
@@ -294,8 +272,8 @@ app.get('/api/auth/sso/:orgId/login', async (req, res) => {
   try {
     const { orgId } = req.params;
     const configs = await ssoService.getOrganizationConfigs(orgId);
-    const activeConfig = configs.find(c => c.isActive);
-    
+    const activeConfig = configs.find((c) => c.isActive);
+
     if (!activeConfig) {
       return res.status(404).json({ error: 'SSO not configured for this organization' });
     }
@@ -326,16 +304,18 @@ app.post('/api/auth/sso/callback', async (req, res) => {
 app.get('/api/user/profile', requireAuth(), async (req, res) => {
   const authReq = req as AuthRequest;
   const userId = authReq.auth!.userId;
-  
+
   // Get user data from Clerk
-  const user = await clerkAuthService.validateSession(req.headers.authorization!.replace('Bearer ', ''));
+  const user = await clerkAuthService.validateSession(
+    req.headers.authorization!.replace('Bearer ', '')
+  );
   if (!user) return res.status(401).json({ error: 'Invalid session' });
-  
+
   attachUserId(req, user.id);
-  
+
   // Get subscription
   const subscription = await billingService.getSubscription(userId);
-  
+
   res.json({
     id: user.id,
     email: user.email,
@@ -344,11 +324,13 @@ app.get('/api/user/profile', requireAuth(), async (req, res) => {
     apiKey: user.apiKey,
     usage: user.usage,
     preferences: user.preferences,
-    subscription: subscription ? {
-      tierId: subscription.tierId,
-      status: subscription.status,
-      currentPeriodEnd: subscription.currentPeriodEnd
-    } : null
+    subscription: subscription
+      ? {
+          tierId: subscription.tierId,
+          status: subscription.status,
+          currentPeriodEnd: subscription.currentPeriodEnd,
+        }
+      : null,
   });
 });
 
@@ -391,7 +373,10 @@ app.post('/api/billing/portal', requireAuth(), async (req, res) => {
   try {
     const authReq = req as AuthRequest;
     const baseUrl = process.env.ULTRA_DEX_WEB_URL || 'https://ultra-dex.onrender.com';
-    const session = await billingService.createPortalSession(authReq.auth!.userId, `${baseUrl}/billing`);
+    const session = await billingService.createPortalSession(
+      authReq.auth!.userId,
+      `${baseUrl}/billing`
+    );
     res.json(session);
   } catch (error) {
     captureExceptionWithContext(error, req);
@@ -415,12 +400,12 @@ app.get('/api/billing/invoices', requireAuth(), async (req, res) => {
 app.post('/api/billing/subscribe', requireAuth(), async (req, res) => {
   const authReq = req as AuthRequest;
   const userId = authReq.auth!.userId;
-  
+
   attachUserId(req, userId);
-  
+
   const { tierId } = req.body;
   if (!tierId) return res.status(400).json({ error: 'Missing tierId' });
-  
+
   try {
     const subscription = await billingService.createSubscription(userId, tierId, 'cus_test');
     res.json({ subscription });
@@ -434,7 +419,7 @@ app.post('/api/billing/subscribe', requireAuth(), async (req, res) => {
 app.get('/api/billing/usage', requireAuth(), async (req, res) => {
   const authReq = req as AuthRequest;
   const userId = authReq.auth!.userId;
-  
+
   attachUserId(req, userId);
 
   const usage = usageMeter.getUsage(userId);
@@ -451,9 +436,9 @@ app.get('/api/billing/usage', requireAuth(), async (req, res) => {
     subscription: subscription
       ? {
           currentPeriodEnd: subscription.currentPeriodEnd,
-          status: subscription.status
+          status: subscription.status,
         }
-      : null
+      : null,
   });
 });
 
@@ -468,14 +453,14 @@ app.post('/api/billing/cancel', requireAuth(), async (req, res) => {
 });
 
 // Static dashboard
-app.use(express.static('apps/dashboard/dist'));
+app.use(express.static(resolveDashboardDistPath()));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
   logEvent('server_started', {
     port: PORT,
     env: process.env.NODE_ENV || 'development',
-    features: ['better_stack', 'clerk_auth', 'stripe_billing', 'sso_enabled']
+    features: ['better_stack', 'clerk_auth', 'stripe_billing', 'sso_enabled'],
   });
 });
 
@@ -523,8 +508,8 @@ app.post('/api/multimodal/process', requireAuth(), enforceUsageLimit(), async (r
       cost,
       latency,
       metadata: {
-        path: req.path
-      }
+        path: req.path,
+      },
     });
 
     res.json({ result });
@@ -546,23 +531,18 @@ app.use((error: unknown, req: Request, res: Response, _next: NextFunction) => {
 process.on('uncaughtException', (error) => {
   monitoring.trackError();
   sentry.captureException(error);
-  Sentry.captureException(normalizeError(error));
   logError('Uncaught exception', error);
 });
 
 process.on('unhandledRejection', (reason) => {
   monitoring.trackError();
   sentry.captureException(reason);
-  Sentry.captureException(normalizeError(reason));
   logError('Unhandled rejection', reason);
 });
 
 // Graceful shutdown - flush analytics
 process.on('SIGTERM', async () => {
-  console.log('SIGTERM received, flushing analytics...');
-  await Promise.all([
-    posthog.flush(),
-    sentry.flush()
-  ]);
+  logger.info('SIGTERM received, flushing analytics...');
+  await Promise.all([posthog.flush(), sentry.shutdown()]);
   process.exit(0);
 });

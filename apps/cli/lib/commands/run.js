@@ -30,6 +30,7 @@ import { verifyLinting, verifyTypeSafety, verifySecurityPatterns } from '../qual
 import { printInfo, printSuccess, printError } from '../utils/output.js';
 import { authorizeAgentAccess } from '../enterprise/agent-access.js';
 import { estimateTokens } from '../utils/token-forecast.js';
+import { ppmManager } from '../memory/ppm.js';
 import { logger } from '../utils/logger.js';
 import {
   buildPromptContextSection,
@@ -63,17 +64,23 @@ function syncActiveRunId(runId) {
 }
 
 function logRun(level, event, metadata = {}) {
-  const writer =
-    typeof logger[level] === 'function' ? logger[level].bind(logger) : logger.info.bind(logger);
   const { trace = null, run_id, agent, step, module = 'run', ...rest } = metadata;
 
-  writer(event, {
+  const logMetadata = {
     run_id: run_id || getActiveRunId(trace),
     agent,
     step,
     module,
     ...rest,
-  });
+  };
+
+  if (level === 'error') {
+    logger.error(`[${module}] ${event}`, logMetadata);
+  } else if (level === 'warn') {
+    logger.warn(`[${module}] ${event}`, logMetadata);
+  } else {
+    logger.info(`[${module}] ${event}`, logMetadata);
+  }
 }
 
 const AGENTS = {
@@ -542,6 +549,7 @@ export async function runAgentLoop(
 
   for (let stepIndex = 1; stepIndex <= boundedMaxSteps; stepIndex += 1) {
     const startedAt = Date.now();
+    const startedAtIso = new Date(startedAt).toISOString();
     const spinner = ora(`${agent.name} is working... (${stepIndex}/${boundedMaxSteps})`).start();
 
     await dashboardNotifier.sendAgentStatus(agentName, 'working', truncateText(currentTask, 50));
@@ -565,6 +573,10 @@ export async function runAgentLoop(
       depth,
       loopStep: stepIndex,
       maxSteps: boundedMaxSteps,
+      startTime: startedAtIso,
+      endTime: new Date().toISOString(),
+      provider: providerInstance?.getName?.() || 'provider',
+      model: providerInstance?.model || null,
     });
 
     const prompt = `${contextSection}## Task\n${currentTask}\n\nUse the context above to choose the next action. Before acting, write one line exactly in this format:\nDECISION: <what you will do next and why, grounded in the context above>\n\nThen either provide the final answer or output exactly one tool command:\n>> READ_CODE: "filePath"\n>> WRITE_CODE: "filePath" "fullContent"\n>> RUN_SHELL: "command"\n>> DELEGATE: @AgentName "Task"`;
@@ -628,7 +640,11 @@ export async function runAgentLoop(
         depth,
         loopStep: stepIndex,
         maxSteps: boundedMaxSteps,
+        provider: providerInstance?.getName?.() || 'provider',
         model: result?.model || providerInstance?.model || null,
+        startTime: startedAtIso,
+        endTime: new Date().toISOString(),
+        durationMs: Date.now() - startedAt,
         usage: result?.usage || null,
       });
       const decision = extractDecision(content);
@@ -641,6 +657,11 @@ export async function runAgentLoop(
         depth,
         loopStep: stepIndex,
         maxSteps: boundedMaxSteps,
+        provider: providerInstance?.getName?.() || 'provider',
+        model: result?.model || providerInstance?.model || null,
+        startTime: startedAtIso,
+        endTime: new Date().toISOString(),
+        durationMs: Date.now() - startedAt,
       });
       content = stripDecisionLine(content) || content;
 
@@ -1296,9 +1317,40 @@ async function persistAndPrintRunArtifacts({ trace, command, agent, task, result
     traceFile: trace.traceFile,
   });
 
+  try {
+    await ppmManager.add({
+      id: `execution-trace:${trace.runId}`,
+      content: JSON.stringify(artifactBundle.summary.trace),
+      type: 'execution-trace',
+      source: 'ultra-dex-run',
+      importance: 6,
+      metadata: {
+        runId: trace.runId,
+        command,
+        agent,
+        task: truncateText(task, 200),
+        stepCount: artifactBundle.summary.steps.length,
+      },
+    });
+  } catch (error) {
+    logRun('warn', 'run.trace.memory_persist_failed', {
+      trace,
+      agent,
+      module: 'run.artifacts',
+      detail: error instanceof Error ? error.message : String(error),
+    });
+  }
+
   printSuccess(`\n✅ Result artifact: ${artifactBundle.paths.result}`);
   printInfo(`📋 Trace artifact: ${artifactBundle.paths.trace}`);
   printInfo(`📄 Summary artifact: ${artifactBundle.paths.summary}`);
+  printInfo(
+    `🧾 Trace summary: ${JSON.stringify({
+      run_id: artifactBundle.summary.trace.run_id,
+      steps: artifactBundle.summary.trace.steps.length,
+      output: truncateText(artifactBundle.summary.trace.output, 120),
+    })}`
+  );
 
   const visibleResult = String(result || '').trim() || '[No result returned]';
   printInfo(chalk.bold('\n📊 Result\n'));
@@ -1384,6 +1436,20 @@ export function registerRunCommand(program) {
         });
         syncActiveRunId(trace.runId);
         printInfo(`Execution trace run_id: ${trace.runId}`);
+        if (!trace.started) {
+          const runStartTime = new Date().toISOString();
+          trace.started = true;
+          await trace.record({
+            agent: agentName,
+            action: 'RUN_START',
+            input: task,
+            output: 'Agent execution started',
+            status: 'success',
+            stepIndex: 1,
+            startTime: runStartTime,
+            endTime: runStartTime,
+          });
+        }
         const maxSteps = resolveMaxSteps(options.maxSteps);
         const providerId = selectedProviderId;
         const providerFactory = await createAgentProviderFactory(providerId, {
@@ -1402,6 +1468,21 @@ export function registerRunCommand(program) {
 
           // Step 1: Route task to best capability
           const routing = router.route(task);
+          const routeRecordedAt = new Date().toISOString();
+          await trace.record({
+            agent: agentName,
+            action: 'ROUTE_TASK',
+            input: task,
+            output: `Selected @${routing.agent}: ${routing.reason}`,
+            status: 'success',
+            stepIndex: 1,
+            confidence: routing.confidence,
+            selectedAgent: routing.agent,
+            provider: v2Provider?.getName?.() || providerId,
+            model: v2Provider?.model || null,
+            startTime: routeRecordedAt,
+            endTime: routeRecordedAt,
+          });
           printInfo(
             `V2 routed to: ${routing.agent} (confidence: ${routing.confidence.toFixed(2)})`
           );
@@ -1422,6 +1503,19 @@ export function registerRunCommand(program) {
           });
 
           finalOutput = engineResult.output || 'V2 execution completed';
+          const engineRecordedAt = new Date().toISOString();
+          await trace.record({
+            agent: selectedAgent,
+            action: 'ENGINE_EXECUTE',
+            input: task,
+            output: finalOutput,
+            status: engineResult.status || 'success',
+            stepIndex: 1,
+            provider: providerId,
+            model: v2Provider?.model || null,
+            startTime: engineRecordedAt,
+            endTime: engineRecordedAt,
+          });
           logger.info('V2 routing execution complete', {
             runId: trace.runId,
             agent: selectedAgent,

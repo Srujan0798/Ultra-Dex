@@ -54,7 +54,7 @@ export class MFAService {
     await ppmManager.init();
     await auditLogger.initialize();
 
-    process.stdout.write('✓ MFA service initialized\n');
+    console.log('✓ MFA service initialized');
     this.initialized = true;
   }
 

@@ -14,6 +14,7 @@ import { RouterProvider } from './router.js';
 import { enforceAgentExecution } from '../governance/index.js';
 import { memex } from '../memory/memex.js';
 import { orchestrator } from '../resilience/self-healing.js';
+import { logger } from '../utils/logger.js';
 
 const NO_KEY_PROVIDERS = new Set(['ollama']);
 const LOCAL_ONLY_PROVIDERS = new Set(['ollama']);
@@ -66,9 +67,9 @@ export function getAvailableProviders() {
   return Object.entries(PROVIDERS)
     .filter(([id]) => !LOCAL_ONLY_PROVIDERS.has(id) || isLocalProviderEnabled())
     .map(([id, config]) => ({
-    id,
-    name: config.name,
-    envKey: config.envKey,
+      id,
+      name: config.name,
+      envKey: config.envKey,
     }));
 }
 
@@ -92,8 +93,11 @@ function isLocalProviderEnabled() {
  * @returns {Promise<BaseProvider>}
  */
 export async function createProvider(providerId, options = {}) {
+  logger.info('Creating AI provider', { providerId, hasApiKey: !!options.apiKey });
+
   // Global Mock Override
   if (process.env.MOCK_AI === 'true') {
+    logger.info('Mock AI override active - using mock provider');
     providerId = 'mock';
   }
 
@@ -113,8 +117,10 @@ export async function createProvider(providerId, options = {}) {
     if (isLocalProviderEnabled()) {
       try {
         localProvider = new OllamaProvider(null, options);
-      } catch {
-        // Local not available
+      } catch (err) {
+        logger.warn('Local Ollama provider requested but failed to initialize', {
+          error: err.message,
+        });
       }
     }
 
@@ -134,6 +140,7 @@ export async function createProvider(providerId, options = {}) {
   const providerConfig = PROVIDERS[providerId];
 
   if (!providerConfig) {
+    logger.error('Unknown AI provider requested', { providerId });
     throw new Error(
       `Unknown provider: ${providerId}. Available: ${Object.keys(PROVIDERS).join(', ')}`
     );
@@ -162,6 +169,7 @@ export async function createProvider(providerId, options = {}) {
     resolvedOptions.apiKey || (providerConfig.envKey ? process.env[providerConfig.envKey] : null);
 
   if (!apiKey && !canUseProviderWithoutApiKey(providerId)) {
+    logger.error('AI provider API key missing', { providerId, envKey: providerConfig.envKey });
     throw new Error(
       `API key not found for ${providerConfig.name}.\n\n` +
         `To fix this, either:\n` +
@@ -192,7 +200,7 @@ function wrapProviderWithCircuitBreaker(provider, providerId) {
     provider.generate = async (systemPrompt, userPrompt, opts = {}) => {
       return orchestrator.execute({
         circuitBreakerName: cbName,
-        operation: () => baseGenerate(systemPrompt, userPrompt, opts)
+        operation: () => baseGenerate(systemPrompt, userPrompt, opts),
       });
     };
   }
@@ -201,7 +209,7 @@ function wrapProviderWithCircuitBreaker(provider, providerId) {
     provider.generateStream = async (systemPrompt, userPrompt, onChunk, opts = {}) => {
       return orchestrator.execute({
         circuitBreakerName: cbName,
-        operation: () => baseStream(systemPrompt, userPrompt, onChunk, opts)
+        operation: () => baseStream(systemPrompt, userPrompt, onChunk, opts),
       });
     };
   }
@@ -348,10 +356,10 @@ export function checkConfiguredProviders() {
   return Object.entries(PROVIDERS)
     .filter(([id]) => !LOCAL_ONLY_PROVIDERS.has(id) || isLocalProviderEnabled())
     .map(([id, config]) => ({
-    id,
-    name: config.name,
-    envKey: config.envKey,
-    configured: !!process.env[config.envKey],
+      id,
+      name: config.name,
+      envKey: config.envKey,
+      configured: !!process.env[config.envKey],
     }));
 }
 
@@ -370,7 +378,14 @@ export function getProvider() {
 }
 
 // Core providers
-export { ClaudeSonnet5Provider, OpenAIProvider, GeminiProvider, OllamaProvider, NVIDIAProvider, RouterProvider };
+export {
+  ClaudeSonnet5Provider,
+  OpenAIProvider,
+  GeminiProvider,
+  OllamaProvider,
+  NVIDIAProvider,
+  RouterProvider,
+};
 
 // Ecosystem adapters
 export { LangChainAdapter } from './langchain.js';

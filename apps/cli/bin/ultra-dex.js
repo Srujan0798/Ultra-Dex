@@ -59,6 +59,17 @@ if (wantsTopLevelHelp || (args.length > 0 && fastCommandSet.has(args[0]))) {
     .description('AI Orchestration Meta-Layer for SaaS Development')
     .version(VERSION);
 
+  // Keep help output usable even when an optional command tree has a broken dependency.
+  const safeRegister = async (loader) => {
+    try {
+      await loader();
+    } catch (error) {
+      if (process.env.ULTRA_DEX_DEBUG === '1') {
+        console.error(`Warning: Failed to register command: ${error.message}`);
+      }
+    }
+  };
+
   const registerRunBundle = async () => {
     const runCommands = await import('../lib/commands/run.js');
     runCommands.registerRunCommand(program);
@@ -67,24 +78,10 @@ if (wantsTopLevelHelp || (args.length > 0 && fastCommandSet.has(args[0]))) {
   };
 
   if (wantsTopLevelHelp) {
-    await Promise.all([
-      registerRunBundle(),
-      import('../lib/commands/config.js').then(({ registerConfigCommand }) =>
-        registerConfigCommand(program)
-      ),
-      import('../lib/commands/doctor.js').then(({ registerDoctorCommand }) =>
-        registerDoctorCommand(program)
-      ),
-      import('../lib/commands/quality.js').then(({ registerQualityCommand }) =>
-        registerQualityCommand(program)
-      ),
-      import('../lib/commands/mcp-remote.js').then(({ registerMcpRemoteCommand }) =>
-        registerMcpRemoteCommand(program)
-      ),
-      import('../lib/commands/mcp.js').then(({ registerMcpCommand }) =>
-        registerMcpCommand(program)
-      ),
-    ]);
+    const { registerFullProgram } = await import('./ultra-dex-full.js');
+    await safeRegister(async () => {
+      await registerFullProgram(program);
+    });
   } else if (new Set(['run', 'swarm', 'distributed']).has(args[0])) {
     await registerRunBundle();
   } else if (args[0] === 'config') {

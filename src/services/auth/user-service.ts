@@ -62,7 +62,7 @@ export class UserService {
     await ppmManager.init();
     await auditLogger.initialize();
 
-    process.stdout.write('✓ User service initialized\n');
+    console.log('✓ User service initialized');
     this.initialized = true;
   }
 

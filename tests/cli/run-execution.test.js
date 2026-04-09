@@ -8,6 +8,8 @@ import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
 const CLI_PATH = path.resolve(process.cwd(), 'apps/cli/bin/ultra-dex.js');
+const PROJECT_ROOT = process.cwd();
+const TSX_PATH = path.resolve(PROJECT_ROOT, 'node_modules/tsx/dist/loader.mjs');
 
 describe('CLI Command: run execution', () => {
   let tmpDir;
@@ -30,9 +32,11 @@ describe('CLI Command: run execution', () => {
       'CONTEXT_TOKEN_XYZZY\nHonor this runtime context token in the answer.'
     );
 
-    const { stdout } = await execFileAsync(
+    const { stdout, stderr } = await execFileAsync(
       process.execPath,
       [
+        '--import',
+        TSX_PATH,
         CLI_PATH,
         'run',
         'planner',
@@ -58,6 +62,12 @@ describe('CLI Command: run execution', () => {
         maxBuffer: 4 * 1024 * 1024,
       }
     );
+
+    // Debug: log stderr if present
+    if (stderr && stderr.trim()) {
+      // eslint-disable-next-line no-console
+      console.error('STDERR:', stderr.substring(0, 500));
+    }
 
     assert.match(stdout, /Execution trace run_id:/);
     assert.match(stdout, /Result artifact:/);
@@ -89,9 +99,7 @@ describe('CLI Command: run execution', () => {
     assert.equal(summary.agent, 'planner');
     assert.equal(summary.status, 'success');
     // finalAction is the last trace event (MEMORY_UPDATE comes after FINAL_RESPONSE)
-    assert.ok(
-      summary.finalAction === 'FINAL_RESPONSE' || summary.finalAction === 'MEMORY_UPDATE'
-    );
+    assert.ok(summary.finalAction === 'FINAL_RESPONSE' || summary.finalAction === 'MEMORY_UPDATE');
     // Use realpath to handle macOS /private/var vs /var symlink difference
     const realResultPath = await fs.realpath(resultPath);
     const realTracePath = await fs.realpath(tracePath);
@@ -106,10 +114,7 @@ describe('CLI Command: run execution', () => {
 
     const finalResponseEvent = traceEvents.find((event) => event.action === 'FINAL_RESPONSE');
     assert.ok(finalResponseEvent);
-    assert.equal(
-      Math.max(...traceEvents.map((event) => Number(event.metadata?.loopStep) || 0)),
-      1
-    );
+    assert.equal(Math.max(...traceEvents.map((event) => Number(event.metadata?.loopStep) || 0)), 1);
     assert.equal(
       traceEvents.some((event) => event.action === 'STEP_LIMIT'),
       false

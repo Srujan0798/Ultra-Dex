@@ -1,27 +1,13 @@
-/**
- * Usage Metering System
- * Tracks per-user API usage (requests, tokens, agent runs) with daily limits
- */
+import { getTierById } from './pricing-tiers.js';
 
-import { getTierById, PricingTier } from './pricing-tiers.js';
-import { logError, logEvent } from '../monitoring/better-stack-logger.js';
-import { getRedisClient } from './redis-client.js';
+export type PlanId = 'free' | 'pro' | 'enterprise';
 
-export interface UsageCounter {
+export interface UsageSnapshot {
   requestCount: number;
   tokenCount: number;
   agentRunCount: number;
-  resetAt: Date;
-}
-
-export interface LimitCheckResult {
-  allowed: boolean;
-  remaining: {
-    requests: number;
-    tokens: number;
-  };
-  resetAt: Date;
-  reason?: string;
+  resetAt: string;
+  updatedAt: string;
 }
 
 export interface UsageIncrement {
@@ -30,238 +16,161 @@ export interface UsageIncrement {
   agentRuns?: number;
 }
 
-// In-memory storage (replace with Redis in production)
-const usageStore = new Map<string, UsageCounter>();
+export interface UsageLimitResult {
+  allowed: boolean;
+  remaining: {
+    requests: number;
+    tokens: number;
+    agents: number;
+  };
+  usage: UsageSnapshot;
+  plan: PlanId;
+}
+
+const DEFAULT_LIMITS: Record<PlanId, { requests: number; tokens: number; agents: number }> = {
+  free: { requests: 100, tokens: 10000, agents: 3 },
+  pro: { requests: 10000, tokens: 1_000_000, agents: -1 },
+  enterprise: { requests: -1, tokens: -1, agents: -1 },
+};
+
+function nowIso(): string {
+  return new Date().toISOString();
+}
+
+function createSnapshot(): UsageSnapshot {
+  const timestamp = nowIso();
+  return {
+    requestCount: 0,
+    tokenCount: 0,
+    agentRunCount: 0,
+    resetAt: timestamp,
+    updatedAt: timestamp,
+  };
+}
+
+function cloneSnapshot(snapshot: UsageSnapshot): UsageSnapshot {
+  return { ...snapshot };
+}
+
+function normalizePlan(plan?: string | null): PlanId {
+  if (plan === 'pro' || plan === 'enterprise') {
+    return plan;
+  }
+
+  return 'free';
+}
+
+function getPlanLimits(plan: PlanId): { requests: number; tokens: number; agents: number } {
+  const tier = getTierById(plan);
+  if (!tier) {
+    return DEFAULT_LIMITS[plan];
+  }
+
+  return {
+    requests: plan === 'enterprise' ? -1 : DEFAULT_LIMITS[plan].requests,
+    tokens: tier.limits.tokensPerMonth,
+    agents: tier.limits.agents,
+  };
+}
 
 export class UsageMeter {
-  private resetInterval: NodeJS.Timeout | null = null;
+  private usageByUser = new Map<string, UsageSnapshot>();
+  private planByUser = new Map<string, PlanId>();
 
-  constructor() {
-    this.startResetTimer();
-  }
-
-  /**
-   * Start daily reset timer (midnight UTC)
-   */
-  private startResetTimer(): void {
-    const now = new Date();
-    const tomorrow = new Date(now);
-    tomorrow.setUTCHours(24, 0, 0, 0);
-    const msUntilMidnight = tomorrow.getTime() - now.getTime();
-
-    // Schedule first reset at midnight UTC
-    setTimeout(() => {
-      this.resetAllUsage();
-      
-      // Then reset every 24 hours
-      this.resetInterval = setInterval(() => {
-        this.resetAllUsage();
-      }, 24 * 60 * 60 * 1000);
-    }, msUntilMidnight);
-  }
-
-  /**
-   * Reset all user usage counters
-   */
-  private resetAllUsage(): void {
-    const resetAt = this.getNextResetTime();
-    usageStore.clear();
-    
-    logEvent('usage_reset', {
-      resetAt: resetAt.toISOString(),
-      totalUsers: usageStore.size
-    });
-  }
-
-  /**
-   * Get next reset time (midnight UTC)
-   */
-  private getNextResetTime(): Date {
-    const now = new Date();
-    const tomorrow = new Date(now);
-    tomorrow.setUTCHours(24, 0, 0, 0);
-    return tomorrow;
-  }
-
-  /**
-   * Get or create usage counter for a user
-   */
-  private getUsageCounter(userId: string): UsageCounter {
-    let counter = usageStore.get(userId);
-    
-    if (!counter) {
-      counter = {
-        requestCount: 0,
-        tokenCount: 0,
-        agentRunCount: 0,
-        resetAt: this.getNextResetTime()
-      };
-      usageStore.set(userId, counter);
+  private ensureUsage(userId: string): UsageSnapshot {
+    const existing = this.usageByUser.get(userId);
+    if (existing) {
+      return existing;
     }
-    
-    return counter;
+
+    const snapshot = createSnapshot();
+    this.usageByUser.set(userId, snapshot);
+    return snapshot;
   }
 
-  /**
-   * Resolve daily limits from pricing tiers.
-   * NOTE: Tier limits are treated as daily caps for metering.
-   */
-  private getDailyLimits(tier: PricingTier): { requests: number; tokens: number } {
+  private resolvePlan(userId: string, plan?: string): PlanId {
+    const normalized = normalizePlan(plan);
+    if (plan) {
+      this.planByUser.set(userId, normalized);
+      return normalized;
+    }
+
+    return this.planByUser.get(userId) || 'free';
+  }
+
+  setPlan(userId: string, plan: string): void {
+    this.planByUser.set(userId, normalizePlan(plan));
+  }
+
+  increment(userId: string, usage: UsageIncrement = {}): UsageSnapshot {
+    const snapshot = this.ensureUsage(userId);
+    snapshot.requestCount += usage.requests ?? 0;
+    snapshot.tokenCount += usage.tokens ?? 0;
+    snapshot.agentRunCount += usage.agentRuns ?? 0;
+    snapshot.updatedAt = nowIso();
+    return cloneSnapshot(snapshot);
+  }
+
+  async trackUsage(
+    userId: string,
+    action: string,
+    metadata: Record<string, unknown> = {}
+  ): Promise<UsageSnapshot> {
+    const agentRuns = action.includes('agent') ? 1 : 0;
+    const tokens = typeof metadata.tokens === 'number' ? metadata.tokens : 0;
+    return this.increment(userId, { requests: 1, tokens, agentRuns });
+  }
+
+  getUsage(userId: string): UsageSnapshot;
+  getUsage(userId: string, period: 'day' | 'month'): number;
+  getUsage(userId: string, period?: 'day' | 'month'): UsageSnapshot | number {
+    const snapshot = cloneSnapshot(this.ensureUsage(userId));
+    if (period) {
+      return snapshot.requestCount;
+    }
+
+    return snapshot;
+  }
+
+  checkLimit(userId: string, plan?: string): UsageLimitResult {
+    const resolvedPlan = this.resolvePlan(userId, plan);
+    const limits = getPlanLimits(resolvedPlan);
+    const usage = this.getUsage(userId) as UsageSnapshot;
+
+    const remaining = {
+      requests: limits.requests < 0 ? -1 : Math.max(0, limits.requests - usage.requestCount),
+      tokens: limits.tokens < 0 ? -1 : Math.max(0, limits.tokens - usage.tokenCount),
+      agents: limits.agents < 0 ? -1 : Math.max(0, limits.agents - usage.agentRunCount),
+    };
+
+    const allowed =
+      (limits.requests < 0 || usage.requestCount < limits.requests) &&
+      (limits.tokens < 0 || usage.tokenCount < limits.tokens) &&
+      (limits.agents < 0 || usage.agentRunCount < limits.agents);
+
     return {
-      requests: tier.limits.requestsPerMonth,
-      tokens: tier.limits.tokensPerMonth
+      allowed,
+      remaining,
+      usage,
+      plan: resolvedPlan,
     };
   }
 
-  /**
-   * Check if user is within their usage limits
-   */
-  checkLimit(userId: string, planId: string): LimitCheckResult {
-    const tier = getTierById(planId);
-    
-    if (!tier) {
-      logError('Invalid tier ID', new Error(`Tier not found: ${planId}`), { userId, planId });
-      return {
-        allowed: false,
-        remaining: { requests: 0, tokens: 0 },
-        resetAt: this.getNextResetTime(),
-        reason: 'Invalid plan'
-      };
+  resetUser(userId: string, plan?: string): UsageSnapshot {
+    if (plan) {
+      this.planByUser.set(userId, normalizePlan(plan));
     }
 
-    const counter = this.getUsageCounter(userId);
-    const dailyLimits = this.getDailyLimits(tier);
-
-    // Enterprise and unlimited tiers
-    if (dailyLimits.requests === -1 && dailyLimits.tokens === -1) {
-      return {
-        allowed: true,
-        remaining: { requests: -1, tokens: -1 },
-        resetAt: counter.resetAt
-      };
-    }
-
-    // Check request limit
-    if (dailyLimits.requests > 0 && counter.requestCount >= dailyLimits.requests) {
-      return {
-        allowed: false,
-        remaining: { 
-          requests: 0, 
-          tokens: Math.max(0, dailyLimits.tokens - counter.tokenCount) 
-        },
-        resetAt: counter.resetAt,
-        reason: 'Daily request limit exceeded'
-      };
-    }
-
-    // Check token limit
-    if (dailyLimits.tokens > 0 && counter.tokenCount >= dailyLimits.tokens) {
-      return {
-        allowed: false,
-        remaining: { 
-          requests: Math.max(0, dailyLimits.requests - counter.requestCount), 
-          tokens: 0 
-        },
-        resetAt: counter.resetAt,
-        reason: 'Daily token limit exceeded'
-      };
-    }
-
-    // Within limits
-    return {
-      allowed: true,
-      remaining: {
-        requests: dailyLimits.requests > 0 
-          ? dailyLimits.requests - counter.requestCount 
-          : -1,
-        tokens: dailyLimits.tokens > 0 
-          ? dailyLimits.tokens - counter.tokenCount 
-          : -1
-      },
-      resetAt: counter.resetAt
-    };
+    const snapshot = createSnapshot();
+    this.usageByUser.set(userId, snapshot);
+    return cloneSnapshot(snapshot);
   }
 
-  /**
-   * Increment usage counters
-   */
-  increment(userId: string, usage: UsageIncrement): void {
-    const counter = this.getUsageCounter(userId);
-    
-    if (usage.requests) {
-      counter.requestCount += usage.requests;
-    }
-    
-    if (usage.tokens) {
-      counter.tokenCount += usage.tokens;
-    }
-    
-    if (usage.agentRuns) {
-      counter.agentRunCount += usage.agentRuns;
-    }
-
-    logEvent('usage_increment', {
-      userId,
-      requests: usage.requests || 0,
-      tokens: usage.tokens || 0,
-      agentRuns: usage.agentRuns || 0,
-      totals: {
-        requests: counter.requestCount,
-        tokens: counter.tokenCount,
-        agentRuns: counter.agentRunCount
-      }
-    });
-
-    // Persist increments to Redis if available (fire-and-forget)
-    (async () => {
-      try {
-        const client = await getRedisClient();
-        if (!client) return;
-        const key = `usage:${userId}:${counter.resetAt.toISOString().slice(0,10)}`; // day-keyed
-        if (usage.requests) await client.hincrby(key, 'requestCount', usage.requests);
-        if (usage.tokens) await client.hincrby(key, 'tokenCount', usage.tokens);
-        if (usage.agentRuns) await client.hincrby(key, 'agentRunCount', usage.agentRuns);
-        await client.hset(key, 'resetAt', counter.resetAt.toISOString());
-        const ttl = Math.max(60, Math.floor((counter.resetAt.getTime() - Date.now()) / 1000));
-        await client.expire(key, ttl);
-      } catch (err) {
-        logError('Failed to persist usage to Redis', err as Error, { userId });
-      }
-    })();
-  }
-
-  /**
-   * Get current usage for a user
-   */
-  getUsage(userId: string): UsageCounter {
-    return { ...this.getUsageCounter(userId) };
-  }
-
-  /**
-   * Reset usage for a specific user
-   */
-  resetUser(userId: string): void {
-    const resetAt = this.getNextResetTime();
-    usageStore.set(userId, {
-      requestCount: 0,
-      tokenCount: 0,
-      agentRunCount: 0,
-      resetAt
-    });
-
-    logEvent('user_usage_reset', { userId, resetAt: resetAt.toISOString() });
-  }
-
-  /**
-   * Cleanup interval on shutdown
-   */
-  destroy(): void {
-    if (this.resetInterval) {
-      clearInterval(this.resetInterval);
-      this.resetInterval = null;
+  async resetDailyCounters(): Promise<void> {
+    for (const [userId] of this.usageByUser.entries()) {
+      this.resetUser(userId);
     }
   }
 }
 
-// Singleton instance
 export const usageMeter = new UsageMeter();

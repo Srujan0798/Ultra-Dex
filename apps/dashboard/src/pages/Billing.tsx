@@ -70,7 +70,9 @@ export const Billing = memo(function Billing() {
         ]);
 
         const usageData = usageRes.ok ? ((await usageRes.json()) as UsageResponse) : null;
-        const invoiceData = invoiceRes.ok ? ((await invoiceRes.json()) as Invoice[] | { invoices?: Invoice[] }) : [];
+        const invoiceData = invoiceRes.ok
+          ? ((await invoiceRes.json()) as Invoice[] | { invoices?: Invoice[] })
+          : [];
 
         if (!mounted) return;
 

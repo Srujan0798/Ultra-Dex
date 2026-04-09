@@ -63,7 +63,7 @@ export class JWTService {
     await ppmManager.init();
     await auditLogger.initialize();
 
-    process.stdout.write('✓ JWT service initialized\n');
+    console.log('✓ JWT service initialized');
     this.initialized = true;
   }
 

@@ -117,8 +117,8 @@ export class AuditLogger {
 
     await ppmManager.init();
 
-    // Write to stderr for initialization notice (avoid structured logging during bootstrap)
-    process.stderr.write('[AUDIT] ✓ Audit logging system initialized\n');
+    // Keep service logs on a single stream so Node's test runner can capture them safely.
+    console.log('[AUDIT] ✓ Audit logging system initialized');
     this.initialized = true;
   }
 
@@ -157,9 +157,9 @@ export class AuditLogger {
       this.inMemoryEvents.shift();
     }
 
-    // Log to stderr for critical events (avoid self-reference)
+    // Keep service logs on a single stream so Node's test runner can capture them safely.
     if (event.severity === 'critical' || event.severity === 'error') {
-      process.stderr.write(`[AUDIT ${event.severity.toUpperCase()}] ${event.action}: ${event.resource}\n`);
+      console.log(`[AUDIT ${event.severity.toUpperCase()}] ${event.action}: ${event.resource}`);
     }
 
     return auditEvent;
@@ -477,7 +477,7 @@ export class AuditLogger {
 
     // In a real implementation, this would delete old records
     // For now, we just log the action
-    process.stderr.write(`[AUDIT] ✓ Purge request for logs older than ${olderThan.toISOString()}\n`);
+    console.log(`[AUDIT] ✓ Purge request for logs older than ${olderThan.toISOString()}`);
 
     return 0;
   }

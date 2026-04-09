@@ -3,13 +3,12 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
+import { singleton } from 'tsyringe';
 import { AgentStateMachine } from './agent-state.js';
 import { AgentCommunicationBus } from './communication-bus.js';
 import { AgentRegistry } from './registry.js';
@@ -21,15 +20,13 @@ import chalk from '../../utils/chalk.js';
 import { ppmManager } from '../memory/index.js';
 import { MemoryManager } from '../memory/manager.js';
 import { AIMetaLayer } from '../ai/ai-meta-layer.js';
-import { EventEmitter } from "events";
+import { EventEmitter } from 'events';
 import { GovernanceManager, GovernanceDeniedException } from '../governance/governance-manager.js';
 import { EnterpriseAnalytics, enterpriseAnalytics } from '../analytics/enterprise-analytics.js';
-import {
-  registerAlias,
-  registerScoped,
-  resolveFromContainer
-} from '../di/container.js';
+import { logger } from '../monitoring/better-stack-logger.js';
+import { registerAlias, registerScoped, resolveFromContainer } from '../di/container.js';
 import { DI_TOKENS } from '../di/tokens.js';
+import { createRuntimeMcpServer } from '../../platform/mcp-runtime.js';
 let AgentOrchestrator = class extends EventEmitter {
   constructor(options = {}) {
     super();
@@ -55,17 +52,19 @@ let AgentOrchestrator = class extends EventEmitter {
       predictiveMemory: {
         enabled: options.predictiveMemory?.enabled !== false,
         timeout: options.predictiveMemory?.timeout || 5e3,
-        cacheTtl: options.predictiveMemory?.cacheTtl || 3e5
-      }
+        cacheTtl: options.predictiveMemory?.cacheTtl || 3e5,
+      },
     };
     this.stateMachine = new AgentStateMachine();
     this.commBus = new AgentCommunicationBus();
-    this.registry = options.registry || new AgentRegistry({
-      autoDiscover: options.autoDiscover,
-      enablePersistence: options.enablePersistence,
-      maxAgents: options.maxAgents,
-      agentsPath: options.agentsPath
-    });
+    this.registry =
+      options.registry ||
+      new AgentRegistry({
+        autoDiscover: options.autoDiscover,
+        enablePersistence: options.enablePersistence,
+        maxAgents: options.maxAgents,
+        agentsPath: options.agentsPath,
+      });
     this.governance = options.governance || new GovernanceManager();
     this.taskRouter = new TaskRouter({ similarityThreshold: 0.3 });
     this.initializeTaskRouter();
@@ -83,7 +82,7 @@ let AgentOrchestrator = class extends EventEmitter {
       lastTaskDurationMs: 0,
       lastPrefetchTimeMs: 0,
       prefetchHitRate: 0,
-      timeToFirstTokenMs: 0
+      timeToFirstTokenMs: 0,
     };
   }
   normalizeMcpServer(server) {
@@ -100,13 +99,10 @@ let AgentOrchestrator = class extends EventEmitter {
       await this.initializeMcpServer();
       const selfHealing = await this.getSelfHealing();
       await selfHealing.initialize();
-      process.stdout.write(
-        chalk.green("\u{1F916} Agent Orchestration System Initialized (Self-Healing Active)\n")
-      );
+      logger.info('Agent Orchestration System Initialized (Self-Healing Active)');
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      process.stderr.write(chalk.red(`\u274C Agent Orchestration initialization failed: ${message}
-`));
+      logger.error(`Agent Orchestration initialization failed: ${message}`, { error });
       throw error;
     }
   }
@@ -114,20 +110,14 @@ let AgentOrchestrator = class extends EventEmitter {
     if (this.mcpServer?.toolsMap instanceof Map && this.mcpServer.toolsMap.size > 0) {
       return;
     }
-    if (typeof this.mcpServerFactory !== "function") {
+    if (typeof this.mcpServerFactory !== 'function') {
       try {
-        const { createMcpServer } = await import("../../../apps/cli/lib/mcp/server.js");
-        const { registerTools } = await import("../../../apps/cli/lib/mcp/tools.js");
-        const server = createMcpServer();
-        registerTools(server);
+        const server = await createRuntimeMcpServer();
         this.mcpServer = this.normalizeMcpServer(server);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         this.mcpServer = { toolsMap: /* @__PURE__ */ new Map() };
-        process.stderr.write(
-          chalk.yellow(`\u26A0 MCP tools unavailable; continuing without tool registry: ${message}
-`)
-        );
+        logger.warn(`MCP tools unavailable; continuing without tool registry: ${message}`);
       }
       return;
     }
@@ -137,14 +127,14 @@ let AgentOrchestrator = class extends EventEmitter {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.mcpServer = { toolsMap: /* @__PURE__ */ new Map() };
-      process.stderr.write(
-        chalk.yellow(`\u26A0 MCP tools unavailable; continuing without tool registry: ${message}
-`)
-      );
+      logger.warn(`MCP tools unavailable; continuing without tool registry: ${message}`);
     }
   }
   createExecutionContext(objective, options = {}) {
-    const sessionId = options.sessionId || this.sessionId || `session_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const sessionId =
+      options.sessionId ||
+      this.sessionId ||
+      `session_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     return new ExecutionContext(sessionId, objective, options);
   }
   async trackMetric(name, value, tags = {}, metadata = {}) {
@@ -157,7 +147,7 @@ let AgentOrchestrator = class extends EventEmitter {
     if (this.ai) {
       return this.ai;
     }
-    const { aiMetaLayer } = await import("../ai/ai-meta-layer.js");
+    const { aiMetaLayer } = await import('../ai/ai-meta-layer.js');
     this.ai = aiMetaLayer;
     return this.ai;
   }
@@ -165,7 +155,7 @@ let AgentOrchestrator = class extends EventEmitter {
     if (this.selfHealing) {
       return this.selfHealing;
     }
-    const { SelfHealingOrchestrator } = await import("../reliability/self-healing.js");
+    const { SelfHealingOrchestrator } = await import('../reliability/self-healing.js');
     this.selfHealing = new SelfHealingOrchestrator();
     return this.selfHealing;
   }
@@ -177,7 +167,7 @@ let AgentOrchestrator = class extends EventEmitter {
       return this.performanceTracker;
     }
     try {
-      const { performanceMonitor } = await import("../performance/monitor.js");
+      const { performanceMonitor } = await import('../performance/monitor.js');
       this.performanceTracker = performanceMonitor;
     } catch {
       this.performanceTracker = null;
@@ -189,9 +179,9 @@ let AgentOrchestrator = class extends EventEmitter {
       return this.autopsy;
     }
     try {
-      const { AgentAutopsy } = await import("../reliability/agent-autopsy.js");
+      const { AgentAutopsy } = await import('../reliability/agent-autopsy.js');
       this.autopsy = new AgentAutopsy();
-      if (typeof this.autopsy.initialize === "function" && !this.autopsy.initialized) {
+      if (typeof this.autopsy.initialize === 'function' && !this.autopsy.initialized) {
         await this.autopsy.initialize();
       }
     } catch {
@@ -207,9 +197,10 @@ let AgentOrchestrator = class extends EventEmitter {
       return this.predictiveEngine;
     }
     try {
-      const { predictiveEngine } = await import("../memory/predictive-engine.js");
+      const { predictiveEngine } = await import('../memory/predictive-engine.js');
       predictiveEngine.memory = this.memory;
-      predictiveEngine.cacheTtl = this.options.predictiveMemory?.cacheTtl || predictiveEngine.cacheTtl;
+      predictiveEngine.cacheTtl =
+        this.options.predictiveMemory?.cacheTtl || predictiveEngine.cacheTtl;
       this.predictiveEngine = predictiveEngine;
     } catch {
       this.predictiveEngine = null;
@@ -224,10 +215,10 @@ let AgentOrchestrator = class extends EventEmitter {
       }
       return this.queueProcessor;
     }
-    queueProcessor.registerHandler("orchestrator.executeTask", async (payload) => {
+    queueProcessor.registerHandler('orchestrator.executeTask', async (payload) => {
       return await this.runTaskExecution(payload.task, {
         ...payload.options,
-        skipQueue: true
+        skipQueue: true,
       });
     });
     this.taskQueueInitialized = true;
@@ -241,28 +232,28 @@ let AgentOrchestrator = class extends EventEmitter {
    */
   async executeNexus(objective, options = {}) {
     this.tasks.prune();
-    process.stdout.write(chalk.magenta(`
-\u{1F30C} Nexus Orchestration: ${objective}
-`));
+    logger.info(`Nexus Orchestration started: ${objective}`, { objective });
     const executionContext = this.createExecutionContext(objective, options);
     this.activeSessions.set(executionContext.sessionId, executionContext);
     const predictiveEngine = await this.getPredictiveEngine();
     if (predictiveEngine) {
       predictiveEngine.spawnBackgroundPrefetch(executionContext.sessionId, objective, {
-        cacheTtl: this.options.predictiveMemory?.cacheTtl
+        cacheTtl: this.options.predictiveMemory?.cacheTtl,
       });
     }
     try {
       await this.memory.init();
-      const prefetchedContext = predictiveEngine ? await predictiveEngine.awaitPrefetch(
-        executionContext.sessionId,
-        this.options.predictiveMemory?.timeout
-      ) : null;
+      const prefetchedContext = predictiveEngine
+        ? await predictiveEngine.awaitPrefetch(
+            executionContext.sessionId,
+            this.options.predictiveMemory?.timeout
+          )
+        : null;
       if (prefetchedContext?.items?.length) {
         predictiveEngine.recordUsage(executionContext.sessionId, true);
         this.metrics.lastPrefetchTimeMs = prefetchedContext.metrics.durationMs;
       }
-      if (typeof this.nexusExecutor === "function") {
+      if (typeof this.nexusExecutor === 'function') {
         const result2 = await this.nexusExecutor(
           objective,
           {
@@ -270,16 +261,16 @@ let AgentOrchestrator = class extends EventEmitter {
             context: {
               ...options.context,
               initialContext: prefetchedContext?.items || options.context?.initialContext || [],
-              predictivePrefetch: prefetchedContext
-            }
+              predictivePrefetch: prefetchedContext,
+            },
           },
           this,
           executionContext
         );
-        executionContext.status = "completed";
+        executionContext.status = 'completed';
         return result2;
       }
-      const { runAutonomousTask } = await import("../agents/ralph-loop.js");
+      const { runAutonomousTask } = await import('../agents/ralph-loop.js');
       const result = await runAutonomousTask(
         objective,
         {
@@ -287,22 +278,21 @@ let AgentOrchestrator = class extends EventEmitter {
           context: {
             ...options.context,
             initialContext: prefetchedContext?.items || options.context?.initialContext || [],
-            predictivePrefetch: prefetchedContext
-          }
+            predictivePrefetch: prefetchedContext,
+          },
         },
         this,
         executionContext
       );
-      executionContext.status = "completed";
+      executionContext.status = 'completed';
       return result;
     } catch (error) {
-      executionContext.status = "failed";
+      executionContext.status = 'failed';
       const message = error instanceof Error ? error.message : String(error);
-      process.stderr.write(chalk.red(`\u274C Nexus execution failed: ${message}
-`));
+      logger.error(`Nexus execution failed: ${message}`, { objective, error });
       const selfHealing = await this.getSelfHealing();
       if (selfHealing?.reportAgentError) {
-        await selfHealing.reportAgentError("nexus", error, { objective, options });
+        await selfHealing.reportAgentError('nexus', error, { objective, options });
       }
       throw error;
     } finally {
@@ -316,21 +306,25 @@ let AgentOrchestrator = class extends EventEmitter {
     return await this.executeNexus(objective, options);
   }
   async executeTask(task, options = {}) {
-    if (!options.skipQueue && this.queueProcessor && this.activeTaskCount >= this.options.maxConcurrentAgents) {
-      const normalizedTask = typeof task === "string" ? task : JSON.stringify(task);
+    if (
+      !options.skipQueue &&
+      this.queueProcessor &&
+      this.activeTaskCount >= this.options.maxConcurrentAgents
+    ) {
+      const normalizedTask = typeof task === 'string' ? task : JSON.stringify(task);
       const queuedJob = this.queueProcessor.enqueue(
         {
-          type: "orchestrator.executeTask",
+          type: 'orchestrator.executeTask',
           payload: { task, options },
           priority: options.priority || 5,
-          maxRetries: options.maxRetries || 1
+          maxRetries: options.maxRetries || 1,
         },
         options.priority || 5
       );
-      this.emit("task:queued", {
+      this.emit('task:queued', {
         jobId: queuedJob.id,
         task: normalizedTask,
-        priority: queuedJob.priority
+        priority: queuedJob.priority,
       });
       return await new Promise((resolve, reject) => {
         const finalize = (job) => {
@@ -338,18 +332,18 @@ let AgentOrchestrator = class extends EventEmitter {
             return;
           }
           cleanup();
-          if (job.status === "completed") {
+          if (job.status === 'completed') {
             resolve(job.result);
             return;
           }
           reject(new Error(job.error || `Queued task ${job.id} failed`));
         };
         const cleanup = () => {
-          this.queueProcessor.off("job:completed", finalize);
-          this.queueProcessor.off("job:failed", finalize);
+          this.queueProcessor.off('job:completed', finalize);
+          this.queueProcessor.off('job:failed', finalize);
         };
-        this.queueProcessor.on("job:completed", finalize);
-        this.queueProcessor.on("job:failed", finalize);
+        this.queueProcessor.on('job:completed', finalize);
+        this.queueProcessor.on('job:failed', finalize);
       });
     }
     return await this.runTaskExecution(task, options);
@@ -357,44 +351,46 @@ let AgentOrchestrator = class extends EventEmitter {
   async runTaskExecution(task, options = {}) {
     const sessionId = `session_${Date.now()}`;
     const startedAt = Date.now();
-    const normalizedTask = typeof task === "string" ? task : JSON.stringify(task);
+    const normalizedTask = typeof task === 'string' ? task : JSON.stringify(task);
     const predictiveEngine = await this.getPredictiveEngine();
     this.metrics.lastPrefetchTimeMs = 0;
     if (predictiveEngine) {
       predictiveEngine.spawnBackgroundPrefetch(sessionId, normalizedTask, {
-        cacheTtl: this.options.predictiveMemory?.cacheTtl
+        cacheTtl: this.options.predictiveMemory?.cacheTtl,
       });
     }
-    await this.trackMetric("execution.tasks_started", 1, {
+    await this.trackMetric('execution.tasks_started', 1, {
       sessionId,
-      taskType: options.taskType || "coding"
+      taskType: options.taskType || 'coding',
     });
     this.metrics.totalSessions++;
     this.activeTaskCount++;
     const agentId = options.agentId || this.selectAgentForTask(normalizedTask, options);
     const context = {
       agentId,
-      action: "executeTask",
+      action: 'executeTask',
       resource: normalizedTask.substring(0, 100),
       // Truncate for resource field
-      details: { task: normalizedTask, options }
+      details: { task: normalizedTask, options },
     };
     const performanceTracker = await this.getPerformanceTracker();
-    const performanceStart = typeof performanceTracker?.startTimer === "function" ? performanceTracker.startTimer() : Date.now();
+    const performanceStart =
+      typeof performanceTracker?.startTimer === 'function'
+        ? performanceTracker.startTimer()
+        : Date.now();
     let taskSucceeded = false;
     let taskErrorMessage = null;
     let responseTokens = 0;
-    this.emit("task:start", { sessionId, task: normalizedTask, options });
+    this.emit('task:start', { sessionId, task: normalizedTask, options });
     if (performanceTracker) {
-      this.emit("task:performance:start", {
+      this.emit('task:performance:start', {
         sessionId,
         agentId,
         task: normalizedTask,
-        taskType: options.taskType || "coding"
+        taskType: options.taskType || 'coding',
       });
     }
-    process.stdout.write(chalk.blue(` - Executing Task: ${normalizedTask}
-`));
+    logger.info(`Executing Task: ${normalizedTask}`, { sessionId, agentId });
     try {
       const governanceResult = await this.governance.gate(context);
       if (!governanceResult.allowed) {
@@ -404,7 +400,9 @@ let AgentOrchestrator = class extends EventEmitter {
         );
       }
       const ai = await this.getAiLayer();
-      const prefetchedContext = predictiveEngine ? await predictiveEngine.awaitPrefetch(sessionId, this.options.predictiveMemory?.timeout) : null;
+      const prefetchedContext = predictiveEngine
+        ? await predictiveEngine.awaitPrefetch(sessionId, this.options.predictiveMemory?.timeout)
+        : null;
       let memoryContext = prefetchedContext?.items || null;
       if (Array.isArray(memoryContext) && memoryContext.length > 0) {
         predictiveEngine.recordUsage(sessionId, true);
@@ -424,78 +422,82 @@ let AgentOrchestrator = class extends EventEmitter {
       const response = await ai.call(
         null,
         [
-          { role: "system", content: systemPrompt },
+          { role: 'system', content: systemPrompt },
           {
-            role: "user",
+            role: 'user',
             content: `Context: ${JSON.stringify(memoryContext)}
 
-Task: ${normalizedTask}`
-          }
+Task: ${normalizedTask}`,
+          },
         ],
         {
           metadata: {
-            taskType: options.taskType || "coding",
-            complexity: options.complexity || "medium"
-          }
+            taskType: options.taskType || 'coding',
+            complexity: options.complexity || 'medium',
+          },
         }
       );
       this.metrics.timeToFirstTokenMs = Date.now() - firstTokenStartedAt;
       responseTokens = Number(response?.usage?.totalTokens || response?.tokenUsage?.total || 0);
-      await this.trackMetric("execution.prefetch_time_ms", this.metrics.lastPrefetchTimeMs, {
+      await this.trackMetric('execution.prefetch_time_ms', this.metrics.lastPrefetchTimeMs, {
         sessionId,
-        agentId
+        agentId,
       });
-      await this.trackMetric("execution.prefetch_hit_rate", this.metrics.prefetchHitRate, {
+      await this.trackMetric('execution.prefetch_hit_rate', this.metrics.prefetchHitRate, {
         sessionId,
-        agentId
+        agentId,
       });
       const output = response.text || response.content || JSON.stringify(response);
       await this.memory.add({
         content: `Task Completed by @${agentId}: ${normalizedTask}
 Output: ${output.substring(0, 200)}...`,
-        type: "observation",
+        type: 'observation',
         importance: 5,
-        metadata: { agentId, sessionId }
+        metadata: { agentId, sessionId },
       });
       await this.governance.audit.record({
-        action: "task_execution",
+        action: 'task_execution',
         task: normalizedTask,
-        result: "success",
+        result: 'success',
         agentId: context.agentId,
-        details: { options }
+        details: { options },
       });
-      await this.trackMetric("execution.tasks_completed", 1, {
+      await this.trackMetric('execution.tasks_completed', 1, {
         sessionId,
         agentId,
-        duration: Date.now() - startedAt
+        duration: Date.now() - startedAt,
       });
       this.metrics.successfulSessions++;
       taskSucceeded = true;
-      if (typeof this.taskRouter?.recordOutcome === "function") {
+      if (typeof this.taskRouter?.recordOutcome === 'function') {
         this.taskRouter.recordOutcome(sessionId, agentId, {
           latencyMs: Date.now() - startedAt,
           tokensUsed: responseTokens,
-          success: true
+          success: true,
         });
       }
-      this.emit("task:complete", { sessionId, agentId, output: output.substring(0, 500) });
-      return { status: "COMPLETE", output, agentId };
+      this.emit('task:complete', { sessionId, agentId, output: output.substring(0, 500) });
+      return { status: 'COMPLETE', output, agentId };
     } catch (error) {
       this.metrics.failedSessions++;
       const message = error instanceof Error ? error.message : String(error);
       taskErrorMessage = message;
-      if (typeof this.taskRouter?.recordOutcome === "function") {
+      if (typeof this.taskRouter?.recordOutcome === 'function') {
         this.taskRouter.recordOutcome(sessionId, context.agentId, {
           latencyMs: Date.now() - startedAt,
           tokensUsed: responseTokens,
           success: false,
-          quality: "failed",
-          errorCategory: error?.name || (typeof message === "string" && message.toLowerCase().includes("timeout") ? "timeout" : "runtime")
+          quality: 'failed',
+          errorCategory:
+            error?.name ||
+            (typeof message === 'string' && message.toLowerCase().includes('timeout')
+              ? 'timeout'
+              : 'runtime'),
         });
       }
-      await this.trackMetric("execution.tasks_failed", 1, {
+      await this.trackMetric('execution.tasks_failed', 1, {
         sessionId,
-        error: message
+        error: message,
       });
       let autopsyReport = null;
       try {
@@ -504,56 +506,56 @@ Output: ${output.substring(0, 200)}...`,
           autopsyReport = await autopsy.performAutopsy(context.agentId, error, {
             sessionId,
             task: normalizedTask,
-            taskType: options.taskType || "coding",
-            options
+            taskType: options.taskType || 'coding',
+            options,
           });
           await this.governance.audit.record({
-            action: "task_autopsy",
+            action: 'task_autopsy',
             task: normalizedTask,
-            result: "recorded",
+            result: 'recorded',
             agentId: context.agentId,
             details: {
               sessionId,
-              taskType: options.taskType || "coding",
-              autopsy: autopsyReport
-            }
+              taskType: options.taskType || 'coding',
+              autopsy: autopsyReport,
+            },
           });
-          this.emit("task:autopsy", {
+          this.emit('task:autopsy', {
             sessionId,
             agentId: context.agentId,
             task: normalizedTask,
-            autopsy: autopsyReport
+            autopsy: autopsyReport,
           });
         }
       } catch (autopsyError) {
-        const autopsyMessage = autopsyError instanceof Error ? autopsyError.message : String(autopsyError);
-        this.emit("task:autopsy:error", {
+        const autopsyMessage =
+          autopsyError instanceof Error ? autopsyError.message : String(autopsyError);
+        this.emit('task:autopsy:error', {
           sessionId,
           agentId: context.agentId,
           task: normalizedTask,
-          error: autopsyMessage
+          error: autopsyMessage,
         });
       }
       await this.governance.audit.record({
-        action: "task_execution",
+        action: 'task_execution',
         task: normalizedTask,
-        result: "failure",
+        result: 'failure',
         agentId: context.agentId,
         details: {
           options,
           error: message,
           autopsyId: autopsyReport?.id || null,
-          autopsySummary: autopsyReport?.summary || null
-        }
+          autopsySummary: autopsyReport?.summary || null,
+        },
       });
-      process.stderr.write(chalk.red(`\u274C Task execution failed (${sessionId}): ${message}
-`));
-      this.emit("task:error", { sessionId, task: normalizedTask, error: message });
+      logger.error(`Task execution failed (${sessionId}): ${message}`, { sessionId, error });
+      this.emit('task:error', { sessionId, task: normalizedTask, error: message });
       const selfHealing = await this.getSelfHealing();
       if (selfHealing?.reportAgentError) {
-        await selfHealing.reportAgentError(options.agentId || "unknown", error, {
+        await selfHealing.reportAgentError(options.agentId || 'unknown', error, {
           sessionId,
-          task: normalizedTask
+          task: normalizedTask,
         });
       }
       throw error;
@@ -563,18 +565,22 @@ Output: ${output.substring(0, 200)}...`,
       this.metrics.lastTaskDurationMs = elapsed;
       const completedSessions = this.metrics.successfulSessions + this.metrics.failedSessions;
       if (completedSessions > 0) {
-        this.metrics.avgResponseTime = (this.metrics.avgResponseTime * (completedSessions - 1) + elapsed) / completedSessions;
+        this.metrics.avgResponseTime =
+          (this.metrics.avgResponseTime * (completedSessions - 1) + elapsed) / completedSessions;
       }
       if (performanceTracker) {
         const requestInfo = {
-          endpoint: "executeTask",
-          method: "TASK",
+          endpoint: 'executeTask',
+          method: 'TASK',
           statusCode: taskSucceeded ? 200 : 500,
           agentId,
-          taskType: options.taskType || "coding"
+          taskType: options.taskType || 'coding',
         };
-        const entry = typeof performanceTracker.endTimer === "function" ? performanceTracker.endTimer(performanceStart, requestInfo) : performanceTracker.trackRequest?.(requestInfo, elapsed);
-        this.emit("task:performance:end", {
+        const entry =
+          typeof performanceTracker.endTimer === 'function'
+            ? performanceTracker.endTimer(performanceStart, requestInfo)
+            : performanceTracker.trackRequest?.(requestInfo, elapsed);
+        this.emit('task:performance:end', {
           sessionId,
           agentId,
           task: normalizedTask,
@@ -582,7 +588,7 @@ Output: ${output.substring(0, 200)}...`,
           durationMs: entry?.durationMs ?? elapsed,
           success: taskSucceeded,
           statusCode: requestInfo.statusCode,
-          error: taskErrorMessage
+          error: taskErrorMessage,
         });
       }
     }
@@ -590,18 +596,17 @@ Output: ${output.substring(0, 200)}...`,
   initializeTaskRouter() {
     for (const profile of AGENT_PROFILES) {
       this.taskRouter.registerAgent(profile.agentId, profile.capabilities, {
-        examples: profile.examples
+        examples: profile.examples,
       });
     }
   }
   selectAgentForTask(task, options = {}) {
-    if (!task || typeof task !== "string") {
-      return "orchestrator";
+    if (!task || typeof task !== 'string') {
+      return 'orchestrator';
     }
     if (options.requiredCapabilities) {
       const candidates = this.registry.findAgentsByCapabilities(options.requiredCapabilities);
-      if (candidates.length > 0)
-        return candidates[0].id;
+      if (candidates.length > 0) return candidates[0].id;
     }
     const routing = this.taskRouter.route(task, options);
     return routing.agentId;
@@ -613,7 +618,7 @@ Output: ${output.substring(0, 200)}...`,
         tools.push({
           name,
           description: tool.description,
-          inputSchema: tool.schema
+          inputSchema: tool.schema,
         });
       }
     }
@@ -621,16 +626,15 @@ Output: ${output.substring(0, 200)}...`,
   }
   async executeTool(name, args) {
     const context = {
-      agentId: "orchestrator",
+      agentId: 'orchestrator',
       action: `tool:${name}`,
       resource: name,
-      details: { toolName: name, args }
+      details: { toolName: name, args },
     };
     try {
-      this.emit("tool:use", { name, args });
+      this.emit('tool:use', { name, args });
       const tool = this.mcpServer.toolsMap?.get(name);
-      if (!tool)
-        throw new Error(`Tool ${name} not found`);
+      if (!tool) throw new Error(`Tool ${name} not found`);
       const governanceResult = await this.governance.gate(context);
       if (!governanceResult.allowed) {
         throw new GovernanceDeniedException(
@@ -640,27 +644,26 @@ Output: ${output.substring(0, 200)}...`,
       }
       const result = await tool.handler(args);
       await this.governance.audit.record({
-        action: "tool_execution",
+        action: 'tool_execution',
         tool: name,
         args,
-        result: "success",
+        result: 'success',
         agentId: context.agentId,
-        details: { toolName: name }
+        details: { toolName: name },
       });
-      this.emit("tool:result", { name, result: JSON.stringify(result).substring(0, 500) });
+      this.emit('tool:result', { name, result: JSON.stringify(result).substring(0, 500) });
       return result;
     } catch (error) {
       await this.governance.audit.record({
-        action: "tool_execution",
+        action: 'tool_execution',
         tool: name,
         args,
-        result: "failure",
+        result: 'failure',
         agentId: context.agentId,
-        details: { toolName: name, error: error.message }
+        details: { toolName: name, error: error.message },
       });
       const message = error instanceof Error ? error.message : String(error);
-      process.stderr.write(`\u274C Internal Tool Error (${name}): ${message}
-`);
+      logger.error(`Internal Tool Error (${name}): ${message}`, { tool: name, error });
       throw error;
     }
   }
@@ -671,18 +674,27 @@ Output: ${output.substring(0, 200)}...`,
     return Array.from(this.activeSessions.values());
   }
 };
-AgentOrchestrator = __decorateClass([
-  singleton()
-], AgentOrchestrator);
+AgentOrchestrator = __decorateClass([singleton()], AgentOrchestrator);
 registerScoped(
   AgentOrchestrator,
-  (scopedContainer) => new AgentOrchestrator({
-    memory: scopedContainer.isRegistered(DI_TOKENS.memoryManager, true) ? scopedContainer.resolve(DI_TOKENS.memoryManager) : scopedContainer.resolve(MemoryManager),
-    registry: scopedContainer.isRegistered(DI_TOKENS.agentRegistry, true) ? scopedContainer.resolve(DI_TOKENS.agentRegistry) : scopedContainer.resolve(AgentRegistry),
-    ai: scopedContainer.isRegistered(DI_TOKENS.aiMetaLayer, true) ? scopedContainer.resolve(DI_TOKENS.aiMetaLayer) : scopedContainer.resolve(AIMetaLayer),
-    telemetry: scopedContainer.isRegistered(DI_TOKENS.telemetryService, true) ? scopedContainer.resolve(DI_TOKENS.telemetryService) : scopedContainer.resolve(EnterpriseAnalytics),
-    sessionId: scopedContainer.isRegistered(DI_TOKENS.sessionId, true) ? scopedContainer.resolve(DI_TOKENS.sessionId) : null
-  })
+  (scopedContainer) =>
+    new AgentOrchestrator({
+      memory: scopedContainer.isRegistered(DI_TOKENS.memoryManager, true)
+        ? scopedContainer.resolve(DI_TOKENS.memoryManager)
+        : scopedContainer.resolve(MemoryManager),
+      registry: scopedContainer.isRegistered(DI_TOKENS.agentRegistry, true)
+        ? scopedContainer.resolve(DI_TOKENS.agentRegistry)
+        : scopedContainer.resolve(AgentRegistry),
+      ai: scopedContainer.isRegistered(DI_TOKENS.aiMetaLayer, true)
+        ? scopedContainer.resolve(DI_TOKENS.aiMetaLayer)
+        : scopedContainer.resolve(AIMetaLayer),
+      telemetry: scopedContainer.isRegistered(DI_TOKENS.telemetryService, true)
+        ? scopedContainer.resolve(DI_TOKENS.telemetryService)
+        : scopedContainer.resolve(EnterpriseAnalytics),
+      sessionId: scopedContainer.isRegistered(DI_TOKENS.sessionId, true)
+        ? scopedContainer.resolve(DI_TOKENS.sessionId)
+        : null,
+    })
 );
 registerAlias(DI_TOKENS.executionEngine, AgentOrchestrator);
 const agentOrchestrator = resolveFromContainer(AgentOrchestrator);
@@ -693,5 +705,5 @@ export {
   DistributedCoordinator,
   agentOrchestrator,
   orchestration_default as default,
-  nexus
+  nexus,
 };

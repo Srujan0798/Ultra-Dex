@@ -1,16 +1,20 @@
+// Copyright (c) 2026 Ultra-Dex
+
 import chalk from 'chalk';
-import { MCPRegistry } from '../../../../src/core/mcp/registry.js';
-import { MarketplaceAPI } from '../../../../src/core/mcp/marketplace-api.js';
 import { printInfo, printSuccess, printWarning } from '../utils/output.js';
 
 function defaultFactories() {
   return {
     createRegistry: async () => {
+      const { MCPRegistry } = await import('../../../../src/core/mcp/registry.ts');
       const registry = new MCPRegistry();
       await registry.initialize();
       return registry;
     },
-    createMarketplace: () => new MarketplaceAPI(),
+    createMarketplace: async () => {
+      const { MarketplaceAPI } = await import('../../../../src/core/mcp/marketplace-api.ts');
+      return new MarketplaceAPI();
+    },
   };
 }
 
@@ -27,7 +31,7 @@ export function registerMcpCommand(program, factories = {}) {
     .option('--category <category>', 'Filter by category')
     .option('--author <author>', 'Filter by author')
     .action(async (query, options) => {
-      const marketplace = resolvedFactories.createMarketplace();
+      const marketplace = await resolvedFactories.createMarketplace();
       const results = await marketplace.search(query, {
         category: options.category,
         author: options.author,
@@ -49,7 +53,7 @@ export function registerMcpCommand(program, factories = {}) {
     .command('info <pluginId>')
     .description('Show marketplace details for a plugin')
     .action(async (pluginId) => {
-      const marketplace = resolvedFactories.createMarketplace();
+      const marketplace = await resolvedFactories.createMarketplace();
       const plugin = await marketplace.getPlugin(pluginId);
       printInfo(JSON.stringify(plugin, null, 2));
     });
@@ -65,7 +69,7 @@ export function registerMcpCommand(program, factories = {}) {
       printSuccess(chalk.green(`Published ${manifest.id}@${manifest.version} locally.`));
 
       if (options.registry || options.token) {
-        const marketplace = resolvedFactories.createMarketplace();
+        const marketplace = await resolvedFactories.createMarketplace();
         if (options.registry) {
           marketplace.registryUrl = options.registry;
         }

@@ -3,13 +3,13 @@ import assert from 'node:assert';
 
 describe('PostHog + Sentry Integration', () => {
   let posthog, sentry, analytics;
-  
+
   before(async () => {
     // Import modules
     const posthogModule = await import('../../src/core/analytics/posthog-client.js');
     const sentryModule = await import('../../src/core/analytics/sentry-client.js');
     const analyticsModule = await import('../../src/core/analytics/analytics-service.js');
-    
+
     posthog = posthogModule.posthog;
     sentry = sentryModule.sentry;
     analytics = analyticsModule.analytics;
@@ -61,12 +61,24 @@ describe('PostHog + Sentry Integration', () => {
       assert.strictEqual(typeof sentry.captureException, 'function');
     });
 
+    it('should have captureMessage method', () => {
+      assert.strictEqual(typeof sentry.captureMessage, 'function');
+    });
+
     it('should have setUser method', () => {
       assert.strictEqual(typeof sentry.setUser, 'function');
     });
 
-    it('should have clearUser method', () => {
-      assert.strictEqual(typeof sentry.clearUser, 'function');
+    it('should have addBreadcrumb method', () => {
+      assert.strictEqual(typeof sentry.addBreadcrumb, 'function');
+    });
+
+    it('should have startTransaction method', () => {
+      assert.strictEqual(typeof sentry.startTransaction, 'function');
+    });
+
+    it('should have shutdown method', () => {
+      assert.strictEqual(typeof sentry.shutdown, 'function');
     });
 
     it('should have flush method', () => {
@@ -80,16 +92,36 @@ describe('PostHog + Sentry Integration', () => {
       });
     });
 
-    it('should handle setUser in dev mode', () => {
+    it('should handle captureMessage in dev mode', () => {
       assert.doesNotThrow(() => {
-        sentry.setUser('user123', { email: 'test@example.com' });
+        sentry.captureMessage('Test message', 'info');
       });
     });
 
-    it('should handle clearUser in dev mode', () => {
+    it('should handle setUser in dev mode', () => {
       assert.doesNotThrow(() => {
-        sentry.clearUser();
+        sentry.setUser('user123', 'test@example.com');
       });
+    });
+
+    it('should handle addBreadcrumb in dev mode', () => {
+      assert.doesNotThrow(() => {
+        sentry.addBreadcrumb('auth', 'User logged in', { method: 'google' });
+      });
+    });
+
+    it('should handle startTransaction in dev mode', () => {
+      assert.doesNotThrow(() => {
+        const transaction = sentry.startTransaction('test-transaction', 'test-op');
+        assert.ok(transaction);
+        assert.strictEqual(typeof transaction.finish, 'function');
+        transaction.finish();
+      });
+    });
+
+    it('should handle shutdown in dev mode', async () => {
+      const result = await sentry.shutdown(100);
+      assert.strictEqual(typeof result, 'boolean');
     });
 
     it('should handle flush in dev mode', async () => {
@@ -146,7 +178,7 @@ describe('PostHog + Sentry Integration', () => {
       assert.doesNotThrow(() => {
         analytics.identify('user123', {
           email: 'test@example.com',
-          plan: 'pro'
+          plan: 'pro',
         });
       });
     });
@@ -167,34 +199,34 @@ describe('PostHog + Sentry Integration', () => {
     it('should filter events by event name', () => {
       analytics.track('filter_test_1', {}, 'user123');
       analytics.track('filter_test_2', {}, 'user123');
-      
+
       const filtered = analytics.getEvents({ event: 'filter_test_1' });
       assert.ok(Array.isArray(filtered));
-      
-      const hasOnlyFilterTest1 = filtered.every(e => e.event === 'filter_test_1');
+
+      const hasOnlyFilterTest1 = filtered.every((e) => e.event === 'filter_test_1');
       assert.strictEqual(hasOnlyFilterTest1, true);
     });
 
     it('should filter events by userId', () => {
       analytics.track('user_filter_test', {}, 'userA');
       analytics.track('user_filter_test', {}, 'userB');
-      
+
       const filtered = analytics.getEvents({ userId: 'userA' });
       assert.ok(Array.isArray(filtered));
-      
-      const hasOnlyUserA = filtered.every(e => e.userId === 'userA');
+
+      const hasOnlyUserA = filtered.every((e) => e.userId === 'userA');
       assert.strictEqual(hasOnlyUserA, true);
     });
 
     it('should generate dashboard stats', () => {
       const stats = analytics.getDashboardStats();
-      
+
       assert.ok(stats);
       assert.strictEqual(typeof stats.totalEvents, 'number');
       assert.strictEqual(typeof stats.uniqueUsers, 'number');
       assert.ok(Array.isArray(stats.topEvents));
-      
-      stats.topEvents.forEach(event => {
+
+      stats.topEvents.forEach((event) => {
         assert.ok(event.event);
         assert.strictEqual(typeof event.count, 'number');
       });

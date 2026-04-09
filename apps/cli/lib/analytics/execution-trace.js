@@ -41,13 +41,56 @@ function normalizeTraceValue(value) {
   return String(safeValue);
 }
 
+function normalizeTimestamp(value, fallback = null) {
+  if (!value) return fallback;
+
+  if (value instanceof Date) return value.toISOString();
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? fallback : parsed.toISOString();
+}
+
+function normalizeNumber(value, fallback = null) {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string' && value.trim() !== '') {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return fallback;
+}
+
+function extractTokenUsage(usage = null) {
+  if (!usage || typeof usage !== 'object') {
+    return {
+      input: null,
+      output: null,
+      total: null,
+    };
+  }
+
+  const input =
+    normalizeNumber(usage.inputTokens) ??
+    normalizeNumber(usage.prompt_tokens) ??
+    normalizeNumber(usage.input);
+  const output =
+    normalizeNumber(usage.outputTokens) ??
+    normalizeNumber(usage.completion_tokens) ??
+    normalizeNumber(usage.output);
+  const total =
+    normalizeNumber(usage.totalTokens) ??
+    (input !== null || output !== null ? (input || 0) + (output || 0) : null);
+
+  return { input, output, total };
+}
+
 export class ExecutionTraceRecorder {
   constructor(options = {}) {
-    this.runId = options.runId || `run_${Date.now()}_${randomUUID().slice(0, 8)}`;
+    this.runId = options.runId || randomUUID();
     this.step = 0;
     this.traceDir = options.traceDir || TRACE_DIR;
     this.traceFile = options.traceFile || path.join(this.traceDir, `${this.runId}.jsonl`);
     this.started = false;
+    this.entries = [];
   }
 
   async record({
@@ -63,23 +106,65 @@ export class ExecutionTraceRecorder {
       throw new Error('Execution trace action is required');
     }
 
+    const sequenceStep = typeof step === 'number' ? step : ++this.step;
+    const stepIndex =
+      normalizeNumber(metadata.stepIndex) ?? normalizeNumber(metadata.loopStep) ?? sequenceStep;
+    const provider = metadata.provider ?? null;
+    const model = metadata.model ?? null;
+    const cost = normalizeNumber(metadata.cost) ?? normalizeNumber(metadata.estimatedCost) ?? null;
+    const startTime = normalizeTimestamp(metadata.startTime);
+    const endTime = normalizeTimestamp(metadata.endTime, new Date().toISOString());
+    const duration =
+      normalizeNumber(metadata.durationMs) ??
+      (startTime && endTime
+        ? Math.max(0, new Date(endTime).getTime() - new Date(startTime).getTime())
+        : null);
+    const tokenUsage = metadata.tokensUsed || extractTokenUsage(metadata.usage);
+
     const entry = {
-      timestamp: new Date().toISOString(),
+      timestamp: endTime,
       run_id: this.runId,
-      step: typeof step === 'number' ? step : ++this.step,
+      step: sequenceStep,
+      stepIndex,
       agent: normalizeAgent(agent),
       action: String(action),
       input: normalizeTraceValue(input),
       output: normalizeTraceValue(output),
       status: status || 'success',
+      provider,
+      model,
+      startTime,
+      endTime,
+      durationMs: duration,
+      tokensUsed: tokenUsage,
+      cost,
     };
 
-    if (Object.keys(metadata).length > 0) {
-      entry.metadata = redact(metadata);
+    const {
+      stepIndex: _stepIndex,
+      provider: _provider,
+      model: _model,
+      cost: _cost,
+      estimatedCost: _estimatedCost,
+      startTime: _startTime,
+      endTime: _endTime,
+      durationMs: _durationMs,
+      tokensUsed: _tokensUsed,
+      usage: _usage,
+      ...restMetadata
+    } = metadata;
+
+    if (Object.keys(restMetadata).length > 0) {
+      entry.metadata = redact(restMetadata);
     }
 
     await appendJsonl(this.traceFile, entry);
+    this.entries.push(entry);
     return entry;
+  }
+
+  getEntries() {
+    return [...this.entries];
   }
 }
 
@@ -108,4 +193,3 @@ export async function readExecutionTrace(runId, options = {}) {
 export const executionTracePaths = {
   directory: TRACE_DIR,
 };
-

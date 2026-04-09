@@ -25,7 +25,9 @@ function toText(value) {
 }
 
 function truncateText(value, maxChars = 240) {
-  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  const text = String(value || '')
+    .replace(/\s+/g, ' ')
+    .trim();
   if (text.length <= maxChars) return text;
   return `${text.slice(0, Math.max(0, maxChars - 3)).trim()}...`;
 }
@@ -87,24 +89,34 @@ function summarizeActions(events) {
   return { actionCounts, statusCounts };
 }
 
-function buildRunSummary({
-  runId,
-  command,
-  agent,
-  task,
-  result,
-  events,
-  artifactPaths,
-} = {}) {
+function buildRunSteps(events) {
+  return events.map((event) => ({
+    step: Number(event.step) || 0,
+    stepIndex: Number(event.stepIndex) || Number(event.step) || 0,
+    agent: event.agent || 'unknown',
+    action: event.action || 'UNKNOWN',
+    status: event.status || 'unknown',
+    input: event.input || '',
+    output: event.output || '',
+    provider: event.provider || null,
+    model: event.model || null,
+    startTime: event.startTime || event.timestamp || null,
+    endTime: event.endTime || event.timestamp || null,
+    duration: typeof event.durationMs === 'number' ? event.durationMs : 0,
+    tokensUsed: event.tokensUsed || { input: null, output: null, total: null },
+    cost: event.cost ?? null,
+    timestamp: event.timestamp,
+  }));
+}
+
+function buildRunSummary({ runId, command, agent, task, result, events, artifactPaths } = {}) {
   const firstEvent = events[0] || null;
   const lastEvent = events[events.length - 1] || null;
   const startedAt = firstEvent?.timestamp || new Date().toISOString();
   const completedAt = lastEvent?.timestamp || startedAt;
-  const durationMs = Math.max(
-    0,
-    new Date(completedAt).getTime() - new Date(startedAt).getTime()
-  );
+  const durationMs = Math.max(0, new Date(completedAt).getTime() - new Date(startedAt).getTime());
   const { actionCounts, statusCounts } = summarizeActions(events);
+  const steps = buildRunSteps(events);
 
   return {
     runId,
@@ -122,7 +134,17 @@ function buildRunSummary({
     statusCounts,
     delegatedAgents: collectDelegatedAgents(events),
     filesTouched: collectFilesTouched(events),
+    output: result,
     resultPreview: truncateText(result, 500),
+    steps,
+    trace: {
+      run_id: runId,
+      startedAt,
+      completedAt,
+      durationMs,
+      steps,
+      output: result,
+    },
     artifacts: {
       result: artifactPaths.result,
       trace: artifactPaths.trace,
@@ -142,14 +164,7 @@ export function getRunArtifactPaths(runId) {
   };
 }
 
-export async function writeRunArtifacts({
-  runId,
-  command,
-  agent,
-  task,
-  result,
-  traceFile,
-} = {}) {
+export async function writeRunArtifacts({ runId, command, agent, task, result, traceFile } = {}) {
   if (!runId) {
     throw new Error('runId is required to write run artifacts');
   }

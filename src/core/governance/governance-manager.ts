@@ -3,34 +3,31 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { GovernanceEngine } from '../../../apps/cli/lib/governance/index.js';
+import { singleton } from 'tsyringe';
+import { GovernanceEngine } from './governance-engine.js';
 import { AuditDatabase } from './audit-db.js';
-import { v4 as uuidv4 } from "uuid";
+import { v4 as uuidv4 } from 'uuid';
 let GovernanceDeniedException = class extends Error {
   constructor(message, context = {}) {
     super(message);
-    this.name = "GovernanceDeniedException";
+    this.name = 'GovernanceDeniedException';
     this.context = context;
   }
 };
-GovernanceDeniedException = __decorateClass([
-  singleton()
-], GovernanceDeniedException);
-function _normalizeAction(action = "") {
-  if (action === "executeTask" || action.startsWith("tool:")) {
-    return "execute";
+GovernanceDeniedException = __decorateClass([singleton()], GovernanceDeniedException);
+function _normalizeAction(action = '') {
+  if (action === 'executeTask' || action.startsWith('tool:')) {
+    return 'execute';
   }
-  if (action.startsWith("write")) {
-    return "write";
+  if (action.startsWith('write')) {
+    return 'write';
   }
-  return "read";
+  return 'read';
 }
 let GovernanceManager = class {
   constructor(options = {}) {
@@ -39,7 +36,7 @@ let GovernanceManager = class {
     this.policies = {
       addPolicy: (policy) => {
         this._customPolicies.push(policy);
-      }
+      },
     };
     const dbPath = options.auditDbPath || void 0;
     this._auditDb = new AuditDatabase(dbPath);
@@ -59,7 +56,7 @@ let GovernanceManager = class {
         const auditEntry = {
           ...entry,
           timestamp: entry.timestamp || Date.now(),
-          id: entry.id || `audit-${uuidv4()}`
+          id: entry.id || `audit-${uuidv4()}`,
         };
         return this._db.insert(auditEntry);
       },
@@ -75,7 +72,7 @@ let GovernanceManager = class {
         return this._db.memoryMode;
       },
       // Reference to the database instance for internal use
-      _db: this._auditDb
+      _db: this._auditDb,
     };
   }
   async gate(context = {}) {
@@ -87,11 +84,11 @@ let GovernanceManager = class {
           agentId: context.agentId,
           action: context.action,
           task: context.resource,
-          result: "blocked",
-          outcome: "blocked",
-          details: { policyId: policy.id, reason: policy.name }
+          result: 'blocked',
+          outcome: 'blocked',
+          details: { policyId: policy.id, reason: policy.name },
         });
-        return { allowed: false, reason: "policy-violation" };
+        return { allowed: false, reason: 'policy-violation' };
       }
     }
     if (this._customPolicies.length > 0) {
@@ -99,9 +96,9 @@ let GovernanceManager = class {
         agentId: context.agentId,
         action: context.action,
         task: context.resource,
-        result: "allowed",
-        outcome: "allowed",
-        details: context.details
+        result: 'allowed',
+        outcome: 'allowed',
+        details: context.details,
       });
       return { allowed: true };
     }
@@ -109,9 +106,9 @@ let GovernanceManager = class {
       agentId: context.agentId,
       action: context.action,
       task: context.resource,
-      result: "allowed",
-      outcome: "allowed",
-      details: context.details
+      result: 'allowed',
+      outcome: 'allowed',
+      details: context.details,
     });
     return { allowed: true };
   }
@@ -129,12 +126,6 @@ let GovernanceManager = class {
     await this._auditDb.close();
   }
 };
-GovernanceManager = __decorateClass([
-  singleton()
-], GovernanceManager);
+GovernanceManager = __decorateClass([singleton()], GovernanceManager);
 var governance_manager_default = GovernanceManager;
-export {
-  GovernanceDeniedException,
-  GovernanceManager,
-  governance_manager_default as default
-};
+export { GovernanceDeniedException, GovernanceManager, governance_manager_default as default };
