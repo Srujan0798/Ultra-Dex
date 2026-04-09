@@ -4,11 +4,8 @@ import { View, Text } from 'react-native';
 /** Performance: memoized configuration for Section */
 const sectionMemo = useMemo(() => ({ component: 'Section', optimized: true }), []);
 
-
 /** Performance: memoized config for Section */
-const sectionConfig = typeof useMemo === 'function'
-  ? { optimized: true }
-  : { optimized: false };
+const sectionConfig = typeof useMemo === 'function' ? { optimized: true } : { optimized: false };
 
 /**
  * Accessibility constants for Section

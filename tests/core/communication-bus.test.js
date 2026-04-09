@@ -66,16 +66,17 @@ describe('AgentCommunicationBus', () => {
   });
 
   it('should throw if publishing while not connected', async () => {
-    await assert.rejects(
-      () => bus.publish('ch', 'msg'),
-      { message: 'Communication bus is not connected' }
-    );
+    await assert.rejects(() => bus.publish('ch', 'msg'), {
+      message: 'Communication bus is not connected',
+    });
   });
 
   it('should handle subscriber errors gracefully', async () => {
     await bus.initialize();
-    bus.subscribe('ch', () => { throw new Error('Subscriber failed'); });
-    
+    bus.subscribe('ch', () => {
+      throw new Error('Subscriber failed');
+    });
+
     // This should not throw
     const msgId = await bus.publish('ch', 'msg');
     assert.ok(msgId);

@@ -12,18 +12,21 @@ Complete disaster recovery procedures ensuring business continuity and rapid rec
 ## 🎯 RECOVERY OBJECTIVES
 
 ### Recovery Time Objective (RTO)
+
 - **Critical Systems:** 4 hours maximum downtime
 - **High-Priority Systems:** 8 hours maximum downtime
 - **Standard Systems:** 24 hours maximum downtime
 - **Non-Essential Systems:** 72 hours maximum downtime
 
 ### Recovery Point Objective (RPO)
+
 - **Critical Data:** Maximum 1 hour data loss
 - **High-Priority Data:** Maximum 4 hours data loss
 - **Standard Data:** Maximum 24 hours data loss
 - **Archive Data:** Maximum 7 days data loss
 
 ### Service Level Agreements
+
 - **99.9% Availability:** For production systems
 - **Sub-50ms Response:** For critical API endpoints
 - **Zero Data Loss:** For financial and compliance data
@@ -34,24 +37,28 @@ Complete disaster recovery procedures ensuring business continuity and rapid rec
 ## 🚨 DISASTER CLASSIFICATION
 
 ### Level 1: Critical (P0)
+
 - **Definition:** Complete system outage affecting all users
 - **Examples:** Data center failure, major security breach, database corruption
 - **Response:** Immediate (within 15 minutes)
 - **Recovery Target:** 4 hours RTO, 1 hour RPO
 
 ### Level 2: High (P1)
+
 - **Definition:** Partial system outage affecting core functionality
 - **Examples:** API service degradation, authentication failure, payment processing down
 - **Response:** Within 1 hour
 - **Recovery Target:** 8 hours RTO, 4 hours RPO
 
 ### Level 3: Medium (P2)
+
 - **Definition:** Limited functionality affecting specific features
 - **Examples:** Dashboard unavailable, non-critical API endpoints down
 - **Response:** Within 4 hours
 - **Recovery Target:** 24 hours RTO, 24 hours RPO
 
 ### Level 4: Low (P3)
+
 - **Definition:** Minor issues with no user impact
 - **Examples:** Documentation unavailable, analytics down
 - **Response:** Within 24 hours
@@ -62,41 +69,48 @@ Complete disaster recovery procedures ensuring business continuity and rapid rec
 ## 🏗️ BACKUP STRATEGY
 
 ### 1. Continuous Data Replication
+
 **Frequency:** Real-time replication
 **Scope:** All production databases and critical files
 **Location:** Geographically distributed replicas
 **Verification:** Automated integrity checks every 15 minutes
 
 #### Implementation:
+
 - **Primary:** Production database cluster
 - **Replica:** Hot standby in secondary region
 - **Sync:** Real-time synchronous replication
 - **Failover:** Automated failover with DNS routing
 
 ### 2. Incremental Backups
+
 **Frequency:** Every 15 minutes
 **Scope:** Database transactions and file changes
 **Retention:** 7 days of incremental backups
 **Verification:** Automated checksum validation
 
 #### Schedule:
+
 - **Monday-Sunday:** 15-minute incremental snapshots
 - **Verification:** Automated integrity checks
 - **Alerting:** Immediate alerts for backup failures
 
 ### 3. Daily Full Backups
+
 **Frequency:** Daily at 2:00 AM UTC
 **Scope:** Complete system backup (databases + files)
 **Retention:** 30 days of full backups
 **Verification:** Automated restore testing
 
 #### Process:
+
 1. **Pre-backup:** Database consistency check
 2. **Backup:** Complete system snapshot
 3. **Post-backup:** Integrity verification
 4. **Validation:** Automated restore test on staging
 
 ### 4. Weekly Archive Backups
+
 **Frequency:** Weekly (Sunday) at 3:00 AM UTC
 **Scope:** Complete system + historical data
 **Retention:** 1 year of archive backups
@@ -107,6 +121,7 @@ Complete disaster recovery procedures ensuring business continuity and rapid rec
 ## 🔧 RECOVERY PROCEDURES
 
 ### Automated Recovery (Level 1-2 Incidents)
+
 ```
 1. Detection: Automated monitoring detects failure
 2. Isolation: Affected components automatically isolated
@@ -118,6 +133,7 @@ Complete disaster recovery procedures ensuring business continuity and rapid rec
 ```
 
 ### Manual Recovery (Level 3-4 Incidents)
+
 ```
 1. Detection: Manual or automated alert received
 2. Assessment: On-call engineer assesses impact
@@ -133,39 +149,44 @@ Complete disaster recovery procedures ensuring business continuity and rapid rec
 ## 📁 BACKUP LOCATIONS & RETENTION
 
 ### Primary Backup Locations
-| Region | Location | Purpose | Retention |
-|--------|----------|---------|-----------|
-| US-East | AWS Virginia | Primary backups | 30 days |
-| EU-West | AWS Ireland | Regional backup | 30 days |
-| Asia-Pacific | AWS Singapore | Global backup | 30 days |
-| Cold Storage | Glacier | Archive backup | 7 years |
+
+| Region       | Location      | Purpose         | Retention |
+| ------------ | ------------- | --------------- | --------- |
+| US-East      | AWS Virginia  | Primary backups | 30 days   |
+| EU-West      | AWS Ireland   | Regional backup | 30 days   |
+| Asia-Pacific | AWS Singapore | Global backup   | 30 days   |
+| Cold Storage | Glacier       | Archive backup  | 7 years   |
 
 ### Backup Types & Schedules
-| Type | Frequency | Retention | Location |
-|------|-----------|-----------|----------|
-| Database Snapshots | Every 15 min | 7 days | S3 |
-| File System Backup | Hourly | 30 days | S3 |
-| Configuration Backup | Daily | 90 days | S3 |
-| Log Backup | Every 30 min | 90 days | S3 |
-| Archive Backup | Weekly | 7 years | Glacier |
+
+| Type                 | Frequency    | Retention | Location |
+| -------------------- | ------------ | --------- | -------- |
+| Database Snapshots   | Every 15 min | 7 days    | S3       |
+| File System Backup   | Hourly       | 30 days   | S3       |
+| Configuration Backup | Daily        | 90 days   | S3       |
+| Log Backup           | Every 30 min | 90 days   | S3       |
+| Archive Backup       | Weekly       | 7 years   | Glacier  |
 
 ---
 
 ## 🧪 RECOVERY TESTING
 
 ### Monthly Recovery Tests
+
 - **Full System Restore:** Monthly complete system recovery test
 - **Database Recovery:** Test database restore procedures
 - **Application Recovery:** Verify application functionality
 - **Performance Validation:** Confirm system performance
 
 ### Quarterly Disaster Drills
+
 - **Complete Failover:** Simulate complete data center failure
 - **Geographic Recovery:** Test cross-region failover
 - **Team Response:** Validate team response procedures
 - **Communication:** Test stakeholder communication
 
 ### Semi-Annual Full-Scale Tests
+
 - **Extended Outage:** Simulate 24-hour outage scenario
 - **Data Recovery:** Test RPO compliance with data loss scenarios
 - **Business Continuity:** Validate business operations during outage
@@ -176,6 +197,7 @@ Complete disaster recovery procedures ensuring business continuity and rapid rec
 ## 🚀 RECOVERY RUNBOOKS
 
 ### Critical System Recovery
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    CRITICAL SYSTEM RECOVERY                     │
@@ -208,6 +230,7 @@ Complete disaster recovery procedures ensuring business continuity and rapid rec
 ```
 
 ### Database Recovery Procedure
+
 ```bash
 # 1. Verify backup availability
 aws s3 ls s3://ultra-dex-backups/database/latest/
@@ -228,6 +251,7 @@ kubectl set env deployment/ultra-dex-api DATABASE_URL=postgresql://...
 ```
 
 ### Application Recovery Procedure
+
 ```bash
 # 1. Deploy application code
 git checkout tags/v6.0.0-restore-point
@@ -251,11 +275,13 @@ aws route53 change-resource-record-sets --hosted-zone-id ... --change-batch file
 ## 📞 EMERGENCY CONTACTS
 
 ### On-Call Rotation
+
 - **Primary:** ops@ultra-dex.ai (PagerDuty escalation)
 - **Secondary:** security@ultra-dex.ai (security incidents)
 - **Tertiary:** ceo@ultra-dex.ai (escalation contact)
 
 ### External Contacts
+
 - **Cloud Provider:** AWS Support (1-800-273-7778)
 - **DNS Provider:** Cloudflare (1-888-993-5892)
 - **Payment Processor:** Stripe (1-800-925-8437)
@@ -266,12 +292,14 @@ aws route53 change-resource-record-sets --hosted-zone-id ... --change-batch file
 ## 🧩 BUSINESS CONTINUITY PLANS
 
 ### Critical Business Functions
+
 1. **Customer Support:** Maintain support during outages
 2. **Payment Processing:** Ensure payment continuity
 3. **Data Access:** Preserve customer data access
 4. **Development:** Continue development during recovery
 
 ### Alternative Procedures
+
 - **Manual Operations:** Procedures for manual system operation
 - **Temporary Solutions:** Workarounds during recovery
 - **Customer Communication:** Templates for outage communication
@@ -282,12 +310,14 @@ aws route53 change-resource-record-sets --hosted-zone-id ... --change-batch file
 ## 📊 RECOVERY METRICS & MONITORING
 
 ### Key Metrics
+
 - **Recovery Time:** Actual vs target RTO compliance
 - **Data Loss:** Actual vs target RPO compliance
 - **Backup Success Rate:** Percentage of successful backups
 - **Recovery Success Rate:** Percentage of successful recoveries
 
 ### Monitoring Dashboard
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    DISASTER RECOVERY DASHBOARD                  │
@@ -305,6 +335,7 @@ aws route53 change-resource-record-sets --hosted-zone-id ... --change-batch file
 ```
 
 ### Alerting Thresholds
+
 - **Backup Failure:** Immediate alert
 - **RTO/RPO Breach:** 15-minute delay then alert
 - **Recovery Time > 2h:** Escalation to management
@@ -315,12 +346,14 @@ aws route53 change-resource-record-sets --hosted-zone-id ... --change-batch file
 ## 🔄 CONTINUOUS IMPROVEMENT
 
 ### Post-Incident Reviews
+
 - **Root Cause Analysis:** Identify fundamental causes
 - **Process Improvements:** Update procedures based on incidents
 - **Technology Upgrades:** Invest in better recovery tools
 - **Training Updates:** Improve team response capabilities
 
 ### Quarterly Reviews
+
 - **Procedure Updates:** Revise procedures based on testing
 - **Technology Assessment:** Evaluate new recovery technologies
 - **Vendor Evaluation:** Review backup and recovery vendors
@@ -331,6 +364,7 @@ aws route53 change-resource-record-sets --hosted-zone-id ... --change-batch file
 ## 📋 RECOVERY CHECKLIST
 
 ### Pre-Recovery Checklist
+
 - [ ] Confirm backup integrity and availability
 - [ ] Verify recovery environment readiness
 - [ ] Notify stakeholders of planned recovery
@@ -338,6 +372,7 @@ aws route53 change-resource-record-sets --hosted-zone-id ... --change-batch file
 - [ ] Ensure team availability during recovery
 
 ### During Recovery Checklist
+
 - [ ] Monitor backup restoration progress
 - [ ] Validate system functionality at each step
 - [ ] Update stakeholders on recovery status
@@ -345,6 +380,7 @@ aws route53 change-resource-record-sets --hosted-zone-id ... --change-batch file
 - [ ] Prepare for potential rollback scenarios
 
 ### Post-Recovery Checklist
+
 - [ ] Verify all systems are operational
 - [ ] Confirm data integrity and consistency
 - [ ] Test all critical functionality
@@ -356,6 +392,7 @@ aws route53 change-resource-record-sets --hosted-zone-id ... --change-batch file
 ## 🚨 EMERGENCY PROCEDURES
 
 ### Immediate Response (0-15 minutes)
+
 1. **Acknowledge Alert:** Confirm receipt of disaster alert
 2. **Assess Impact:** Determine scope and severity of incident
 3. **Activate Team:** Notify on-call team members
@@ -363,6 +400,7 @@ aws route53 change-resource-record-sets --hosted-zone-id ... --change-batch file
 5. **Begin Recovery:** Start appropriate recovery procedures
 
 ### Short-term Response (15 minutes - 4 hours)
+
 1. **Execute Recovery:** Follow established recovery procedures
 2. **Monitor Progress:** Track recovery progress continuously
 3. **Update Stakeholders:** Provide regular status updates
@@ -370,6 +408,7 @@ aws route53 change-resource-record-sets --hosted-zone-id ... --change-batch file
 5. **Validate Systems:** Confirm system functionality
 
 ### Long-term Response (4+ hours)
+
 1. **Complete Recovery:** Finish all recovery procedures
 2. **Performance Tuning:** Optimize recovered systems
 3. **Security Validation:** Verify security of recovered systems
@@ -381,6 +420,7 @@ aws route53 change-resource-record-sets --hosted-zone-id ... --change-batch file
 ## 📝 INCIDENT DOCUMENTATION
 
 ### Required Documentation
+
 - **Incident Report:** Detailed incident description
 - **Timeline:** Chronological sequence of events
 - **Actions Taken:** All recovery actions performed
@@ -389,10 +429,12 @@ aws route53 change-resource-record-sets --hosted-zone-id ... --change-batch file
 - **Lessons Learned:** Improvements identified
 
 ### Documentation Template
+
 ```markdown
 # Incident Report: [Date] - [Brief Description]
 
 ## Summary
+
 - **Date:** [Incident date and time]
 - **Duration:** [Total downtime]
 - **Impact:** [Systems and users affected]
@@ -400,21 +442,26 @@ aws route53 change-resource-record-sets --hosted-zone-id ... --change-batch file
 - **Resolution:** [How incident was resolved]
 
 ## Timeline
+
 - [Time] - [Event description]
 - [Time] - [Event description]
 
 ## Actions Taken
+
 - [Action description] - [Time] - [Result]
 
 ## Impact Assessment
+
 - [Impact on users, revenue, operations]
 
 ## Lessons Learned
+
 - [What went well]
 - [What didn't go well]
 - [Improvements to make]
 
 ## Follow-up Actions
+
 - [Action item] - [Owner] - [Due date]
 ```
 

@@ -22,7 +22,10 @@ export function summarizePlan(planMarkdown: string, maxLines = 12): string {
   return lines.join('\n');
 }
 
-export function summarizeState(state: unknown, { maxPhases = 6, maxRecentSteps = 5 }: { maxPhases?: number; maxRecentSteps?: number } = {}): string {
+export function summarizeState(
+  state: unknown,
+  { maxPhases = 6, maxRecentSteps = 5 }: { maxPhases?: number; maxRecentSteps?: number } = {}
+): string {
   if (!state || typeof state !== 'object') return '';
 
   const lines = [];
@@ -78,15 +81,19 @@ export function summarizeMemories(memories: Array<Record<string, unknown>>, maxI
     .slice(0, maxItems)
     .map((memory) => {
       const text = truncateText(memory.text || memory.content || '', 180);
-      const tags = Array.isArray(memory.tags) && memory.tags.length > 0
-        ? ` [tags: ${(memory.tags as string[]).slice(0, 4).join(', ')}]`
-        : '';
+      const tags =
+        Array.isArray(memory.tags) && memory.tags.length > 0
+          ? ` [tags: ${(memory.tags as string[]).slice(0, 4).join(', ')}]`
+          : '';
       return `- ${text}${tags}`;
     })
     .join('\n');
 }
 
-export function summarizeInteractionHistory(interactionHistory: Array<Record<string, unknown>>, maxItems = 6): string {
+export function summarizeInteractionHistory(
+  interactionHistory: Array<Record<string, unknown>>,
+  maxItems = 6
+): string {
   if (!Array.isArray(interactionHistory) || interactionHistory.length === 0) return '';
 
   return interactionHistory

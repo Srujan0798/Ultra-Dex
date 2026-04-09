@@ -28,11 +28,20 @@ const AgentStatus = ({ type = 'thinking', text }) => {
 
   const displayText = text || defaultText;
 
-  return /* @__PURE__ */ React.createElement(Box, { flexDirection: "row", alignItems: "center" }, /* @__PURE__ */ React.createElement(Text, { color: color }, emoji, /* @__PURE__ */ React.createElement(Spinner, { type: spinnerType }), " ", displayText));
+  return /* @__PURE__ */ React.createElement(
+    Box,
+    { flexDirection: 'row', alignItems: 'center' },
+    /* @__PURE__ */ React.createElement(
+      Text,
+      { color: color },
+      emoji,
+      /* @__PURE__ */ React.createElement(Spinner, { type: spinnerType }),
+      ' ',
+      displayText
+    )
+  );
 };
 
 var AgentStatus_default = AgentStatus;
 
-export {
-  AgentStatus_default as default
-};
+export { AgentStatus_default as default };

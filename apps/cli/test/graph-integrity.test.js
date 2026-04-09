@@ -43,7 +43,7 @@ describe('Graph Integrity & Optimization', () => {
     // Since we are in tmpDir, files are 'a.js' and 'b.js'.
     // Import "./b.js" should resolve to "b.js"
 
-    const edge = projectGraph.edges.find(e => e.from === 'a.js' && e.to === 'b.js');
+    const edge = projectGraph.edges.find((e) => e.from === 'a.js' && e.to === 'b.js');
     assert.ok(edge, 'Edge A->B should exist');
 
     // Delete B
@@ -56,7 +56,7 @@ describe('Graph Integrity & Optimization', () => {
     assert.ok(!projectGraph.nodes.has('b.js'), 'Node b.js should be removed');
 
     // Verify edge is gone (orphaned node fix)
-    const dangling = projectGraph.edges.find(e => e.to === 'b.js');
+    const dangling = projectGraph.edges.find((e) => e.to === 'b.js');
     assert.equal(dangling, undefined, 'Dangling edge to b.js should be removed');
   });
 
@@ -75,30 +75,34 @@ describe('Graph Integrity & Optimization', () => {
     assert.ok(cycles.length > 0, 'Should detect cycle');
 
     // Check if cycle contains both nodes
-    const cycle = cycles.find(c => c.includes('cycle_a.js') && c.includes('cycle_b.js'));
+    const cycle = cycles.find((c) => c.includes('cycle_a.js') && c.includes('cycle_b.js'));
     assert.ok(cycle, 'Cycle should contain both nodes');
   });
 
   test('Performance Index: findReferences uses optimized index', async () => {
-     // Setup: A -> B, C -> B
-     projectGraph.nodes.set('idx_a.js', { id: 'idx_a.js' });
-     projectGraph.nodes.set('idx_b.js', { id: 'idx_b.js' });
-     projectGraph.nodes.set('idx_c.js', { id: 'idx_c.js' });
+    // Setup: A -> B, C -> B
+    projectGraph.nodes.set('idx_a.js', { id: 'idx_a.js' });
+    projectGraph.nodes.set('idx_b.js', { id: 'idx_b.js' });
+    projectGraph.nodes.set('idx_c.js', { id: 'idx_c.js' });
 
-     const edge1 = { from: 'idx_a.js', to: 'idx_b.js', type: 'depends_on' };
-     const edge2 = { from: 'idx_c.js', to: 'idx_b.js', type: 'depends_on' };
+    const edge1 = { from: 'idx_a.js', to: 'idx_b.js', type: 'depends_on' };
+    const edge2 = { from: 'idx_c.js', to: 'idx_b.js', type: 'depends_on' };
 
-     projectGraph.edges.push(edge1, edge2);
-     projectGraph._rebuildIndex();
+    projectGraph.edges.push(edge1, edge2);
+    projectGraph._rebuildIndex();
 
-     // Verify index population
-     assert.ok(projectGraph.incomingEdges.has('idx_b.js'), 'Index should have idx_b.js');
-     assert.equal(projectGraph.incomingEdges.get('idx_b.js').length, 2, 'Index should have 2 edges for idx_b.js');
+    // Verify index population
+    assert.ok(projectGraph.incomingEdges.has('idx_b.js'), 'Index should have idx_b.js');
+    assert.equal(
+      projectGraph.incomingEdges.get('idx_b.js').length,
+      2,
+      'Index should have 2 edges for idx_b.js'
+    );
 
-     // Verify findReferences
-     const refs = projectGraph.findReferences('idx_b.js');
-     assert.equal(refs.length, 2);
-     assert.ok(refs.includes(edge1));
-     assert.ok(refs.includes(edge2));
+    // Verify findReferences
+    const refs = projectGraph.findReferences('idx_b.js');
+    assert.equal(refs.length, 2);
+    assert.ok(refs.includes(edge1));
+    assert.ok(refs.includes(edge2));
   });
 });

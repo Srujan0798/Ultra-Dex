@@ -3,14 +3,13 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { EventEmitter } from "events";
+import { singleton } from 'tsyringe';
+import { EventEmitter } from 'events';
 let Protocol = class extends EventEmitter {
   constructor(options = {}) {
     super();
@@ -20,9 +19,9 @@ let Protocol = class extends EventEmitter {
       retryDelay: options.retryDelay || 1e3,
       enableEncryption: options.enableEncryption || false,
       enableCompression: options.enableCompression || false,
-      ...options
+      ...options,
     };
-    this.state = "idle";
+    this.state = 'idle';
     this.handlers = /* @__PURE__ */ new Map();
     this.connections = /* @__PURE__ */ new Map();
     this.messageQueue = [];
@@ -31,15 +30,15 @@ let Protocol = class extends EventEmitter {
       messagesReceived: 0,
       errorsCount: 0,
       averageLatency: 0,
-      latencies: []
+      latencies: [],
     };
   }
   /**
    * Initialize protocol
    */
   async initialize() {
-    this.state = "ready";
-    this.emit("protocol.ready");
+    this.state = 'ready';
+    this.emit('protocol.ready');
     return this;
   }
   /**
@@ -47,7 +46,7 @@ let Protocol = class extends EventEmitter {
    */
   registerHandler(messageType, handler) {
     this.handlers.set(messageType, handler);
-    this.emit("handler.registered", { messageType });
+    this.emit('handler.registered', { messageType });
     return this;
   }
   /**
@@ -55,7 +54,7 @@ let Protocol = class extends EventEmitter {
    */
   unregisterHandler(messageType) {
     this.handlers.delete(messageType);
-    this.emit("handler.unregistered", { messageType });
+    this.emit('handler.unregistered', { messageType });
     return this;
   }
   /**
@@ -72,19 +71,19 @@ let Protocol = class extends EventEmitter {
       payload: message.payload,
       timestamp: startTime,
       ttl: options.ttl || 36e5,
-      retryCount: 0
+      retryCount: 0,
     };
-    this.emit("message.sending", { messageId, target });
+    this.emit('message.sending', { messageId, target });
     try {
       const result = await this.sendWithRetry(envelope, options);
       const latency = Date.now() - startTime;
       this.recordLatency(latency);
       this.stats.messagesSent++;
-      this.emit("message.sent", { messageId, target, latency });
+      this.emit('message.sent', { messageId, target, latency });
       return result;
     } catch (error) {
       this.stats.errorsCount++;
-      this.emit("message.send-failed", { messageId, target, error });
+      this.emit('message.send-failed', { messageId, target, error });
       throw error;
     }
   }
@@ -97,11 +96,11 @@ let Protocol = class extends EventEmitter {
     } catch (error) {
       if (attempt < this.config.retryAttempts) {
         const delay = this.config.retryDelay * Math.pow(2, attempt);
-        this.emit("message.retry", {
+        this.emit('message.retry', {
           messageId: envelope.id,
           attempt: attempt + 1,
           delay,
-          error
+          error,
         });
         await this.delay(delay);
         return this.sendWithRetry(envelope, options, attempt + 1);
@@ -113,7 +112,7 @@ let Protocol = class extends EventEmitter {
    * Perform actual send
    */
   async performSend(envelope) {
-    this.emit("message.transmitted", envelope);
+    this.emit('message.transmitted', envelope);
     return { success: true, messageId: envelope.id };
   }
   /**
@@ -122,7 +121,7 @@ let Protocol = class extends EventEmitter {
   async receive(message) {
     const startTime = Date.now();
     this.stats.messagesReceived++;
-    this.emit("message.received", { messageId: message.id, from: message.from });
+    this.emit('message.received', { messageId: message.id, from: message.from });
     try {
       const handler = this.handlers.get(message.type);
       if (!handler) {
@@ -131,11 +130,11 @@ let Protocol = class extends EventEmitter {
       const response = await handler(message);
       const latency = Date.now() - startTime;
       this.recordLatency(latency);
-      this.emit("message.handled", { messageId: message.id, latency });
+      this.emit('message.handled', { messageId: message.id, latency });
       return response;
     } catch (error) {
       this.stats.errorsCount++;
-      this.emit("message.handle-failed", { messageId: message.id, error });
+      this.emit('message.handle-failed', { messageId: message.id, error });
       throw error;
     }
   }
@@ -153,10 +152,14 @@ let Protocol = class extends EventEmitter {
         clearTimeout(timer);
         resolve(response);
       });
-      this.send(target, { ...message, requestId: messageId }, {
-        ...options,
-        expectsResponse: true
-      }).catch((error) => {
+      this.send(
+        target,
+        { ...message, requestId: messageId },
+        {
+          ...options,
+          expectsResponse: true,
+        }
+      ).catch((error) => {
         clearTimeout(timer);
         reject(error);
       });
@@ -172,8 +175,11 @@ let Protocol = class extends EventEmitter {
    * Broadcast message to multiple targets
    */
   async broadcast(targets, message, options = {}) {
-    const promises = targets.map(
-      (target) => this.send(target, message, { ...options, broadcast: true }).catch((error) => ({ error, target }))
+    const promises = targets.map((target) =>
+      this.send(target, message, { ...options, broadcast: true }).catch((error) => ({
+        error,
+        target,
+      }))
     );
     return Promise.allSettled(promises);
   }
@@ -185,7 +191,8 @@ let Protocol = class extends EventEmitter {
     if (this.stats.latencies.length > 1e3) {
       this.stats.latencies.shift();
     }
-    this.stats.averageLatency = this.stats.latencies.reduce((a, b) => a + b, 0) / this.stats.latencies.length;
+    this.stats.averageLatency =
+      this.stats.latencies.reduce((a, b) => a + b, 0) / this.stats.latencies.length;
   }
   /**
    * Get protocol statistics
@@ -195,7 +202,7 @@ let Protocol = class extends EventEmitter {
       ...this.stats,
       messageTypes: this.handlers.size,
       activeConnections: this.connections.size,
-      queuedMessages: this.messageQueue.length
+      queuedMessages: this.messageQueue.length,
     };
   }
   /**
@@ -214,16 +221,14 @@ let Protocol = class extends EventEmitter {
    * Shutdown protocol
    */
   async shutdown() {
-    this.state = "shutdown";
+    this.state = 'shutdown';
     this.handlers.clear();
     this.connections.clear();
     this.messageQueue = [];
-    this.emit("protocol.shutdown");
+    this.emit('protocol.shutdown');
   }
 };
-Protocol = __decorateClass([
-  singleton()
-], Protocol);
+Protocol = __decorateClass([singleton()], Protocol);
 let ExecutionTrace = class {
   constructor(options = {}) {
     this.id = options.id || `trace-${Date.now()}`;
@@ -237,7 +242,7 @@ let ExecutionTrace = class {
   addStep(step) {
     this.steps.push({
       timestamp: Date.now(),
-      ...step
+      ...step,
     });
   }
   complete(result) {
@@ -255,16 +260,10 @@ let ExecutionTrace = class {
       duration: this.duration,
       steps: this.steps,
       result: this.result,
-      metadata: this.metadata
+      metadata: this.metadata,
     };
   }
 };
-ExecutionTrace = __decorateClass([
-  singleton()
-], ExecutionTrace);
+ExecutionTrace = __decorateClass([singleton()], ExecutionTrace);
 var protocol_default = Protocol;
-export {
-  ExecutionTrace,
-  Protocol,
-  protocol_default as default
-};
+export { ExecutionTrace, Protocol, protocol_default as default };

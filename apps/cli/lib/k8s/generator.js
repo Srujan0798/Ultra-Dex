@@ -74,13 +74,10 @@ export function generateIngress(config) {
     tlsSecret,
   } = config;
 
-  const ingressClass = className
-    ? `  ingressClassName: ${className}\n`
-    : '';
+  const ingressClass = className ? `  ingressClassName: ${className}\n` : '';
 
-  const tlsBlock = tlsSecret && host
-    ? `  tls:\n  - hosts:\n    - ${host}\n    secretName: ${tlsSecret}\n`
-    : '';
+  const tlsBlock =
+    tlsSecret && host ? `  tls:\n  - hosts:\n    - ${host}\n    secretName: ${tlsSecret}\n` : '';
 
   return `apiVersion: networking.k8s.io/v1
 kind: Ingress

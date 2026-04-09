@@ -1,26 +1,25 @@
-import { open } from "sqlite";
-import sqlite3 from "sqlite3";
-import { join } from "path";
-import { mkdirSync, existsSync } from "fs";
-import { createHash } from "crypto";
+import { open } from 'sqlite';
+import sqlite3 from 'sqlite3';
+import { join } from 'path';
+import { mkdirSync, existsSync } from 'fs';
+import { createHash } from 'crypto';
 import { logger } from './logging.js';
 class SessionPersistence {
   constructor(projectRoot) {
     this.projectRoot = projectRoot;
-    this.dbPath = join(projectRoot, ".ultra", "memory", "sessions.db");
+    this.dbPath = join(projectRoot, '.ultra', 'memory', 'sessions.db');
     this.db = null;
     this.initialized = false;
   }
   async init() {
-    if (this.initialized)
-      return;
-    const dbDir = join(this.projectRoot, ".ultra", "memory");
+    if (this.initialized) return;
+    const dbDir = join(this.projectRoot, '.ultra', 'memory');
     if (!existsSync(dbDir)) {
       mkdirSync(dbDir, { recursive: true });
     }
     this.db = await open({
       filename: this.dbPath,
-      driver: sqlite3.Database
+      driver: sqlite3.Database,
     });
     await this.db.exec(`
       CREATE TABLE IF NOT EXISTS sessions (
@@ -57,32 +56,32 @@ class SessionPersistence {
       CREATE INDEX IF NOT EXISTS idx_memory_keyword ON memory_index(keyword);
     `);
     this.initialized = true;
-    logger.log("[SessionPersistence] Database initialized at", this.dbPath);
+    logger.log('[SessionPersistence] Database initialized at', this.dbPath);
   }
   async createSession(name, metadata = {}) {
     await this.init();
     const id = this.generateId();
-    await this.db.run("INSERT INTO sessions (id, name, metadata) VALUES (?, ?, ?)", [
+    await this.db.run('INSERT INTO sessions (id, name, metadata) VALUES (?, ?, ?)', [
       id,
       name,
-      JSON.stringify(metadata)
+      JSON.stringify(metadata),
     ]);
     return { id, name, metadata };
   }
   async saveDecision(sessionId, agent, task, decision, context = {}) {
     await this.init();
     const id = this.generateId();
-    const embedding = this.generateSimpleEmbedding(decision + " " + task);
+    const embedding = this.generateSimpleEmbedding(decision + ' ' + task);
     await this.db.run(
-      "INSERT INTO decisions (id, session_id, agent, task, decision, context, embedding) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      'INSERT INTO decisions (id, session_id, agent, task, decision, context, embedding) VALUES (?, ?, ?, ?, ?, ?, ?)',
       [id, sessionId, agent, task, decision, JSON.stringify(context), JSON.stringify(embedding)]
     );
-    const keywords = this.extractKeywords(decision + " " + task);
+    const keywords = this.extractKeywords(decision + ' ' + task);
     for (const keyword of keywords) {
-      await this.db.run("INSERT INTO memory_index (id, decision_id, keyword) VALUES (?, ?, ?)", [
+      await this.db.run('INSERT INTO memory_index (id, decision_id, keyword) VALUES (?, ?, ?)', [
         this.generateId(),
         id,
-        keyword
+        keyword,
       ]);
     }
     return id;
@@ -90,9 +89,8 @@ class SessionPersistence {
   async searchDecisions(query, limit = 10) {
     await this.init();
     const keywords = this.extractKeywords(query);
-    if (keywords.length === 0)
-      return [];
-    const placeholders = keywords.map(() => "?").join(",");
+    if (keywords.length === 0) return [];
+    const placeholders = keywords.map(() => '?').join(',');
     const decisions = await this.db.all(
       `SELECT DISTINCT d.*, s.name as session_name
        FROM decisions d
@@ -105,8 +103,8 @@ class SessionPersistence {
     );
     return decisions.map((d) => ({
       ...d,
-      context: JSON.parse(d.context || "{}"),
-      embedding: JSON.parse(d.embedding || "[]")
+      context: JSON.parse(d.context || '{}'),
+      embedding: JSON.parse(d.embedding || '[]'),
     }));
   }
   async getRecentDecisions(sessionId, limit = 20) {
@@ -122,8 +120,8 @@ class SessionPersistence {
     );
     return decisions.map((d) => ({
       ...d,
-      context: JSON.parse(d.context || "{}"),
-      embedding: JSON.parse(d.embedding || "[]")
+      context: JSON.parse(d.context || '{}'),
+      embedding: JSON.parse(d.embedding || '[]'),
     }));
   }
   async getDecisionStats(sessionId) {
@@ -148,102 +146,110 @@ class SessionPersistence {
     }
   }
   generateId() {
-    return createHash("sha256").update(Date.now() + Math.random().toString()).digest("hex").substring(0, 16);
+    return createHash('sha256')
+      .update(Date.now() + Math.random().toString())
+      .digest('hex')
+      .substring(0, 16);
   }
   extractKeywords(text) {
     const stopWords = /* @__PURE__ */ new Set([
-      "the",
-      "a",
-      "an",
-      "is",
-      "are",
-      "was",
-      "were",
-      "be",
-      "been",
-      "being",
-      "have",
-      "has",
-      "had",
-      "do",
-      "does",
-      "did",
-      "will",
-      "would",
-      "could",
-      "should",
-      "may",
-      "might",
-      "must",
-      "shall",
-      "can",
-      "need",
-      "dare",
-      "ought",
-      "used",
-      "to",
-      "of",
-      "in",
-      "for",
-      "on",
-      "with",
-      "at",
-      "by",
-      "from",
-      "as",
-      "into",
-      "through",
-      "during",
-      "before",
-      "after",
-      "above",
-      "below",
-      "between",
-      "under",
-      "again",
-      "further",
-      "then",
-      "once",
-      "here",
-      "there",
-      "when",
-      "where",
-      "why",
-      "how",
-      "all",
-      "each",
-      "few",
-      "more",
-      "most",
-      "other",
-      "some",
-      "such",
-      "no",
-      "nor",
-      "not",
-      "only",
-      "own",
-      "same",
-      "so",
-      "than",
-      "too",
-      "very",
-      "just",
-      "and",
-      "but",
-      "if",
-      "or",
-      "because",
-      "until",
-      "while"
+      'the',
+      'a',
+      'an',
+      'is',
+      'are',
+      'was',
+      'were',
+      'be',
+      'been',
+      'being',
+      'have',
+      'has',
+      'had',
+      'do',
+      'does',
+      'did',
+      'will',
+      'would',
+      'could',
+      'should',
+      'may',
+      'might',
+      'must',
+      'shall',
+      'can',
+      'need',
+      'dare',
+      'ought',
+      'used',
+      'to',
+      'of',
+      'in',
+      'for',
+      'on',
+      'with',
+      'at',
+      'by',
+      'from',
+      'as',
+      'into',
+      'through',
+      'during',
+      'before',
+      'after',
+      'above',
+      'below',
+      'between',
+      'under',
+      'again',
+      'further',
+      'then',
+      'once',
+      'here',
+      'there',
+      'when',
+      'where',
+      'why',
+      'how',
+      'all',
+      'each',
+      'few',
+      'more',
+      'most',
+      'other',
+      'some',
+      'such',
+      'no',
+      'nor',
+      'not',
+      'only',
+      'own',
+      'same',
+      'so',
+      'than',
+      'too',
+      'very',
+      'just',
+      'and',
+      'but',
+      'if',
+      'or',
+      'because',
+      'until',
+      'while',
     ]);
-    return text.toLowerCase().replace(/[^a-z0-9\s]/g, "").split(/\s+/).filter((word) => word.length > 3 && !stopWords.has(word)).slice(0, 10);
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '')
+      .split(/\s+/)
+      .filter((word) => word.length > 3 && !stopWords.has(word))
+      .slice(0, 10);
   }
   generateSimpleEmbedding(text) {
     const words = this.extractKeywords(text);
     const embedding = new Array(50).fill(0);
     words.forEach((word, _i) => {
-      const hash = word.split("").reduce((acc, char) => {
+      const hash = word.split('').reduce((acc, char) => {
         return acc + char.charCodeAt(0);
       }, 0);
       embedding[hash % 50] = 1;
@@ -255,7 +261,7 @@ function createSessionPersistence(projectRoot) {
   return new SessionPersistence(projectRoot);
 }
 var sessionPersistence_default = SessionPersistence;
-async function _safeExecute(fn, context = "sessionPersistence") {
+async function _safeExecute(fn, context = 'sessionPersistence') {
   try {
     return await fn();
   } catch (error) {
@@ -264,7 +270,4 @@ async function _safeExecute(fn, context = "sessionPersistence") {
     return null;
   }
 }
-export {
-  createSessionPersistence,
-  sessionPersistence_default as default
-};
+export { createSessionPersistence, sessionPersistence_default as default };

@@ -12,7 +12,7 @@ export class LinearClient {
 
   get headers() {
     return {
-      'Authorization': this.token,
+      Authorization: this.token,
       'Content-Type': 'application/json',
     };
   }
@@ -116,7 +116,10 @@ export async function syncFromPlan(client, planSections, teamId) {
   return issues;
 }
 
-export async function sync({ direction = 'both', state = {}, planSections = [] } = {}, config = {}) {
+export async function sync(
+  { direction = 'both', state = {}, planSections = [] } = {},
+  config = {}
+) {
   requireConfig(config, ['token', 'teamId'], 'Linear');
   const client = new LinearClient(config.token);
 

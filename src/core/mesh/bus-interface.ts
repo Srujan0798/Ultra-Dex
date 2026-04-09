@@ -4,14 +4,14 @@ class MessageBus {
    * @returns {Promise<void>}
    */
   async connect() {
-    throw new Error("connect() method not implemented");
+    throw new Error('connect() method not implemented');
   }
   /**
    * Disconnect from the message bus
    * @returns {Promise<void>}
    */
   async disconnect() {
-    throw new Error("disconnect() method not implemented");
+    throw new Error('disconnect() method not implemented');
   }
   /**
    * Publish a message to a channel
@@ -20,7 +20,7 @@ class MessageBus {
    * @returns {Promise<void>}
    */
   async publish(channel, message) {
-    throw new Error("publish() method not implemented");
+    throw new Error('publish() method not implemented');
   }
   /**
    * Subscribe to a channel
@@ -29,7 +29,7 @@ class MessageBus {
    * @returns {Promise<void>}
    */
   async subscribe(channel, handler) {
-    throw new Error("subscribe() method not implemented");
+    throw new Error('subscribe() method not implemented');
   }
   /**
    * Send a request and wait for a response
@@ -39,7 +39,7 @@ class MessageBus {
    * @returns {Promise<object>} - The response message
    */
   async request(replyChannel, message, timeout = 5e3) {
-    throw new Error("request() method not implemented");
+    throw new Error('request() method not implemented');
   }
   /**
    * Broadcast an event to all nodes
@@ -48,10 +48,8 @@ class MessageBus {
    * @returns {Promise<void>}
    */
   async broadcast(event, payload) {
-    throw new Error("broadcast() method not implemented");
+    throw new Error('broadcast() method not implemented');
   }
 }
 var bus_interface_default = MessageBus;
-export {
-  bus_interface_default as default
-};
+export { bus_interface_default as default };

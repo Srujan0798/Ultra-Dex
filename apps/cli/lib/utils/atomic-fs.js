@@ -59,27 +59,33 @@ async function handleCorruption(filepath, parser, error, formatName) {
       return recovered;
     }
   } catch (backupError) {
-    throw new CorruptionError(`Detected ${formatName} corruption in ${filepath} and backup recovery failed.`, {
-      cause: backupError,
+    throw new CorruptionError(
+      `Detected ${formatName} corruption in ${filepath} and backup recovery failed.`,
+      {
+        cause: backupError,
+        details: {
+          filepath,
+          backupPath,
+          corruptionSnapshotPath,
+          originalError: error instanceof Error ? error.message : String(error),
+        },
+        suggestions: buildRecoverySuggestions(filepath, backupPath),
+      }
+    );
+  }
+
+  throw new CorruptionError(
+    `Detected ${formatName} corruption in ${filepath}. No valid backup could be recovered.`,
+    {
+      cause: error,
       details: {
         filepath,
         backupPath,
         corruptionSnapshotPath,
-        originalError: error instanceof Error ? error.message : String(error),
       },
       suggestions: buildRecoverySuggestions(filepath, backupPath),
-    });
-  }
-
-  throw new CorruptionError(`Detected ${formatName} corruption in ${filepath}. No valid backup could be recovered.`, {
-    cause: error,
-    details: {
-      filepath,
-      backupPath,
-      corruptionSnapshotPath,
-    },
-    suggestions: buildRecoverySuggestions(filepath, backupPath),
-  });
+    }
+  );
 }
 
 /**

@@ -10,14 +10,14 @@
 
 > **Start here for system-level understanding**
 
-| Resource                                                   | Purpose                                  | Status         |
-| ---------------------------------------------------------- | ---------------------------------------- | -------------- |
-| [**VERSIONS.md**](./VERSIONS.md)                           | Complete version history & roadmap       | ✅ Current     |
-| [**IMPLEMENTATION-STATUS.md**](./IMPLEMENTATION-STATUS.md) | Status of all 240 prompts (77% complete) | ✅ Updated     |
-| [**CHANGELOG.md**](./CHANGELOG.md)                         | All changes to the prompt system         | ✅ Current     |
-| [**IMPROVEMENT-PLAN.md**](./IMPROVEMENT-PLAN.md)           | Quality improvement roadmap              | ✅ Updated     |
-| [**QUALITY-GUIDE.md**](./QUALITY-GUIDE.md)                 | Standards for prompt writing             | ✅ Available   |
-| [**CROSS-REFERENCE-MATRIX.md**](./CROSS-REFERENCE-MATRIX.md) | Prompt relationships & dependencies      | 🔄 Generated   |
+| Resource                                                     | Purpose                                  | Status       |
+| ------------------------------------------------------------ | ---------------------------------------- | ------------ |
+| [**VERSIONS.md**](./VERSIONS.md)                             | Complete version history & roadmap       | ✅ Current   |
+| [**IMPLEMENTATION-STATUS.md**](./IMPLEMENTATION-STATUS.md)   | Status of all 240 prompts (77% complete) | ✅ Updated   |
+| [**CHANGELOG.md**](./CHANGELOG.md)                           | All changes to the prompt system         | ✅ Current   |
+| [**IMPROVEMENT-PLAN.md**](./IMPROVEMENT-PLAN.md)             | Quality improvement roadmap              | ✅ Updated   |
+| [**QUALITY-GUIDE.md**](./QUALITY-GUIDE.md)                   | Standards for prompt writing             | ✅ Available |
+| [**CROSS-REFERENCE-MATRIX.md**](./CROSS-REFERENCE-MATRIX.md) | Prompt relationships & dependencies      | 🔄 Generated |
 
 ---
 

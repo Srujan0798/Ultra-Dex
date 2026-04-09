@@ -3,13 +3,12 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
+import { singleton } from 'tsyringe';
 let ContextManager = class {
   constructor(options = {}) {
     this.maxContextSize = options.maxContextSize || 32e3;
@@ -24,7 +23,7 @@ let ContextManager = class {
       metadata: initialData,
       created: /* @__PURE__ */ new Date(),
       lastAccessed: /* @__PURE__ */ new Date(),
-      tokenCount: 0
+      tokenCount: 0,
     };
     this.contexts.set(sessionId, context);
     return context;
@@ -37,10 +36,10 @@ let ContextManager = class {
     context.messages.push({
       ...message,
       timestamp: /* @__PURE__ */ new Date(),
-      id: this.generateMessageId()
+      id: this.generateMessageId(),
     });
     context.lastAccessed = /* @__PURE__ */ new Date();
-    context.tokenCount += this.estimateTokens(message.content || "");
+    context.tokenCount += this.estimateTokens(message.content || '');
     if (context.tokenCount > this.maxContextSize * this.compressionThreshold) {
       await this.compressContext(sessionId);
     }
@@ -55,20 +54,21 @@ let ContextManager = class {
   }
   async compressContext(sessionId) {
     const context = this.contexts.get(sessionId);
-    if (!context)
-      return;
+    if (!context) return;
     const recentMessages = context.messages.slice(-10);
     const olderMessages = context.messages.slice(0, -10);
     if (olderMessages.length > 0) {
       const summary = {
-        role: "system",
+        role: 'system',
         content: `[Compressed ${olderMessages.length} previous messages from this conversation]`,
         timestamp: /* @__PURE__ */ new Date(),
         id: this.generateMessageId(),
-        compressed: true
+        compressed: true,
       };
       context.messages = [summary, ...recentMessages];
-      context.tokenCount = this.estimateTokens(summary.content) + recentMessages.reduce((sum, msg) => sum + this.estimateTokens(msg.content || ""), 0);
+      context.tokenCount =
+        this.estimateTokens(summary.content) +
+        recentMessages.reduce((sum, msg) => sum + this.estimateTokens(msg.content || ''), 0);
     }
   }
   async setVariable(sessionId, key, value) {
@@ -82,8 +82,7 @@ let ContextManager = class {
   }
   async getVariable(sessionId, key) {
     const context = this.contexts.get(sessionId);
-    if (!context)
-      return void 0;
+    if (!context) return void 0;
     context.lastAccessed = /* @__PURE__ */ new Date();
     return context.variables.get(key);
   }
@@ -110,15 +109,14 @@ let ContextManager = class {
     return {
       totalContexts: this.contexts.size,
       totalTokens: Array.from(this.contexts.values()).reduce((sum, ctx) => sum + ctx.tokenCount, 0),
-      averageContextSize: this.contexts.size > 0 ? Array.from(this.contexts.values()).reduce((sum, ctx) => sum + ctx.tokenCount, 0) / this.contexts.size : 0
+      averageContextSize:
+        this.contexts.size > 0
+          ? Array.from(this.contexts.values()).reduce((sum, ctx) => sum + ctx.tokenCount, 0) /
+            this.contexts.size
+          : 0,
     };
   }
 };
-ContextManager = __decorateClass([
-  singleton()
-], ContextManager);
+ContextManager = __decorateClass([singleton()], ContextManager);
 var context_default = ContextManager;
-export {
-  ContextManager,
-  context_default as default
-};
+export { ContextManager, context_default as default };

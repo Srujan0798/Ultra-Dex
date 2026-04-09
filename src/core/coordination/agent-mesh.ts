@@ -3,19 +3,18 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { EventEmitter } from "events";
+import { singleton } from 'tsyringe';
+import { EventEmitter } from 'events';
 let RoleRegistry = class {
   constructor() {
     this.roles = /* @__PURE__ */ new Map();
   }
-  register(agentId, { role, capabilities = [], constraints = [], description = "" }) {
+  register(agentId, { role, capabilities = [], constraints = [], description = '' }) {
     this.roles.set(agentId, {
       agentId,
       role,
@@ -23,7 +22,7 @@ let RoleRegistry = class {
       constraints,
       description,
       active: true,
-      registeredAt: Date.now()
+      registeredAt: Date.now(),
     });
   }
   getRole(agentId) {
@@ -34,12 +33,10 @@ let RoleRegistry = class {
    */
   verify(agentId, action) {
     const entry = this.roles.get(agentId);
-    if (!entry)
-      return { valid: false, reason: `Agent "${agentId}" not registered` };
-    if (!entry.active)
-      return { valid: false, reason: `Agent "${agentId}" is deactivated` };
+    if (!entry) return { valid: false, reason: `Agent "${agentId}" not registered` };
+    if (!entry.active) return { valid: false, reason: `Agent "${agentId}" is deactivated` };
     for (const constraint of entry.constraints) {
-      if (typeof constraint === "string" && action.includes(constraint)) {
+      if (typeof constraint === 'string' && action.includes(constraint)) {
         return { valid: false, reason: `Action "${action}" violates constraint: ${constraint}` };
       }
     }
@@ -53,23 +50,27 @@ let RoleRegistry = class {
   }
   deactivate(agentId) {
     const entry = this.roles.get(agentId);
-    if (entry)
-      entry.active = false;
+    if (entry) entry.active = false;
   }
   list() {
     return [...this.roles.values()];
   }
 };
-RoleRegistry = __decorateClass([
-  singleton()
-], RoleRegistry);
+RoleRegistry = __decorateClass([singleton()], RoleRegistry);
 let TaskQueue = class {
   constructor() {
     this.tasks = [];
     this.completed = [];
     this.assignments = /* @__PURE__ */ new Map();
   }
-  add({ id, description, priority = 5, dependencies = [], data = null, requiredCapability = null }) {
+  add({
+    id,
+    description,
+    priority = 5,
+    dependencies = [],
+    data = null,
+    requiredCapability = null,
+  }) {
     this.tasks.push({
       id,
       description,
@@ -77,10 +78,10 @@ let TaskQueue = class {
       dependencies,
       data,
       requiredCapability,
-      status: "pending",
+      status: 'pending',
       assignedTo: null,
       createdAt: Date.now(),
-      completedAt: null
+      completedAt: null,
     });
     this.tasks.sort((a, b) => b.priority - a.priority);
   }
@@ -90,14 +91,11 @@ let TaskQueue = class {
   next(agentId, capabilities = []) {
     const completedIds = new Set(this.completed.map((t) => t.id));
     for (const task of this.tasks) {
-      if (task.status !== "pending")
-        continue;
+      if (task.status !== 'pending') continue;
       const depsReady = task.dependencies.every((dep) => completedIds.has(dep));
-      if (!depsReady)
-        continue;
-      if (task.requiredCapability && !capabilities.includes(task.requiredCapability))
-        continue;
-      task.status = "assigned";
+      if (!depsReady) continue;
+      if (task.requiredCapability && !capabilities.includes(task.requiredCapability)) continue;
+      task.status = 'assigned';
       task.assignedTo = agentId;
       this.assignments.set(task.id, agentId);
       return task;
@@ -106,10 +104,9 @@ let TaskQueue = class {
   }
   complete(taskId, result = null) {
     const idx = this.tasks.findIndex((t) => t.id === taskId);
-    if (idx === -1)
-      return false;
+    if (idx === -1) return false;
     const task = this.tasks.splice(idx, 1)[0];
-    task.status = "completed";
+    task.status = 'completed';
     task.completedAt = Date.now();
     task.result = result;
     this.completed.push(task);
@@ -118,23 +115,21 @@ let TaskQueue = class {
   fail(taskId, error) {
     const task = this.tasks.find((t) => t.id === taskId);
     if (task) {
-      task.status = "pending";
+      task.status = 'pending';
       task.assignedTo = null;
       task.lastError = error;
     }
   }
   getStats() {
     return {
-      pending: this.tasks.filter((t) => t.status === "pending").length,
-      assigned: this.tasks.filter((t) => t.status === "assigned").length,
+      pending: this.tasks.filter((t) => t.status === 'pending').length,
+      assigned: this.tasks.filter((t) => t.status === 'assigned').length,
       completed: this.completed.length,
-      total: this.tasks.length + this.completed.length
+      total: this.tasks.length + this.completed.length,
     };
   }
 };
-TaskQueue = __decorateClass([
-  singleton()
-], TaskQueue);
+TaskQueue = __decorateClass([singleton()], TaskQueue);
 let MessageBus = class {
   constructor() {
     this.subscribers = /* @__PURE__ */ new Map();
@@ -142,8 +137,7 @@ let MessageBus = class {
     this.deliveryLog = [];
   }
   subscribe(agentId, topic, handler) {
-    if (!this.subscribers.has(topic))
-      this.subscribers.set(topic, []);
+    if (!this.subscribers.has(topic)) this.subscribers.set(topic, []);
     this.subscribers.get(topic).push({ agentId, handler });
   }
   /**
@@ -157,25 +151,23 @@ let MessageBus = class {
       topic,
       payload,
       timestamp: Date.now(),
-      deliveredTo: []
+      deliveredTo: [],
     };
     this.messages.push(message);
-    if (this.messages.length > 5e3)
-      this.messages.shift();
+    if (this.messages.length > 5e3) this.messages.shift();
     const subs = this.subscribers.get(topic) || [];
     for (const sub of subs) {
       try {
         await sub.handler(payload, { from: fromAgentId, topic, messageId: message.id });
         message.deliveredTo.push(sub.agentId);
-      } catch {
-      }
+      } catch {}
     }
     this.deliveryLog.push({
       messageId: message.id,
       topic,
       from: fromAgentId,
       delivered: message.deliveredTo.length,
-      total: subs.length
+      total: subs.length,
     });
     return { messageId: message.id, delivered: message.deliveredTo.length, total: subs.length };
   }
@@ -197,9 +189,7 @@ let MessageBus = class {
     return msgs.slice(-limit);
   }
 };
-MessageBus = __decorateClass([
-  singleton()
-], MessageBus);
+MessageBus = __decorateClass([singleton()], MessageBus);
 let ConsensusProtocol = class {
   constructor({ requiredAgreement = 0.66 } = {}) {
     this.requiredAgreement = requiredAgreement;
@@ -221,7 +211,13 @@ let ConsensusProtocol = class {
     }
     const successResponses = responses.filter((r) => !r.error);
     if (successResponses.length === 0) {
-      return { consensus: false, result: null, agreement: 0, responses, reason: "All agents failed" };
+      return {
+        consensus: false,
+        result: null,
+        agreement: 0,
+        responses,
+        reason: 'All agents failed',
+      };
     }
     const groups = this._groupByContent(successResponses.map((r) => r.result));
     const largest = groups[0];
@@ -232,13 +228,16 @@ let ConsensusProtocol = class {
       result: consensus ? largest.representative : null,
       agreement: Math.round(agreement * 100) / 100,
       groupCount: groups.length,
-      responses
+      responses,
     };
   }
   _groupByContent(results) {
     const groups = [];
     for (const result of results) {
-      const key = typeof result === "string" ? result.trim().toLowerCase().slice(0, 200) : JSON.stringify(result);
+      const key =
+        typeof result === 'string'
+          ? result.trim().toLowerCase().slice(0, 200)
+          : JSON.stringify(result);
       const existing = groups.find((g) => g.key === key);
       if (existing) {
         existing.count++;
@@ -249,9 +248,7 @@ let ConsensusProtocol = class {
     return groups.sort((a, b) => b.count - a.count);
   }
 };
-ConsensusProtocol = __decorateClass([
-  singleton()
-], ConsensusProtocol);
+ConsensusProtocol = __decorateClass([singleton()], ConsensusProtocol);
 let AgentMesh = class extends EventEmitter {
   constructor(config = {}) {
     super();
@@ -259,7 +256,7 @@ let AgentMesh = class extends EventEmitter {
     this.taskQueue = new TaskQueue();
     this.messageBus = new MessageBus();
     this.consensus = new ConsensusProtocol({
-      requiredAgreement: config.requiredAgreement || 0.66
+      requiredAgreement: config.requiredAgreement || 0.66,
     });
   }
   /**
@@ -267,20 +264,20 @@ let AgentMesh = class extends EventEmitter {
    */
   registerAgent(agentId, roleConfig) {
     this.roles.register(agentId, roleConfig);
-    this.messageBus.subscribe(agentId, "coordination", async (payload, meta) => {
-      this.emit("coordination:message", { agentId, payload, meta });
+    this.messageBus.subscribe(agentId, 'coordination', async (payload, meta) => {
+      this.emit('coordination:message', { agentId, payload, meta });
     });
-    this.emit("agent:registered", { agentId, role: roleConfig.role });
+    this.emit('agent:registered', { agentId, role: roleConfig.role });
   }
   /**
    * Submit a task to the mesh for distribution
    */
   submitTask(task) {
     this.taskQueue.add(task);
-    this.emit("task:submitted", task);
+    this.emit('task:submitted', task);
     const capable = this.roles.findByCapability(task.requiredCapability);
     if (capable.length > 0) {
-      this.emit("task:assignable", { taskId: task.id, candidates: capable.map((c) => c.agentId) });
+      this.emit('task:assignable', { taskId: task.id, candidates: capable.map((c) => c.agentId) });
     }
   }
   /**
@@ -288,8 +285,7 @@ let AgentMesh = class extends EventEmitter {
    */
   claimTask(agentId) {
     const role = this.roles.getRole(agentId);
-    if (!role)
-      return null;
+    if (!role) return null;
     return this.taskQueue.next(agentId, role.capabilities);
   }
   /**
@@ -297,14 +293,14 @@ let AgentMesh = class extends EventEmitter {
    */
   completeTask(taskId, result) {
     this.taskQueue.complete(taskId, result);
-    this.emit("task:completed", { taskId, result });
+    this.emit('task:completed', { taskId, result });
   }
   /**
    * Run a consensus check across agents
    */
   async runConsensus(agentFns) {
     const result = await this.consensus.check(agentFns);
-    this.emit("consensus:result", result);
+    this.emit('consensus:result', result);
     return result;
   }
   /**
@@ -322,14 +318,12 @@ let AgentMesh = class extends EventEmitter {
       tasks: this.taskQueue.getStats(),
       messages: {
         total: this.messageBus.messages.length,
-        recent: this.messageBus.getHistory(null, 10)
-      }
+        recent: this.messageBus.getHistory(null, 10),
+      },
     };
   }
 };
-AgentMesh = __decorateClass([
-  singleton()
-], AgentMesh);
+AgentMesh = __decorateClass([singleton()], AgentMesh);
 var agent_mesh_default = AgentMesh;
 export {
   AgentMesh,
@@ -337,5 +331,5 @@ export {
   MessageBus,
   RoleRegistry,
   TaskQueue,
-  agent_mesh_default as default
+  agent_mesh_default as default,
 };

@@ -46,7 +46,7 @@ const DEFAULT_CONFIG = {
   contextPruning: {
     maxContextTokens: 8192,
     autoPrune: true,
-    pruneThreshold: 0.8 // Prune when 80% full
+    pruneThreshold: 0.8, // Prune when 80% full
   },
 
   // MCP settings
@@ -254,7 +254,6 @@ class ConfigManager {
     ) {
       errors.push('mcp.port must be a number between 1 and 65535');
     }
-
 
     // Validate performance settings
     if (

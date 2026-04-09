@@ -1,10 +1,7 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
 import { AGENT_PROFILES } from '../../src/core/routing/agent-profiles.js';
-import {
-  HybridRouter,
-  SemanticRouter,
-} from '../../src/core/routing/semantic-router.js';
+import { HybridRouter, SemanticRouter } from '../../src/core/routing/semantic-router.js';
 
 describe('SemanticRouter', () => {
   it('routes "make the button bounce" to frontend without UI keywords', () => {

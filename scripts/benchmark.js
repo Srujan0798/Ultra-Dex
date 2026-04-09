@@ -44,14 +44,12 @@ async function main() {
     // Run each scenario a few times to smooth out noise
     const runs = [];
     for (let i = 0; i < 3; i++) {
-       
       runs.push(await runScenario(scenario));
     }
 
     const successfulRuns = runs.filter((r) => r.code === 0);
     const avg =
-      successfulRuns.reduce((sum, r) => sum + r.durationMs, 0) /
-      (successfulRuns.length || 1);
+      successfulRuns.reduce((sum, r) => sum + r.durationMs, 0) / (successfulRuns.length || 1);
 
     results.push({
       name: scenario.name,
@@ -70,9 +68,7 @@ async function main() {
     console.error('\n❌ Some benchmark runs failed:');
     for (const f of failures) {
       console.error(
-        `  - ${f.name} ${f.args.join(' ')} (exit ${f.code}, ${Math.round(
-          f.durationMs,
-        )} ms)`,
+        `  - ${f.name} ${f.args.join(' ')} (exit ${f.code}, ${Math.round(f.durationMs)} ms)`
       );
       if (f.error) {
         console.error(`    Error: ${f.error.message}`);
@@ -88,4 +84,3 @@ main().catch((error) => {
   console.error('❌ Benchmark script failed:', error);
   process.exitCode = 1;
 });
-

@@ -3,29 +3,28 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { EventEmitter } from "events";
-import * as fs from "fs";
-import * as path from "path";
+import { singleton } from 'tsyringe';
+import { EventEmitter } from 'events';
+import * as fs from 'fs';
+import * as path from 'path';
 let Checkpoint = class extends EventEmitter {
   constructor(options = {}) {
     super();
     this.checkpoints = /* @__PURE__ */ new Map();
     this.config = {
-      storagePath: options.storagePath || "./.checkpoints",
+      storagePath: options.storagePath || './.checkpoints',
       autoSave: options.autoSave !== false,
       saveInterval: options.saveInterval || 5e3,
       compressionEnabled: options.compressionEnabled || false,
       maxCheckpointsPerAgent: options.maxCheckpointsPerAgent || 10,
-      ...options
+      ...options,
     };
-    this.state = "idle";
+    this.state = 'idle';
     this.saveTimer = null;
     this.ensureStorageDir();
   }
@@ -33,11 +32,11 @@ let Checkpoint = class extends EventEmitter {
    * Initialize checkpoint system
    */
   async initialize() {
-    this.state = "ready";
+    this.state = 'ready';
     if (this.config.autoSave) {
       this.startAutoSave();
     }
-    this.emit("checkpoint.ready");
+    this.emit('checkpoint.ready');
     return this;
   }
   /**
@@ -62,7 +61,7 @@ let Checkpoint = class extends EventEmitter {
       metadata,
       timestamp,
       version: 1,
-      compressed: false
+      compressed: false,
     };
     if (!this.checkpoints.has(agentId)) {
       this.checkpoints.set(agentId, []);
@@ -72,7 +71,7 @@ let Checkpoint = class extends EventEmitter {
     if (agentCheckpoints.length > this.config.maxCheckpointsPerAgent) {
       agentCheckpoints.shift();
     }
-    this.emit("checkpoint.created", { checkpointId, agentId, timestamp });
+    this.emit('checkpoint.created', { checkpointId, agentId, timestamp });
     if (this.config.autoSave) {
       await this.saveCheckpointToDisk(checkpoint);
     }
@@ -85,10 +84,10 @@ let Checkpoint = class extends EventEmitter {
     try {
       const filename = this.getCheckpointFilename(checkpoint.agentId, checkpoint.id);
       const data = JSON.stringify(checkpoint, null, 2);
-      fs.writeFileSync(filename, data, "utf8");
-      this.emit("checkpoint.saved", { checkpointId: checkpoint.id, agentId: checkpoint.agentId });
+      fs.writeFileSync(filename, data, 'utf8');
+      this.emit('checkpoint.saved', { checkpointId: checkpoint.id, agentId: checkpoint.agentId });
     } catch (error) {
-      this.emit("checkpoint.save-failed", { checkpointId: checkpoint.id, error });
+      this.emit('checkpoint.save-failed', { checkpointId: checkpoint.id, error });
       throw error;
     }
   }
@@ -101,12 +100,12 @@ let Checkpoint = class extends EventEmitter {
       if (!fs.existsSync(filename)) {
         throw new Error(`Checkpoint file not found: ${filename}`);
       }
-      const data = fs.readFileSync(filename, "utf8");
+      const data = fs.readFileSync(filename, 'utf8');
       const checkpoint = JSON.parse(data);
-      this.emit("checkpoint.loaded", { checkpointId, agentId });
+      this.emit('checkpoint.loaded', { checkpointId, agentId });
       return checkpoint;
     } catch (error) {
-      this.emit("checkpoint.load-failed", { checkpointId, agentId, error });
+      this.emit('checkpoint.load-failed', { checkpointId, agentId, error });
       throw error;
     }
   }
@@ -118,21 +117,23 @@ let Checkpoint = class extends EventEmitter {
     if (!agentCheckpoints || agentCheckpoints.length === 0) {
       throw new Error(`No checkpoints found for agent ${agentId}`);
     }
-    const checkpoint = checkpointId ? agentCheckpoints.find((c) => c.id === checkpointId) : agentCheckpoints[agentCheckpoints.length - 1];
+    const checkpoint = checkpointId
+      ? agentCheckpoints.find((c) => c.id === checkpointId)
+      : agentCheckpoints[agentCheckpoints.length - 1];
     if (!checkpoint) {
       throw new Error(`Checkpoint ${checkpointId} not found for agent ${agentId}`);
     }
-    this.emit("checkpoint.restore.started", { checkpointId: checkpoint.id, agentId });
+    this.emit('checkpoint.restore.started', { checkpointId: checkpoint.id, agentId });
     try {
       const restoredState = JSON.parse(JSON.stringify(checkpoint.state));
-      this.emit("checkpoint.restore.succeeded", {
+      this.emit('checkpoint.restore.succeeded', {
         checkpointId: checkpoint.id,
         agentId,
-        timestamp: checkpoint.timestamp
+        timestamp: checkpoint.timestamp,
       });
       return restoredState;
     } catch (error) {
-      this.emit("checkpoint.restore.failed", { agentId, checkpointId, error });
+      this.emit('checkpoint.restore.failed', { agentId, checkpointId, error });
       throw error;
     }
   }
@@ -146,7 +147,7 @@ let Checkpoint = class extends EventEmitter {
       agentId: c.agentId,
       timestamp: c.timestamp,
       metadata: c.metadata,
-      version: c.version
+      version: c.version,
     }));
   }
   /**
@@ -154,11 +155,9 @@ let Checkpoint = class extends EventEmitter {
    */
   deleteCheckpoint(agentId, checkpointId) {
     const checkpoints = this.checkpoints.get(agentId);
-    if (!checkpoints)
-      return false;
+    if (!checkpoints) return false;
     const index = checkpoints.findIndex((c) => c.id === checkpointId);
-    if (index === -1)
-      return false;
+    if (index === -1) return false;
     checkpoints.splice(index, 1);
     try {
       const filename = this.getCheckpointFilename(agentId, checkpointId);
@@ -166,9 +165,9 @@ let Checkpoint = class extends EventEmitter {
         fs.unlinkSync(filename);
       }
     } catch (error) {
-      this.emit("checkpoint.delete-failed", { checkpointId, agentId, error });
+      this.emit('checkpoint.delete-failed', { checkpointId, agentId, error });
     }
-    this.emit("checkpoint.deleted", { checkpointId, agentId });
+    this.emit('checkpoint.deleted', { checkpointId, agentId });
     return true;
   }
   /**
@@ -176,16 +175,15 @@ let Checkpoint = class extends EventEmitter {
    */
   cleanOldCheckpoints(agentId, retentionDays = 30) {
     const checkpoints = this.checkpoints.get(agentId);
-    if (!checkpoints)
-      return;
+    if (!checkpoints) return;
     const cutoffTime = Date.now() - retentionDays * 24 * 60 * 60 * 1e3;
     const toDelete = checkpoints.filter((c) => c.timestamp < cutoffTime);
     for (const checkpoint of toDelete) {
       this.deleteCheckpoint(agentId, checkpoint.id);
     }
-    this.emit("checkpoints.cleaned", {
+    this.emit('checkpoints.cleaned', {
       agentId,
-      deletedCount: toDelete.length
+      deletedCount: toDelete.length,
     });
   }
   /**
@@ -222,23 +220,22 @@ let Checkpoint = class extends EventEmitter {
       }
       const files = fs.readdirSync(dir);
       for (const file of files) {
-        if (!file.endsWith(".json"))
-          continue;
+        if (!file.endsWith('.json')) continue;
         try {
           const fullPath = path.join(dir, file);
-          const data = fs.readFileSync(fullPath, "utf8");
+          const data = fs.readFileSync(fullPath, 'utf8');
           const checkpoint = JSON.parse(data);
           if (!this.checkpoints.has(checkpoint.agentId)) {
             this.checkpoints.set(checkpoint.agentId, []);
           }
           this.checkpoints.get(checkpoint.agentId).push(checkpoint);
         } catch (error) {
-          this.emit("checkpoint.load-error", { file, error });
+          this.emit('checkpoint.load-error', { file, error });
         }
       }
-      this.emit("checkpoints.loaded", { count: this.checkpoints.size });
+      this.emit('checkpoints.loaded', { count: this.checkpoints.size });
     } catch (error) {
-      this.emit("checkpoints.load-failed", { error });
+      this.emit('checkpoints.load-failed', { error });
       throw error;
     }
   }
@@ -252,11 +249,11 @@ let Checkpoint = class extends EventEmitter {
         throw new Error(`Checkpoint not found: ${checkpointId}`);
       }
       const data = JSON.stringify(checkpoint, null, 2);
-      fs.writeFileSync(exportPath, data, "utf8");
-      this.emit("checkpoint.exported", { checkpointId, exportPath });
+      fs.writeFileSync(exportPath, data, 'utf8');
+      this.emit('checkpoint.exported', { checkpointId, exportPath });
       return exportPath;
     } catch (error) {
-      this.emit("checkpoint.export-failed", { checkpointId, error });
+      this.emit('checkpoint.export-failed', { checkpointId, error });
       throw error;
     }
   }
@@ -265,19 +262,19 @@ let Checkpoint = class extends EventEmitter {
    */
   async importCheckpoint(importPath) {
     try {
-      const data = fs.readFileSync(importPath, "utf8");
+      const data = fs.readFileSync(importPath, 'utf8');
       const checkpoint = JSON.parse(data);
       if (!this.checkpoints.has(checkpoint.agentId)) {
         this.checkpoints.set(checkpoint.agentId, []);
       }
       this.checkpoints.get(checkpoint.agentId).push(checkpoint);
-      this.emit("checkpoint.imported", {
+      this.emit('checkpoint.imported', {
         checkpointId: checkpoint.id,
-        agentId: checkpoint.agentId
+        agentId: checkpoint.agentId,
       });
       return checkpoint;
     } catch (error) {
-      this.emit("checkpoint.import-failed", { importPath, error });
+      this.emit('checkpoint.import-failed', { importPath, error });
       throw error;
     }
   }
@@ -285,10 +282,7 @@ let Checkpoint = class extends EventEmitter {
    * Get checkpoint file path
    */
   getCheckpointFilename(agentId, checkpointId) {
-    return path.join(
-      this.config.storagePath,
-      `${agentId}-${checkpointId}.json`
-    );
+    return path.join(this.config.storagePath, `${agentId}-${checkpointId}.json`);
   }
   /**
    * Get checkpoint statistics
@@ -300,7 +294,7 @@ let Checkpoint = class extends EventEmitter {
       agentStats[agentId] = {
         count: checkpoints.length,
         oldest: checkpoints[0]?.timestamp,
-        newest: checkpoints[checkpoints.length - 1]?.timestamp
+        newest: checkpoints[checkpoints.length - 1]?.timestamp,
       };
       totalCheckpoints += checkpoints.length;
     }
@@ -308,7 +302,7 @@ let Checkpoint = class extends EventEmitter {
       totalCheckpoints,
       agentCount: this.checkpoints.size,
       agentStats,
-      storageSize: this.getStorageSize()
+      storageSize: this.getStorageSize(),
     };
   }
   /**
@@ -344,15 +338,10 @@ let Checkpoint = class extends EventEmitter {
       clearInterval(this.saveTimer);
     }
     await this.saveAllCheckpoints();
-    this.state = "shutdown";
-    this.emit("checkpoint.shutdown");
+    this.state = 'shutdown';
+    this.emit('checkpoint.shutdown');
   }
 };
-Checkpoint = __decorateClass([
-  singleton()
-], Checkpoint);
+Checkpoint = __decorateClass([singleton()], Checkpoint);
 var checkpoint_default = Checkpoint;
-export {
-  Checkpoint,
-  checkpoint_default as default
-};
+export { Checkpoint, checkpoint_default as default };

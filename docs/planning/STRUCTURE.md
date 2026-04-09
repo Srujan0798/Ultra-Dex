@@ -1,6 +1,6 @@
 # Ultra-Dex - AI Orchestration Meta-Layer
 
-> The next-generation AI orchestration platform for building intelligent applications. 
+> The next-generation AI orchestration platform for building intelligent applications.
 > Optimized for GenAI 2.0 and beyond.
 
 ## 🏗️ Monorepo Structure

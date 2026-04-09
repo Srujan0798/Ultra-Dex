@@ -47,9 +47,7 @@ export async function updateContent(
       status: data.status ?? content.status,
       categoryId: data.categoryId ?? content.categoryId,
       publishedAt:
-        data.status === 'published' && !content.publishedAt
-          ? new Date()
-          : content.publishedAt,
+        data.status === 'published' && !content.publishedAt ? new Date() : content.publishedAt,
     },
   });
 }

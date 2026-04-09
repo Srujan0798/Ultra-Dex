@@ -25,21 +25,21 @@ import { AUTONOMOUS_GATES, requireGateApproval } from './gates.js';
  * Strictness levels
  */
 const STRICTNESS = {
-  PERMISSIVE: 'permissive',  // Warnings only, always passes
-  NORMAL: 'normal',          // Errors fail, warnings pass
-  STRICT: 'strict'           // Any issue fails
+  PERMISSIVE: 'permissive', // Warnings only, always passes
+  NORMAL: 'normal', // Errors fail, warnings pass
+  STRICT: 'strict', // Any issue fails
 };
 
 /**
  * ValidationLayer - Validates task outputs with configurable criteria
- * 
+ *
  * Supports multiple validation types:
  * - Schema validation (JSON structure)
  * - Regex validation (pattern matching)
  * - Function validation (custom logic)
  * - AI-judge validation (LLM-based evaluation)
  * - Gate validation (approval checkpoints)
- * 
+ *
  * @example
  * const validator = new ValidationLayer({ strictness: 'normal' });
  * const result = validator.validate(output, [
@@ -59,9 +59,9 @@ export class ValidationLayer {
       strictness: options.strictness || STRICTNESS.NORMAL,
       aiJudge: options.aiJudge || null,
       approvedGates: options.approvedGates || [],
-      ...options
+      ...options,
     };
-    
+
     this._gates = AUTONOMOUS_GATES;
     this._approvedGates = new Set(this.options.approvedGates);
   }
@@ -109,7 +109,7 @@ export class ValidationLayer {
       if (schema.additionalProperties === false) {
         const allowedKeys = new Set([
           ...(schema.required || []),
-          ...Object.keys(schema.properties || {})
+          ...Object.keys(schema.properties || {}),
         ]);
         for (const key of Object.keys(output)) {
           if (!allowedKeys.has(key)) {
@@ -165,7 +165,7 @@ export class ValidationLayer {
   _validateRegex(output, pattern) {
     const str = typeof output === 'string' ? output : JSON.stringify(output);
     const regex = pattern instanceof RegExp ? pattern : new RegExp(pattern);
-    
+
     if (!regex.test(str)) {
       return { valid: false, errors: [`Output does not match pattern: ${pattern}`] };
     }
@@ -182,15 +182,15 @@ export class ValidationLayer {
   async _validateFunction(output, fn) {
     try {
       const result = await fn(output);
-      
+
       if (typeof result === 'boolean') {
         return { valid: result, errors: result ? [] : ['Custom validation failed'] };
       }
-      
+
       if (typeof result === 'object') {
         return {
           valid: result.valid !== false,
-          errors: result.errors || (result.valid === false ? ['Custom validation failed'] : [])
+          errors: result.errors || (result.valid === false ? ['Custom validation failed'] : []),
         };
       }
 
@@ -202,12 +202,12 @@ export class ValidationLayer {
 
   /**
    * Validate output using AI judge
-   * 
-   * WARNING: AI judge validation is subject to prompt injection if the output 
-   * contains instructions that the AI model might follow. The output is 
-   * sanitized and wrapped in boundary markers, but should not be the 
+   *
+   * WARNING: AI judge validation is subject to prompt injection if the output
+   * contains instructions that the AI model might follow. The output is
+   * sanitized and wrapped in boundary markers, but should not be the
    * sole validation gate for security-critical tasks.
-   * 
+   *
    * @private
    * @param {*} output - Output to validate
    * @param {string} prompt - Evaluation prompt
@@ -221,22 +221,23 @@ export class ValidationLayer {
     try {
       const sanitized = this._sanitizeForAiJudge(output);
       const judgment = await this.options.aiJudge(sanitized, prompt);
-      
+
       // Parse judgment (expecting structured response)
-      const isValid = judgment.toLowerCase().includes('pass') || 
-                      judgment.toLowerCase().includes('valid') ||
-                      judgment.toLowerCase().includes('approved');
-      
+      const isValid =
+        judgment.toLowerCase().includes('pass') ||
+        judgment.toLowerCase().includes('valid') ||
+        judgment.toLowerCase().includes('approved');
+
       return {
         valid: isValid,
         errors: isValid ? [] : ['AI judge rejected output'],
-        judgment
+        judgment,
       };
     } catch (error) {
-      return { 
-        valid: false, 
+      return {
+        valid: false,
         errors: [`AI judge error: ${error.message}`],
-        judgment: error.message 
+        judgment: error.message,
       };
     }
   }
@@ -249,7 +250,7 @@ export class ValidationLayer {
    */
   _sanitizeForAiJudge(content) {
     let str = typeof content === 'string' ? content : JSON.stringify(content);
-    
+
     // 1. Truncate to 10KB
     const MAX_LENGTH = 10 * 1024;
     if (str.length > MAX_LENGTH) {
@@ -257,24 +258,22 @@ export class ValidationLayer {
     }
 
     // 2. Escape special prompt markers
-    str = str.replace(/```/g, '` ` `')
-             .replace(/<\|/g, '< |')
-             .replace(/\|>/g, '| >');
+    str = str.replace(/```/g, '` ` `').replace(/<\|/g, '< |').replace(/\|>/g, '| >');
 
     // 3. Strip "ignore previous" patterns
     const ignorePatterns = [
       /ignore\s+(all\s+)?previous\s+instructions/gi,
       /ignore\s+above/gi,
       /disregard\s+all\s+instructions/gi,
-      /system\s+override/gi
+      /system\s+override/gi,
     ];
-    
+
     for (const pattern of ignorePatterns) {
       str = str.replace(pattern, '[REDACTED INSTRUCTION]');
     }
 
     // 4. Wrap in clear content boundaries
-    return "=== USER CONTENT START ===\n" + str + "\n=== USER CONTENT END ===";
+    return '=== USER CONTENT START ===\n' + str + '\n=== USER CONTENT END ===';
   }
 
   /**
@@ -284,29 +283,29 @@ export class ValidationLayer {
    * @returns {{passed: boolean, pending: boolean, gateInfo: Object}}
    */
   _checkGate(gateId) {
-    const gate = this._gates.find(g => g.id === gateId);
-    
+    const gate = this._gates.find((g) => g.id === gateId);
+
     if (!gate) {
       return { passed: true, pending: false, gateInfo: null };
     }
 
     const passed = requireGateApproval(gateId, [...this._approvedGates]);
-    
+
     return {
       passed,
       pending: !passed,
-      gateInfo: gate
+      gateInfo: gate,
     };
   }
 
   /**
    * Validate output against criteria
-   * 
+   *
    * @param {*} output - Output to validate
    * @param {ValidationCriteria[]} [criteria=[]] - Validation criteria
    * @param {Object} [context={}] - Validation context
    * @returns {Promise<ValidationResult>} Validation result
-   * 
+   *
    * @example
    * const result = await validator.validate(output, [
    *   { type: 'schema', spec: { type: 'object', required: ['id'] } },
@@ -329,19 +328,19 @@ export class ValidationLayer {
         case 'schema':
           result = this._validateSchema(output, spec);
           break;
-        
+
         case 'regex':
           result = this._validateRegex(output, spec);
           break;
-        
+
         case 'function':
           result = await this._validateFunction(output, spec);
           break;
-        
+
         case 'ai-judge':
           result = await this._validateAiJudge(output, spec);
           break;
-        
+
         case 'gate': {
           const gateResult = this._checkGate(spec);
           if (gateResult.passed) {
@@ -349,10 +348,13 @@ export class ValidationLayer {
           } else {
             gatesPending.push(spec);
           }
-          result = { valid: gateResult.passed, errors: gateResult.pending ? [`Gate "${spec}" requires approval`] : [] };
+          result = {
+            valid: gateResult.passed,
+            errors: gateResult.pending ? [`Gate "${spec}" requires approval`] : [],
+          };
           break;
         }
-        
+
         default:
           warnings.push({ rule: type, message: `Unknown validation type: ${type}` });
           continue;
@@ -361,9 +363,9 @@ export class ValidationLayer {
       validationDetails.push({ type, valid: result.valid, errors: result.errors });
 
       if (!result.valid) {
-        const formattedErrors = result.errors.map(e => ({
+        const formattedErrors = result.errors.map((e) => ({
           rule: type,
-          message: message || e
+          message: message || e,
         }));
 
         if (required) {
@@ -411,14 +413,14 @@ export class ValidationLayer {
         strictness: this.options.strictness,
         criteriaCount: criteria.length,
         validationDetails,
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     };
   }
 
   /**
    * Quick schema validation
-   * 
+   *
    * @param {*} output - Output to validate
    * @param {Object} schema - Schema to validate against
    * @returns {ValidationResult} Validation result
@@ -427,22 +429,22 @@ export class ValidationLayer {
     const result = this._validateSchema(output, schema);
     return {
       valid: result.valid,
-      errors: result.errors.map(e => ({ rule: 'schema', message: e })),
+      errors: result.errors.map((e) => ({ rule: 'schema', message: e })),
       warnings: [],
       gatesPassed: [],
       gatesPending: [],
-      metadata: { type: 'schema' }
+      metadata: { type: 'schema' },
     };
   }
 
   /**
    * Approve a gate for this session
-   * 
+   *
    * @param {string} gateId - Gate to approve
    * @returns {boolean} True if gate was approved
    */
   approveGate(gateId) {
-    const gate = this._gates.find(g => g.id === gateId);
+    const gate = this._gates.find((g) => g.id === gateId);
     if (gate) {
       this._approvedGates.add(gateId);
       return true;
@@ -452,7 +454,7 @@ export class ValidationLayer {
 
   /**
    * Revoke gate approval
-   * 
+   *
    * @param {string} gateId - Gate to revoke
    */
   revokeGate(gateId) {
@@ -461,19 +463,19 @@ export class ValidationLayer {
 
   /**
    * Get all available gates
-   * 
+   *
    * @returns {Array} Gate definitions
    */
   getGates() {
-    return this._gates.map(g => ({
+    return this._gates.map((g) => ({
       ...g,
-      approved: this._approvedGates.has(g.id)
+      approved: this._approvedGates.has(g.id),
     }));
   }
 
   /**
    * Get approved gates
-   * 
+   *
    * @returns {string[]} Approved gate IDs
    */
   getApprovedGates() {
@@ -482,7 +484,7 @@ export class ValidationLayer {
 
   /**
    * Set strictness level
-   * 
+   *
    * @param {string} level - Strictness level
    */
   setStrictness(level) {
@@ -493,10 +495,10 @@ export class ValidationLayer {
 
   /**
    * Create validation criteria from simple rules
-   * 
+   *
    * @param {Object} rules - Simple rule definitions
    * @returns {ValidationCriteria[]} Validation criteria
-   * 
+   *
    * @example
    * const criteria = ValidationLayer.createCriteria({
    *   hasId: { type: 'schema', required: ['id'] },
@@ -508,11 +510,10 @@ export class ValidationLayer {
       type: rule.type || 'function',
       spec: rule.spec || rule.pattern || rule.schema || rule.fn,
       message: rule.message || `Validation "${name}" failed`,
-      required: rule.required !== false
+      required: rule.required !== false,
     }));
   }
 }
 
 export { STRICTNESS };
 export default ValidationLayer;
-

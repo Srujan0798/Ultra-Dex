@@ -3,27 +3,28 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
+import { singleton } from 'tsyringe';
 import { Planner } from './planner.js';
 import { Scheduler } from './scheduler.js';
 import { ExecutionTask } from './execution-engine.js';
 import TraceCollector from '../observability/trace-collector.js';
 import { AgentRegistry } from './registry.js';
-import { createLogger } from '../../utils/logging.js';
+import { createLogger } from '../../../utils/logging.js';
 let Orchestrator = class {
   constructor(options = {}) {
     this.planner = options.planner || new Planner(options.plannerOptions);
     this.agentRegistry = options.agentRegistry || new AgentRegistry();
     this.traceCollector = options.traceCollector || new TraceCollector();
-    this.scheduler = options.scheduler || new Scheduler(this.agentRegistry, this.traceCollector, options.schedulerOptions);
+    this.scheduler =
+      options.scheduler ||
+      new Scheduler(this.agentRegistry, this.traceCollector, options.schedulerOptions);
     this.logger = createLogger();
-    this.supportedModes = ["simple", "detailed", "iterative"];
+    this.supportedModes = ['simple', 'detailed', 'iterative'];
   }
   /**
    * Orchestrate a task: plan, assign, and prepare for execution
@@ -32,33 +33,35 @@ let Orchestrator = class {
    * @param {Object} context - Additional context for orchestration
    * @returns {ExecutionTask} - Task ready for ExecutionEngine
    */
-  async orchestrate(input, mode = "simple", context = {}) {
+  async orchestrate(input, mode = 'simple', context = {}) {
     if (!this.supportedModes.includes(mode)) {
-      throw new Error(`Unsupported orchestration mode: ${mode}. Supported: ${this.supportedModes.join(", ")}`);
+      throw new Error(
+        `Unsupported orchestration mode: ${mode}. Supported: ${this.supportedModes.join(', ')}`
+      );
     }
     const traceId = this.traceCollector?.startTrace({
-      agentId: "orchestrator",
+      agentId: 'orchestrator',
       task: `Orchestrate task: ${input}`,
-      metadata: { input, mode, context }
+      metadata: { input, mode, context },
     });
     const spanId = this.traceCollector?.startSpan({
       traceId,
-      operation: "orchestration",
-      agentId: "orchestrator",
-      metadata: { mode }
+      operation: 'orchestration',
+      agentId: 'orchestrator',
+      metadata: { mode },
     });
     try {
-      this.logger.info("Starting orchestration", { input, mode });
+      this.logger.info('Starting orchestration', { input, mode });
       let steps;
       try {
         steps = await this.planner.plan(input, mode);
-        this.traceCollector?.addEvent(traceId, spanId, "planning_completed", {
+        this.traceCollector?.addEvent(traceId, spanId, 'planning_completed', {
           stepsCount: steps.length,
-          mode
+          mode,
         });
-        this.logger.info("Planning phase completed", { stepsCount: steps.length });
+        this.logger.info('Planning phase completed', { stepsCount: steps.length });
       } catch (error) {
-        this.logger.error("Planning phase failed", { error: error.message });
+        this.logger.error('Planning phase failed', { error: error.message });
         this.traceCollector?.failSpan(traceId, spanId, error);
         throw new Error(`Planning phase failed: ${error.message}`);
       }
@@ -69,25 +72,27 @@ let Orchestrator = class {
           const assignment = await this.scheduler.assignStep(step.required, {
             traceId,
             stepCount: i,
-            totalSteps: steps.length
+            totalSteps: steps.length,
           });
           assignedSteps.push({
             id: `step_${i}`,
-            type: "delegate",
+            type: 'delegate',
             // Assume delegation to assigned agent
             action: step.action,
             agent: step.agent,
             required: step.required,
             assignedAgentId: assignment.agentId,
-            assignment
+            assignment,
           });
         }
-        this.traceCollector?.addEvent(traceId, spanId, "scheduling_completed", {
-          assignedStepsCount: assignedSteps.length
+        this.traceCollector?.addEvent(traceId, spanId, 'scheduling_completed', {
+          assignedStepsCount: assignedSteps.length,
         });
-        this.logger.info("Scheduling phase completed", { assignedStepsCount: assignedSteps.length });
+        this.logger.info('Scheduling phase completed', {
+          assignedStepsCount: assignedSteps.length,
+        });
       } catch (error) {
-        this.logger.error("Scheduling phase failed", { error: error.message });
+        this.logger.error('Scheduling phase failed', { error: error.message });
         for (const assigned of assignedSteps) {
           this.scheduler.releaseAgentLoad(assigned.assignment.agentId);
         }
@@ -98,21 +103,23 @@ let Orchestrator = class {
       const executionTask = new ExecutionTask(
         taskId,
         input,
-        "orchestrator",
+        'orchestrator',
         // Coordinating agent
         assignedSteps,
-        "planned"
+        'planned'
       );
-      this.traceCollector?.addEvent(traceId, spanId, "orchestration_completed", {
+      this.traceCollector?.addEvent(traceId, spanId, 'orchestration_completed', {
         taskId,
-        totalSteps: assignedSteps.length
+        totalSteps: assignedSteps.length,
       });
       this.traceCollector?.endSpan(traceId, spanId);
-      this.logger.info("Orchestration completed successfully", { taskId, stepsCount: assignedSteps.length });
+      this.logger.info('Orchestration completed successfully', {
+        taskId,
+        stepsCount: assignedSteps.length,
+      });
       return executionTask;
     } catch (error) {
-      if (spanId)
-        this.traceCollector?.failSpan(traceId, spanId, error);
+      if (spanId) this.traceCollector?.failSpan(traceId, spanId, error);
       throw error;
     }
   }
@@ -122,17 +129,12 @@ let Orchestrator = class {
    */
   getMetrics() {
     return {
-      planner: this.planner ? "configured" : "not configured",
+      planner: this.planner ? 'configured' : 'not configured',
       scheduler: this.scheduler.getMetrics(),
-      supportedModes: this.supportedModes
+      supportedModes: this.supportedModes,
     };
   }
 };
-Orchestrator = __decorateClass([
-  singleton()
-], Orchestrator);
+Orchestrator = __decorateClass([singleton()], Orchestrator);
 var orchestrator_default = Orchestrator;
-export {
-  Orchestrator,
-  orchestrator_default as default
-};
+export { Orchestrator, orchestrator_default as default };

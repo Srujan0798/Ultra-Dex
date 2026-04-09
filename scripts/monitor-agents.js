@@ -34,12 +34,14 @@ function countFiles(dir, ext) {
 
 function getAgentStatus() {
   // Check for agent progress markers
-  const geminiFiles = countFiles(join(rootDir, 'src/core/memory'), '.ts') + 
-                      countFiles(join(rootDir, 'src/core/orchestration'), '.ts');
+  const geminiFiles =
+    countFiles(join(rootDir, 'src/core/memory'), '.ts') +
+    countFiles(join(rootDir, 'src/core/orchestration'), '.ts');
   const qwenFiles = countFiles(join(rootDir, 'src/core/ai'), '.ts');
-  const cliFiles = countFiles(join(rootDir, 'src/core/agents'), '.ts') +
-                   countFiles(join(rootDir, 'src/core/infrastructure'), '.ts');
-  
+  const cliFiles =
+    countFiles(join(rootDir, 'src/core/agents'), '.ts') +
+    countFiles(join(rootDir, 'src/core/infrastructure'), '.ts');
+
   return {
     gemini: { done: geminiFiles, total: 15, status: geminiFiles >= 15 ? '✅ DONE' : '⏳ WORKING' },
     qwen: { done: qwenFiles, total: 20, status: qwenFiles >= 20 ? '✅ DONE' : '⏳ WORKING' },
@@ -55,19 +57,19 @@ function drawProgressBar(percent, width = 30) {
 
 function showDashboard() {
   clearScreen();
-  
+
   const tsFiles = countFiles(join(rootDir, 'src/core'), '.ts');
   const jsFiles = countFiles(join(rootDir, 'src/core'), '.js');
   const total = tsFiles + jsFiles;
   const percent = Math.round((tsFiles / total) * 100);
-  
+
   const agents = getAgentStatus();
-  
+
   console.log('╔══════════════════════════════════════════════════════════════╗');
   console.log('║           🤖 AGENT MONITORING DASHBOARD                      ║');
   console.log('╚══════════════════════════════════════════════════════════════╝');
   console.log();
-  
+
   // Overall progress
   console.log('📊 OVERALL PROGRESS');
   console.log('─────────────────────────────────────────────────────────────');
@@ -77,29 +79,31 @@ function showDashboard() {
   console.log();
   console.log(`[${drawProgressBar(percent)}] ${percent}%`);
   console.log();
-  
+
   // Agent status
   console.log('🤖 AGENT STATUS');
   console.log('─────────────────────────────────────────────────────────────');
-  
+
   for (const [name, data] of Object.entries(agents)) {
     const pct = Math.round((data.done / data.total) * 100);
-    console.log(`${data.status} ${name.toUpperCase().padEnd(10)} ${data.done}/${data.total} (${pct}%)`);
+    console.log(
+      `${data.status} ${name.toUpperCase().padEnd(10)} ${data.done}/${data.total} (${pct}%)`
+    );
     console.log(`         [${drawProgressBar(pct, 20)}]`);
     console.log();
   }
-  
+
   // Recent activity
   console.log('📋 RECENT ACTIVITY (Last 24h)');
   console.log('─────────────────────────────────────────────────────────────');
-  
+
   try {
     const statusFile = join(rootDir, '.migration-status.json');
     if (existsSync(statusFile)) {
       const status = JSON.parse(readFileSync(statusFile, 'utf-8'));
       const completed = status.completed?.slice(-5) || [];
       if (completed.length > 0) {
-        completed.forEach(file => console.log(`  ✅ ${file}`));
+        completed.forEach((file) => console.log(`  ✅ ${file}`));
       } else {
         console.log('  (No recent activity)');
       }
@@ -109,7 +113,7 @@ function showDashboard() {
   } catch {
     console.log('  (Unable to read status)');
   }
-  
+
   console.log();
   console.log('╔══════════════════════════════════════════════════════════════╗');
   console.log('║  Commands:                                                   ║');
@@ -126,7 +130,7 @@ showDashboard();
 if (process.argv.includes('--watch')) {
   console.log('\n👀 Watching for changes (refresh every 30s)...');
   console.log('Press Ctrl+C to exit\n');
-  
+
   setInterval(() => {
     showDashboard();
   }, 30000);

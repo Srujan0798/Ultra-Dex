@@ -42,7 +42,10 @@ describe('Redactor Utility', () => {
     const error = new Error('Failed with key sk-proj-1234567890abcdef1234567890');
     const redacted = redact(error);
 
-    assert.ok(!redacted.message.includes('sk-proj-1234567890abcdef1234567890'), 'Key in error message should be redacted');
+    assert.ok(
+      !redacted.message.includes('sk-proj-1234567890abcdef1234567890'),
+      'Key in error message should be redacted'
+    );
     assert.ok(redacted.message.includes('[REDACTED]'));
   });
 
@@ -75,15 +78,15 @@ describe('Redactor Utility', () => {
   });
 
   it('should handle circular references in errors', () => {
-      const error = new Error('circular error');
-      error.cause = error;
-      const redacted = redact(error);
-      assert.strictEqual(redacted.message, 'circular error');
-      // Error properties are copied, so cause should be [Circular Error] or similar?
-      // Our implementation copies keys.
-      // If error.cause is the error itself, redact(error.cause) will be called.
-      // It should return [Circular Error] or [Circular] depending on implementation.
-      // Our implementation: if (input instanceof Error) ... if visited.has(input) return '[Circular Error]';
-      assert.strictEqual(redacted.cause, '[Circular Error]');
+    const error = new Error('circular error');
+    error.cause = error;
+    const redacted = redact(error);
+    assert.strictEqual(redacted.message, 'circular error');
+    // Error properties are copied, so cause should be [Circular Error] or similar?
+    // Our implementation copies keys.
+    // If error.cause is the error itself, redact(error.cause) will be called.
+    // It should return [Circular Error] or [Circular] depending on implementation.
+    // Our implementation: if (input instanceof Error) ... if visited.has(input) return '[Circular Error]';
+    assert.strictEqual(redacted.cause, '[Circular Error]');
   });
 });

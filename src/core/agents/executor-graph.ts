@@ -3,13 +3,12 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
+import { singleton } from 'tsyringe';
 import { GraphUtils } from './graph-utils.js';
 let ExecutorGraph = class {
   constructor() {
@@ -22,11 +21,11 @@ let ExecutorGraph = class {
    */
   addStep(stepId, stepData) {
     GraphUtils.addNode(this.graph, stepId, {
-      type: "execution-step",
-      status: "pending",
-      ...stepData
+      type: 'execution-step',
+      status: 'pending',
+      ...stepData,
     });
-    this.executionState.set(stepId, { status: "pending", startTime: null, endTime: null });
+    this.executionState.set(stepId, { status: 'pending', startTime: null, endTime: null });
     return this;
   }
   /**
@@ -34,8 +33,8 @@ let ExecutorGraph = class {
    */
   addFlow(fromStepId, toStepId, options = {}) {
     GraphUtils.addEdge(this.graph, fromStepId, toStepId, {
-      type: "execution-flow",
-      ...options
+      type: 'execution-flow',
+      ...options,
     });
     return this;
   }
@@ -45,7 +44,7 @@ let ExecutorGraph = class {
   markExecuting(stepId) {
     const state = this.executionState.get(stepId);
     if (state) {
-      state.status = "executing";
+      state.status = 'executing';
       state.startTime = Date.now();
     }
   }
@@ -55,7 +54,7 @@ let ExecutorGraph = class {
   markCompleted(stepId, result) {
     const state = this.executionState.get(stepId);
     if (state) {
-      state.status = "completed";
+      state.status = 'completed';
       state.endTime = Date.now();
     }
     this.results.set(stepId, result);
@@ -66,7 +65,7 @@ let ExecutorGraph = class {
   markFailed(stepId, error) {
     const state = this.executionState.get(stepId);
     if (state) {
-      state.status = "failed";
+      state.status = 'failed';
       state.endTime = Date.now();
       state.error = error;
     }
@@ -98,14 +97,10 @@ let ExecutorGraph = class {
     let pending = 0;
     let executing = 0;
     for (const state of this.executionState.values()) {
-      if (state.status === "completed")
-        completed++;
-      else if (state.status === "failed")
-        failed++;
-      else if (state.status === "executing")
-        executing++;
-      else
-        pending++;
+      if (state.status === 'completed') completed++;
+      else if (state.status === 'failed') failed++;
+      else if (state.status === 'executing') executing++;
+      else pending++;
     }
     const total = this.executionState.size;
     return {
@@ -114,7 +109,7 @@ let ExecutorGraph = class {
       failed,
       pending,
       executing,
-      percentComplete: total > 0 ? completed / total * 100 : 0
+      percentComplete: total > 0 ? (completed / total) * 100 : 0,
     };
   }
   /**
@@ -124,7 +119,7 @@ let ExecutorGraph = class {
     const incoming = GraphUtils.getIncoming(this.graph, stepId);
     for (const dep of incoming) {
       const depState = this.executionState.get(dep.id);
-      if (!depState || depState.status !== "completed") {
+      if (!depState || depState.status !== 'completed') {
         return false;
       }
     }
@@ -136,7 +131,7 @@ let ExecutorGraph = class {
   getNextExecutable() {
     const executable = [];
     for (const [stepId, state] of this.executionState) {
-      if (state.status === "pending" && this.canExecute(stepId)) {
+      if (state.status === 'pending' && this.canExecute(stepId)) {
         executable.push(stepId);
       }
     }
@@ -155,11 +150,6 @@ let ExecutorGraph = class {
     return totalTime;
   }
 };
-ExecutorGraph = __decorateClass([
-  singleton()
-], ExecutorGraph);
+ExecutorGraph = __decorateClass([singleton()], ExecutorGraph);
 var executor_graph_default = ExecutorGraph;
-export {
-  ExecutorGraph,
-  executor_graph_default as default
-};
+export { ExecutorGraph, executor_graph_default as default };

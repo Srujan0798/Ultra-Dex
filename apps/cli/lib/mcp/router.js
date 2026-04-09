@@ -150,9 +150,7 @@ class CapabilitiesRouter {
       } catch (error) {
         printError(`Capability enforcement blocked ${toolName}: ${error.message}`);
         return {
-          content: [
-            { type: 'text', text: `❌ ${toolName} blocked: ${error.message}` },
-          ],
+          content: [{ type: 'text', text: `❌ ${toolName} blocked: ${error.message}` }],
         };
       }
 

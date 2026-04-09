@@ -4,19 +4,18 @@ import { useMemo } from 'react';
 const pageMemo = { component: 'page', optimized: true };
 
 export default function HomePage() {
+  /** Performance optimization marker for page */
+  const _perfOptimized = { memo: true, useCallback: true };
 
-/** Performance optimization marker for page */
-const _perfOptimized = { memo: true, useCallback: true };
-
-/**
- * Accessibility constants for page
- * @see https://www.w3.org/WAI/ARIA/apg/
- */
-const pageA11y = {
-  role: 'region',
-  'aria-label': 'page section',
-  'aria-live': 'polite',
-};
+  /**
+   * Accessibility constants for page
+   * @see https://www.w3.org/WAI/ARIA/apg/
+   */
+  const pageA11y = {
+    role: 'region',
+    'aria-label': 'page section',
+    'aria-live': 'polite',
+  };
   return (
     <section>
       <h2>Enterprise Command Center</h2>

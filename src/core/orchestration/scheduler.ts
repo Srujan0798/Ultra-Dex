@@ -3,13 +3,12 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
+import { singleton } from 'tsyringe';
 let Scheduler = class {
   constructor(agentRegistry, traceCollector, options = {}) {
     this.registry = agentRegistry;
@@ -17,7 +16,7 @@ let Scheduler = class {
     this.options = {
       enableLoadBalancing: options.enableLoadBalancing !== false,
       maxConcurrentTasksPerAgent: options.maxConcurrentTasksPerAgent || 5,
-      ...options
+      ...options,
     };
     this.agentLoad = /* @__PURE__ */ new Map();
     this.assignmentHistory = [];
@@ -30,30 +29,32 @@ let Scheduler = class {
    * @throws {Error} - If no agent matches the requirements
    */
   async assignStep(requirements, context = {}) {
-    const traceId = context.traceId || this.traceCollector?.startTrace({
-      agentId: "scheduler",
-      task: `Assign step with requirements: ${requirements.join(", ")}`,
-      metadata: { requirements, context }
-    });
+    const traceId =
+      context.traceId ||
+      this.traceCollector?.startTrace({
+        agentId: 'scheduler',
+        task: `Assign step with requirements: ${requirements.join(', ')}`,
+        metadata: { requirements, context },
+      });
     const spanId = this.traceCollector?.startSpan({
       traceId,
-      operation: "agent_assignment",
-      agentId: "scheduler",
-      metadata: { requirements, stepCount: context.stepCount }
+      operation: 'agent_assignment',
+      agentId: 'scheduler',
+      metadata: { requirements, stepCount: context.stepCount },
     });
     try {
       const matchingAgents = this.registry.findAgentsByCapabilities(requirements);
       if (matchingAgents.length === 0) {
         const error = new Error(
-          `No agent found with required capabilities: ${requirements.join(", ")}`
+          `No agent found with required capabilities: ${requirements.join(', ')}`
         );
         this.traceCollector?.failSpan(traceId, spanId, error);
         throw error;
       }
-      const activeAgents = matchingAgents.filter((agent) => agent.status === "active");
+      const activeAgents = matchingAgents.filter((agent) => agent.status === 'active');
       if (activeAgents.length === 0) {
         const error = new Error(
-          `No active agents found with required capabilities: ${requirements.join(", ")}`
+          `No active agents found with required capabilities: ${requirements.join(', ')}`
         );
         this.traceCollector?.failSpan(traceId, spanId, error);
         throw error;
@@ -76,10 +77,10 @@ let Scheduler = class {
         throw error;
       }
       this.incrementAgentLoad(selectedAgent.id);
-      this.traceCollector?.addEvent(traceId, spanId, "agent_assigned", {
+      this.traceCollector?.addEvent(traceId, spanId, 'agent_assigned', {
         agentId: selectedAgent.id,
         requirements,
-        loadAfter: this.getAgentLoad(selectedAgent.id)
+        loadAfter: this.getAgentLoad(selectedAgent.id),
       });
       this.traceCollector?.endSpan(traceId, spanId);
       return {
@@ -87,11 +88,10 @@ let Scheduler = class {
         agent: selectedAgent,
         requirements,
         assignedAt: Date.now(),
-        traceId
+        traceId,
       };
     } catch (error) {
-      if (spanId)
-        this.traceCollector?.failSpan(traceId, spanId, error);
+      if (spanId) this.traceCollector?.failSpan(traceId, spanId, error);
       throw error;
     }
   }
@@ -153,7 +153,7 @@ let Scheduler = class {
    * @returns {number} - Hash value
    */
   hashRequirements(requirements) {
-    const str = requirements.sort().join(",");
+    const str = requirements.sort().join(',');
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
@@ -173,7 +173,7 @@ let Scheduler = class {
       totalAgentLoad: totalLoad,
       averageLoadPerAgent: agentCount > 0 ? totalLoad / agentCount : 0,
       agentLoads: Object.fromEntries(this.agentLoad.entries()),
-      maxConcurrentTasksPerAgent: this.options.maxConcurrentTasksPerAgent
+      maxConcurrentTasksPerAgent: this.options.maxConcurrentTasksPerAgent,
     };
   }
   /**
@@ -183,9 +183,5 @@ let Scheduler = class {
     this.agentLoad.clear();
   }
 };
-Scheduler = __decorateClass([
-  singleton()
-], Scheduler);
-export {
-  Scheduler
-};
+Scheduler = __decorateClass([singleton()], Scheduler);
+export { Scheduler };

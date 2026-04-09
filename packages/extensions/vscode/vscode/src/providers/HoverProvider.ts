@@ -20,12 +20,11 @@ function extractSection(content: string, sectionRef: string) {
   return rest.slice(0, end).trim();
 }
 
-function findTokenAtPosition(
-  lineText: string,
-  character: number,
-  pattern: RegExp
-): string | null {
-  const matcher = new RegExp(pattern.source, pattern.flags.includes('g') ? pattern.flags : `${pattern.flags}g`);
+function findTokenAtPosition(lineText: string, character: number, pattern: RegExp): string | null {
+  const matcher = new RegExp(
+    pattern.source,
+    pattern.flags.includes('g') ? pattern.flags : `${pattern.flags}g`
+  );
   let match: RegExpExecArray | null = matcher.exec(lineText);
   while (match) {
     const start = match.index;
@@ -45,11 +44,7 @@ export class ContextHoverProvider implements vscode.HoverProvider {
   ): Promise<vscode.Hover | undefined> {
     const line = document.lineAt(position.line).text;
     const agentToken = findTokenAtPosition(line, position.character, /@[A-Za-z0-9_-]+/);
-    const sectionToken = findTokenAtPosition(
-      line,
-      position.character,
-      /Section\s+\d+(\.\d+)?/i
-    );
+    const sectionToken = findTokenAtPosition(line, position.character, /Section\s+\d+(\.\d+)?/i);
 
     if (!agentToken && !sectionToken) return;
 

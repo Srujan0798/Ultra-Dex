@@ -6,9 +6,9 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld('ultraDex', {
-    runCommand: (command) => ipcRenderer.invoke('run-command', command),
-    onStatusUpdate: (callback) => ipcRenderer.on('status-update', (event, data) => callback(data)),
-    removeStatusUpdateListener: () => ipcRenderer.removeAllListeners('status-update'),
+  runCommand: (command) => ipcRenderer.invoke('run-command', command),
+  onStatusUpdate: (callback) => ipcRenderer.on('status-update', (event, data) => callback(data)),
+  removeStatusUpdateListener: () => ipcRenderer.removeAllListeners('status-update'),
 });
 
 /**

@@ -3,14 +3,13 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { EventEmitter } from "events";
+import { singleton } from 'tsyringe';
+import { EventEmitter } from 'events';
 let ConfigService = class extends EventEmitter {
   config = /* @__PURE__ */ new Map();
   watchers = /* @__PURE__ */ new Map();
@@ -20,23 +19,18 @@ let ConfigService = class extends EventEmitter {
   }
   loadFromEnvironment() {
     for (const [key, value] of Object.entries(process.env)) {
-      if (key.startsWith("ULTRA_DEX_")) {
-        const configKey = key.replace("ULTRA_DEX_", "").toLowerCase().replace(/_/g, ".");
+      if (key.startsWith('ULTRA_DEX_')) {
+        const configKey = key.replace('ULTRA_DEX_', '').toLowerCase().replace(/_/g, '.');
         this.set(configKey, this.parseValue(value));
       }
     }
   }
   parseValue(value) {
-    if (value === void 0)
-      return null;
-    if (value === "true")
-      return true;
-    if (value === "false")
-      return false;
-    if (/^\d+$/.test(value))
-      return parseInt(value, 10);
-    if (/^\d+\.\d+$/.test(value))
-      return parseFloat(value);
+    if (value === void 0) return null;
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+    if (/^\d+$/.test(value)) return parseInt(value, 10);
+    if (/^\d+\.\d+$/.test(value)) return parseFloat(value);
     try {
       return JSON.parse(value);
     } catch {
@@ -60,34 +54,34 @@ let ConfigService = class extends EventEmitter {
     if (watchers) {
       watchers.forEach((callback) => callback(value));
     }
-    this.emit("change", { key, value, oldValue });
+    this.emit('change', { key, value, oldValue });
   }
   has(key) {
     return this.config.has(key);
   }
   async load(source) {
     switch (source.type) {
-      case "file":
+      case 'file':
         await this.loadFromFile(source.path);
         break;
-      case "env":
+      case 'env':
         this.loadFromEnvironment();
         break;
-      case "remote":
+      case 'remote':
         await this.loadFromRemote(source.url, source.refreshInterval);
         break;
     }
   }
   async loadFromFile(filePath) {
-    const fs = await import("fs/promises");
-    const content = await fs.readFile(filePath, "utf-8");
+    const fs = await import('fs/promises');
+    const content = await fs.readFile(filePath, 'utf-8');
     const data = JSON.parse(content);
-    this.mergeConfig("", data);
+    this.mergeConfig('', data);
   }
   mergeConfig(prefix, data) {
     for (const [key, value] of Object.entries(data)) {
       const fullKey = prefix ? `${prefix}.${key}` : key;
-      if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
         this.mergeConfig(fullKey, value);
       } else {
         this.set(fullKey, value);
@@ -97,7 +91,7 @@ let ConfigService = class extends EventEmitter {
   async loadFromRemote(url, refreshInterval) {
     const response = await fetch(url);
     const data = await response.json();
-    this.mergeConfig("", data);
+    this.mergeConfig('', data);
     if (refreshInterval) {
       setInterval(() => this.loadFromRemote(url), refreshInterval);
     }
@@ -118,9 +112,5 @@ let ConfigService = class extends EventEmitter {
     return Object.fromEntries(this.config);
   }
 };
-ConfigService = __decorateClass([
-  singleton()
-], ConfigService);
-export {
-  ConfigService
-};
+ConfigService = __decorateClass([singleton()], ConfigService);
+export { ConfigService };

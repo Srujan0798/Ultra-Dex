@@ -7,14 +7,16 @@
 ## ⚠️ CRITICAL MANDATE (Read First)
 
 ### Core DNA (SACRED — Never Deviate)
-| Principle | Why It's Sacred |
-| :--- | :--- |
+
+| Principle            | Why It's Sacred                                      |
+| :------------------- | :--------------------------------------------------- |
 | **Token Efficiency** | Bloated code costs money and focus. **COMPRESS IT.** |
-| **Self-Healing** | Code must anticipate failure and fix itself. |
-| **Zero Config** | If the user has to edit `.env` manually, you failed. |
-| **Type Safety** | TypeScript Strict Mode is **Start Mode**. |
+| **Self-Healing**     | Code must anticipate failure and fix itself.         |
+| **Zero Config**      | If the user has to edit `.env` manually, you failed. |
+| **Type Safety**      | TypeScript Strict Mode is **Start Mode**.            |
 
 ### Current Context (v6.0.0 — February 10, 2026)
+
 - **Stack:** Node.js, React, TypeScript, Vite
 - **Style:** Functional, Composition over Inheritance
 - **Testing:** Vitest (Unit), Playwright (E2E)
@@ -25,16 +27,19 @@
 ## 🔥 THE BRUTAL BENCHMARKS (2026 Standards)
 
 ### 1. The "Death by 2027" Test
+
 - **The Problem:** AI writes boilerplate better than you.
 - **Your Job:** Write the **Business Logic**, not the boilerplate. Use the CLI generators.
 - **Audit:** Did you manually write a CRUD resolver that `ultra-dex generate` could have built? **DELETE IT.**
 
 ### 2. The Token Budget Audit
+
 - **The Problem:** Long files confuse models.
 - **Your Job:** Keep files under **200 lines**.
 - **Audit:** If a file > 200 lines, **break it up.**
 
 ### 3. The "Self-Healing" Logic
+
 - **The Problem:** APIs fail. Networks flap.
 - **Your Job:** Implement retries, fallbacks, and circuit breakers.
 - **Audit:** Does `fetch()` have a `try/catch`? Does it retry 3 times? If not, **FIX IT.**
@@ -51,12 +56,15 @@
 ---
 
 ## 🔮 FUTURE-PROOFING (The Racing Edge)
+
 **To The Coder:**
 You are coding for an agent-driven world.
+
 - **Readable by Machines:** Code structure must be obvious to an LLM parser.
 - **Testable by Machines:** Tests must provide clear, actionable error messages.
 
 **Commandments:**
+
 1.  **Atomic Commits:** One feature, one commit.
 2.  **Semantic Versioning:** Respect the contract.
 3.  **No Magic Numbers:** Define constants.
@@ -64,11 +72,12 @@ You are coding for an agent-driven world.
 ---
 
 ## 📊 REVIEW DIMENSIONS (Score 1-10)
-| Dimension | Weight | What to Check |
-| :--- | :--- | :--- |
-| **Efficiency** | 30% | Lines of code vs. Value delivered |
-| **Robustness** | 30% | Error handling & Self-healing |
-| **Readability** | 20% | Can an intern understand this? |
-| **Test Coverage** | 20% | Is it > 80% coverage? |
+
+| Dimension         | Weight | What to Check                     |
+| :---------------- | :----- | :-------------------------------- |
+| **Efficiency**    | 30%    | Lines of code vs. Value delivered |
+| **Robustness**    | 30%    | Error handling & Self-healing     |
+| **Readability**   | 20%    | Can an intern understand this?    |
+| **Test Coverage** | 20%    | Is it > 80% coverage?             |
 
 **"WRITE CODE THAT YOUR SUCCESSOR WON'T HATE."** 🚀

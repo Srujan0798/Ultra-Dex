@@ -3,7 +3,7 @@
 /**
  * Ultra-Dex Nemotron CLI Example
  * Use NVIDIA Nemotron-3-Super for free via their API
- * 
+ *
  * Usage:
  *   node examples/nemotron-cli.js "Your prompt here"
  *   node examples/nemotron-cli.js --stream "Your prompt here"
@@ -43,7 +43,7 @@ async function chatWithNemotron(prompt) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${API_KEY}`,
+      Authorization: `Bearer ${API_KEY}`,
     },
     body: JSON.stringify({
       model: MODEL,
@@ -63,7 +63,7 @@ async function chatWithNemotron(prompt) {
 
 async function main() {
   const args = process.argv.slice(2);
-  
+
   if (args.length === 0 || args.includes('--help')) {
     printBanner();
     printUsage();
@@ -77,8 +77,8 @@ async function main() {
   }
 
   printBanner();
-  
-  const prompt = args.filter(a => !a.startsWith('--')).join(' ');
+
+  const prompt = args.filter((a) => !a.startsWith('--')).join(' ');
   if (!prompt) {
     console.error(chalk.red('❌ No prompt provided'));
     printUsage();
@@ -86,7 +86,7 @@ async function main() {
   }
 
   console.log(chalk.cyan('Prompt:'), prompt, '\n');
-  
+
   try {
     const response = await chatWithNemotron(prompt);
     console.log(chalk.green('Response:'));

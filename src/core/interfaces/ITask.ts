@@ -1,4 +1,4 @@
-export type TaskType = 
+export type TaskType =
   | 'code-generation'
   | 'code-review'
   | 'refactoring'
@@ -22,7 +22,7 @@ export interface ITask {
   metadata?: TaskMetadata;
 }
 
-export type TaskPayload = 
+export type TaskPayload =
   | CodeGenerationPayload
   | CodeReviewPayload
   | RefactoringPayload

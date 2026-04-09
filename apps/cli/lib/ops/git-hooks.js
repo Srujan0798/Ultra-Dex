@@ -13,7 +13,6 @@ import { promisify } from 'util';
 import inquirer from 'inquirer';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 
-
 const execAsync = promisify(exec);
 
 // Git hooks that we'll implement

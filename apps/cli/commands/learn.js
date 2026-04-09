@@ -9,7 +9,7 @@ async function main() {
   } catch (error) {
     logger.error(`Error running tutorial: ${error.message}`, {
       error: error.message,
-      stack: process.env.DEBUG === 'true' ? error.stack : undefined
+      stack: process.env.DEBUG === 'true' ? error.stack : undefined,
     });
     process.exit(1);
   }

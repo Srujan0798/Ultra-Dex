@@ -29,7 +29,9 @@ function convertSeriesToWindows(series: CostPoint[]) {
 }
 
 function downloadCsv(filename: string, rows: string[][]) {
-  const csvContent = rows.map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(',')).join('\n');
+  const csvContent = rows
+    .map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(','))
+    .join('\n');
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
@@ -118,7 +120,9 @@ export const CostDashboard = memo(function CostDashboard({
       <div className="mt-5 rounded-xl border border-slate-800 bg-slate-950/60 p-4">
         <div className="flex items-center justify-between text-sm">
           <span className="text-slate-400">{windowKey} spend</span>
-          <span className={`font-semibold ${hasBudgetRisk ? 'text-amber-300' : 'text-emerald-300'}`}>
+          <span
+            className={`font-semibold ${hasBudgetRisk ? 'text-amber-300' : 'text-emerald-300'}`}
+          >
             ${total.toFixed(2)} / ${budget.toFixed(2)}
           </span>
         </div>
@@ -148,7 +152,9 @@ export const CostDashboard = memo(function CostDashboard({
             {perAgent.map((agent) => (
               <tr key={agent.id} className="border-t border-slate-800">
                 <td className="px-4 py-3 text-slate-200">{agent.name}</td>
-                <td className="px-4 py-3 text-right tabular-nums text-slate-300">${agent.cost.toFixed(2)}</td>
+                <td className="px-4 py-3 text-right tabular-nums text-slate-300">
+                  ${agent.cost.toFixed(2)}
+                </td>
               </tr>
             ))}
           </tbody>

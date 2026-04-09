@@ -60,7 +60,9 @@ export function detectLedgerVersion(entries) {
     return CURRENT_SCHEMA_VERSION;
   }
 
-  return entries.every((entry) => entry && typeof entry._v === 'number') ? CURRENT_SCHEMA_VERSION : 0;
+  return entries.every((entry) => entry && typeof entry._v === 'number')
+    ? CURRENT_SCHEMA_VERSION
+    : 0;
 }
 
 export async function ensureSqliteSchemaVersion(db) {

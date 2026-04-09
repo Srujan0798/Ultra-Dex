@@ -16,16 +16,19 @@ Scope: .protocol/ folder compliance with agent capability specifications
 **Source:** `.protocol/agent-capabilities/claude-code.md` line 97-111
 
 **Before (incorrect):**
+
 ```bash
 claude --model sonnet --effort high "prompt..."
 ```
 
 **After (correct):**
+
 ```bash
 claude --model sonnet --effort high -p "prompt..."
 ```
 
 **Files Fixed:**
+
 - ✅ `.protocol/state/dispatches.md` - All 7 windows
 - ✅ `.protocol/state/FINAL_DISPATCH.md` - Windows 1-2
 - ✅ `.protocol/state/cycle5-render-dispatches.md` (if exists)
@@ -38,21 +41,25 @@ claude --model sonnet --effort high -p "prompt..."
 **Source:** `.protocol/orchestration.md` line 53-61
 
 **Before (incorrect):**
+
 ```bash
 Fallback #3: claude --model haiku -p "..."  # Generic fallback
 ```
 
 **After (correct):**
+
 ```bash
 Fallback #3: opencode run -m opencode/devstral-2-123b-instruct-2512 -p "..."
 ```
 
 **Alternative (NVIDIA route via OpenCode):**
+
 ```bash
 Fallback #3: opencode run -m opencode/nemotron-3-super-free -p "..."
 ```
 
 **Files Fixed:**
+
 - ✅ `.protocol/state/dispatches.md` - All HIGH-tier windows (W1, W2, W3, W7)
 
 ---
@@ -63,6 +70,7 @@ Fallback #3: opencode run -m opencode/nemotron-3-super-free -p "..."
 **Source:** `.protocol/agent-capabilities/open-code.md` line 51-58
 
 **Correct Syntax:**
+
 ```bash
 # Basic usage
 opencode run -p "prompt..."
@@ -78,6 +86,7 @@ opencode run -m opencode/devstral-2-123b-instruct-2512 -p "prompt..."
 ```
 
 **Files Verified:**
+
 - ✅ `.protocol/state/dispatches.md` - OpenCode syntax correct in all fallbacks
 
 ---
@@ -87,6 +96,7 @@ opencode run -m opencode/devstral-2-123b-instruct-2512 -p "prompt..."
 **Source:** `.protocol/agent-capabilities/qwen-cli.md`
 
 **Both forms are valid:**
+
 ```bash
 # Shorthand (preferred)
 qwen --auth-type qwen-oauth -y "prompt..."
@@ -96,6 +106,7 @@ qwen --auth-type qwen-oauth --approval-mode yolo "prompt..."
 ```
 
 **Files Verified:**
+
 - ✅ `.protocol/state/dispatches.md` - Qwen syntax already correct
 
 ---
@@ -105,11 +116,13 @@ qwen --auth-type qwen-oauth --approval-mode yolo "prompt..."
 **Source:** `.protocol/agent-capabilities/codex.md`
 
 **Correct Syntax:**
+
 ```bash
 codex --full-auto -m o1 exec "prompt..."
 ```
 
 **Files Verified:**
+
 - ✅ `.protocol/state/dispatches.md` - Codex syntax correct
 
 ---
@@ -119,6 +132,7 @@ codex --full-auto -m o1 exec "prompt..."
 **Source:** `.protocol/agent-capabilities/gemini-cli.md`
 
 **Correct Syntax:**
+
 ```bash
 # YOLO mode
 gemini -y -p "prompt..."
@@ -128,6 +142,7 @@ gemini -p "prompt..."
 ```
 
 **Files Verified:**
+
 - ✅ `.protocol/state/dispatches.md` - Gemini syntax correct
 
 ---
@@ -172,10 +187,12 @@ All agent capability files verified as source of truth:
 From `.protocol/orchestration.md`:
 
 ✅ **Line 56-61: Fallback Policy**
+
 - Every HIGH-tier window must include 3 fallbacks ✅
 - Fallback #3 must include OpenCode or NVIDIA route ✅
 
 ✅ **Line 35-51: Dispatch Format**
+
 - Task ID ✅
 - Objective ✅
 - Target Files ✅
@@ -193,6 +210,7 @@ From `.protocol/orchestration.md`:
 ## Validation Results
 
 ### Syntax Compliance
+
 - ✅ Claude: 9/9 commands have `-p` flag
 - ✅ Codex: 2/2 commands use correct syntax
 - ✅ Qwen: 2/2 commands use correct syntax (YOLO shorthand)
@@ -200,12 +218,14 @@ From `.protocol/orchestration.md`:
 - ✅ OpenCode: 4/4 fallbacks use correct syntax
 
 ### Fallback Compliance
+
 - ✅ HIGH-tier Window 1: All 3 fallbacks present, #3 is OpenCode
 - ✅ HIGH-tier Window 2: All 3 fallbacks present, #3 is OpenCode
 - ✅ HIGH-tier Window 3: All 3 fallbacks present, #3 is OpenCode
 - ✅ HIGH-tier Window 7: All 3 fallbacks present, #3 is OpenCode
 
 ### Cost Class Accuracy
+
 - ✅ Claude: SUBSCRIPTION-INCLUDED (Pro plan)
 - ✅ Codex: API-KEY-USAGE (OpenAI)
 - ✅ Qwen: FREE (YOLO mode)
@@ -216,26 +236,28 @@ From `.protocol/orchestration.md`:
 
 ## Protocol Compliance Score
 
-| Category | Before | After | Status |
-|----------|--------|-------|--------|
-| Claude `-p` flag | 0/9 | 9/9 | ✅ FIXED |
-| Fallback #3 OpenCode/NVIDIA | 0/4 | 4/4 | ✅ FIXED |
-| Qwen syntax | 2/2 | 2/2 | ✅ PASS |
-| Codex syntax | 2/2 | 2/2 | ✅ PASS |
-| Gemini syntax | 3/3 | 3/3 | ✅ PASS |
-| OpenCode syntax | 4/4 | 4/4 | ✅ PASS |
-| **Overall** | **11/24** | **24/24** | **✅ 100%** |
+| Category                    | Before    | After     | Status      |
+| --------------------------- | --------- | --------- | ----------- |
+| Claude `-p` flag            | 0/9       | 9/9       | ✅ FIXED    |
+| Fallback #3 OpenCode/NVIDIA | 0/4       | 4/4       | ✅ FIXED    |
+| Qwen syntax                 | 2/2       | 2/2       | ✅ PASS     |
+| Codex syntax                | 2/2       | 2/2       | ✅ PASS     |
+| Gemini syntax               | 3/3       | 3/3       | ✅ PASS     |
+| OpenCode syntax             | 4/4       | 4/4       | ✅ PASS     |
+| **Overall**                 | **11/24** | **24/24** | **✅ 100%** |
 
 ---
 
 ## Next Steps (Optional Improvements)
 
 ### 1. Copilot CLI Integration
+
 **Status:** Available but not used
 **File:** `.protocol/agent-capabilities/copilot-cli.md`
 **Use Case:** PR review, fleet coordination, governance checks
 
 **Example:**
+
 ```bash
 # GitHub PR review
 gh copilot explain pr 123
@@ -247,11 +269,13 @@ gh copilot review src/core/auth/
 **When to use:** Governance windows (0-2 max per orchestration)
 
 ### 2. NVIDIA Model Optimization
+
 **Status:** Available via OpenCode
 **File:** `.protocol/agent-capabilities/nvidia.md`
 **Current Usage:** Fallback #3 only
 
 **Priority Models:**
+
 - `opencode/devstral-2-123b-instruct-2512` - Heavy coding (already used)
 - `opencode/nemotron-3-super-free` - 1M context, free (could be primary)
 - `opencode/deepseek-r1` - Heavy reasoning
@@ -259,8 +283,10 @@ gh copilot review src/core/auth/
 **Recommendation:** Consider Nemotron-3-Super as primary for large codebase tasks (FREE + 1M context)
 
 ### 3. Window Allocation Review
+
 **Current:** 7 windows (1 Claude, 1 Codex, 3 Gemini, 2 Qwen)
 **Protocol Limits:**
+
 - Claude: 1 max ✅
 - Codex: 1 max ✅
 - Gemini: 4-6 ✅ (using 3)
@@ -279,6 +305,7 @@ gh copilot review src/core/auth/
 **Production Ready:** ✅ YES
 
 All dispatch files now conform to:
+
 - Agent capability specifications
 - Orchestration protocol requirements
 - Fallback policy mandates

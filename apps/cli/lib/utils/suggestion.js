@@ -9,8 +9,8 @@ import chalk from '../../../../src/utils/chalk.js';
 
 /**
  * Calculates the Levenshtein distance between two strings
- * @param {string} a 
- * @param {string} b 
+ * @param {string} a
+ * @param {string} b
  * @returns {number}
  */
 export function getLevenshteinDistance(a, b) {
@@ -36,7 +36,7 @@ export function getLevenshteinDistance(a, b) {
           matrix[i - 1][j - 1] + 1, // substitution
           Math.min(
             matrix[i][j - 1] + 1, // insertion
-            matrix[i - 1][j] + 1  // deletion
+            matrix[i - 1][j] + 1 // deletion
           )
         );
       }
@@ -61,7 +61,7 @@ export function suggestCommand(input, commands, threshold = 2) {
 
   for (const command of commands) {
     const distance = getLevenshteinDistance(input, command);
-    
+
     // If exact match or within threshold
     if (distance < minDistance && distance <= threshold) {
       minDistance = distance;
@@ -84,5 +84,5 @@ export function formatSuggestion(suggestion) {
 export default {
   getLevenshteinDistance,
   suggestCommand,
-  formatSuggestion
+  formatSuggestion,
 };

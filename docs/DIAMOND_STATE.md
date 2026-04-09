@@ -45,13 +45,12 @@ const diamond = await initializeDiamondState({
 });
 
 // Semantic routing - understand intent, not just keywords
-const decision = await diamond.semanticRouter.route(
-  "Make the button bounce with spring physics"
-);
+const decision = await diamond.semanticRouter.route('Make the button bounce with spring physics');
 // → { agentId: 'frontend-agent', confidence: 0.94 }
 
 // Self-healing - automatic recovery
-diamond.alertManager.builder()
+diamond.alertManager
+  .builder()
   .type('provider.latency.high')
   .severity(AlertSeverity.HIGH)
   .message('OpenAI latency > 2s')
@@ -66,7 +65,7 @@ const result = await diamond.isolatedVMSandbox.execute(code, {
 
 // App Store - plugin ecosystem
 await diamond.appStore.publish(myPlugin);
-const plugins = await diamond.appStore.search("database");
+const plugins = await diamond.appStore.search('database');
 ```
 
 ## The 6 Pillars
@@ -80,12 +79,13 @@ All services use dependency injection for testability and modularity:
 class AgentOrchestrator {
   constructor(
     @inject(DI_TOKENS.MemoryManager) private memory: IMemoryManager,
-    @inject(DI_TOKENS.SemanticRouter) private router: SemanticRouter,
+    @inject(DI_TOKENS.SemanticRouter) private router: SemanticRouter
   ) {}
 }
 ```
 
 **Benefits:**
+
 - No global singletons
 - Easy mocking for tests
 - Scoped containers per session
@@ -100,11 +100,12 @@ Vector-based routing understands natural language intent:
 if (task.includes('database')) return 'backend-agent';
 
 // New: Semantic understanding
-const decision = await router.route("Optimize postgres queries");
+const decision = await router.route('Optimize postgres queries');
 // → backend-agent (even without "database" keyword)
 ```
 
 **8 Agent Profiles:**
+
 - `frontend-agent` - React, Vue, CSS, UI/UX
 - `backend-agent` - API, Database, Auth
 - `devops-agent` - Docker, K8s, CI/CD
@@ -115,6 +116,7 @@ const decision = await router.route("Optimize postgres queries");
 - `qa-agent` - Testing, Automation
 
 **Features:**
+
 - Local embeddings (all-MiniLM-L6-v2, 384-dim)
 - 120+ semantic examples
 - Confidence scoring
@@ -135,6 +137,7 @@ return dockerSandbox; // Multi-runtime
 ```
 
 **Security Features:**
+
 - Timeout enforcement
 - Memory limits
 - Module whitelisting
@@ -158,6 +161,7 @@ ProviderFailoverStrategy.execute(alert);
 ```
 
 **5 Healing Strategies:**
+
 1. **Provider Failover** - Switch to backup AI provider
 2. **Memory Relief** - Clear caches, trigger GC
 3. **Agent Restart** - Restart unhealthy agents
@@ -180,6 +184,7 @@ tracer.finishSpan(span);
 ```
 
 **Features:**
+
 - Distributed tracing
 - Metrics aggregation
 - Event logging
@@ -188,12 +193,14 @@ tracer.finishSpan(span);
 ### 6. Scale & UX
 
 #### Distributed Mesh
+
 - Multi-region node discovery
 - Heartbeat health checks
 - Latency-aware routing
 - Automatic failover
 
 #### Real-Time Streaming
+
 ```typescript
 // Stream agent thoughts to frontend
 for await (const event of streaming.streamAgentExecution(taskId, sessionId)) {
@@ -202,6 +209,7 @@ for await (const event of streaming.streamAgentExecution(taskId, sessionId)) {
 ```
 
 #### MCP App Store
+
 ```typescript
 // Publish plugin
 await appStore.publish({
@@ -218,14 +226,14 @@ await appStore.install(results[0].id);
 
 ## Architecture Benefits
 
-| Metric | Before | After (Diamond) |
-|--------|--------|-----------------|
-| Routing Accuracy | ~70% | 95%+ |
-| MTTR (failures) | 5 min | < 5 sec |
-| Sandbox Escape | N/A | 0% |
-| Concurrent Sessions | ~10 | 1000+ |
-| Type Safety | 9% | 100% |
-| Self-Healing | None | 80%+ |
+| Metric              | Before | After (Diamond) |
+| ------------------- | ------ | --------------- |
+| Routing Accuracy    | ~70%   | 95%+            |
+| MTTR (failures)     | 5 min  | < 5 sec         |
+| Sandbox Escape      | N/A    | 0%              |
+| Concurrent Sessions | ~10    | 1000+           |
+| Type Safety         | 9%     | 100%            |
+| Self-Healing        | None   | 80%+            |
 
 ## Directory Structure
 
@@ -270,7 +278,7 @@ src/core/
 
 ## Configuration
 
-Environment variables (ULTRA_DEX_* prefix):
+Environment variables (ULTRA*DEX*\* prefix):
 
 ```bash
 ULTRA_DEX_LOG_LEVEL=debug
@@ -288,40 +296,41 @@ ULTRA_DEX_TELEMETRY_ENABLED=true
 // Mock embedding model for fast tests
 import { MockEmbeddingModel } from './src/core/ai/embedding-model.js';
 
-const router = new SemanticRouter(
-  new MockEmbeddingModel(),
-  logger,
-  config
-);
+const router = new SemanticRouter(new MockEmbeddingModel(), logger, config);
 
 // Test routing
-const decision = await router.route("Create a React component");
+const decision = await router.route('Create a React component');
 expect(decision.agentId).toBe('frontend-agent');
 ```
 
 ## Roadmap
 
 ### Phase 1: Foundation ✅
+
 - [x] Dependency Injection
 - [x] TypeScript Interfaces
 - [x] Core Services
 
 ### Phase 2: Intelligence ✅
+
 - [x] Semantic Router
 - [x] Vector Embeddings
 - [x] Hybrid Routing
 
 ### Phase 3: Safety ✅
+
 - [x] IsolatedVM Sandbox
 - [x] Virtual File System
 - [x] Sandbox Router
 
 ### Phase 4: Autonomy ✅
+
 - [x] Alert Manager
 - [x] Telemetry Service
 - [x] Self-Healing System
 
 ### Phase 5: Scale & UX ✅
+
 - [x] Distributed Mesh
 - [x] Real-Time Streaming
 - [x] MCP App Store

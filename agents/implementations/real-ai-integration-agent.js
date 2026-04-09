@@ -2,9 +2,9 @@
 // Copyright (c) 2026 Ultra-Dex
 /**
  * Phase 2: Real AI Integration Agent
- * 
+ *
  * GOAL: Verify REAL NVIDIA API inference (no mocks, no 401)
- * 
+ *
  * REQUIREMENTS:
  * - Real NVIDIA API key in .env.local
  * - Real API response (200 OK, not 401)
@@ -32,10 +32,10 @@ console.log('1️⃣  Verifying REAL NVIDIA API key...\n');
 try {
   const envPath = path.join(process.cwd(), '.env.local');
   const envContent = fs.readFileSync(envPath, 'utf8');
-  
+
   const keyMatch = envContent.match(/NVIDIA_API_KEY=(nvapi-[a-zA-Z0-9_-]{40,})/);
   const placeholderMatch = envContent.match(/NVIDIA_API_KEY=(.*your-.*)/i);
-  
+
   if (placeholderMatch) {
     results.apiKey.status = 'FAIL';
     results.apiKey.details = 'Placeholder key detected (contains "your-")';
@@ -67,12 +67,12 @@ try {
     encoding: 'utf8',
     timeout: 120000,
   });
-  
+
   const has401 = output.includes('401');
   const hasSuccess = output.includes('Success') || output.includes('✅');
   const hasResponse = output.includes('Response:') || output.includes('choices');
   const hasError = output.includes('Error') || output.includes('❌');
-  
+
   if (has401) {
     results.apiCall.status = 'FAIL';
     results.apiCall.details = '401 AUTH FAILURE (invalid/expired key)';
@@ -83,7 +83,8 @@ try {
     console.log(`   ✅ PASS: ${results.apiCall.details}\n`);
   } else if (hasError) {
     results.apiCall.status = 'FAIL';
-    results.apiCall.details = output.split('\n').find(l => l.includes('Error')) || 'Unknown error';
+    results.apiCall.details =
+      output.split('\n').find((l) => l.includes('Error')) || 'Unknown error';
     console.log(`   ❌ FAIL: ${results.apiCall.details}\n`);
   } else {
     results.apiCall.status = 'REVIEW';
@@ -108,17 +109,20 @@ console.log('3️⃣  Verifying REAL inference...\n');
 
 try {
   console.log('   Running: npx ultra-dex run planner -t "say hello" --provider nvidia\n');
-  const output = execSync('npx ultra-dex run planner -t "say hello" --provider nvidia 2>&1 | tail -30', {
-    cwd: process.cwd(),
-    encoding: 'utf8',
-    timeout: 120000,
-  });
-  
+  const output = execSync(
+    'npx ultra-dex run planner -t "say hello" --provider nvidia 2>&1 | tail -30',
+    {
+      cwd: process.cwd(),
+      encoding: 'utf8',
+      timeout: 120000,
+    }
+  );
+
   const has401 = output.includes('401');
   const hasThinking = output.includes('Thinking') || output.includes('think');
   const hasResponse = output.includes('Response:') || output.includes('result');
   const hasRealOutput = hasResponse && !has401;
-  
+
   if (has401) {
     results.inference.status = 'FAIL';
     results.inference.details = '401 AUTH FAILURE (no inference)';
@@ -151,19 +155,19 @@ console.log('4️⃣  Validating OUTPUT QUALITY...\n');
 try {
   const resultPath = path.join(process.cwd(), '.ultra-dex/runs');
   const runs = fs.readdirSync(resultPath).sort().reverse();
-  
+
   if (runs.length > 0) {
     const latestRun = runs[0];
     const resultFile = path.join(resultPath, latestRun, 'result.txt');
-    
+
     if (fs.existsSync(resultFile)) {
       const resultContent = fs.readFileSync(resultFile, 'utf8');
-      
+
       const isEmpty = resultContent.trim().length === 0;
       const hasError = resultContent.includes('[Error]');
       const has401 = resultContent.includes('401');
       const hasRealContent = resultContent.length > 20 && !hasError && !has401;
-      
+
       if (has401 || hasError) {
         results.output.status = 'FAIL';
         results.output.details = 'Error in output';
@@ -178,9 +182,12 @@ try {
         console.log(`   ✅ PASS: ${results.output.details}\n`);
         console.log('   Preview:\n');
         console.log('   ─────────────────────────────────────────────');
-        resultContent.split('\n').slice(0, 5).forEach(line => {
-          console.log(`   ${line}`);
-        });
+        resultContent
+          .split('\n')
+          .slice(0, 5)
+          .forEach((line) => {
+            console.log(`   ${line}`);
+          });
         console.log('   ─────────────────────────────────────────────\n');
       } else {
         results.output.status = 'REVIEW';
@@ -208,7 +215,7 @@ console.log('══════════════════════�
 console.log('         📊 PHASE 2 REAL AI INTEGRATION - SUMMARY');
 console.log('═══════════════════════════════════════════════════════════\n');
 
-const allPass = 
+const allPass =
   results.apiKey.status === 'PASS' &&
   results.apiCall.status === 'PASS' &&
   results.inference.status === 'PASS' &&
@@ -223,14 +230,21 @@ console.log('');
 
 // Write report
 const reportPath = path.join(process.cwd(), '.ultra-dex/phase2-real-ai-report.json');
-fs.writeFileSync(reportPath, JSON.stringify({
-  timestamp: new Date().toISOString(),
-  phase: 'Phase 2 - Real AI Integration',
-  results,
-  allPass,
-  phase2Complete: allPass,
-  readyForProduction: allPass,
-}, null, 2));
+fs.writeFileSync(
+  reportPath,
+  JSON.stringify(
+    {
+      timestamp: new Date().toISOString(),
+      phase: 'Phase 2 - Real AI Integration',
+      results,
+      allPass,
+      phase2Complete: allPass,
+      readyForProduction: allPass,
+    },
+    null,
+    2
+  )
+);
 
 console.log(`📄 Report saved to: ${reportPath}\n`);
 
@@ -242,19 +256,19 @@ if (allPass) {
   console.log('🎉 PHASE 2 COMPLETE - SYSTEM PRODUCTION READY!\n');
 } else {
   console.log('⚠️  PHASE 2 INCOMPLETE - FIX REQUIRED:\n');
-  
+
   if (results.apiKey.status === 'FAIL') {
     console.log('  1. Get real NVIDIA API key from:');
     console.log('     https://build.nvidia.com/explore/discover\n');
     console.log('  2. Update .env.local with real key:\n');
     console.log('     NVIDIA_API_KEY=nvapi-YOUR-REAL-KEY\n');
   }
-  
+
   if (results.apiCall.status === 'FAIL' || results.inference.status === 'FAIL') {
     console.log('  3. After updating key, re-run:');
     console.log('     node agents/real-ai-integration-agent.js\n');
   }
-  
+
   console.log('');
 }
 

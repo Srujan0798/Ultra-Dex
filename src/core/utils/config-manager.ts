@@ -1,14 +1,14 @@
-import fs from "fs/promises";
-import path from "path";
-import { existsSync } from "fs";
-import { homedir } from "os";
+import fs from 'fs/promises';
+import path from 'path';
+import { existsSync } from 'fs';
+import { homedir } from 'os';
 import { logger } from './logging.js';
 const DEFAULT_CONFIG = {
-  version: "4.0.0",
+  version: '4.0.0',
   projectRoot: process.cwd(),
   ai: {
-    defaultProvider: "claude",
-    defaultModel: "claude-sonnet-5-20260201",
+    defaultProvider: 'claude',
+    defaultModel: 'claude-sonnet-5-20260201',
     temperature: 0.7,
     maxTokens: 8192,
     timeout: 12e4,
@@ -18,65 +18,65 @@ const DEFAULT_CONFIG = {
       enableAdvancedFeatures: true,
       contextWindow: 2e5,
       reasoningCapabilities: true,
-      codeGenerationQuality: "high",
-      multimodalSupport: true
-    }
+      codeGenerationQuality: 'high',
+      multimodalSupport: true,
+    },
   },
   memory: {
     maxContextTokens: 8192,
     autoPrune: true,
-    pruneThreshold: 0.8
+    pruneThreshold: 0.8,
   },
   contextPruning: {
     maxContextTokens: 8192,
     autoPrune: true,
-    pruneThreshold: 0.8
+    pruneThreshold: 0.8,
   },
   mcp: {
     port: 3001,
-    host: "localhost",
+    host: 'localhost',
     timeout: 3e4,
     connectionRetry: 3,
-    autoConnect: true
+    autoConnect: true,
   },
   performance: {
     cacheEnabled: true,
     cacheTimeout: 3e4,
     parallelProcessing: true,
     maxConcurrentTasks: 5,
-    graphScanInterval: 3e4
+    graphScanInterval: 3e4,
   },
   security: {
     validatePaths: true,
     allowExternalConnections: true,
     sandboxOnly: false,
     maxFileSize: 10485760,
-    allowedFileTypes: [".js", ".ts", ".jsx", ".tsx", ".json", ".md", ".txt", ".yaml", ".yml"]
+    allowedFileTypes: ['.js', '.ts', '.jsx', '.tsx', '.json', '.md', '.txt', '.yaml', '.yml'],
   },
   logging: {
-    level: "info",
-    file: ".ultra-dex/logs/ultra-dex.log",
-    maxSize: "20m",
+    level: 'info',
+    file: '.ultra-dex/logs/ultra-dex.log',
+    maxSize: '20m',
     maxFiles: 5,
-    format: "json"
+    format: 'json',
   },
   ui: {
-    theme: "professional-purple",
+    theme: 'professional-purple',
     autoRefresh: true,
     refreshInterval: 3e4,
-    showAnimations: true
+    showAnimations: true,
   },
   development: {
     debugMode: false,
     verboseLogging: false,
     enableExperimental: false,
-    autoSave: true
+    autoSave: true,
   },
   governance: {
     allowlist: [],
     blocklist: [],
-    strict: false
-  }
+    strict: false,
+  },
 };
 class ConfigManager {
   config;
@@ -85,8 +85,8 @@ class ConfigManager {
   loaded;
   constructor() {
     this.config = { ...DEFAULT_CONFIG };
-    this.configPath = path.resolve(process.cwd(), ".ultra-dex", "config.json");
-    this.globalConfigPath = path.resolve(homedir(), ".ultra-dex", "config.json");
+    this.configPath = path.resolve(process.cwd(), '.ultra-dex', 'config.json');
+    this.globalConfigPath = path.resolve(homedir(), '.ultra-dex', 'config.json');
     this.loaded = false;
   }
   async load() {
@@ -103,25 +103,31 @@ class ConfigManager {
       this.loaded = true;
       return this.config;
     } catch (error) {
-      logger.warn("Failed to load configuration, using defaults:", error instanceof Error ? error.message : String(error));
+      logger.warn(
+        'Failed to load configuration, using defaults:',
+        error instanceof Error ? error.message : String(error)
+      );
       return this.config;
     }
   }
-  async save(config = null, type = "project") {
+  async save(config = null, type = 'project') {
     const targetConfig = config || this.config;
-    const targetPath = type === "global" ? this.globalConfigPath : this.configPath;
+    const targetPath = type === 'global' ? this.globalConfigPath : this.configPath;
     try {
       const dir = path.dirname(targetPath);
       await fs.mkdir(dir, { recursive: true });
       await fs.writeFile(targetPath, JSON.stringify(targetConfig, null, 2));
       return true;
     } catch (error) {
-      logger.error(`Failed to save ${type} configuration:`, error instanceof Error ? error.message : String(error));
+      logger.error(
+        `Failed to save ${type} configuration:`,
+        error instanceof Error ? error.message : String(error)
+      );
       return false;
     }
   }
   async saveGlobal(config = null) {
-    return this.save(config, "global");
+    return this.save(config, 'global');
   }
   async loadGlobal() {
     if (await this.exists(this.globalConfigPath)) {
@@ -131,9 +137,9 @@ class ConfigManager {
   }
   get(pathStr, defaultValue = void 0) {
     if (!this.loaded) {
-      throw new Error("Configuration not loaded. Call load() first.");
+      throw new Error('Configuration not loaded. Call load() first.');
     }
-    const keys = pathStr.split(".");
+    const keys = pathStr.split('.');
     let value = this.config;
     for (const key of keys) {
       if (value === null || value === void 0) {
@@ -145,9 +151,9 @@ class ConfigManager {
   }
   set(pathStr, value) {
     if (!this.loaded) {
-      throw new Error("Configuration not loaded. Call load() first.");
+      throw new Error('Configuration not loaded. Call load() first.');
     }
-    const keys = pathStr.split(".");
+    const keys = pathStr.split('.');
     let current = this.config;
     for (let i = 0; i < keys.length - 1; i++) {
       const key = keys[i];
@@ -161,47 +167,69 @@ class ConfigManager {
   validate() {
     const errors = [];
     const aiConfig = this.config.ai;
-    if (aiConfig && typeof aiConfig.defaultProvider !== "string") {
-      errors.push("ai.defaultProvider must be a string");
+    if (aiConfig && typeof aiConfig.defaultProvider !== 'string') {
+      errors.push('ai.defaultProvider must be a string');
     }
-    if (aiConfig && (typeof aiConfig.temperature !== "number" || aiConfig.temperature < 0 || aiConfig.temperature > 1)) {
-      errors.push("ai.temperature must be a number between 0 and 1");
+    if (
+      aiConfig &&
+      (typeof aiConfig.temperature !== 'number' ||
+        aiConfig.temperature < 0 ||
+        aiConfig.temperature > 1)
+    ) {
+      errors.push('ai.temperature must be a number between 0 and 1');
     }
     const mcpConfig = this.config.mcp;
-    if (mcpConfig && (typeof mcpConfig.port !== "number" || mcpConfig.port < 1 || mcpConfig.port > 65535)) {
-      errors.push("mcp.port must be a number between 1 and 65535");
+    if (
+      mcpConfig &&
+      (typeof mcpConfig.port !== 'number' || mcpConfig.port < 1 || mcpConfig.port > 65535)
+    ) {
+      errors.push('mcp.port must be a number between 1 and 65535');
     }
     const perfConfig = this.config.performance;
-    if (perfConfig && (typeof perfConfig.maxConcurrentTasks !== "number" || perfConfig.maxConcurrentTasks < 1)) {
-      errors.push("performance.maxConcurrentTasks must be a positive number");
+    if (
+      perfConfig &&
+      (typeof perfConfig.maxConcurrentTasks !== 'number' || perfConfig.maxConcurrentTasks < 1)
+    ) {
+      errors.push('performance.maxConcurrentTasks must be a positive number');
     }
     const memConfig = this.config.memory;
     if (memConfig) {
-      if (typeof memConfig.maxContextTokens !== "number" || memConfig.maxContextTokens < 1) {
-        errors.push("memory.maxContextTokens must be a positive number");
+      if (typeof memConfig.maxContextTokens !== 'number' || memConfig.maxContextTokens < 1) {
+        errors.push('memory.maxContextTokens must be a positive number');
       }
-      if (typeof memConfig.autoPrune !== "boolean") {
-        errors.push("memory.autoPrune must be a boolean");
+      if (typeof memConfig.autoPrune !== 'boolean') {
+        errors.push('memory.autoPrune must be a boolean');
       }
-      if (typeof memConfig.pruneThreshold !== "number" || memConfig.pruneThreshold < 0 || memConfig.pruneThreshold > 1) {
-        errors.push("memory.pruneThreshold must be a number between 0 and 1");
+      if (
+        typeof memConfig.pruneThreshold !== 'number' ||
+        memConfig.pruneThreshold < 0 ||
+        memConfig.pruneThreshold > 1
+      ) {
+        errors.push('memory.pruneThreshold must be a number between 0 and 1');
       }
     }
     const ctxPruningConfig = this.config.contextPruning;
     if (ctxPruningConfig) {
-      if (typeof ctxPruningConfig.maxContextTokens !== "number" || ctxPruningConfig.maxContextTokens < 1) {
-        errors.push("contextPruning.maxContextTokens must be a positive number");
+      if (
+        typeof ctxPruningConfig.maxContextTokens !== 'number' ||
+        ctxPruningConfig.maxContextTokens < 1
+      ) {
+        errors.push('contextPruning.maxContextTokens must be a positive number');
       }
-      if (typeof ctxPruningConfig.autoPrune !== "boolean") {
-        errors.push("contextPruning.autoPrune must be a boolean");
+      if (typeof ctxPruningConfig.autoPrune !== 'boolean') {
+        errors.push('contextPruning.autoPrune must be a boolean');
       }
-      if (typeof ctxPruningConfig.pruneThreshold !== "number" || ctxPruningConfig.pruneThreshold < 0 || ctxPruningConfig.pruneThreshold > 1) {
-        errors.push("contextPruning.pruneThreshold must be a number between 0 and 1");
+      if (
+        typeof ctxPruningConfig.pruneThreshold !== 'number' ||
+        ctxPruningConfig.pruneThreshold < 0 ||
+        ctxPruningConfig.pruneThreshold > 1
+      ) {
+        errors.push('contextPruning.pruneThreshold must be a number between 0 and 1');
       }
     }
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
   reset() {
@@ -210,13 +238,13 @@ class ConfigManager {
   }
   getConfig() {
     if (!this.loaded) {
-      throw new Error("Configuration not loaded. Call load() first.");
+      throw new Error('Configuration not loaded. Call load() first.');
     }
     return { ...this.config };
   }
   update(updates) {
     if (!this.loaded) {
-      throw new Error("Configuration not loaded. Call load() first.");
+      throw new Error('Configuration not loaded. Call load() first.');
     }
     this.config = this.mergeDeep(this.config, updates);
   }
@@ -225,10 +253,12 @@ class ConfigManager {
   }
   async loadFromFile(filePath) {
     try {
-      const content = await fs.readFile(filePath, "utf8");
+      const content = await fs.readFile(filePath, 'utf8');
       return JSON.parse(content);
     } catch (error) {
-      throw new Error(`Failed to load config from ${filePath}: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to load config from ${filePath}: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
   applyEnvironmentOverrides(config) {
@@ -259,7 +289,7 @@ class ConfigManager {
     }
     if (process.env.ULTRA_DEX_DEBUG_MODE) {
       overrides.development = overrides.development || {};
-      overrides.development.debugMode = process.env.ULTRA_DEX_DEBUG_MODE === "true";
+      overrides.development.debugMode = process.env.ULTRA_DEX_DEBUG_MODE === 'true';
     }
     return this.mergeDeep(config, overrides);
   }
@@ -281,88 +311,91 @@ class ConfigManager {
     return output;
   }
   isObject(item) {
-    return item !== null && typeof item === "object" && !Array.isArray(item);
+    return item !== null && typeof item === 'object' && !Array.isArray(item);
   }
   getSchema() {
     return {
-      type: "object",
+      type: 'object',
       properties: {
         ai: {
-          type: "object",
+          type: 'object',
           properties: {
-            defaultProvider: { type: "string", enum: ["claude", "openai", "gemini", "ollama"] },
-            temperature: { type: "number", minimum: 0, maximum: 1 },
-            maxTokens: { type: "number", minimum: 1 },
-            timeout: { type: "number", minimum: 1e3 }
-          }
+            defaultProvider: { type: 'string', enum: ['claude', 'openai', 'gemini', 'ollama'] },
+            temperature: { type: 'number', minimum: 0, maximum: 1 },
+            maxTokens: { type: 'number', minimum: 1 },
+            timeout: { type: 'number', minimum: 1e3 },
+          },
         },
         mcp: {
-          type: "object",
+          type: 'object',
           properties: {
-            port: { type: "number", minimum: 1, maximum: 65535 },
-            timeout: { type: "number", minimum: 1e3 }
-          }
+            port: { type: 'number', minimum: 1, maximum: 65535 },
+            timeout: { type: 'number', minimum: 1e3 },
+          },
         },
         performance: {
-          type: "object",
+          type: 'object',
           properties: {
-            maxConcurrentTasks: { type: "number", minimum: 1 },
-            cacheTimeout: { type: "number", minimum: 1e3 }
-          }
-        }
-      }
+            maxConcurrentTasks: { type: 'number', minimum: 1 },
+            cacheTimeout: { type: 'number', minimum: 1e3 },
+          },
+        },
+      },
     };
   }
   export() {
     if (!this.loaded) {
-      throw new Error("Configuration not loaded. Call load() first.");
+      throw new Error('Configuration not loaded. Call load() first.');
     }
     return {
       ...this.config,
-      exportedAt: (/* @__PURE__ */ new Date()).toISOString(),
-      version: this.config.version
+      exportedAt: /* @__PURE__ */ new Date().toISOString(),
+      version: this.config.version,
     };
   }
   import(configData) {
-    if (!configData || typeof configData !== "object") {
-      throw new Error("Invalid configuration data provided");
+    if (!configData || typeof configData !== 'object') {
+      throw new Error('Invalid configuration data provided');
     }
     const configObj = configData;
     const validation = this.validateImport(configObj);
     if (!validation.valid) {
-      throw new Error(`Invalid configuration: ${validation.errors.join(", ")}`);
+      throw new Error(`Invalid configuration: ${validation.errors.join(', ')}`);
     }
     this.config = this.mergeDeep(this.config, configObj);
     return true;
   }
   validateImport(configData) {
     const errors = [];
-    if (typeof configData !== "object") {
-      errors.push("Configuration must be an object");
+    if (typeof configData !== 'object') {
+      errors.push('Configuration must be an object');
       return { valid: false, errors };
     }
-    if (configData.ai && typeof configData.ai === "object") {
+    if (configData.ai && typeof configData.ai === 'object') {
       const aiConfig = configData.ai;
-      if (aiConfig.defaultProvider && !["claude", "openai", "gemini", "ollama"].includes(aiConfig.defaultProvider)) {
-        errors.push("Invalid AI provider in imported config");
+      if (
+        aiConfig.defaultProvider &&
+        !['claude', 'openai', 'gemini', 'ollama'].includes(aiConfig.defaultProvider)
+      ) {
+        errors.push('Invalid AI provider in imported config');
       }
     }
-    if (configData.mcp && typeof configData.mcp === "object") {
+    if (configData.mcp && typeof configData.mcp === 'object') {
       const mcpConfig = configData.mcp;
-      if (mcpConfig.port && (typeof mcpConfig.port !== "number" || mcpConfig.port < 1 || mcpConfig.port > 65535)) {
-        errors.push("Invalid MCP port in imported config");
+      if (
+        mcpConfig.port &&
+        (typeof mcpConfig.port !== 'number' || mcpConfig.port < 1 || mcpConfig.port > 65535)
+      ) {
+        errors.push('Invalid MCP port in imported config');
       }
     }
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
 }
 const configManager = new ConfigManager();
 configManager.load().catch(console.error);
 var config_manager_default = configManager;
-export {
-  configManager,
-  config_manager_default as default
-};
+export { configManager, config_manager_default as default };

@@ -9,12 +9,13 @@ interface MetricsPanelProps {
 }
 
 function toChartSeries(costSeries: CostPoint[]) {
-  const safeSeries = costSeries.length > 0
-    ? costSeries
-    : Array.from({ length: 8 }, (_, index) => ({
-        timestamp: new Date(Date.now() - (7 - index) * 10 * 60 * 1_000).toISOString(),
-        amount: Math.round(Math.random() * 3 + 1),
-      }));
+  const safeSeries =
+    costSeries.length > 0
+      ? costSeries
+      : Array.from({ length: 8 }, (_, index) => ({
+          timestamp: new Date(Date.now() - (7 - index) * 10 * 60 * 1_000).toISOString(),
+          amount: Math.round(Math.random() * 3 + 1),
+        }));
 
   return safeSeries.map((point, index) => ({
     label: new Date(point.timestamp).toLocaleTimeString([], {
@@ -26,9 +27,20 @@ function toChartSeries(costSeries: CostPoint[]) {
   }));
 }
 
-function Gauge({ value, max, label, tone }: { value: number; max: number; label: string; tone: 'blue' | 'emerald' | 'amber' }) {
+function Gauge({
+  value,
+  max,
+  label,
+  tone,
+}: {
+  value: number;
+  max: number;
+  label: string;
+  tone: 'blue' | 'emerald' | 'amber';
+}) {
   const percentage = Math.min(100, Math.max(0, Math.round((value / Math.max(1, max)) * 100)));
-  const toneClass = tone === 'blue' ? 'bg-blue-400' : tone === 'emerald' ? 'bg-emerald-400' : 'bg-amber-400';
+  const toneClass =
+    tone === 'blue' ? 'bg-blue-400' : tone === 'emerald' ? 'bg-emerald-400' : 'bg-amber-400';
 
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-950/60 p-4">
@@ -39,12 +51,18 @@ function Gauge({ value, max, label, tone }: { value: number; max: number; label:
       <div className="mt-2 h-2 rounded-full bg-slate-800">
         <div className={`h-2 rounded-full ${toneClass}`} style={{ width: `${percentage}%` }} />
       </div>
-      <div className="mt-2 text-xs text-slate-500">{value.toFixed(0)} / {max}</div>
+      <div className="mt-2 text-xs text-slate-500">
+        {value.toFixed(0)} / {max}
+      </div>
     </div>
   );
 }
 
-export const MetricsPanel = memo(function MetricsPanel({ metrics, agents, costSeries }: MetricsPanelProps) {
+export const MetricsPanel = memo(function MetricsPanel({
+  metrics,
+  agents,
+  costSeries,
+}: MetricsPanelProps) {
   const healthCounts = useMemo(() => {
     const running = agents.filter((agent) => agent.state === 'running').length;
     const errors = agents.filter((agent) => agent.state === 'error').length;
@@ -57,13 +75,20 @@ export const MetricsPanel = memo(function MetricsPanel({ metrics, agents, costSe
     <section className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6">
       <header className="mb-4">
         <h3 className="text-lg font-semibold text-slate-100">Performance Metrics</h3>
-        <p className="text-xs text-slate-400">Latency, health, memory pressure, and provider activity.</p>
+        <p className="text-xs text-slate-400">
+          Latency, health, memory pressure, and provider activity.
+        </p>
       </header>
 
       <div className="grid gap-4 lg:grid-cols-4">
         <Gauge label="API latency" max={1_000} tone="blue" value={metrics.latencyMs} />
         <Gauge label="Memory usage (MB)" max={2_048} tone="amber" value={metrics.memoryUsageMb} />
-        <Gauge label="Active agents" max={Math.max(1, agents.length || metrics.activeAgents)} tone="emerald" value={metrics.activeAgents || agents.length} />
+        <Gauge
+          label="Active agents"
+          max={Math.max(1, agents.length || metrics.activeAgents)}
+          tone="emerald"
+          value={metrics.activeAgents || agents.length}
+        />
         <Gauge label="Active clients" max={2_000} tone="blue" value={metrics.activeClients} />
       </div>
 

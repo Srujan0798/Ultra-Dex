@@ -12,10 +12,10 @@
  */
 
 import {
-    MiddlewarePipeline,
-    loggingMiddleware,
-    cacheMiddleware,
-    rateLimitMiddleware,
+  MiddlewarePipeline,
+  loggingMiddleware,
+  cacheMiddleware,
+  rateLimitMiddleware,
 } from '../index.ts';
 
 // ---------------------------------------------------------------------------
@@ -35,10 +35,10 @@ pipeline.use(rateLimitMiddleware({ maxRequests: 10, windowMs: 60_000 }));
 
 // Layer 4: Custom — add a watermark to all responses
 pipeline.use('watermark', async (ctx, next) => {
-    await next();
-    if (ctx.result && typeof ctx.result.content === 'string') {
-        ctx.result.content += ' [via Ultra-Dex]';
-    }
+  await next();
+  if (ctx.result && typeof ctx.result.content === 'string') {
+    ctx.result.content += ' [via Ultra-Dex]';
+  }
 });
 
 console.log('🔧 Middleware Pipeline Demo\n');
@@ -50,10 +50,10 @@ console.log(`  Loaded middleware: ${pipeline.list().join(' → ')}\n`);
 
 // Simulate a "provider" as the final handler
 const mockHandler = async (ctx, next) => {
-    ctx.result = {
-        content: `Response to: ${ctx.args?.[0] || 'unknown'}`,
-        usage: { promptTokens: 15, completionTokens: 25 },
-    };
+  ctx.result = {
+    content: `Response to: ${ctx.args?.[0] || 'unknown'}`,
+    usage: { promptTokens: 15, completionTokens: 25 },
+  };
 };
 
 pipeline.use('handler', mockHandler);

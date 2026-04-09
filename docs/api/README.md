@@ -13,24 +13,28 @@ Complete API documentation for Ultra-Dex command-line interface, agent systems, 
 Ultra-Dex provides multiple API layers to serve different use cases:
 
 ### 1. **CLI API** (Command-Line Interface)
+
 - **Purpose:** Primary user interface for Ultra-Dex
 - **Format:** Command-line arguments and flags
 - **Scope:** Project initialization, planning, execution, verification
 - **Target Users:** Developers, DevOps engineers, architects
 
 ### 2. **Agent API** (AI Agent Interface)
+
 - **Purpose:** Agent-to-agent and agent-to-system communication
 - **Format:** Structured prompts and responses
 - **Scope:** Multi-agent orchestration, task coordination
 - **Target Users:** AI agents, automation systems
 
 ### 3. **Integration API** (MCP Protocol)
+
 - **Purpose:** Context synchronization across tools
 - **Format:** Model Context Protocol (MCP) messages
 - **Scope:** Real-time context sharing between AI tools
 - **Target Users:** IDEs, AI tools, development environments
 
 ### 4. **Programmatic API** (Node.js Library)
+
 - **Purpose:** Direct programmatic access to Ultra-Dex features
 - **Format:** JavaScript/TypeScript functions and classes
 - **Scope:** Embedding Ultra-Dex functionality in other tools
@@ -70,6 +74,7 @@ docs/api/
 ## 🚀 Quick Start APIs
 
 ### CLI API Quick Reference
+
 ```bash
 # Initialize a new project
 ultra-dex init [project-name] [options]
@@ -88,12 +93,13 @@ ultra-dex serve [options]
 ```
 
 ### Programmatic API Quick Reference
+
 ```javascript
 import { UltraDex } from 'ultra-dex';
 
 const ultra = new UltraDex({
   apiKey: process.env.ULTRA_DEX_API_KEY,
-  config: './ultra-dex.config.json'
+  config: './ultra-dex.config.json',
 });
 
 // Initialize project
@@ -110,6 +116,7 @@ const verification = await ultra.verify(plan.projectPath);
 ```
 
 ### Agent API Quick Reference
+
 ```javascript
 // Agent communication format
 const agentMessage = {
@@ -123,10 +130,10 @@ const agentMessage = {
     metadata: {
       priority: 'high|medium|low',
       deadline: 'timestamp',
-      dependencies: ['other-task-ids']
-    }
+      dependencies: ['other-task-ids'],
+    },
   },
-  timestamp: new Date().toISOString()
+  timestamp: new Date().toISOString(),
 };
 ```
 
@@ -135,37 +142,41 @@ const agentMessage = {
 ## 📋 API Categories
 
 ### **Core CLI Commands**
-| Command | Purpose | Common Options |
-|---------|---------|----------------|
-| `init` | Project initialization | `--template`, `--config` |
-| `generate` | Plan generation | `--model`, `--output` |
-| `swarm` | Agent orchestration | `--parallel`, `--agents` |
-| `verify` | Quality assurance | `--full`, `--steps` |
-| `serve` | Dashboard & MCP server | `--port`, `--host` |
+
+| Command    | Purpose                | Common Options           |
+| ---------- | ---------------------- | ------------------------ |
+| `init`     | Project initialization | `--template`, `--config` |
+| `generate` | Plan generation        | `--model`, `--output`    |
+| `swarm`    | Agent orchestration    | `--parallel`, `--agents` |
+| `verify`   | Quality assurance      | `--full`, `--steps`      |
+| `serve`    | Dashboard & MCP server | `--port`, `--host`       |
 
 ### **Advanced CLI Commands**
-| Command | Purpose | Common Options |
-|---------|---------|----------------|
-| `mcp` | Context protocol management | `--connect`, `--listen` |
-| `memory` | Context and memory management | `--persist`, `--retrieve` |
-| `quality` | Quality gate management | `--check`, `--report` |
-| `governance` | Compliance and security | `--audit`, `--policy` |
-| `metrics` | Performance monitoring | `--collect`, `--report` |
+
+| Command      | Purpose                       | Common Options            |
+| ------------ | ----------------------------- | ------------------------- |
+| `mcp`        | Context protocol management   | `--connect`, `--listen`   |
+| `memory`     | Context and memory management | `--persist`, `--retrieve` |
+| `quality`    | Quality gate management       | `--check`, `--report`     |
+| `governance` | Compliance and security       | `--audit`, `--policy`     |
+| `metrics`    | Performance monitoring        | `--collect`, `--report`   |
 
 ### **Agent System APIs**
-| Endpoint | Purpose | Payload Format |
-|----------|---------|----------------|
-| `/agents/list` | Get available agents | `{}` |
-| `/agents/execute` | Execute agent task | `{agent, task, context}` |
+
+| Endpoint              | Purpose              | Payload Format                    |
+| --------------------- | -------------------- | --------------------------------- |
+| `/agents/list`        | Get available agents | `{}`                              |
+| `/agents/execute`     | Execute agent task   | `{agent, task, context}`          |
 | `/agents/orchestrate` | Multi-agent workflow | `{workflow, tasks, dependencies}` |
-| `/agents/status` | Agent status check | `{agentId}` |
-| `/agents/logs` | Agent execution logs | `{agentId, timeframe}` |
+| `/agents/status`      | Agent status check   | `{agentId}`                       |
+| `/agents/logs`        | Agent execution logs | `{agentId, timeframe}`            |
 
 ---
 
 ## 🔐 Authentication & Security
 
 ### API Keys
+
 All programmatic API access requires authentication:
 
 ```javascript
@@ -174,18 +185,21 @@ process.env.ULTRA_DEX_API_KEY = 'sk-ultradex-...';
 
 // Or pass in configuration
 const ultra = new UltraDex({
-  apiKey: 'sk-ultradex-...'
+  apiKey: 'sk-ultradex-...',
 });
 ```
 
 ### Rate Limiting
+
 - **CLI Usage:** Unlimited for local execution
 - **API Calls:** 1000 requests/hour (adjustable)
 - **Agent Operations:** 500 operations/hour
 - **MCP Messages:** 10,000 messages/hour
 
 ### Security Headers
+
 All API requests should include:
+
 - `Authorization: Bearer sk-ultradex-...`
 - `X-Ultra-Dex-Version: 6.0.0`
 - `X-Ultra-Dex-Client: client-identifier`
@@ -195,6 +209,7 @@ All API requests should include:
 ## 🧪 Testing & Validation
 
 ### API Testing
+
 ```bash
 # Test CLI commands
 ultra-dex test api --command init
@@ -207,6 +222,7 @@ ultra-dex test mcp --protocol v2
 ```
 
 ### Mock API Server
+
 For development and testing, Ultra-Dex provides a mock API server:
 
 ```bash
@@ -222,12 +238,14 @@ ultra-dex test --target http://localhost:3002
 ## 🔄 Versioning & Compatibility
 
 ### API Versioning
+
 - **CLI API:** Versioned with Ultra-Dex releases (v6.0.0)
 - **Agent API:** Versioned independently (v2.1)
 - **MCP Protocol:** Versioned as standard (v2.0)
 - **Programmatic API:** SemVer compatible (v1.x)
 
 ### Backward Compatibility
+
 - CLI commands maintain backward compatibility within major versions
 - Agent prompts may evolve between versions
 - MCP protocol maintains compatibility with v1.x
@@ -238,17 +256,20 @@ ultra-dex test --target http://localhost:3002
 ## 📞 Support & Resources
 
 ### Documentation
+
 - [CLI Command Reference](./reference/CLI-REFERENCE.md) - Complete command documentation
 - [Agent API Guide](./AGENT-API.md) - Agent communication protocols
 - [Integration Guide](./INTEGRATION-API.md) - MCP and tool integration
 - [Programmatic API](./PROGRAMMATIC-API.md) - Library usage guide
 
 ### Examples
+
 - [API Usage Examples](./EXAMPLES.md) - Practical implementation examples
 - [Integration Examples](./INTEGRATION-EXAMPLES.md) - Tool integration examples
 - [Agent Examples](./AGENT-EXAMPLES.md) - Agent communication examples
 
 ### Support
+
 - **API Issues:** [GitHub Issues](https://github.com/Srujan0798/Ultra-Dex/issues)
 - **Integration Help:** [Discord Community](https://discord.gg/ultra-dex)
 - **Enterprise Support:** [Enterprise Portal](https://enterprise.ultra-dex.ai)
@@ -258,18 +279,21 @@ ultra-dex test --target http://localhost:3002
 ## 🚀 Getting Started
 
 ### For CLI Users
+
 1. Start with the [CLI Command Reference](./reference/CLI-REFERENCE.md)
 2. Review [Authentication](./AUTHENTICATION.md) requirements
 3. Check [Error Handling](./ERROR-HANDLING.md) for troubleshooting
 4. Explore [Examples](./EXAMPLES.md) for practical usage
 
 ### For Integrators
+
 1. Review the [Integration API](./INTEGRATION-API.md) documentation
 2. Understand the [MCP Protocol](./specs/MCP-SPEC-v2.md) specification
 3. Test with the [Mock Server](./testing/MOCK-SERVER.md)
 4. Validate against [Schema Definitions](./schemas/)
 
 ### For Developers
+
 1. Install the [Programmatic API](./PROGRAMMATIC-API.md) library
 2. Review the [Authentication](./AUTHENTICATION.md) setup
 3. Test with [API Examples](./EXAMPLES.md)
@@ -280,12 +304,14 @@ ultra-dex test --target http://localhost:3002
 ## 📊 API Performance Metrics
 
 ### Response Times
+
 - **CLI Commands:** <100ms average
 - **Agent Operations:** <500ms average
 - **MCP Messages:** <50ms average
 - **API Calls:** <200ms average
 
 ### Availability
+
 - **CLI:** 100% (local execution)
 - **API:** 99.9% uptime SLA
 - **MCP Protocol:** 99.95% uptime SLA

@@ -12,10 +12,10 @@ This document provides a comprehensive cross-reference matrix to help you naviga
 
 ### 🚀 Getting Started
 
-| Document                                              | Related To          | See Also                                                                                                      |
-| ----------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Document                                              | Related To          | See Also                                                                                                     |
+| ----------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------ |
 | [Getting Started](./guides/basics/GETTING_STARTED.md) | Installation, setup | [Quick Start](./api/reference/01-QUICK-START.md), [User Guide](./guides/basics/USER-GUIDE.md)                |
-| [Quick Start](./api/reference/01-QUICK-START.md)      | First 5 minutes     | [Getting Started](./guides/basics/GETTING_STARTED.md), [CLI Reference](./api/reference/CLI-REFERENCE.md)      |
+| [Quick Start](./api/reference/01-QUICK-START.md)      | First 5 minutes     | [Getting Started](./guides/basics/GETTING_STARTED.md), [CLI Reference](./api/reference/CLI-REFERENCE.md)     |
 | [User Guide](./guides/basics/USER-GUIDE.md)           | Comprehensive usage | [Getting Started](./guides/basics/GETTING_STARTED.md), [Troubleshooting](./api/reference/TROUBLESHOOTING.md) |
 
 ### 🤖 AI & Agents
@@ -24,42 +24,42 @@ This document provides a comprehensive cross-reference matrix to help you naviga
 | ----------------------------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------- |
 | [AgPrompts Index](./AgPrompts/INDEX.md)                     | All agent prompts     | [AgPrompts VERSIONS](./AgPrompts/VERSIONS.md), [Custom Agents](./guides/ai/CUSTOM-AGENTS-GUIDE.md) |
 | [Custom Agents](./guides/ai/CUSTOM-AGENTS-GUIDE.md)         | Creating agents       | [AgPrompts](./AgPrompts/INDEX.md), [Agent Orchestration](./guides/ai/PROJECT-ORCHESTRATION.md)     |
-| [Agent Orchestration](./guides/ai/PROJECT-ORCHESTRATION.md) | Multi-agent workflows | [Custom Agents](./guides/ai/CUSTOM-AGENTS-GUIDE.md), [Architecture](./architecture/)              |
-| [AI Model Selection](./guides/ai/AI-MODEL-SELECTION.md)     | Choosing AI models    | [Custom Agents](./guides/ai/CUSTOM-AGENTS-GUIDE.md), [API Reference](./api/)                      |
+| [Agent Orchestration](./guides/ai/PROJECT-ORCHESTRATION.md) | Multi-agent workflows | [Custom Agents](./guides/ai/CUSTOM-AGENTS-GUIDE.md), [Architecture](./architecture/)               |
+| [AI Model Selection](./guides/ai/AI-MODEL-SELECTION.md)     | Choosing AI models    | [Custom Agents](./guides/ai/CUSTOM-AGENTS-GUIDE.md), [API Reference](./api/)                       |
 
 ### 🏗️ Architecture & Design
 
-| Document                                               | Related To      | See Also                                                                                                    |
-| ------------------------------------------------------ | --------------- | ----------------------------------------------------------------------------------------------------------- |
-| [Architecture](./architecture/)                        | System design   | [MCP Integration](./api/reference/MCP-INTEGRATION.md), [Implementation Plan](../../IMPLEMENTATION-PLAN.md) |
-| [Implementation Plan](../../IMPLEMENTATION-PLAN.md)    | Technical specs | [Architecture](./architecture/), [ROADMAP](../../ROADMAP.md)                                                |
+| Document                                              | Related To      | See Also                                                                                                   |
+| ----------------------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------- |
+| [Architecture](./architecture/)                       | System design   | [MCP Integration](./api/reference/MCP-INTEGRATION.md), [Implementation Plan](../../IMPLEMENTATION-PLAN.md) |
+| [Implementation Plan](../../IMPLEMENTATION-PLAN.md)   | Technical specs | [Architecture](./architecture/), [ROADMAP](../../ROADMAP.md)                                               |
 | [MCP Integration](./api/reference/MCP-INTEGRATION.md) | MCP protocol    | [Architecture](./architecture/), [API Reference](./api/)                                                   |
 
 ### 🔌 API & CLI
 
-| Document                                           | Related To        | See Also                                                                                                   |
-| -------------------------------------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------- |
+| Document                                          | Related To        | See Also                                                                                                 |
+| ------------------------------------------------- | ----------------- | -------------------------------------------------------------------------------------------------------- |
 | [CLI Reference](./api/reference/CLI-REFERENCE.md) | Command reference | [API Reference](./api/reference/API-REFERENCE.md), [Quick Start](./api/reference/01-QUICK-START.md)      |
 | [API Reference](./api/reference/API-REFERENCE.md) | API documentation | [CLI Reference](./api/reference/CLI-REFERENCE.md), [MCP Integration](./api/reference/MCP-INTEGRATION.md) |
-| [Plugins](./api/reference/PLUGINS.md)             | Plugin system     | [Plugin Dev](./guides/dev/PLUGIN-DEV.md), [Architecture](./architecture/)                                  |
+| [Plugins](./api/reference/PLUGINS.md)             | Plugin system     | [Plugin Dev](./guides/dev/PLUGIN-DEV.md), [Architecture](./architecture/)                                |
 
 ### 🚢 Deployment & Operations
 
 | Document                                                               | Related To            | See Also                                                                                                               |
 | ---------------------------------------------------------------------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| [Production Guide](./guides/deployment/PRODUCTION_DEPLOYMENT_GUIDE.md) | Production deployment | [CI/CD Guide](./guides/CICD-GUIDE.md), [Troubleshooting](./api/reference/TROUBLESHOOTING.md)                          |
+| [Production Guide](./guides/deployment/PRODUCTION_DEPLOYMENT_GUIDE.md) | Production deployment | [CI/CD Guide](./guides/CICD-GUIDE.md), [Troubleshooting](./api/reference/TROUBLESHOOTING.md)                           |
 | [CI/CD Guide](./guides/CICD-GUIDE.md)                                  | Automated deployment  | [Production Guide](./guides/deployment/PRODUCTION_DEPLOYMENT_GUIDE.md), [Testing Guide](./guides/dev/TESTING_GUIDE.md) |
-| [Troubleshooting](./api/reference/TROUBLESHOOTING.md)                 | Problem solving       | [FAQ](./api/reference/FAQ.md), [User Guide](./guides/basics/USER-GUIDE.md)                                            |
+| [Troubleshooting](./api/reference/TROUBLESHOOTING.md)                  | Problem solving       | [FAQ](./api/reference/FAQ.md), [User Guide](./guides/basics/USER-GUIDE.md)                                             |
 
 ### 📚 Reference
 
-| Document                              | Related To       | See Also                                                                                            |
-| ------------------------------------- | ---------------- | --------------------------------------------------------------------------------------------------- |
-| [README](../README.md)                | Project overview | [ROADMAP](../../ROADMAP.md), [Getting Started](./guides/basics/GETTING_STARTED.md)                  |
-| [ROADMAP](../../ROADMAP.md)           | Future plans     | [Implementation Plan](../../IMPLEMENTATION-PLAN.md), [VERSIONS](./AgPrompts/VERSIONS.md)            |
-| [VERSIONS](./AgPrompts/VERSIONS.md)   | Version history  | [CHANGELOG](./AgPrompts/CHANGELOG.md), [ROADMAP](../../ROADMAP.md)                                  |
-| [CHANGELOG](./AgPrompts/CHANGELOG.md) | Change history   | [VERSIONS](./AgPrompts/VERSIONS.md), [ROADMAP](../../ROADMAP.md)                                    |
-| [FAQ](./api/reference/FAQ.md)        | Common questions | [Troubleshooting](./api/reference/TROUBLESHOOTING.md), [User Guide](./guides/basics/USER-GUIDE.md) |
+| Document                              | Related To       | See Also                                                                                           |
+| ------------------------------------- | ---------------- | -------------------------------------------------------------------------------------------------- |
+| [README](../README.md)                | Project overview | [ROADMAP](../../ROADMAP.md), [Getting Started](./guides/basics/GETTING_STARTED.md)                 |
+| [ROADMAP](../../ROADMAP.md)           | Future plans     | [Implementation Plan](../../IMPLEMENTATION-PLAN.md), [VERSIONS](./AgPrompts/VERSIONS.md)           |
+| [VERSIONS](./AgPrompts/VERSIONS.md)   | Version history  | [CHANGELOG](./AgPrompts/CHANGELOG.md), [ROADMAP](../../ROADMAP.md)                                 |
+| [CHANGELOG](./AgPrompts/CHANGELOG.md) | Change history   | [VERSIONS](./AgPrompts/VERSIONS.md), [ROADMAP](../../ROADMAP.md)                                   |
+| [FAQ](./api/reference/FAQ.md)         | Common questions | [Troubleshooting](./api/reference/TROUBLESHOOTING.md), [User Guide](./guides/basics/USER-GUIDE.md) |
 
 ---
 

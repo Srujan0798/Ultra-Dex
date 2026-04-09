@@ -35,13 +35,17 @@ describe('MemoryBridge LRU Cache Eviction', () => {
         sessionId: `session_${i}`,
         goal: `Test goal ${i}`,
         plan: { tasks: [] },
-        taskResults: []
+        taskResults: [],
       });
     }
 
     // Cache should only have maxCacheSize items
     const stats = bridge.getStats();
-    assert.strictEqual(stats.cachedSessions, maxCacheSize, `Cache should have ${maxCacheSize} items`);
+    assert.strictEqual(
+      stats.cachedSessions,
+      maxCacheSize,
+      `Cache should have ${maxCacheSize} items`
+    );
 
     // Verify oldest items (1, 2) were evicted, newest (3, 4, 5) remain
     assert.strictEqual(bridge._cache.has('session_1'), false, 'session_1 should be evicted');
@@ -62,7 +66,7 @@ describe('MemoryBridge LRU Cache Eviction', () => {
         sessionId: `session_${i}`,
         goal: `Test goal ${i}`,
         plan: { tasks: [] },
-        taskResults: []
+        taskResults: [],
       });
     }
 
@@ -74,12 +78,20 @@ describe('MemoryBridge LRU Cache Eviction', () => {
       sessionId: 'session_4',
       goal: 'Test goal 4',
       plan: { tasks: [] },
-      taskResults: []
+      taskResults: [],
     });
 
     // session_2 should be evicted, session_1 should remain
-    assert.strictEqual(bridge._cache.has('session_1'), true, 'session_1 should remain (was accessed)');
-    assert.strictEqual(bridge._cache.has('session_2'), false, 'session_2 should be evicted (oldest)');
+    assert.strictEqual(
+      bridge._cache.has('session_1'),
+      true,
+      'session_1 should remain (was accessed)'
+    );
+    assert.strictEqual(
+      bridge._cache.has('session_2'),
+      false,
+      'session_2 should be evicted (oldest)'
+    );
     assert.strictEqual(bridge._cache.has('session_3'), true, 'session_3 should remain');
     assert.strictEqual(bridge._cache.has('session_4'), true, 'session_4 should remain');
   });
@@ -93,7 +105,7 @@ describe('MemoryBridge LRU Cache Eviction', () => {
       sessionId: 'session_hit',
       goal: 'Test goal',
       plan: { tasks: [] },
-      taskResults: []
+      taskResults: [],
     });
 
     // Load existing context (cache hit)
@@ -137,7 +149,7 @@ describe('MemoryBridge LRU Cache Eviction', () => {
         sessionId: `session_${i}`,
         goal: `Test goal ${i}`,
         plan: { tasks: [] },
-        taskResults: []
+        taskResults: [],
       });
     }
 
@@ -159,7 +171,7 @@ describe('MemoryBridge LRU Cache Eviction', () => {
       sessionId: 'session_to_clear',
       goal: 'Test goal',
       plan: { tasks: [] },
-      taskResults: []
+      taskResults: [],
     });
 
     const initialOrderLength = bridge._cacheOrder.length;
@@ -168,7 +180,10 @@ describe('MemoryBridge LRU Cache Eviction', () => {
     await bridge.clearSession('session_to_clear');
 
     assert.strictEqual(bridge._cacheOrder.length, 0, 'Cache order should be empty after clear');
-    assert.strictEqual(bridge._cache.has('session_to_clear'), false, 'Cache should not have session');
+    assert.strictEqual(
+      bridge._cache.has('session_to_clear'),
+      false,
+      'Cache should not have session'
+    );
   });
 });
-

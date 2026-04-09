@@ -1,4 +1,4 @@
-import fs from "fs/promises";
+import fs from 'fs/promises';
 class FinancialModel {
   constructor(options = {}) {
     this.options = {
@@ -17,7 +17,7 @@ class FinancialModel {
       // 3 years
       seedFunding: options.seedFunding || 2e6,
       // $2M seed funding
-      ...options
+      ...options,
     };
     this.projections = [];
     this.unitEconomics = {};
@@ -57,7 +57,7 @@ class FinancialModel {
       projections.push({
         month: month + 1,
         year: Math.floor(month / 12) + 1,
-        monthOfYear: month % 12 + 1,
+        monthOfYear: (month % 12) + 1,
         users: currentUsers,
         newUsers,
         churnedUsers,
@@ -79,7 +79,7 @@ class FinancialModel {
         growthRate: this.options.growthRate,
         runWayMonths: cashBalance > 0 ? Math.floor(cashBalance / operatingExpenses) : 0,
         isProfitable: netIncome > 0,
-        monthUntilProfitability: this.getMonthUntilProfitability(projections, month)
+        monthUntilProfitability: this.getMonthUntilProfitability(projections, month),
       });
     }
     this.projections = projections;
@@ -150,7 +150,7 @@ class FinancialModel {
       // 12 people by end of year 1
       { month: 24, size: 25, avgSalary: 1e5 },
       // 25 people by end of year 2
-      { month: 36, size: 50, avgSalary: 1e5 }
+      { month: 36, size: 50, avgSalary: 1e5 },
       // 50 people by end of year 3
     ];
     let teamSize = 2;
@@ -169,7 +169,7 @@ class FinancialModel {
         break;
       }
     }
-    const monthlySalaryCost = teamSize * avgSalary / 12;
+    const monthlySalaryCost = (teamSize * avgSalary) / 12;
     const benefitsMultiplier = 1.4;
     return monthlySalaryCost * benefitsMultiplier;
   }
@@ -245,7 +245,7 @@ class FinancialModel {
       lifetimeValue: latest.ltv,
       customerValue: latest.ltv / latest.users,
       // Value per user
-      revenuePerUser: latest.mrr / latest.users
+      revenuePerUser: latest.mrr / latest.users,
     };
     return this.unitEconomics;
   }
@@ -268,7 +268,7 @@ class FinancialModel {
       month1: 0.85,
       month3: 0.7,
       month6: 0.55,
-      month12: 0.4
+      month12: 0.4,
     };
   }
   /**
@@ -296,7 +296,7 @@ class FinancialModel {
       breakEvenMRR: Math.round(monthlyExpenses / this.options.grossMargin),
       projectedCashAtMonth12: this.getProjectedCashAtMonth(12),
       projectedCashAtMonth24: this.getProjectedCashAtMonth(24),
-      projectedCashAtMonth36: this.getProjectedCashAtMonth(36)
+      projectedCashAtMonth36: this.getProjectedCashAtMonth(36),
     };
     return this.burnRate;
   }
@@ -332,64 +332,64 @@ class FinancialModel {
       {
         month: 0,
         funding: this.options.seedFunding,
-        description: "Seed funding received",
+        description: 'Seed funding received',
         users: this.options.initialUsers,
         mrr: this.options.initialMRR,
         teamSize: 2,
         // Founders
-        valuation: 8e6
+        valuation: 8e6,
         // $8M post-money valuation
       },
       {
         month: 6,
         funding: 0,
-        description: "Product-market fit achieved",
+        description: 'Product-market fit achieved',
         users: Math.floor(this.options.initialUsers * Math.pow(1 + this.options.growthRate, 6)),
         mrr: Math.round(this.options.initialMRR * Math.pow(1 + this.options.growthRate, 6)),
         teamSize: 6,
-        valuation: 12e6
+        valuation: 12e6,
         // $12M valuation after PMF
       },
       {
         month: 12,
         funding: 5e6,
         // Series A
-        description: "Series A funding round",
+        description: 'Series A funding round',
         users: Math.floor(this.options.initialUsers * Math.pow(1 + this.options.growthRate, 12)),
         mrr: Math.round(this.options.initialMRR * Math.pow(1 + this.options.growthRate, 12)),
         teamSize: 15,
-        valuation: 25e6
+        valuation: 25e6,
         // $25M post-money valuation
       },
       {
         month: 18,
         funding: 0,
-        description: "International expansion",
+        description: 'International expansion',
         users: Math.floor(this.options.initialUsers * Math.pow(1 + this.options.growthRate, 18)),
         mrr: Math.round(this.options.initialMRR * Math.pow(1 + this.options.growthRate, 18)),
         teamSize: 22,
-        valuation: 35e6
+        valuation: 35e6,
       },
       {
         month: 24,
         funding: 15e6,
         // Series B
-        description: "Series B funding round",
+        description: 'Series B funding round',
         users: Math.floor(this.options.initialUsers * Math.pow(1 + this.options.growthRate, 24)),
         mrr: Math.round(this.options.initialMRR * Math.pow(1 + this.options.growthRate, 24)),
         teamSize: 35,
-        valuation: 75e6
+        valuation: 75e6,
       },
       {
         month: 36,
         funding: 0,
-        description: "IPO preparation or strategic acquisition target",
+        description: 'IPO preparation or strategic acquisition target',
         users: Math.floor(this.options.initialUsers * Math.pow(1 + this.options.growthRate, 36)),
         mrr: Math.round(this.options.initialMRR * Math.pow(1 + this.options.growthRate, 36)),
         teamSize: 50,
-        valuation: 2e8
+        valuation: 2e8,
         // $200M valuation at IPO readiness
-      }
+      },
     ];
     return this.milestones;
   }
@@ -401,7 +401,7 @@ class FinancialModel {
   generateCapTable(seedFunding = 2e6) {
     const preMoneyValuation = 6e6;
     const postMoneyValuation = preMoneyValuation + seedFunding;
-    const equityPercentage = seedFunding / postMoneyValuation * 100;
+    const equityPercentage = (seedFunding / postMoneyValuation) * 100;
     this.capTable = {
       preMoneyValuation,
       postMoneyValuation,
@@ -412,7 +412,7 @@ class FinancialModel {
         // 80% for founders after seed
         investors: 20,
         // 20% for investors from seed
-        optionsPool: 10
+        optionsPool: 10,
         // 10% options pool (included in dilution)
       },
       shares: {
@@ -422,7 +422,7 @@ class FinancialModel {
         // 8M shares for founders (80%)
         investorShares: 2e6,
         // 2M shares for investors (20%)
-        optionsPool: 1e6
+        optionsPool: 1e6,
         // 1M shares in options pool
       },
       milestones: {
@@ -430,9 +430,9 @@ class FinancialModel {
           amount: seedFunding,
           equity: 20,
           valuation: postMoneyValuation,
-          date: "Q2 2026"
-        }
-      }
+          date: 'Q2 2026',
+        },
+      },
     };
     return this.capTable;
   }
@@ -452,7 +452,7 @@ class FinancialModel {
         churnRate: this.options.churnRate,
         growthRate: this.options.growthRate,
         cashBalance: latest.cashBalance,
-        isProfitable: latest.netIncome > 0
+        isProfitable: latest.netIncome > 0,
       },
       unitEconomics: this.calculateUnitEconomics(),
       burnRate: this.calculateBurnRate(),
@@ -461,7 +461,7 @@ class FinancialModel {
       projections: {
         year1: this.projections.slice(0, 12),
         year2: this.projections.slice(12, 24),
-        year3: this.projections.slice(24, 36)
+        year3: this.projections.slice(24, 36),
       },
       keyMetrics: {
         year1: {
@@ -469,23 +469,23 @@ class FinancialModel {
           mrr: this.projections[11].mrr,
           arr: this.projections[11].arr,
           teamSize: 12,
-          cashBalance: this.projections[11].cashBalance
+          cashBalance: this.projections[11].cashBalance,
         },
         year2: {
           users: this.projections[23].users,
           mrr: this.projections[23].mrr,
           arr: this.projections[23].arr,
           teamSize: 25,
-          cashBalance: this.projections[23].cashBalance
+          cashBalance: this.projections[23].cashBalance,
         },
         year3: {
           users: this.projections[35].users,
           mrr: this.projections[35].mrr,
           arr: this.projections[35].arr,
           teamSize: 50,
-          cashBalance: this.projections[35].cashBalance
-        }
-      }
+          cashBalance: this.projections[35].cashBalance,
+        },
+      },
     };
   }
   /**
@@ -494,18 +494,18 @@ class FinancialModel {
    * @param {string} path - Output path
    * @returns {Promise<void>} Export completed
    */
-  async export(format = "json", outputPath = "./financial-model-export") {
+  async export(format = 'json', outputPath = './financial-model-export') {
     const data = this.generateSummary();
     switch (format.toLowerCase()) {
-      case "json":
+      case 'json':
         await fs.writeFile(`${outputPath}.json`, JSON.stringify(data, null, 2));
         console.log(`Financial model exported to ${outputPath}.json`);
         break;
-      case "csv":
+      case 'csv':
         await this.exportToCSV(data, `${outputPath}.csv`);
         console.log(`Financial model exported to ${outputPath}.csv`);
         break;
-      case "excel":
+      case 'excel':
         await this.exportToExcel(data, `${outputPath}.xlsx`);
         console.log(`Financial model exported to ${outputPath}.xlsx`);
         break;
@@ -520,7 +520,7 @@ class FinancialModel {
    * @returns {Promise<void>} Export completed
    */
   async exportToCSV(data, filePath) {
-    let csv = "Month,Year,Users,MRR,ARR,NetIncome,CashBalance,GrowthRate,ChurnRate\n";
+    let csv = 'Month,Year,Users,MRR,ARR,NetIncome,CashBalance,GrowthRate,ChurnRate\n';
     for (const proj of this.projections) {
       csv += `${proj.month},${proj.year},${proj.users},${proj.mrr},${proj.arr},${proj.netIncome},${proj.cashBalance},${proj.growthRate},${proj.churnRate}
 `;
@@ -534,7 +534,7 @@ class FinancialModel {
    * @returns {Promise<void>} Export completed
    */
   async exportToExcel(data, filePath) {
-    await fs.writeFile(filePath, "Excel export would be generated here with proper formatting");
+    await fs.writeFile(filePath, 'Excel export would be generated here with proper formatting');
   }
   /**
    * Get financial health metrics
@@ -542,13 +542,13 @@ class FinancialModel {
    */
   getHealth() {
     return {
-      status: "healthy",
+      status: 'healthy',
       projectionsGenerated: this.projections.length > 0,
       unitEconomicsCalculated: Object.keys(this.unitEconomics).length > 0,
       burnRateCalculated: Object.keys(this.burnRate).length > 0,
       milestonesDefined: this.milestones.length > 0,
       capTableGenerated: Object.keys(this.capTable).length > 0,
-      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
     };
   }
 }
@@ -558,8 +558,8 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   const model = new FinancialModel();
   const projections = model.generateProjections();
   const summary = model.generateSummary();
-  console.log("\u{1F4CA} Ultra-Dex Financial Model & Projections");
-  console.log("=========================================");
+  console.log('\u{1F4CA} Ultra-Dex Financial Model & Projections');
+  console.log('=========================================');
   console.log(`Initial MRR: $${summary.summary.totalMRR.toLocaleString()}`);
   console.log(`Initial Users: ${summary.summary.totalUsers.toLocaleString()}`);
   console.log(`Year 3 ARR: $${summary.keyMetrics.year3.arr.toLocaleString()}`);
@@ -567,9 +567,6 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   console.log(`LTV/CAC Ratio: ${summary.unitEconomics.ltvToCac.toFixed(2)}x`);
   console.log(`Months to Profitability: ${summary.burnRate.monthsToProfitability}`);
   console.log(`Runway with $2M: ${summary.burnRate.runwayMonths} months`);
-  model.export("json", "./financial-model-investor-presentation").catch(console.error);
+  model.export('json', './financial-model-investor-presentation').catch(console.error);
 }
-export {
-  model_default as default,
-  financialModel
-};
+export { model_default as default, financialModel };

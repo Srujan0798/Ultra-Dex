@@ -66,9 +66,9 @@ export class NVIDIAProvider {
 
   /**
    * Generate completion
-   * @param {string} systemPrompt 
-   * @param {string} userPrompt 
-   * @param {Object} options 
+   * @param {string} systemPrompt
+   * @param {string} userPrompt
+   * @param {Object} options
    * @returns {Promise<Object>}
    */
   async generate(systemPrompt, userPrompt, options = {}) {
@@ -77,10 +77,10 @@ export class NVIDIAProvider {
 
   /**
    * Generate streaming completion
-   * @param {string} systemPrompt 
-   * @param {string} userPrompt 
-   * @param {Function} onToken 
-   * @param {Object} options 
+   * @param {string} systemPrompt
+   * @param {string} userPrompt
+   * @param {Function} onToken
+   * @param {Object} options
    * @returns {Promise<Object>}
    */
   async generateStream(systemPrompt, userPrompt, onToken, options = {}) {

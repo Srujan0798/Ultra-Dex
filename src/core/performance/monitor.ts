@@ -3,15 +3,14 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { performance } from "perf_hooks";
-import os from "os";
+import { singleton } from 'tsyringe';
+import { performance } from 'perf_hooks';
+import os from 'os';
 let PerformanceMonitor = class {
   constructor() {
     this.requests = [];
@@ -23,22 +22,27 @@ let PerformanceMonitor = class {
   trackRequest(requestInfo, durationMs) {
     const entry = {
       timestamp: Date.now(),
-      endpoint: requestInfo.endpoint || "unknown",
-      method: requestInfo.method || "GET",
+      endpoint: requestInfo.endpoint || 'unknown',
+      method: requestInfo.method || 'GET',
       durationMs,
-      statusCode: requestInfo.statusCode || 200
+      statusCode: requestInfo.statusCode || 200,
     };
     this.requests.push(entry);
     if (this.requests.length > this.maxHistory) {
       this.requests = this.requests.slice(-this.maxHistory);
     }
     const metricKey = `${requestInfo.method}:${requestInfo.endpoint}`;
-    const existing = this.metrics.get(metricKey) || { count: 0, totalMs: 0, minMs: Infinity, maxMs: 0 };
+    const existing = this.metrics.get(metricKey) || {
+      count: 0,
+      totalMs: 0,
+      minMs: Infinity,
+      maxMs: 0,
+    };
     this.metrics.set(metricKey, {
       count: existing.count + 1,
       totalMs: existing.totalMs + durationMs,
       minMs: Math.min(existing.minMs, durationMs),
-      maxMs: Math.max(existing.maxMs, durationMs)
+      maxMs: Math.max(existing.maxMs, durationMs),
     });
     return entry;
   }
@@ -56,16 +60,16 @@ let PerformanceMonitor = class {
     const memUsage = process.memoryUsage();
     const cpuUsage = process.cpuUsage();
     return {
-      timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
       memory: {
         heapUsed: memUsage.heapUsed,
         heapTotal: memUsage.heapTotal,
         rss: memUsage.rss,
-        external: memUsage.external
+        external: memUsage.external,
       },
       cpu: {
         user: cpuUsage.user,
-        system: cpuUsage.system
+        system: cpuUsage.system,
       },
       uptime: process.uptime(),
       platform: process.platform,
@@ -74,8 +78,8 @@ let PerformanceMonitor = class {
         totalMemory: os.totalmem(),
         freeMemory: os.freemem(),
         cpuCount: os.cpus().length,
-        loadAverage: os.loadavg()
-      }
+        loadAverage: os.loadavg(),
+      },
     };
   }
   // Get performance report
@@ -85,7 +89,7 @@ let PerformanceMonitor = class {
       avgDurationMs: 0,
       p50Ms: 0,
       p95Ms: 0,
-      p99Ms: 0
+      p99Ms: 0,
     };
     if (this.requests.length > 0) {
       const durations = this.requests.map((r) => r.durationMs).sort((a, b) => a - b);
@@ -96,7 +100,7 @@ let PerformanceMonitor = class {
     }
     const endpoints = {};
     for (const [key, stats] of this.metrics.entries()) {
-      const [method, endpoint] = key.split(":");
+      const [method, endpoint] = key.split(':');
       if (!endpoints[endpoint]) {
         endpoints[endpoint] = { count: 0, avgMs: 0, minMs: Infinity, maxMs: 0 };
       }
@@ -109,7 +113,7 @@ let PerformanceMonitor = class {
       summary,
       endpoints,
       system: this.collectMetrics(),
-      uptime: Date.now() - this.startTime
+      uptime: Date.now() - this.startTime,
     };
   }
   // Get slow requests
@@ -130,13 +134,7 @@ let PerformanceMonitor = class {
     return this.requests.filter((r) => r.timestamp >= startMs && r.timestamp <= endMs);
   }
 };
-PerformanceMonitor = __decorateClass([
-  singleton()
-], PerformanceMonitor);
+PerformanceMonitor = __decorateClass([singleton()], PerformanceMonitor);
 const performanceMonitor = new PerformanceMonitor();
 var monitor_default = performanceMonitor;
-export {
-  PerformanceMonitor,
-  monitor_default as default,
-  performanceMonitor
-};
+export { PerformanceMonitor, monitor_default as default, performanceMonitor };

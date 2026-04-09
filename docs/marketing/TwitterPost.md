@@ -1,6 +1,7 @@
 # Twitter / X Launch Thread
 
 ## Thread v4.0
+
 1. Ultra-Dex v4.0 is live.  
    A CLI meta-layer for AI coding with planning, memory, and verification.
 2. What it solves: context drift in long-running AI implementation work.

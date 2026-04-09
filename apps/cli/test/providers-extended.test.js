@@ -352,7 +352,10 @@ describe('AI Providers', () => {
  */
 function handleError(error) {
   try {
-    console.error('[providers-extended.test]', error instanceof Error ? error.message : String(error));
+    console.error(
+      '[providers-extended.test]',
+      error instanceof Error ? error.message : String(error)
+    );
   } catch (_) {
     // Fail silently
   }

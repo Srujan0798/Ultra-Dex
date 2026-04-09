@@ -1,6 +1,7 @@
 # Ultra-Dex Enterprise Features Documentation
 
 ## Table of Contents
+
 1. [Overview](#overview)
 2. [Authentication & Authorization](#authentication--authorization)
 3. [Security & Compliance](#security--compliance)
@@ -13,6 +14,7 @@
 Ultra-Dex Enterprise is designed for Fortune 500 companies with comprehensive security, compliance, and governance features. This document outlines the enterprise-grade capabilities that make Ultra-Dex suitable for mission-critical deployments.
 
 ### Key Enterprise Features
+
 - **Single Sign-On (SSO)**: SAML 2.0 and OIDC integration
 - **Role-Based Access Control (RBAC)**: Hierarchical role system
 - **Audit Logging**: Immutable, tamper-evident logs
@@ -29,6 +31,7 @@ Ultra-Dex Enterprise is designed for Fortune 500 companies with comprehensive se
 Ultra-Dex supports enterprise SSO with both SAML 2.0 and OIDC protocols:
 
 #### SAML Configuration
+
 ```javascript
 // apps/cli/lib/auth/sso.js
 import { enterpriseAuth } from '../../src/core/auth/sso.js';
@@ -39,7 +42,7 @@ const samlConfig = {
   issuer: 'your-saml-issuer',
   cert: 'path/to/certificate.pem',
   callbackUrl: 'https://your-domain.com/auth/saml/callback',
-  signatureAlgorithm: 'sha256'
+  signatureAlgorithm: 'sha256',
 };
 
 // Initialize SAML strategy
@@ -47,13 +50,14 @@ await enterpriseAuth.initializeSamlStrategy(samlConfig);
 ```
 
 #### OIDC Configuration
+
 ```javascript
 // Configure OIDC with your identity provider
 const oidcConfig = {
   issuerUrl: 'https://your-idp.com',
   clientId: 'your-client-id',
   clientSecret: 'your-client-secret',
-  redirectUri: 'https://your-domain.com/auth/oidc/callback'
+  redirectUri: 'https://your-domain.com/auth/oidc/callback',
 };
 
 // Initialize OIDC strategy
@@ -78,11 +82,12 @@ const hasPermission = rbacManager.hasPermission('user-123', 'agent:execute');
 const permissions = rbacManager.bulkPermissionCheck('user-123', [
   { resource: 'agent', action: 'create' },
   { resource: 'memory', action: 'write' },
-  { resource: 'config', action: 'admin' }
+  { resource: 'config', action: 'admin' },
 ]);
 ```
 
 #### Role Hierarchy
+
 ```
 Owner → Admin → Manager → Developer → Viewer
 ```
@@ -133,20 +138,25 @@ Immutable audit logs with tamper detection:
 import { auditLogger } from './audit.js';
 
 // Log an event
-await auditLogger.log('auth.login.success', {
-  id: 'user-123',
-  name: 'John Doe',
-  role: 'admin'
-}, {
-  ip: '192.168.1.100',
-  userAgent: 'Mozilla/5.0...'
-}, '192.168.1.100');
+await auditLogger.log(
+  'auth.login.success',
+  {
+    id: 'user-123',
+    name: 'John Doe',
+    role: 'admin',
+  },
+  {
+    ip: '192.168.1.100',
+    userAgent: 'Mozilla/5.0...',
+  },
+  '192.168.1.100'
+);
 
 // Search audit logs
 const logs = await auditLogger.search({
   event: 'auth.login.success',
   after: '2026-02-01',
-  limit: 100
+  limit: 100,
 });
 
 // Verify log integrity
@@ -156,6 +166,7 @@ const integrity = await auditLogger.verifyIntegrity();
 ### Compliance Controls
 
 #### SOC 2 Controls
+
 - Access controls (AC)
 - Security monitoring (SM)
 - Change management (CM)
@@ -163,6 +174,7 @@ const integrity = await auditLogger.verifyIntegrity();
 - Incident response (IR)
 
 #### GDPR Compliance
+
 - Data minimization
 - Purpose limitation
 - Storage limitation
@@ -183,7 +195,7 @@ import { organizationsManager } from './organizations.js';
 const org = await organizationsManager.createOrganization({
   name: 'Acme Corp',
   ownerId: 'user-123',
-  description: 'Acme Corporation organization'
+  description: 'Acme Corporation organization',
 });
 
 // Add member to organization
@@ -204,13 +216,13 @@ const orgConfig = {
     maxAgents: 50,
     maxMemoryEntries: 10000,
     maxStorage: 100 * 1024 * 1024, // 100MB
-    maxApiCalls: 10000
+    maxApiCalls: 10000,
   },
   settings: {
     enableSandbox: true,
     allowExternalTools: false,
-    dataResidency: 'us-west-2'
-  }
+    dataResidency: 'us-west-2',
+  },
 };
 ```
 
@@ -226,7 +238,7 @@ import { performanceOptimizer } from './optimizer.js';
 
 // Cache a query result
 const result = await performanceOptimizer.cacheQuery(
-  'SELECT * FROM agents WHERE status = ?', 
+  'SELECT * FROM agents WHERE status = ?',
   ['active'],
   async () => {
     // Expensive query function
@@ -273,11 +285,7 @@ Advanced security and compliance gateway:
 import { enterpriseGateway } from './gateway.js';
 
 // Process request through enterprise gateway
-const allowed = await enterpriseGateway.processRequest(
-  request,
-  response,
-  next
-);
+const allowed = await enterpriseGateway.processRequest(request, response, next);
 
 // Get system health
 const health = enterpriseGateway.getHealth();
@@ -299,13 +307,13 @@ const results = await loadTester.runLoadTest({
   maxConcurrentUsers: 1000,
   requestsPerSecond: 100,
   testDuration: 300, // 5 minutes
-  targetEndpoint: 'https://your-domain.com/api/v1/agents'
+  targetEndpoint: 'https://your-domain.com/api/v1/agents',
 });
 
 // Run stress test
 const stressResults = await loadTester.runStressTest({
   requestsPerSecond: 1000,
-  testDuration: 600 // 10 minutes
+  testDuration: 600, // 10 minutes
 });
 ```
 
@@ -385,18 +393,21 @@ Comprehensive configuration for enterprise deployments:
 Ultra-Dex supports multiple enterprise deployment models:
 
 #### On-Premises
+
 - Full control over data and infrastructure
 - Air-gapped deployment options
 - Custom security policies
 - Integration with existing enterprise systems
 
 #### Private Cloud
+
 - Dedicated cloud resources
 - Enhanced security controls
 - Custom compliance requirements
 - Enterprise-grade SLA
 
 #### Hybrid Cloud
+
 - On-premises control with cloud scalability
 - Data residency compliance
 - Burst capacity to public cloud
@@ -405,6 +416,7 @@ Ultra-Dex supports multiple enterprise deployment models:
 ## Best Practices
 
 ### Security Best Practices
+
 - Enable SSO with your enterprise identity provider
 - Use role-based access control with principle of least privilege
 - Enable audit logging for all operations
@@ -412,6 +424,7 @@ Ultra-Dex supports multiple enterprise deployment models:
 - Regular security assessments and penetration testing
 
 ### Performance Best Practices
+
 - Use the caching layer for frequently accessed data
 - Optimize database queries with proper indexing
 - Monitor resource utilization regularly
@@ -419,6 +432,7 @@ Ultra-Dex supports multiple enterprise deployment models:
 - Implement proper backup and recovery procedures
 
 ### Compliance Best Practices
+
 - Regular compliance audits
 - Maintain audit logs for required retention periods
 - Implement data classification and handling procedures

@@ -11,11 +11,7 @@ function resolveSessionOrchestrator(sessionId, overrides = []) {
   const sessionContainer = createSessionScope(sessionId, overrides);
   return {
     sessionContainer,
-    orchestrator: sessionContainer.resolve(AgentOrchestrator)
+    orchestrator: sessionContainer.resolve(AgentOrchestrator),
   };
 }
-export {
-  createSessionScope,
-  getSessionId,
-  resolveSessionOrchestrator
-};
+export { createSessionScope, getSessionId, resolveSessionOrchestrator };

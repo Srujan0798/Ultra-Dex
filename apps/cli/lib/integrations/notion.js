@@ -16,11 +16,13 @@ export class NotionClient {
 
   async queryDatabase(databaseId, filter = undefined, sorts = undefined) {
     try {
-      const response = await retryWithBackoff(() => this.client.databases.query({
-        database_id: databaseId,
-        filter,
-        sorts
-      }));
+      const response = await retryWithBackoff(() =>
+        this.client.databases.query({
+          database_id: databaseId,
+          filter,
+          sorts,
+        })
+      );
       return response;
     } catch (error) {
       printError(`Failed to query Notion database ${databaseId}: ${error.message}`);
@@ -30,11 +32,13 @@ export class NotionClient {
 
   async createPage(databaseId, properties, content = []) {
     try {
-      const response = await retryWithBackoff(() => this.client.pages.create({
-        parent: { database_id: databaseId },
-        properties,
-        children: content
-      }));
+      const response = await retryWithBackoff(() =>
+        this.client.pages.create({
+          parent: { database_id: databaseId },
+          properties,
+          children: content,
+        })
+      );
       return response;
     } catch (error) {
       printError(`Failed to create Notion page in database ${databaseId}: ${error.message}`);
@@ -44,10 +48,12 @@ export class NotionClient {
 
   async updatePage(pageId, properties) {
     try {
-      const response = await retryWithBackoff(() => this.client.pages.update({
-        page_id: pageId,
-        properties
-      }));
+      const response = await retryWithBackoff(() =>
+        this.client.pages.update({
+          page_id: pageId,
+          properties,
+        })
+      );
       return response;
     } catch (error) {
       printError(`Failed to update Notion page ${pageId}: ${error.message}`);
@@ -57,7 +63,9 @@ export class NotionClient {
 
   async getPage(pageId) {
     try {
-      const response = await retryWithBackoff(() => this.client.pages.retrieve({ page_id: pageId }));
+      const response = await retryWithBackoff(() =>
+        this.client.pages.retrieve({ page_id: pageId })
+      );
       return response;
     } catch (error) {
       printError(`Failed to retrieve Notion page ${pageId}: ${error.message}`);
@@ -67,11 +75,13 @@ export class NotionClient {
 
   async getBlockChildren(blockId, startCursor = undefined, pageSize = 100) {
     try {
-      const response = await retryWithBackoff(() => this.client.blocks.children.list({
-        block_id: blockId,
-        start_cursor: startCursor,
-        page_size: pageSize
-      }));
+      const response = await retryWithBackoff(() =>
+        this.client.blocks.children.list({
+          block_id: blockId,
+          start_cursor: startCursor,
+          page_size: pageSize,
+        })
+      );
       return response;
     } catch (error) {
       printError(`Failed to get block children for ${blockId}: ${error.message}`);
@@ -81,10 +91,12 @@ export class NotionClient {
 
   async appendBlockChildren(blockId, children) {
     try {
-      const response = await retryWithBackoff(() => this.client.blocks.children.append({
-        block_id: blockId,
-        children
-      }));
+      const response = await retryWithBackoff(() =>
+        this.client.blocks.children.append({
+          block_id: blockId,
+          children,
+        })
+      );
       return response;
     } catch (error) {
       printError(`Failed to append block children to ${blockId}: ${error.message}`);
@@ -94,17 +106,21 @@ export class NotionClient {
 
   async createDatabase(parentPageId, title, properties) {
     try {
-      const response = await retryWithBackoff(() => this.client.databases.create({
-        parent: {
-          type: 'page_id',
-          page_id: parentPageId
-        },
-        title: [{
-          type: 'text',
-          text: { content: title }
-        }],
-        properties
-      }));
+      const response = await retryWithBackoff(() =>
+        this.client.databases.create({
+          parent: {
+            type: 'page_id',
+            page_id: parentPageId,
+          },
+          title: [
+            {
+              type: 'text',
+              text: { content: title },
+            },
+          ],
+          properties,
+        })
+      );
       return response;
     } catch (error) {
       printError(`Failed to create Notion database: ${error.message}`);
@@ -118,11 +134,13 @@ export class NotionClient {
     for (const section of planData.sections) {
       try {
         const page = await this.createPage(databaseId, {
-          'Name': { title: [{ text: { content: section.name } }] },
-          'Status': { select: { name: section.status || 'Not Started' } },
-          'Priority': { select: { name: section.priority || 'Medium' } },
+          Name: { title: [{ text: { content: section.name } }] },
+          Status: { select: { name: section.status || 'Not Started' } },
+          Priority: { select: { name: section.priority || 'Medium' } },
           'Due Date': section.dueDate ? { date: { start: section.dueDate } } : undefined,
-          'Description': section.description ? { rich_text: [{ text: { content: section.description } }] } : undefined
+          Description: section.description
+            ? { rich_text: [{ text: { content: section.description } }] }
+            : undefined,
         });
 
         results.push(page);
@@ -139,13 +157,14 @@ export class NotionClient {
     try {
       // Create or update content blocks in the page
       const contentBlocks = this.convertContextToBlocks(contextData);
-      
+
       // First, get existing children to avoid overwriting
       const existingBlocks = await this.getBlockChildren(pageId);
-      
+
       // Delete existing content blocks (keeping the title)
       for (const block of existingBlocks.results) {
-        if (block.type !== 'heading_1') { // Don't delete the title
+        if (block.type !== 'heading_1') {
+          // Don't delete the title
           await this.client.blocks.delete({ block_id: block.id });
         }
       }
@@ -165,23 +184,28 @@ export class NotionClient {
 
   convertContextToBlocks(contextData) {
     const blocks = [];
-    
+
     // Add context sections as blocks
     if (contextData.project) {
       blocks.push({
         object: 'block',
         type: 'heading_2',
         heading_2: {
-          rich_text: [{ type: 'text', text: { content: 'Project Context' } }]
-        }
+          rich_text: [{ type: 'text', text: { content: 'Project Context' } }],
+        },
       });
-      
+
       blocks.push({
         object: 'block',
         type: 'paragraph',
         paragraph: {
-          rich_text: [{ type: 'text', text: { content: contextData.project.description || 'No project description' } }]
-        }
+          rich_text: [
+            {
+              type: 'text',
+              text: { content: contextData.project.description || 'No project description' },
+            },
+          ],
+        },
       });
     }
 
@@ -190,16 +214,21 @@ export class NotionClient {
         object: 'block',
         type: 'heading_2',
         heading_2: {
-          rich_text: [{ type: 'text', text: { content: 'Architecture' } }]
-        }
+          rich_text: [{ type: 'text', text: { content: 'Architecture' } }],
+        },
       });
-      
+
       blocks.push({
         object: 'block',
         type: 'bulleted_list_item',
         bulleted_list_item: {
-          rich_text: [{ type: 'text', text: { content: contextData.architecture.description || 'No architecture details' } }]
-        }
+          rich_text: [
+            {
+              type: 'text',
+              text: { content: contextData.architecture.description || 'No architecture details' },
+            },
+          ],
+        },
       });
     }
 
@@ -210,7 +239,7 @@ export class NotionClient {
     try {
       const response = await this.client.search({
         query,
-        filter
+        filter,
       });
       return response;
     } catch (error) {
@@ -242,8 +271,8 @@ export class NotionClient {
           object: 'block',
           type: 'paragraph',
           paragraph: {
-            rich_text: [{ type: 'text', text: { content: paragraph.trim() } }]
-          }
+            rich_text: [{ type: 'text', text: { content: paragraph.trim() } }],
+          },
         });
       }
     }
@@ -261,7 +290,7 @@ export async function validateNotionConfig(config) {
   }
 
   const client = new NotionClient(config.apiToken);
-  
+
   try {
     // Test by trying to search for something
     const _response = await client.searchPages('test', { property: 'object', value: 'page' });
@@ -275,5 +304,5 @@ export async function validateNotionConfig(config) {
 
 export default {
   NotionClient,
-  validateNotionConfig
+  validateNotionConfig,
 };

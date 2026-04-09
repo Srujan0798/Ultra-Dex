@@ -9,7 +9,6 @@ import inquirer from 'inquirer';
 import chalk from 'chalk';
 import gradient from 'gradient-string';
 
-
 // Custom prompt types
 export const PROMPT_TYPES = {
   LIST: 'list',

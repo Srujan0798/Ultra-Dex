@@ -64,7 +64,7 @@ export function redact(input, visited = new WeakSet()) {
   if (Array.isArray(input)) {
     if (visited.has(input)) return '[Circular]';
     visited.add(input);
-    const result = input.map(item => redact(item, visited));
+    const result = input.map((item) => redact(item, visited));
     visited.delete(input); // Allow re-visiting in different branches? No, structured clone behavior usually doesn't need to delete, but for recursion depth it might be okay.
     // Actually, for circular ref detection, we just need to know if we are currently visiting it.
     // But since we are creating a NEW object structure (deep copy with redaction), we don't need to worry about modifying the original.
@@ -81,9 +81,9 @@ export function redact(input, visited = new WeakSet()) {
     redactedError.stack = redact(input.stack, visited);
     // Copy other properties
     for (const key of Object.getOwnPropertyNames(input)) {
-        if (key !== 'message' && key !== 'stack') {
-            redactedError[key] = redact(input[key], visited);
-        }
+      if (key !== 'message' && key !== 'stack') {
+        redactedError[key] = redact(input[key], visited);
+      }
     }
 
     visited.delete(input);
@@ -95,7 +95,7 @@ export function redact(input, visited = new WeakSet()) {
     // Only process plain objects or arrays (already handled)
     // We check constructor to avoid messing with special types like Buffer, Date, etc.
     if (input.constructor !== Object) {
-        return input;
+      return input;
     }
 
     if (visited.has(input)) return '[Circular]';
@@ -108,11 +108,11 @@ export function redact(input, visited = new WeakSet()) {
 
       if (isSensitive) {
         if (typeof value === 'string' && value.length > 5) {
-           redactedObj[key] = `${value.slice(0, 3)}...${value.slice(-3)}[REDACTED]`;
+          redactedObj[key] = `${value.slice(0, 3)}...${value.slice(-3)}[REDACTED]`;
         } else if (value === null || value === undefined) {
-           redactedObj[key] = value;
+          redactedObj[key] = value;
         } else {
-           redactedObj[key] = '[REDACTED]';
+          redactedObj[key] = '[REDACTED]';
         }
       } else {
         redactedObj[key] = redact(value, visited);

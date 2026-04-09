@@ -3,18 +3,17 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { v4 as uuidv4 } from "uuid";
+import { singleton } from 'tsyringe';
+import { v4 as uuidv4 } from 'uuid';
 const APPROVAL_STATUS = {
-  PENDING: "pending",
-  APPROVED: "approved",
-  REJECTED: "rejected"
+  PENDING: 'pending',
+  APPROVED: 'approved',
+  REJECTED: 'rejected',
 };
 let ApprovalWorkflow = class {
   constructor() {
@@ -35,7 +34,7 @@ let ApprovalWorkflow = class {
       status: APPROVAL_STATUS.PENDING,
       decidedAt: null,
       decidedBy: null,
-      comment: null
+      comment: null,
     }));
     const request = {
       id: requestId,
@@ -44,12 +43,12 @@ let ApprovalWorkflow = class {
       status: APPROVAL_STATUS.PENDING,
       steps,
       currentStep: 0,
-      createdAt: (/* @__PURE__ */ new Date()).toISOString()
+      createdAt: /* @__PURE__ */ new Date().toISOString(),
     };
     this.requests.set(requestId, request);
     return request;
   }
-  async submitDecision(requestId, approverId, decision, comment = "") {
+  async submitDecision(requestId, approverId, decision, comment = '') {
     const request = this.requests.get(requestId);
     if (!request) {
       throw new Error(`Request not found: ${requestId}`);
@@ -59,16 +58,17 @@ let ApprovalWorkflow = class {
     }
     const currentStep = request.steps[request.currentStep];
     if (!currentStep) {
-      throw new Error("No more steps to approve");
+      throw new Error('No more steps to approve');
     }
     if (!currentStep.approvers.includes(approverId)) {
       throw new Error(`Approver ${approverId} is not authorized for step ${currentStep.name}`);
     }
-    currentStep.status = decision === "approve" ? APPROVAL_STATUS.APPROVED : APPROVAL_STATUS.REJECTED;
+    currentStep.status =
+      decision === 'approve' ? APPROVAL_STATUS.APPROVED : APPROVAL_STATUS.REJECTED;
     currentStep.decidedBy = approverId;
-    currentStep.decidedAt = (/* @__PURE__ */ new Date()).toISOString();
+    currentStep.decidedAt = /* @__PURE__ */ new Date().toISOString();
     currentStep.comment = comment;
-    if (decision === "reject") {
+    if (decision === 'reject') {
       request.status = APPROVAL_STATUS.REJECTED;
       return request;
     }
@@ -87,12 +87,6 @@ let ApprovalWorkflow = class {
     );
   }
 };
-ApprovalWorkflow = __decorateClass([
-  singleton()
-], ApprovalWorkflow);
+ApprovalWorkflow = __decorateClass([singleton()], ApprovalWorkflow);
 var approval_workflow_default = ApprovalWorkflow;
-export {
-  APPROVAL_STATUS,
-  ApprovalWorkflow,
-  approval_workflow_default as default
-};
+export { APPROVAL_STATUS, ApprovalWorkflow, approval_workflow_default as default };

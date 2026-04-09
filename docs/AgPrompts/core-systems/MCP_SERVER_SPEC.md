@@ -1,21 +1,24 @@
 # 🔄 MCP Server V2 - Enhanced Implementation
 
 ## Prompt Metadata
+
 - **ID:** MCP_SERVER_V2_ENHANCED
 - **Category:** Infrastructure
 - **Priority:** P0
 - **Effort:** 3 days
 - **Dependencies:** node.js, express, ws, @modelcontextprotocol/sdk
-- **Affected Files:** 
+- **Affected Files:**
   - cli/lib/mcp/server.js (enhance)
   - cli/lib/mcp/client.js (enhance)
   - cli/lib/mcp/registry.js (enhance)
   - cli/lib/commands/mcp.js (enhance)
 
 ## Problem Statement
+
 The current MCP server needs enhancement to support advanced features including bidirectional communication, real-time context synchronization, tool discovery, and robust error handling for production use.
 
 ## Success Criteria
+
 - [ ] Bidirectional communication works reliably
 - [ ] Context synchronization is real-time and conflict-free
 - [ ] Tool discovery and registration works automatically
@@ -27,6 +30,7 @@ The current MCP server needs enhancement to support advanced features including 
 ## Technical Specification
 
 ### Architecture
+
 ```
 ┌─────────────────┐    WebSocket    ┌─────────────────┐
 │   AI Client     │◄═══════════════►│  MCP Server     │
@@ -42,6 +46,7 @@ The current MCP server needs enhancement to support advanced features including 
 ### Implementation Details
 
 #### Enhanced Server Features
+
 - Real-time context synchronization
 - Automatic tool registration
 - Bidirectional request/response handling
@@ -52,6 +57,7 @@ The current MCP server needs enhancement to support advanced features including 
 #### Files to Create/Modify
 
 **cli/lib/mcp/server.js:**
+
 - Enhanced WebSocket server with connection management
 - Context synchronization engine
 - Tool registration and discovery
@@ -81,11 +87,11 @@ export class MCPServer {
   setupRoutes() {
     // Health check endpoint
     this.app.get('/health', (req, res) => {
-      res.json({ 
-        status: 'healthy', 
+      res.json({
+        status: 'healthy',
         clients: this.clients.size,
         tools: this.registry.getToolCount(),
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     });
 
@@ -99,17 +105,19 @@ export class MCPServer {
     this.wss.on('connection', (ws, req) => {
       const clientId = this.generateClientId();
       this.clients.set(clientId, ws);
-      
+
       ws.on('message', async (data) => {
         try {
           const message = JSON.parse(data.toString());
           const response = await this.handleMessage(message, clientId);
           ws.send(JSON.stringify(response));
         } catch (error) {
-          ws.send(JSON.stringify({
-            id: Date.now(),
-            error: error.message
-          }));
+          ws.send(
+            JSON.stringify({
+              id: Date.now(),
+              error: error.message,
+            })
+          );
         }
       });
 
@@ -147,7 +155,7 @@ export class MCPServer {
     const server = this.app.listen(this.port, () => {
       console.log(`MCP Server listening on port ${this.port}`);
     });
-    
+
     server.on('upgrade', (request, socket, head) => {
       this.wss.handleUpgrade(request, socket, head, (ws) => {
         this.wss.emit('connection', ws, request);
@@ -160,6 +168,7 @@ export class MCPServer {
 ```
 
 **cli/lib/mcp/client.js:**
+
 - Enhanced client with automatic reconnection
 - Request/response correlation
 - Timeout handling
@@ -183,7 +192,7 @@ export class MCPClient extends EventEmitter {
 
   connect() {
     this.ws = new WebSocket(this.url);
-    
+
     this.ws.on('open', () => {
       this.reconnectAttempts = 0;
       this.emit('connected');
@@ -233,24 +242,26 @@ export class MCPClient extends EventEmitter {
   processQueue() {
     while (this.requestQueue.length > 0) {
       const { message, resolve, reject, timeout } = this.requestQueue.shift();
-      this.call(message.method, message.params, timeout)
-        .then(resolve)
-        .catch(reject);
+      this.call(message.method, message.params, timeout).then(resolve).catch(reject);
     }
   }
 
   scheduleReconnect() {
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
-      setTimeout(() => {
-        this.reconnectAttempts++;
-        this.connect();
-      }, this.reconnectDelay * Math.pow(2, this.reconnectAttempts));
+      setTimeout(
+        () => {
+          this.reconnectAttempts++;
+          this.connect();
+        },
+        this.reconnectDelay * Math.pow(2, this.reconnectAttempts)
+      );
     }
   }
 }
 ```
 
 **cli/lib/mcp/registry.js:**
+
 - Enhanced tool registration with metadata
 - Capability contracts enforcement
 - Rate limiting per tool
@@ -270,28 +281,28 @@ export class ToolRegistry {
       description,
       handler,
       metadata,
-      registeredAt: new Date()
+      registeredAt: new Date(),
     });
 
     // Initialize usage stats
     this.usageStats.set(name, {
       calls: 0,
       errors: 0,
-      lastCalled: null
+      lastCalled: null,
     });
 
     // Set default rate limits
     this.rateLimits.set(name, {
       maxCalls: metadata.rateLimit?.maxCalls || 100,
       windowMs: metadata.rateLimit?.windowMs || 60000,
-      calls: []
+      calls: [],
     });
   }
 
   async executeTool(params) {
     const { name, arguments: args } = params;
     const tool = this.tools.get(name);
-    
+
     if (!tool) {
       throw new Error(`Tool not found: ${name}`);
     }
@@ -303,18 +314,18 @@ export class ToolRegistry {
 
     try {
       const result = await tool.handler(args);
-      
+
       // Update usage stats
       const stats = this.usageStats.get(name);
       stats.calls++;
       stats.lastCalled = new Date();
-      
+
       return { result };
     } catch (error) {
       // Update error count
       const stats = this.usageStats.get(name);
       stats.errors++;
-      
+
       throw error;
     }
   }
@@ -322,23 +333,23 @@ export class ToolRegistry {
   checkRateLimit(toolName) {
     const limits = this.rateLimits.get(toolName);
     const now = Date.now();
-    
+
     // Clean old calls
-    limits.calls = limits.calls.filter(callTime => now - callTime < limits.windowMs);
-    
+    limits.calls = limits.calls.filter((callTime) => now - callTime < limits.windowMs);
+
     if (limits.calls.length >= limits.maxCalls) {
       return false;
     }
-    
+
     limits.calls.push(now);
     return true;
   }
 
   getAvailableTools() {
-    return Array.from(this.tools.values()).map(tool => ({
+    return Array.from(this.tools.values()).map((tool) => ({
       name: tool.name,
       description: tool.description,
-      metadata: tool.metadata
+      metadata: tool.metadata,
     }));
   }
 
@@ -349,11 +360,13 @@ export class ToolRegistry {
 ```
 
 #### Configuration Requirements
+
 - Add MCP server configuration options
 - Enable/disable MCP server
 - Configure port and security settings
 
 ## Security Considerations
+
 - [x] Input validation for all MCP messages
 - [x] Rate limiting per client and per tool
 - [x] Authentication for sensitive operations
@@ -361,6 +374,7 @@ export class ToolRegistry {
 - [x] Audit logging for all MCP interactions
 
 ## Performance Requirements
+
 - [x] Sub-100ms response times for tool calls
 - [x] Support for 100+ concurrent clients
 - [x] Efficient context synchronization
@@ -368,6 +382,7 @@ export class ToolRegistry {
 - [x] Graceful degradation under load
 
 ## Testing Strategy
+
 - [x] Unit tests for each component
 - [x] Integration tests for end-to-end flows
 - [x] Performance tests for throughput
@@ -375,6 +390,7 @@ export class ToolRegistry {
 - [x] Security tests for injection attacks
 
 ## Quality Gates
+
 - [x] All unit tests pass
 - [x] Integration tests pass
 - [x] Performance benchmarks met
@@ -383,11 +399,13 @@ export class ToolRegistry {
 - [x] Documentation updated
 
 ## Rollback Plan
+
 1. Revert to previous MCP server version
 2. Disable enhanced features via config
 3. Roll back to MCP v1 if needed
 
 ## Acceptance Criteria
+
 - [x] MCP server starts successfully
 - [x] Clients can connect and communicate
 - [x] Tool discovery works
@@ -397,6 +415,7 @@ export class ToolRegistry {
 - [x] Security requirements satisfied
 
 ## Implementation Notes
+
 - Use connection pooling for better resource management
 - Implement circuit breaker pattern for resilience
 - Add metrics collection for monitoring

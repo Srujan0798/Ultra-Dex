@@ -26,13 +26,13 @@ export class VisionAgent {
       enableComponentDetection: options.enableComponentDetection !== false,
       enableCodeGeneration: options.enableCodeGeneration !== false,
       verbose: options.verbose || false,
-      ...options
+      ...options,
     };
 
     this.sessionId = uuidv4();
     this.processedImages = [];
     this.componentLibrary = new Map();
-    
+
     this.initializeComponentLibrary();
   }
 
@@ -44,31 +44,31 @@ export class VisionAgent {
     this.componentLibrary.set('button', {
       patterns: ['rectangular', 'rounded corners', 'text', 'clickable'],
       examples: ['primary', 'secondary', 'outline', 'icon'],
-      frameworks: ['react', 'vue', 'angular', 'svelte']
+      frameworks: ['react', 'vue', 'angular', 'svelte'],
     });
 
     this.componentLibrary.set('input', {
       patterns: ['text field', 'placeholder', 'border', 'focus state'],
       examples: ['text', 'password', 'email', 'number'],
-      frameworks: ['react', 'vue', 'angular', 'svelte']
+      frameworks: ['react', 'vue', 'angular', 'svelte'],
     });
 
     this.componentLibrary.set('navbar', {
       patterns: ['horizontal bar', 'logo', 'menu items', 'navigation'],
       examples: ['top', 'bottom', 'sticky', 'responsive'],
-      frameworks: ['react', 'vue', 'angular', 'svelte']
+      frameworks: ['react', 'vue', 'angular', 'svelte'],
     });
 
     this.componentLibrary.set('card', {
       patterns: ['container', 'shadow', 'content area', 'padding'],
       examples: ['profile', 'product', 'feature', 'testimonial'],
-      frameworks: ['react', 'vue', 'angular', 'svelte']
+      frameworks: ['react', 'vue', 'angular', 'svelte'],
     });
 
     this.componentLibrary.set('modal', {
       patterns: ['overlay', 'centered', 'close button', 'content'],
       examples: ['dialog', 'popup', 'confirmation', 'form'],
-      frameworks: ['react', 'vue', 'angular', 'svelte']
+      frameworks: ['react', 'vue', 'angular', 'svelte'],
     });
   }
 
@@ -83,33 +83,36 @@ export class VisionAgent {
 
       // Validate image file
       await this.validateImageFile(imagePath);
-      
+
       // Preprocess image
       const processedImagePath = await this.preprocessImage(imagePath);
-      
+
       // Get API key
       const apiKey = options.apiKey || process.env.OPENAI_API_KEY;
       if (!apiKey) {
         throw new Error('OPENAI_API_KEY environment variable required for vision analysis');
       }
-      
+
       // Convert image to base64
       const base64Image = await this.encodeImageToBase64(processedImagePath);
-      
+
       // Determine target framework
       const framework = options.framework || this.detectFramework() || 'react';
-      
+
       // Generate code using vision model
       const result = await this.generateCodeWithVision(base64Image, framework, options.prompt);
-      
+
       // Clean up temporary files
       if (processedImagePath !== imagePath) {
         await fs.unlink(processedImagePath);
       }
-      
+
       // Store in memory
-      await ultraMemory.remember(`Screenshot analyzed: ${imagePath} -> ${framework} code generated`, ['vision-analysis', 'code-generation']);
-      
+      await ultraMemory.remember(
+        `Screenshot analyzed: ${imagePath} -> ${framework} code generated`,
+        ['vision-analysis', 'code-generation']
+      );
+
       // Track processed image
       this.processedImages.push({
         id: uuidv4(),
@@ -117,7 +120,7 @@ export class VisionAgent {
         processedPath: processedImagePath,
         framework,
         timestamp: new Date().toISOString(),
-        sessionId: this.sessionId
+        sessionId: this.sessionId,
       });
 
       if (this.options.verbose) {
@@ -131,14 +134,14 @@ export class VisionAgent {
         components: result.components,
         suggestions: result.suggestions,
         imageProcessed: true,
-        message: `✅ Generated ${framework} code from screenshot`
+        message: `✅ Generated ${framework} code from screenshot`,
       };
     } catch (error) {
       printError(`Vision analysis failed: ${error.message}`);
       return {
         success: false,
         error: error.message,
-        message: `Vision analysis failed: ${error.message}`
+        message: `Vision analysis failed: ${error.message}`,
       };
     }
   }
@@ -149,16 +152,19 @@ export class VisionAgent {
   async validateImageFile(imagePath) {
     try {
       await fs.access(imagePath);
-      
+
       const ext = path.extname(imagePath).toLowerCase();
       const validExtensions = ['.png', '.jpg', '.jpeg', '.gif', '.webp'];
-      
+
       if (!validExtensions.includes(ext)) {
-        throw new Error(`Unsupported image format: ${ext}. Supported: ${validExtensions.join(', ')}`);
+        throw new Error(
+          `Unsupported image format: ${ext}. Supported: ${validExtensions.join(', ')}`
+        );
       }
-      
+
       const stats = await fs.stat(imagePath);
-      if (stats.size > 20 * 1024 * 1024) { // 20MB
+      if (stats.size > 20 * 1024 * 1024) {
+        // 20MB
         throw new Error('Image file too large. Maximum size: 20MB');
       }
     } catch (error) {
@@ -177,37 +183,39 @@ export class VisionAgent {
       const image = await loadImage(imagePath);
       const canvas = createCanvas(image.width, image.height);
       const ctx = canvas.getContext('2d');
-      
+
       // Draw image to canvas
       ctx.drawImage(image, 0, 0);
-      
+
       // If image is too large, resize it
       if (image.width > this.options.maxImageSize || image.height > this.options.maxImageSize) {
         const scale = Math.min(
           this.options.maxImageSize / image.width,
           this.options.maxImageSize / image.height
         );
-        
+
         const newWidth = Math.floor(image.width * scale);
         const newHeight = Math.floor(image.height * scale);
-        
+
         const resizedCanvas = createCanvas(newWidth, newHeight);
         const resizedCtx = resizedCanvas.getContext('2d');
-        
+
         resizedCtx.drawImage(image, 0, 0, newWidth, newHeight);
-        
+
         // Save resized image temporarily
         const tempPath = imagePath.replace(/\.[^/.]+$/, `_resized_${Date.now()}.png`);
         const buffer = canvas.toBuffer('image/png');
         await fs.writeFile(tempPath, buffer);
-        
+
         if (this.options.verbose) {
-          printInfo(`🖼️  Image resized from ${image.width}x${image.height} to ${newWidth}x${newHeight}`);
+          printInfo(
+            `🖼️  Image resized from ${image.width}x${image.height} to ${newWidth}x${newHeight}`
+          );
         }
-        
+
         return tempPath;
       }
-      
+
       return imagePath;
     } catch (error) {
       printWarning(`⚠️  Could not preprocess image: ${error.message}. Using original.`);
@@ -248,55 +256,63 @@ Requirements:
 
 Output only the code with no explanations unless specifically asked.`;
 
-    const userPrompt = customPrompt || `Convert this UI screenshot into ${framework} code. Generate the complete component with proper structure, styling, and functionality. Focus on clean, maintainable code that follows ${framework} best practices.`;
+    const userPrompt =
+      customPrompt ||
+      `Convert this UI screenshot into ${framework} code. Generate the complete component with proper structure, styling, and functionality. Focus on clean, maintainable code that follows ${framework} best practices.`;
 
     try {
-      const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-        model: this.options.defaultModel,
-        messages: [
-          {
-            role: 'system',
-            content: systemPrompt
-          },
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: userPrompt
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: `data:image/jpeg;base64,${base64Image}`,
-                  detail: this.options.quality
-                }
-              }
-            ]
-          }
-        ],
-        max_tokens: 4000,
-        temperature: 0.3
-      }, {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
+      const response = await axios.post(
+        'https://api.openai.com/v1/chat/completions',
+        {
+          model: this.options.defaultModel,
+          messages: [
+            {
+              role: 'system',
+              content: systemPrompt,
+            },
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'text',
+                  text: userPrompt,
+                },
+                {
+                  type: 'image_url',
+                  image_url: {
+                    url: `data:image/jpeg;base64,${base64Image}`,
+                    detail: this.options.quality,
+                  },
+                },
+              ],
+            },
+          ],
+          max_tokens: 4000,
+          temperature: 0.3,
         },
-      });
+        {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
       const content = response.data.choices[0].message.content;
-      
+
       // Parse the response to extract code and components
       const parsedResponse = this.parseVisionResponse(content);
-      
+
       return {
         code: parsedResponse.code,
         components: parsedResponse.components,
-        suggestions: parsedResponse.suggestions
+        suggestions: parsedResponse.suggestions,
       };
     } catch (error) {
       if (error.response) {
-        throw new Error(`Vision API error: ${error.response.data.error?.message || error.response.statusText}`);
+        throw new Error(
+          `Vision API error: ${error.response.data.error?.message || error.response.statusText}`
+        );
       }
       throw new Error(`Vision API request failed: ${error.message}`);
     }
@@ -309,14 +325,14 @@ Output only the code with no explanations unless specifically asked.`;
     const result = {
       code: '',
       components: [],
-      suggestions: []
+      suggestions: [],
     };
 
     // Extract code blocks
     const codeBlockRegex = /```(?:\w+)?\s*([^\n]*)\n([\s\S]*?)```/g;
     let match;
     const codeBlocks = [];
-    
+
     while ((match = codeBlockRegex.exec(response)) !== null) {
       const language = match[1].trim();
       const code = match[2].trim();
@@ -328,13 +344,13 @@ Output only the code with no explanations unless specifically asked.`;
     // Use the first substantial code block as the main code
     if (codeBlocks.length > 0) {
       result.code = codeBlocks[0].code;
-      
+
       // Extract additional components from other blocks
       for (let i = 1; i < codeBlocks.length; i++) {
         result.components.push({
           type: codeBlocks[i].language || 'component',
           code: codeBlocks[i].code,
-          id: `component_${i}`
+          id: `component_${i}`,
         });
       }
     } else {
@@ -374,49 +390,53 @@ Output only the code with no explanations unless specifically asked.`;
 
       Return as a structured JSON object with organized design tokens.`;
 
-      const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-        model: this.options.defaultModel,
-        messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: prompt
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: `data:image/jpeg;base64,${base64Image}`,
-                  detail: 'high'
-                }
-              }
-            ]
-          }
-        ],
-        max_tokens: 2000,
-        temperature: 0.2
-      }, {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
+      const response = await axios.post(
+        'https://api.openai.com/v1/chat/completions',
+        {
+          model: this.options.defaultModel,
+          messages: [
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'text',
+                  text: prompt,
+                },
+                {
+                  type: 'image_url',
+                  image_url: {
+                    url: `data:image/jpeg;base64,${base64Image}`,
+                    detail: 'high',
+                  },
+                },
+              ],
+            },
+          ],
+          max_tokens: 2000,
+          temperature: 0.2,
         },
-      });
+        {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
       const content = response.data.choices[0].message.content;
-      
+
       try {
         const tokens = JSON.parse(content);
         return {
           success: true,
           tokens,
-          message: '✅ Design tokens extracted successfully'
+          message: '✅ Design tokens extracted successfully',
         };
       } catch {
         return {
           success: true,
           tokens: content,
-          message: '✅ Design tokens extracted (raw format)'
+          message: '✅ Design tokens extracted (raw format)',
         };
       }
     } catch (error) {
@@ -424,7 +444,7 @@ Output only the code with no explanations unless specifically asked.`;
       return {
         success: false,
         error: error.message,
-        message: `Design token extraction failed: ${error.message}`
+        message: `Design token extraction failed: ${error.message}`,
       };
     }
   }
@@ -451,55 +471,59 @@ Output only the code with no explanations unless specifically asked.`;
 
       Focus on actionable insights for developers.`;
 
-      const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-        model: this.options.defaultModel,
-        messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: prompt
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: `data:image/jpeg;base64,${base64Image1}`,
-                  detail: 'high'
-                }
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: `data:image/jpeg;base64,${base64Image2}`,
-                  detail: 'high'
-                }
-              }
-            ]
-          }
-        ],
-        max_tokens: 3000,
-        temperature: 0.3
-      }, {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
+      const response = await axios.post(
+        'https://api.openai.com/v1/chat/completions',
+        {
+          model: this.options.defaultModel,
+          messages: [
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'text',
+                  text: prompt,
+                },
+                {
+                  type: 'image_url',
+                  image_url: {
+                    url: `data:image/jpeg;base64,${base64Image1}`,
+                    detail: 'high',
+                  },
+                },
+                {
+                  type: 'image_url',
+                  image_url: {
+                    url: `data:image/jpeg;base64,${base64Image2}`,
+                    detail: 'high',
+                  },
+                },
+              ],
+            },
+          ],
+          max_tokens: 3000,
+          temperature: 0.3,
         },
-      });
+        {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
       const comparison = response.data.choices[0].message.content;
-      
+
       return {
         success: true,
         comparison,
-        message: '✅ UI comparison completed'
+        message: '✅ UI comparison completed',
       };
     } catch (error) {
       printError(`UI comparison failed: ${error.message}`);
       return {
         success: false,
         error: error.message,
-        message: `UI comparison failed: ${error.message}`
+        message: `UI comparison failed: ${error.message}`,
       };
     }
   }
@@ -525,49 +549,53 @@ Output only the code with no explanations unless specifically asked.`;
 
       Return as structured JSON with component information.`;
 
-      const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-        model: this.options.defaultModel,
-        messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: prompt
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: `data:image/jpeg;base64,${base64Image}`,
-                  detail: 'high'
-                }
-              }
-            ]
-          }
-        ],
-        max_tokens: 2500,
-        temperature: 0.2
-      }, {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
+      const response = await axios.post(
+        'https://api.openai.com/v1/chat/completions',
+        {
+          model: this.options.defaultModel,
+          messages: [
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'text',
+                  text: prompt,
+                },
+                {
+                  type: 'image_url',
+                  image_url: {
+                    url: `data:image/jpeg;base64,${base64Image}`,
+                    detail: 'high',
+                  },
+                },
+              ],
+            },
+          ],
+          max_tokens: 2500,
+          temperature: 0.2,
         },
-      });
+        {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
       const content = response.data.choices[0].message.content;
-      
+
       try {
         const components = JSON.parse(content);
         return {
           success: true,
           components,
-          message: '✅ Components detected successfully'
+          message: '✅ Components detected successfully',
         };
       } catch {
         return {
           success: true,
           components: content,
-          message: '✅ Components detected (raw format)'
+          message: '✅ Components detected (raw format)',
         };
       }
     } catch (error) {
@@ -575,7 +603,7 @@ Output only the code with no explanations unless specifically asked.`;
       return {
         success: false,
         error: error.message,
-        message: `Component detection failed: ${error.message}`
+        message: `Component detection failed: ${error.message}`,
       };
     }
   }
@@ -605,48 +633,52 @@ Output only the code with no explanations unless specifically asked.`;
 
       Provide specific recommendations with code examples where applicable.`;
 
-      const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-        model: this.options.defaultModel,
-        messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: prompt
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: `data:image/jpeg;base64,${base64Image}`,
-                  detail: 'high'
-                }
-              }
-            ]
-          }
-        ],
-        max_tokens: 2000,
-        temperature: 0.2
-      }, {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
+      const response = await axios.post(
+        'https://api.openai.com/v1/chat/completions',
+        {
+          model: this.options.defaultModel,
+          messages: [
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'text',
+                  text: prompt,
+                },
+                {
+                  type: 'image_url',
+                  image_url: {
+                    url: `data:image/jpeg;base64,${base64Image}`,
+                    detail: 'high',
+                  },
+                },
+              ],
+            },
+          ],
+          max_tokens: 2000,
+          temperature: 0.2,
         },
-      });
+        {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
       const report = response.data.choices[0].message.content;
-      
+
       return {
         success: true,
         report,
-        message: '✅ Accessibility report generated'
+        message: '✅ Accessibility report generated',
       };
     } catch (error) {
       printError(`Accessibility analysis failed: ${error.message}`);
       return {
         success: false,
         error: error.message,
-        message: `Accessibility analysis failed: ${error.message}`
+        message: `Accessibility analysis failed: ${error.message}`,
       };
     }
   }
@@ -671,48 +703,52 @@ Output only the code with no explanations unless specifically asked.`;
 
       const prompt = `Extract all readable text from this image. Return only the text content, preserving the structure and hierarchy of the text elements. Include any labels, buttons, headings, paragraphs, and other text elements.`;
 
-      const response = await axios.post('https://api.openai.com/v1/chat/completions', {
-        model: this.options.defaultModel,
-        messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: prompt
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: `data:image/jpeg;base64,${base64Image}`,
-                  detail: 'high'
-                }
-              }
-            ]
-          }
-        ],
-        max_tokens: 1500,
-        temperature: 0.1
-      }, {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
+      const response = await axios.post(
+        'https://api.openai.com/v1/chat/completions',
+        {
+          model: this.options.defaultModel,
+          messages: [
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'text',
+                  text: prompt,
+                },
+                {
+                  type: 'image_url',
+                  image_url: {
+                    url: `data:image/jpeg;base64,${base64Image}`,
+                    detail: 'high',
+                  },
+                },
+              ],
+            },
+          ],
+          max_tokens: 1500,
+          temperature: 0.1,
         },
-      });
+        {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
 
       const extractedText = response.data.choices[0].message.content;
-      
+
       return {
         success: true,
         text: extractedText,
-        message: '✅ Text extracted successfully'
+        message: '✅ Text extracted successfully',
       };
     } catch (error) {
       printError(`Text extraction failed: ${error.message}`);
       return {
         success: false,
         error: error.message,
-        message: `Text extraction failed: ${error.message}`
+        message: `Text extraction failed: ${error.message}`,
       };
     }
   }
@@ -724,29 +760,29 @@ Output only the code with no explanations unless specifically asked.`;
     try {
       // Extract code blocks from AI response if present
       const code = this.extractCodeBlocks(generatedCode);
-      
+
       // Ensure directory exists
       await fs.mkdir(path.dirname(filePath), { recursive: true });
-      
+
       // Write file
       await fs.writeFile(filePath, code, 'utf8');
-      
+
       if (this.options.verbose) {
         printSuccess(`📝 Code saved to: ${filePath}`);
       }
-      
+
       return {
         success: true,
         filePath,
         lines: code.split('\n').length,
-        message: `✅ Code saved to ${filePath}`
+        message: `✅ Code saved to ${filePath}`,
       };
     } catch (error) {
       printError(`Failed to save code to file: ${error.message}`);
       return {
         success: false,
         error: error.message,
-        message: `Failed to save code: ${error.message}`
+        message: `Failed to save code: ${error.message}`,
       };
     }
   }
@@ -759,18 +795,18 @@ Output only the code with no explanations unless specifically asked.`;
     const codeBlockRegex = /```(?:\w+)?\n([\s\S]*?)```/g;
     const matches = [];
     let match;
-    
+
     while ((match = codeBlockRegex.exec(text)) !== null) {
       matches.push(match[1]);
     }
-    
+
     // If we found code blocks, return the longest one (likely the main component)
     if (matches.length > 0) {
-      return matches.reduce((longest, current) => 
+      return matches.reduce((longest, current) =>
         current.length > longest.length ? current : longest
       );
     }
-    
+
     // If no code blocks found, return the original text
     return text;
   }
@@ -783,10 +819,11 @@ Output only the code with no explanations unless specifically asked.`;
     return fileName
       .replace(/[^a-zA-Z0-9]/g, ' ')
       .split(' ')
-      .filter(word => word.length > 0)
-      .map((word, index) => 
-        index === 0 ? word.charAt(0).toLowerCase() + word.slice(1) : 
-        word.charAt(0).toUpperCase() + word.slice(1)
+      .filter((word) => word.length > 0)
+      .map((word, index) =>
+        index === 0
+          ? word.charAt(0).toLowerCase() + word.slice(1)
+          : word.charAt(0).toUpperCase() + word.slice(1)
       )
       .join('');
   }
@@ -800,7 +837,7 @@ Output only the code with no explanations unless specifically asked.`;
       if (fs.existsSync(packageJsonPath)) {
         const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
         const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
-        
+
         if (deps.next) return 'nextjs';
         if (deps.react) return 'react';
         if (deps.vue) return 'vue';
@@ -812,12 +849,12 @@ Output only the code with no explanations unless specifically asked.`;
         if (deps['@sveltejs']) return 'sveltekit';
         if (deps.remix) return 'remix';
       }
-      
+
       // Check for specific config files
       if (fs.existsSync('pubspec.yaml')) return 'flutter';
       if (fs.existsSync('Podfile')) return 'ios';
       if (fs.existsSync('build.gradle')) return 'android';
-      
+
       return 'react'; // default
     } catch {
       return 'react'; // default
@@ -829,29 +866,29 @@ Output only the code with no explanations unless specifically asked.`;
    */
   async batchProcess(screenshotPaths, options = {}) {
     const results = [];
-    
+
     for (const imagePath of screenshotPaths) {
       if (this.options.verbose) {
         printInfo(`Processing screenshot: ${imagePath}`);
       }
-      
+
       const result = await this.analyzeScreenshot(imagePath, options);
       results.push({
         imagePath,
-        ...result
+        ...result,
       });
-      
+
       // Small delay to avoid rate limiting
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
-    
+
     return {
       success: true,
       results,
       total: results.length,
-      processed: results.filter(r => r.success).length,
-      failed: results.filter(r => !r.success).length,
-      message: `✅ Batch processed ${results.length} screenshots`
+      processed: results.filter((r) => r.success).length,
+      failed: results.filter((r) => !r.success).length,
+      message: `✅ Batch processed ${results.length} screenshots`,
     };
   }
 
@@ -864,7 +901,7 @@ Output only the code with no explanations unless specifically asked.`;
       currentSessionId: this.sessionId,
       componentLibrarySize: this.componentLibrary.size,
       options: this.options,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -876,7 +913,7 @@ Output only the code with no explanations unless specifically asked.`;
       sessionId: this.sessionId,
       processedImages: this.processedImages,
       stats: this.getStats(),
-      exportedAt: new Date().toISOString()
+      exportedAt: new Date().toISOString(),
     };
 
     if (format === 'json') {
@@ -885,16 +922,11 @@ Output only the code with no explanations unless specifically asked.`;
       // Convert to CSV format
       const headers = ['id', 'originalPath', 'framework', 'timestamp'];
       const rows = [headers.join(',')];
-      
+
       for (const img of this.processedImages) {
-        rows.push([
-          img.id,
-          `"${img.originalPath}"`,
-          img.framework,
-          img.timestamp
-        ].join(','));
+        rows.push([img.id, `"${img.originalPath}"`, img.framework, img.timestamp].join(','));
       }
-      
+
       return rows.join('\n');
     }
   }
@@ -913,7 +945,7 @@ Output only the code with no explanations unless specifically asked.`;
         }
       }
     }
-    
+
     if (this.options.verbose) {
       printInfo(`🧹 Vision agent cleaned up ${this.processedImages.length} temporary files`);
     }

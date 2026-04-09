@@ -3,24 +3,23 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { randomUUID } from "crypto";
+import { singleton } from 'tsyringe';
+import { randomUUID } from 'crypto';
 import { createBus, getBusHealth } from '../mesh/index.js';
 let AgentCommunicationBus = class {
   constructor(config = {}) {
     this.config = {
       mesh: config.mesh !== false,
-      busType: config.mesh === false ? "memory" : config.busType || "memory",
-      namespace: config.namespace || "ultra-dex-agent-mesh",
+      busType: config.mesh === false ? 'memory' : config.busType || 'memory',
+      namespace: config.namespace || 'ultra-dex-agent-mesh',
       maxHistory: config.maxHistory || 1e3,
       nodeId: config.nodeId || `mesh-node-${randomUUID().slice(0, 8)}`,
-      ...config
+      ...config,
     };
     this.localSubscribers = /* @__PURE__ */ new Map();
     this.channelBindings = /* @__PURE__ */ new Map();
@@ -34,7 +33,7 @@ let AgentCommunicationBus = class {
       published: 0,
       delivered: 0,
       errors: 0,
-      lastLatencyMs: 0
+      lastLatencyMs: 0,
     };
   }
   async initialize() {
@@ -43,11 +42,11 @@ let AgentCommunicationBus = class {
     }
     await this.messageBus.connect();
     this.isConnected = true;
-    await this.ensureChannelSubscription("agent.online");
-    await this.ensureChannelSubscription("agent.offline");
-    await this.ensureChannelSubscription("mesh.agents.snapshot");
+    await this.ensureChannelSubscription('agent.online');
+    await this.ensureChannelSubscription('agent.offline');
+    await this.ensureChannelSubscription('mesh.agents.snapshot');
     process.stdout.write(
-      `\u{1F4E1} Agent Communication Bus initialized (${this.config.busType}${this.config.mesh === false ? ", local" : ", mesh"})
+      `\u{1F4E1} Agent Communication Bus initialized (${this.config.busType}${this.config.mesh === false ? ', local' : ', mesh'})
 `
     );
   }
@@ -61,23 +60,26 @@ let AgentCommunicationBus = class {
     }
     const subscriptionPromise = this.messageBus.subscribe(channel, async (transportEnvelope) => {
       const startedAt = Date.now();
-      const envelope = transportEnvelope?.message?.channel && transportEnvelope?.message?.id ? transportEnvelope.message : {
-        id: transportEnvelope?.id || randomUUID(),
-        channel,
-        message: transportEnvelope?.message ?? transportEnvelope,
-        metadata: transportEnvelope?.metadata || {},
-        timestamp: transportEnvelope?.timestamp || (/* @__PURE__ */ new Date()).toISOString(),
-        originNode: transportEnvelope?.nodeId || null
-      };
+      const envelope =
+        transportEnvelope?.message?.channel && transportEnvelope?.message?.id
+          ? transportEnvelope.message
+          : {
+              id: transportEnvelope?.id || randomUUID(),
+              channel,
+              message: transportEnvelope?.message ?? transportEnvelope,
+              metadata: transportEnvelope?.metadata || {},
+              timestamp: transportEnvelope?.timestamp || /* @__PURE__ */ new Date().toISOString(),
+              originNode: transportEnvelope?.nodeId || null,
+            };
       this.messages.push(envelope);
       if (this.messages.length > this.maxHistory) {
         this.messages.shift();
       }
-      if (channel === "agent.online") {
+      if (channel === 'agent.online') {
         this.recordAgentOnline(envelope.message);
-      } else if (channel === "agent.offline") {
+      } else if (channel === 'agent.offline') {
         this.recordAgentOffline(envelope.message);
-      } else if (channel === "mesh.agents.snapshot") {
+      } else if (channel === 'mesh.agents.snapshot') {
         this.recordAgentSnapshot(envelope.message);
       }
       const subscribers = this.localSubscribers.get(channel);
@@ -112,8 +114,8 @@ let AgentCommunicationBus = class {
     }
     this.meshAgents.set(agent.id, {
       ...agent,
-      status: agent.status || "online",
-      lastSeenAt: agent.timestamp || (/* @__PURE__ */ new Date()).toISOString()
+      status: agent.status || 'online',
+      lastSeenAt: agent.timestamp || /* @__PURE__ */ new Date().toISOString(),
     });
   }
   recordAgentOffline(agent) {
@@ -124,8 +126,8 @@ let AgentCommunicationBus = class {
     this.meshAgents.set(agent.id, {
       ...existing,
       ...agent,
-      status: "offline",
-      lastSeenAt: agent.timestamp || (/* @__PURE__ */ new Date()).toISOString()
+      status: 'offline',
+      lastSeenAt: agent.timestamp || /* @__PURE__ */ new Date().toISOString(),
     });
   }
   recordAgentSnapshot(snapshot) {
@@ -135,7 +137,7 @@ let AgentCommunicationBus = class {
     for (const agent of snapshot.agents) {
       this.recordAgentOnline({
         ...agent,
-        nodeId: snapshot.nodeId || agent.nodeId
+        nodeId: snapshot.nodeId || agent.nodeId,
       });
     }
   }
@@ -167,7 +169,7 @@ let AgentCommunicationBus = class {
    */
   async publish(channel, message, metadata = {}) {
     if (!this.isConnected) {
-      throw new Error("Communication bus is not connected");
+      throw new Error('Communication bus is not connected');
     }
     await this.ensureChannelSubscription(channel);
     const envelope = {
@@ -175,8 +177,8 @@ let AgentCommunicationBus = class {
       channel,
       message,
       metadata,
-      timestamp: (/* @__PURE__ */ new Date()).toISOString(),
-      originNode: this.config.nodeId
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
+      originNode: this.config.nodeId,
     };
     const startedAt = Date.now();
     await this.messageBus.publish(channel, envelope);
@@ -189,17 +191,17 @@ let AgentCommunicationBus = class {
       agentId,
       task,
       metadata,
-      routedAt: (/* @__PURE__ */ new Date()).toISOString()
+      routedAt: /* @__PURE__ */ new Date().toISOString(),
     };
     const messageId = await this.publish(`agent.${agentId}.task`, taskEnvelope, {
-      route: "direct",
+      route: 'direct',
       agentId,
-      ...metadata
+      ...metadata,
     });
     return {
       messageId,
       channel: `agent.${agentId}.task`,
-      agentId
+      agentId,
     };
   }
   discoverAgents() {
@@ -231,7 +233,7 @@ let AgentCommunicationBus = class {
       knownAgents: this.meshAgents.size,
       messageLatencyMs: this.stats.lastLatencyMs,
       localChannels: this.getChannels().length,
-      ...getBusHealth(this.messageBus)
+      ...getBusHealth(this.messageBus),
     };
   }
   async shutdown() {
@@ -246,9 +248,5 @@ let AgentCommunicationBus = class {
     await this.messageBus?.disconnect?.();
   }
 };
-AgentCommunicationBus = __decorateClass([
-  singleton()
-], AgentCommunicationBus);
-export {
-  AgentCommunicationBus
-};
+AgentCommunicationBus = __decorateClass([singleton()], AgentCommunicationBus);
+export { AgentCommunicationBus };

@@ -21,22 +21,24 @@ gemini --version
 ```
 
 **Free Tier Limits:**
-*   **Model:** Gemini 2.5 Pro (default)
-*   **Context:** 1 million tokens
-*   **Rate Limit:** 60 requests / minute
-*   **Cost:** $0
+
+- **Model:** Gemini 2.5 Pro (default)
+- **Context:** 1 million tokens
+- **Rate Limit:** 60 requests / minute
+- **Cost:** $0
 
 ---
 
 ## 2. The Available Models
 
-| Model | Context | Speed | Best Use |
-|---|---|---|---|
-| `gemini-2.5-pro` | 1M tokens | Slower | Deep architecture analysis, full-repo reasoning |
-| `gemini-2.5-flash` | 1M tokens | Fast | Rapid generation, TDD loops, boilerplate |
-| `gemini-2.0-flash-exp` | 1M tokens | Fastest | Background daemons, repetitive scanning |
+| Model                  | Context   | Speed   | Best Use                                        |
+| ---------------------- | --------- | ------- | ----------------------------------------------- |
+| `gemini-2.5-pro`       | 1M tokens | Slower  | Deep architecture analysis, full-repo reasoning |
+| `gemini-2.5-flash`     | 1M tokens | Fast    | Rapid generation, TDD loops, boilerplate        |
+| `gemini-2.0-flash-exp` | 1M tokens | Fastest | Background daemons, repetitive scanning         |
 
 **Switch models via config:** (`~/.gemini/settings.json`)
+
 ```json
 { "model": "gemini-2.5-flash" }
 ```
@@ -75,16 +77,17 @@ The Policy Engine intercepts every single tool call before the LLM executes it. 
     "rules": [
       { "effect": "permit", "resource": "files://./src/**", "action": "read" },
       { "effect": "permit", "resource": "files://./src/**", "action": "write" },
-      { "effect": "deny",   "resource": "files://./.env", "action": "*" },
-      { "effect": "deny",   "resource": "files://./node_modules/**", "action": "write" },
-      { "effect": "confirm","resource": "shell://**", "action": "execute" }
+      { "effect": "deny", "resource": "files://./.env", "action": "*" },
+      { "effect": "deny", "resource": "files://./node_modules/**", "action": "write" },
+      { "effect": "confirm", "resource": "shell://**", "action": "execute" }
     ]
   }
 }
 ```
-*   `permit` — Agent executes silently
-*   `deny` — Agent is blocked
-*   `confirm` — Agent waits for human keypress
+
+- `permit` — Agent executes silently
+- `deny` — Agent is blocked
+- `confirm` — Agent waits for human keypress
 
 ---
 
@@ -111,6 +114,7 @@ Hooks fire synchronously at defined points. The CLI waits for them to finish bef
 Gemini auto-discovers custom logic folders from `.gemini/skills/` (Project) or `~/.gemini/skills/` (User).
 
 **Skill Folder Structure:**
+
 ```text
 .gemini/skills/run-tests/
   SKILL.md          ← Instructions for the agent
@@ -118,11 +122,13 @@ Gemini auto-discovers custom logic folders from `.gemini/skills/` (Project) or `
 ```
 
 **`SKILL.md` format:**
+
 ```markdown
 ---
 name: run-tests
 description: Runs the full test suite and returns a structured pass/fail summary
 ---
+
 Execute `npm test` using the run_tests.sh script.
 Parse the output and return a JSON object with: { passed, failed, errors[] }
 ```
@@ -132,6 +138,7 @@ Parse the output and return a JSON object with: { passed, failed, errors[] }
 ## 7. Proxy Routing (LiteLLM)
 
 For enterprise/centralized Auth:
+
 ```bash
 # Export proxy URL and run task
 GEMINI_API_ENDPOINT=http://localhost:4000 gemini -p "task"
@@ -141,10 +148,10 @@ GEMINI_API_ENDPOINT=http://localhost:4000 gemini -p "task"
 
 ## 8. Ultra-Dex Swarm Role & Dispatch
 
-* **Role:** Parallel Worker & Peripheral Process
-* **Best For:** TDD loops, documentation generation, shell auditing, and massive parallel background extraction tasks.
-* **Windows:** 3-5 Terminal Tabs.
-* **$0 Strategy:** YOLO Mode (`-y`) relying entirely on the Policy Engine Firewall to ensure isolation.
+- **Role:** Parallel Worker & Peripheral Process
+- **Best For:** TDD loops, documentation generation, shell auditing, and massive parallel background extraction tasks.
+- **Windows:** 3-5 Terminal Tabs.
+- **$0 Strategy:** YOLO Mode (`-y`) relying entirely on the Policy Engine Firewall to ensure isolation.
 
 ### Dispatch Templates
 

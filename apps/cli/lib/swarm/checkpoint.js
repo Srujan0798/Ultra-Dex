@@ -27,7 +27,9 @@ export async function loadCheckpoint(id, dir = DEFAULT_DIR) {
 export async function listCheckpoints(dir = DEFAULT_DIR) {
   try {
     const entries = await fs.readdir(dir);
-    return entries.filter((name) => name.endsWith('.json')).map((name) => name.replace(/\.json$/, ''));
+    return entries
+      .filter((name) => name.endsWith('.json'))
+      .map((name) => name.replace(/\.json$/, ''));
   } catch {
     return [];
   }

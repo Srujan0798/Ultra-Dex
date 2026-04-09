@@ -1,7 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import io from 'socket.io-client';
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from 'recharts';
 
 const CostsPage = () => {
   const [socket, setSocket] = useState(null);
@@ -9,7 +23,7 @@ const CostsPage = () => {
     daily: [],
     monthly: [],
     providers: [],
-    totals: { today: 0, month: 0, forecast: 0 }
+    totals: { today: 0, month: 0, forecast: 0 },
   });
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('month');
@@ -38,7 +52,7 @@ const CostsPage = () => {
             { date: '2026-02-05', cost: 22.34, tokens: 223400 },
             { date: '2026-02-06', cost: 19.78, tokens: 197800 },
             { date: '2026-02-07', cost: 16.54, tokens: 165400 },
-            { date: '2026-02-08', cost: 21.90, tokens: 219000 },
+            { date: '2026-02-08', cost: 21.9, tokens: 219000 },
             { date: '2026-02-09', cost: 25.33, tokens: 253300 },
             { date: '2026-02-10', cost: 17.65, tokens: 176500 },
             { date: '2026-02-11', cost: 14.22, tokens: 142200 },
@@ -55,11 +69,11 @@ const CostsPage = () => {
             { name: 'Google', cost: 32.78, percentage: 13.9 },
             { name: 'Ollama', cost: 10.43, percentage: 4.4 },
           ],
-          totals: { 
-            today: 11.45, 
-            month: 235.89, 
-            forecast: 487.23 // Projected to end of month
-          }
+          totals: {
+            today: 11.45,
+            month: 235.89,
+            forecast: 487.23, // Projected to end of month
+          },
         });
         setLoading(false);
       }
@@ -92,17 +106,23 @@ const CostsPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow p-6">
             <h3 className="text-lg font-medium text-gray-900">Today's Cost</h3>
-            <p className="mt-2 text-3xl font-semibold text-indigo-600">${costData.totals.today?.toFixed(2) || '0.00'}</p>
+            <p className="mt-2 text-3xl font-semibold text-indigo-600">
+              ${costData.totals.today?.toFixed(2) || '0.00'}
+            </p>
             <p className="text-sm text-gray-500 mt-1">Current billing day</p>
           </div>
           <div className="bg-white rounded-xl shadow p-6">
             <h3 className="text-lg font-medium text-gray-900">Month-to-Date</h3>
-            <p className="mt-2 text-3xl font-semibold text-indigo-600">${costData.totals.month?.toFixed(2) || '0.00'}</p>
+            <p className="mt-2 text-3xl font-semibold text-indigo-600">
+              ${costData.totals.month?.toFixed(2) || '0.00'}
+            </p>
             <p className="text-sm text-gray-500 mt-1">Current billing period</p>
           </div>
           <div className="bg-white rounded-xl shadow p-6">
             <h3 className="text-lg font-medium text-gray-900">Forecast</h3>
-            <p className="mt-2 text-3xl font-semibold text-indigo-600">${costData.totals.forecast?.toFixed(2) || '0.00'}</p>
+            <p className="mt-2 text-3xl font-semibold text-indigo-600">
+              ${costData.totals.forecast?.toFixed(2) || '0.00'}
+            </p>
             <p className="text-sm text-gray-500 mt-1">Projected monthly cost</p>
           </div>
           <div className="bg-white rounded-xl shadow p-6">
@@ -196,7 +216,13 @@ const CostsPage = () => {
                 <YAxis />
                 <Tooltip formatter={(value) => [`$${value}`, 'Cost']} />
                 <Legend />
-                <Line type="monotone" dataKey="cost" name="Monthly Cost ($)" stroke="#4f46e5" activeDot={{ r: 8 }} />
+                <Line
+                  type="monotone"
+                  dataKey="cost"
+                  name="Monthly Cost ($)"
+                  stroke="#4f46e5"
+                  activeDot={{ r: 8 }}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>

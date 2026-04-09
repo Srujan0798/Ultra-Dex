@@ -13,7 +13,7 @@ export function createSpinner(text = 'Processing...', options = {}) {
     text: ` ${text}`,
     spinner: 'dots',
     color: 'magenta',
-    ...options
+    ...options,
   });
 }
 
@@ -57,7 +57,7 @@ export function showError(text) {
  */
 export async function withLoading(text, promiseFn) {
   const spinner = createSpinner(text).start();
-  
+
   try {
     const result = await promiseFn(spinner);
     spinner.succeed(chalk.green(` ${text}`));
@@ -75,12 +75,12 @@ export async function withLoading(text, promiseFn) {
  */
 export async function runTaskSuite(title, tasks) {
   console.log(`\n${colors.brand(title)}`);
-  
+
   for (let i = 0; i < tasks.length; i++) {
     const task = tasks[i];
     const prefix = chalk.dim(`[${i + 1}/${tasks.length}]`);
     const spinner = createSpinner(`${prefix} ${task.name}`).start();
-    
+
     try {
       await task.fn();
       spinner.succeed(`${prefix} ${chalk.green(task.name)}`);
@@ -89,6 +89,6 @@ export async function runTaskSuite(title, tasks) {
       throw error;
     }
   }
-  
+
   console.log(gradients.success(`\n✨ ${title} completed successfully!\n`));
 }

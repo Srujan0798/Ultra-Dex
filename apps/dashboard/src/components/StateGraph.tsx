@@ -1,6 +1,14 @@
 import { memo } from 'react';
 
-const STATES = ['Init', 'Planning', 'Implementing', 'Testing', 'Reviewing', 'Deploying', 'Complete'];
+const STATES = [
+  'Init',
+  'Planning',
+  'Implementing',
+  'Testing',
+  'Reviewing',
+  'Deploying',
+  'Complete',
+];
 
 export const StateGraph = memo(function StateGraph() {
   return (

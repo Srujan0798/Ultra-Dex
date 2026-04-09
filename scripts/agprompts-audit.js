@@ -31,9 +31,7 @@ const PATH_PREFIXES = [
 ];
 
 const PATH_REGEX = new RegExp(
-  '(?:^|[\\s(\\[\\`\\\'"])((' +
-    PATH_PREFIXES.join('|') +
-    ')/[^\\s\\]\\)\\`\\\'"]+)',
+  '(?:^|[\\s(\\[\\`\\\'"])((' + PATH_PREFIXES.join('|') + ')/[^\\s\\]\\)\\`\\\'"]+)',
   'g'
 );
 

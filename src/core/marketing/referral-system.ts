@@ -1,5 +1,5 @@
-const { v4: uuidv4 } = require("uuid");
-const EventEmitter = require("events");
+const { v4: uuidv4 } = require('uuid');
+const EventEmitter = require('events');
 class ReferralSystem extends EventEmitter {
   constructor(options = {}) {
     super();
@@ -14,7 +14,7 @@ class ReferralSystem extends EventEmitter {
       // 7 days
       minSignupDays: 7,
       // Must be user for 7 days to refer
-      ...options.config
+      ...options.config,
     };
   }
   /**
@@ -25,79 +25,79 @@ class ReferralSystem extends EventEmitter {
       // Referral count milestones
       milestones: [
         {
-          id: "first-referral",
-          name: "First Referral",
-          description: "Refer your first user",
+          id: 'first-referral',
+          name: 'First Referral',
+          description: 'Refer your first user',
           required: 1,
           reward: {
-            type: "credits",
+            type: 'credits',
             amount: 10,
-            message: "\u{1F389} Welcome to the referral program!"
-          }
+            message: '\u{1F389} Welcome to the referral program!',
+          },
         },
         {
-          id: "rising-star",
-          name: "Rising Star",
-          description: "Refer 5 users",
+          id: 'rising-star',
+          name: 'Rising Star',
+          description: 'Refer 5 users',
           required: 5,
           reward: {
-            type: "subscription",
+            type: 'subscription',
             duration: 30,
             // days
-            tier: "pro",
-            message: "\u{1F31F} You're a Rising Star! 1 month free Pro."
-          }
+            tier: 'pro',
+            message: "\u{1F31F} You're a Rising Star! 1 month free Pro.",
+          },
         },
         {
-          id: "influencer",
-          name: "Influencer",
-          description: "Refer 10 users",
+          id: 'influencer',
+          name: 'Influencer',
+          description: 'Refer 10 users',
           required: 10,
           reward: {
-            type: "subscription",
+            type: 'subscription',
             duration: 90,
             // days
-            tier: "pro",
-            message: "\u{1F525} Influencer status! 3 months free Pro."
-          }
+            tier: 'pro',
+            message: '\u{1F525} Influencer status! 3 months free Pro.',
+          },
         },
         {
-          id: "ambassador",
-          name: "Ambassador",
-          description: "Refer 25 users",
+          id: 'ambassador',
+          name: 'Ambassador',
+          description: 'Refer 25 users',
           required: 25,
           reward: {
-            type: "lifetime",
-            tier: "pro",
-            message: "\u{1F451} Ambassador unlocked! Lifetime Pro free."
-          }
+            type: 'lifetime',
+            tier: 'pro',
+            message: '\u{1F451} Ambassador unlocked! Lifetime Pro free.',
+          },
         },
         {
-          id: "legend",
-          name: "Legend",
-          description: "Refer 50 users",
+          id: 'legend',
+          name: 'Legend',
+          description: 'Refer 50 users',
           required: 50,
           reward: {
-            type: "affiliate",
+            type: 'affiliate',
             commission: 0.2,
             // 20%
-            message: "\u{1F680} LEGEND! You're now an affiliate (20% commission)."
-          }
+            message: "\u{1F680} LEGEND! You're now an affiliate (20% commission).",
+          },
         },
         {
-          id: "titan",
-          name: "Titan",
-          description: "Refer 100 users",
+          id: 'titan',
+          name: 'Titan',
+          description: 'Refer 100 users',
           required: 100,
           reward: {
-            type: "revenue-share",
+            type: 'revenue-share',
             commission: 0.25,
             // 25%
             equity: 1e-3,
             // 0.1% equity (if applicable)
-            message: "\u{1F3C6} TITAN ACHIEVED! 25% commission + equity."
-          }
-        }
+            message: '\u{1F3C6} TITAN ACHIEVED! 25% commission + equity.',
+          },
+        },
       ],
       // Conversion rewards (when referral converts to paid)
       conversion: {
@@ -105,29 +105,29 @@ class ReferralSystem extends EventEmitter {
         // 20% of first payment
         duration: 12,
         // months of recurring commission
-        minimum: 10
+        minimum: 10,
         // minimum $10 reward
       },
       // Special campaigns
       campaigns: [
         {
-          id: "double-rewards",
-          name: "Double Rewards Week",
-          description: "2x rewards for all referrals",
+          id: 'double-rewards',
+          name: 'Double Rewards Week',
+          description: '2x rewards for all referrals',
           multiplier: 2,
-          startDate: /* @__PURE__ */ new Date("2026-03-01"),
-          endDate: /* @__PURE__ */ new Date("2026-03-07"),
-          active: false
+          startDate: /* @__PURE__ */ new Date('2026-03-01'),
+          endDate: /* @__PURE__ */ new Date('2026-03-07'),
+          active: false,
         },
         {
-          id: "early-adopter",
-          name: "Early Adopter Bonus",
-          description: "Extra rewards for first 1000 users",
+          id: 'early-adopter',
+          name: 'Early Adopter Bonus',
+          description: 'Extra rewards for first 1000 users',
           bonus: 50,
           // extra credits
-          active: true
-        }
-      ]
+          active: true,
+        },
+      ],
     };
   }
   /**
@@ -135,43 +135,43 @@ class ReferralSystem extends EventEmitter {
    */
   initializeBadges() {
     return {
-      "speed-demon": {
-        name: "Speed Demon",
-        description: "First referral within 24 hours of signup",
-        icon: "\u26A1",
-        rarity: "common"
+      'speed-demon': {
+        name: 'Speed Demon',
+        description: 'First referral within 24 hours of signup',
+        icon: '\u26A1',
+        rarity: 'common',
       },
-      "social-butterfly": {
-        name: "Social Butterfly",
-        description: "Refer from 3 different platforms",
-        icon: "\u{1F98B}",
-        rarity: "uncommon"
+      'social-butterfly': {
+        name: 'Social Butterfly',
+        description: 'Refer from 3 different platforms',
+        icon: '\u{1F98B}',
+        rarity: 'uncommon',
       },
-      "viral-master": {
-        name: "Viral Master",
-        description: "Referral chain: Your referral referred someone",
-        icon: "\u{1F9A0}",
-        rarity: "rare"
+      'viral-master': {
+        name: 'Viral Master',
+        description: 'Referral chain: Your referral referred someone',
+        icon: '\u{1F9A0}',
+        rarity: 'rare',
       },
-      "conversion-king": {
-        name: "Conversion King",
-        description: "10 referrals converted to paid",
-        icon: "\u{1F451}",
-        rarity: "epic"
+      'conversion-king': {
+        name: 'Conversion King',
+        description: '10 referrals converted to paid',
+        icon: '\u{1F451}',
+        rarity: 'epic',
       },
-      "community-hero": {
-        name: "Community Hero",
-        description: "Top 10 on leaderboard for 30 days",
-        icon: "\u{1F9B8}",
-        rarity: "legendary"
+      'community-hero': {
+        name: 'Community Hero',
+        description: 'Top 10 on leaderboard for 30 days',
+        icon: '\u{1F9B8}',
+        rarity: 'legendary',
       },
-      "founding-member": {
-        name: "Founding Member",
-        description: "One of first 100 users who referred others",
-        icon: "\u{1F3DB}\uFE0F",
-        rarity: "legendary",
-        limited: true
-      }
+      'founding-member': {
+        name: 'Founding Member',
+        description: 'One of first 100 users who referred others',
+        icon: '\u{1F3DB}\uFE0F',
+        rarity: 'legendary',
+        limited: true,
+      },
     };
   }
   /**
@@ -190,31 +190,31 @@ class ReferralSystem extends EventEmitter {
         signups: 0,
         conversions: 0,
         revenue: 0,
-        lastClick: null
+        lastClick: null,
       },
       rewards: {
         earned: 0,
         redeemed: 0,
-        pending: 0
+        pending: 0,
       },
       badges: [],
       milestones: [],
-      campaign: options.campaign || null
+      campaign: options.campaign || null,
     };
     await this.saveReferral(referral);
-    this.emit("codeGenerated", { userId, code });
+    this.emit('codeGenerated', { userId, code });
     return {
       code,
       url: referral.url,
-      shareMessage: this.generateShareMessage(code)
+      shareMessage: this.generateShareMessage(code),
     };
   }
   /**
    * Generate a unique referral code
    */
   generateCode(userId) {
-    const adjectives = ["swift", "bright", "bold", "epic", "super", "mega", "ultra"];
-    const nouns = ["dev", "coder", "builder", "creator", "maker", "hacker"];
+    const adjectives = ['swift', 'bright', 'bold', 'epic', 'super', 'mega', 'ultra'];
+    const nouns = ['dev', 'coder', 'builder', 'creator', 'maker', 'hacker'];
     const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
     const noun = nouns[Math.floor(Math.random() * nouns.length)];
     const num = Math.floor(1e3 + Math.random() * 9e3);
@@ -225,8 +225,7 @@ class ReferralSystem extends EventEmitter {
    */
   async trackClick(code, metadata = {}) {
     const referral = await this.getReferralByCode(code);
-    if (!referral)
-      return null;
+    if (!referral) return null;
     referral.stats.clicks++;
     referral.stats.lastClick = /* @__PURE__ */ new Date();
     const click = {
@@ -235,16 +234,16 @@ class ReferralSystem extends EventEmitter {
       timestamp: /* @__PURE__ */ new Date(),
       ip: metadata.ip,
       userAgent: metadata.userAgent,
-      source: metadata.source || "direct",
-      campaign: metadata.campaign || referral.campaign
+      source: metadata.source || 'direct',
+      campaign: metadata.campaign || referral.campaign,
     };
     await this.saveClick(click);
     await this.saveReferral(referral);
-    this.emit("clickTracked", { code, referral: referral.userId });
+    this.emit('clickTracked', { code, referral: referral.userId });
     return {
       referralId: referral.id,
       referrerId: referral.userId,
-      cookieExpiry: new Date(Date.now() + this.config.cookieDuration)
+      cookieExpiry: new Date(Date.now() + this.config.cookieDuration),
     };
   }
   /**
@@ -252,14 +251,13 @@ class ReferralSystem extends EventEmitter {
    */
   async trackSignup(referredUserId, referrerCode, metadata = {}) {
     const referral = await this.getReferralByCode(referrerCode);
-    if (!referral)
-      return null;
+    if (!referral) return null;
     if (referral.userId === referredUserId) {
-      throw new Error("Self-referral not allowed");
+      throw new Error('Self-referral not allowed');
     }
     const existing = await this.getReferralByReferredUser(referredUserId);
     if (existing) {
-      throw new Error("User already referred");
+      throw new Error('User already referred');
     }
     referral.stats.signups++;
     const relationship = {
@@ -268,23 +266,23 @@ class ReferralSystem extends EventEmitter {
       referredUserId,
       referralId: referral.id,
       code: referrerCode,
-      status: "active",
+      status: 'active',
       createdAt: /* @__PURE__ */ new Date(),
       convertedAt: null,
       rewards: {
         referrer: [],
-        referred: []
+        referred: [],
       },
-      metadata
+      metadata,
     };
     await this.saveRelationship(relationship);
     await this.saveReferral(referral);
     await this.checkMilestones(referral.userId);
     await this.checkBadges(referral.userId);
-    this.emit("signupTracked", {
+    this.emit('signupTracked', {
       referrer: referral.userId,
       referred: referredUserId,
-      code: referrerCode
+      code: referrerCode,
     });
     return relationship;
   }
@@ -293,12 +291,11 @@ class ReferralSystem extends EventEmitter {
    */
   async trackConversion(referredUserId, paymentAmount, subscriptionTier) {
     const relationship = await this.getReferralByReferredUser(referredUserId);
-    if (!relationship || relationship.status !== "active")
-      return null;
+    if (!relationship || relationship.status !== 'active') return null;
     const referral = await this.getReferralById(relationship.referralId);
     referral.stats.conversions++;
     referral.stats.revenue += paymentAmount;
-    relationship.status = "converted";
+    relationship.status = 'converted';
     relationship.convertedAt = /* @__PURE__ */ new Date();
     relationship.paymentAmount = paymentAmount;
     relationship.subscriptionTier = subscriptionTier;
@@ -308,11 +305,11 @@ class ReferralSystem extends EventEmitter {
     await this.saveRelationship(relationship);
     await this.saveReferral(referral);
     await this.updateLeaderboard(referral.userId);
-    this.emit("conversionTracked", {
+    this.emit('conversionTracked', {
       referrer: relationship.referrerId,
       referred: referredUserId,
       amount: paymentAmount,
-      reward: reward.amount
+      reward: reward.amount,
     });
     return reward;
   }
@@ -329,13 +326,13 @@ class ReferralSystem extends EventEmitter {
     }
     return {
       id: uuidv4(),
-      type: "commission",
+      type: 'commission',
       amount,
       percentage: this.rewards.conversion.percentage,
       paymentAmount,
       duration: this.rewards.conversion.duration,
       createdAt: /* @__PURE__ */ new Date(),
-      status: "pending"
+      status: 'pending',
     };
   }
   /**
@@ -363,7 +360,7 @@ class ReferralSystem extends EventEmitter {
       type: milestone.reward.type,
       value: milestone.reward,
       awardedAt: /* @__PURE__ */ new Date(),
-      redeemed: false
+      redeemed: false,
     };
     await this.saveReward(reward);
     const referral = await this.getReferralByUserId(userId);
@@ -372,7 +369,7 @@ class ReferralSystem extends EventEmitter {
       referral.rewards.earned += this.getRewardValue(milestone.reward);
       await this.saveReferral(referral);
     }
-    this.emit("milestoneAwarded", { userId, milestone, reward });
+    this.emit('milestoneAwarded', { userId, milestone, reward });
     return reward;
   }
   /**
@@ -383,23 +380,23 @@ class ReferralSystem extends EventEmitter {
     const newBadges = [];
     if (stats.firstReferralTime) {
       const signupToReferral = stats.firstReferralTime - stats.signupTime;
-      if (signupToReferral < 24 * 60 * 60 * 1e3 && !stats.badges.includes("speed-demon")) {
-        await this.awardBadge(userId, "speed-demon");
-        newBadges.push("speed-demon");
+      if (signupToReferral < 24 * 60 * 60 * 1e3 && !stats.badges.includes('speed-demon')) {
+        await this.awardBadge(userId, 'speed-demon');
+        newBadges.push('speed-demon');
       }
     }
-    if (stats.uniqueSources >= 3 && !stats.badges.includes("social-butterfly")) {
-      await this.awardBadge(userId, "social-butterfly");
-      newBadges.push("social-butterfly");
+    if (stats.uniqueSources >= 3 && !stats.badges.includes('social-butterfly')) {
+      await this.awardBadge(userId, 'social-butterfly');
+      newBadges.push('social-butterfly');
     }
     const chainExists = await this.checkReferralChain(userId);
-    if (chainExists && !stats.badges.includes("viral-master")) {
-      await this.awardBadge(userId, "viral-master");
-      newBadges.push("viral-master");
+    if (chainExists && !stats.badges.includes('viral-master')) {
+      await this.awardBadge(userId, 'viral-master');
+      newBadges.push('viral-master');
     }
-    if (stats.conversions >= 10 && !stats.badges.includes("conversion-king")) {
-      await this.awardBadge(userId, "conversion-king");
-      newBadges.push("conversion-king");
+    if (stats.conversions >= 10 && !stats.badges.includes('conversion-king')) {
+      await this.awardBadge(userId, 'conversion-king');
+      newBadges.push('conversion-king');
     }
     return newBadges;
   }
@@ -408,14 +405,13 @@ class ReferralSystem extends EventEmitter {
    */
   async awardBadge(userId, badgeId) {
     const badge = this.badges[badgeId];
-    if (!badge)
-      return null;
+    if (!badge) return null;
     const award = {
       id: uuidv4(),
       userId,
       badgeId,
       badge,
-      awardedAt: /* @__PURE__ */ new Date()
+      awardedAt: /* @__PURE__ */ new Date(),
     };
     await this.saveBadge(award);
     const referral = await this.getReferralByUserId(userId);
@@ -423,18 +419,20 @@ class ReferralSystem extends EventEmitter {
       referral.badges.push(badgeId);
       await this.saveReferral(referral);
     }
-    this.emit("badgeAwarded", { userId, badgeId, badge });
+    this.emit('badgeAwarded', { userId, badgeId, badge });
     return award;
   }
   /**
    * Get leaderboard
    */
   async getLeaderboard(limit = 10) {
-    const sorted = Array.from(this.leaderboard.entries()).sort((a, b) => b[1].score - a[1].score).slice(0, limit);
+    const sorted = Array.from(this.leaderboard.entries())
+      .sort((a, b) => b[1].score - a[1].score)
+      .slice(0, limit);
     return sorted.map(([userId, data], index) => ({
       rank: index + 1,
       userId,
-      ...data
+      ...data,
     }));
   }
   /**
@@ -448,7 +446,7 @@ class ReferralSystem extends EventEmitter {
       signups: stats.signups,
       conversions: stats.conversions,
       revenue: stats.revenue,
-      lastUpdated: /* @__PURE__ */ new Date()
+      lastUpdated: /* @__PURE__ */ new Date(),
     });
     const leaderboard = await this.getLeaderboard(10);
     const isTop10 = leaderboard.find((entry) => entry.userId === userId);
@@ -460,8 +458,7 @@ class ReferralSystem extends EventEmitter {
    */
   async getUserStats(userId) {
     const referral = await this.getReferralByUserId(userId);
-    if (!referral)
-      return null;
+    if (!referral) return null;
     const relationships = await this.getRelationshipsByReferrer(userId);
     return {
       code: referral.code,
@@ -470,12 +467,15 @@ class ReferralSystem extends EventEmitter {
       signups: referral.stats.signups,
       conversions: referral.stats.conversions,
       revenue: referral.stats.revenue,
-      conversionRate: referral.stats.signups > 0 ? (referral.stats.conversions / referral.stats.signups * 100).toFixed(1) : 0,
+      conversionRate:
+        referral.stats.signups > 0
+          ? ((referral.stats.conversions / referral.stats.signups) * 100).toFixed(1)
+          : 0,
       rewards: referral.rewards,
       badges: referral.badges,
       milestones: referral.milestones,
       rank: await this.getUserRank(userId),
-      nextMilestone: this.getNextMilestone(referral.stats.signups)
+      nextMilestone: this.getNextMilestone(referral.stats.signups),
     };
   }
   /**
@@ -495,7 +495,7 @@ class ReferralSystem extends EventEmitter {
         return {
           ...milestone,
           remaining: milestone.required - currentSignups,
-          progress: (currentSignups / milestone.required * 100).toFixed(1)
+          progress: ((currentSignups / milestone.required) * 100).toFixed(1),
         };
       }
     }
@@ -508,7 +508,7 @@ class ReferralSystem extends EventEmitter {
     const messages = [
       `I just found the best AI memory tool! Use my link to get early access: https://ultra-dex.com/?ref=${code}`,
       `Never lose AI context again! Join me on Ultra-Dex: https://ultra-dex.com/?ref=${code}`,
-      `Switch AI models without losing context? Yes please! https://ultra-dex.com/?ref=${code}`
+      `Switch AI models without losing context? Yes please! https://ultra-dex.com/?ref=${code}`,
     ];
     return messages[Math.floor(Math.random() * messages.length)];
   }
@@ -527,7 +527,7 @@ Ultra-Dex lets you switch between GPT-4, Claude, and other models WITHOUT losing
 Join me: ${referral.url}
 
 #AI #OpenAI #Claude #DeveloperTools`,
-        hashtags: ["AI", "OpenAI", "Claude", "DeveloperTools"]
+        hashtags: ['AI', 'OpenAI', 'Claude', 'DeveloperTools'],
       },
       linkedin: {
         text: `Excited to share Ultra-Dex - a game-changing AI orchestration platform I've been using.
@@ -541,13 +541,13 @@ Key features:
 
 Check it out: ${referral.url}
 
-#ArtificialIntelligence #DeveloperTools #Innovation`
+#ArtificialIntelligence #DeveloperTools #Innovation`,
       },
       facebook: {
-        text: `Found an amazing tool for anyone working with AI! Ultra-Dex lets you use multiple AI models together seamlessly. No more repeating yourself! ${referral.url}`
+        text: `Found an amazing tool for anyone working with AI! Ultra-Dex lets you use multiple AI models together seamlessly. No more repeating yourself! ${referral.url}`,
       },
       email: {
-        subject: "This AI tool changed how I work",
+        subject: 'This AI tool changed how I work',
         body: `Hey!
 
 I wanted to share a tool I've been using called Ultra-Dex.
@@ -562,8 +562,8 @@ With Ultra-Dex, you can:
 
 Check it out: ${referral.url}
 
-Let me know what you think!`
-      }
+Let me know what you think!`,
+      },
     };
     return templates[platform] || templates.twitter;
   }
@@ -576,7 +576,7 @@ Let me know what you think!`
   }
   async getReferralByCode(code) {
     for (const [key, value] of this.db) {
-      if (key.startsWith("referral:") && value.code === code) {
+      if (key.startsWith('referral:') && value.code === code) {
         return value;
       }
     }
@@ -584,7 +584,7 @@ Let me know what you think!`
   }
   async getReferralByUserId(userId) {
     for (const [key, value] of this.db) {
-      if (key.startsWith("referral:") && value.userId === userId) {
+      if (key.startsWith('referral:') && value.userId === userId) {
         return value;
       }
     }
@@ -592,7 +592,7 @@ Let me know what you think!`
   }
   async getReferralByReferredUser(referredUserId) {
     for (const [key, value] of this.db) {
-      if (key.startsWith("relationship:") && value.referredUserId === referredUserId) {
+      if (key.startsWith('relationship:') && value.referredUserId === referredUserId) {
         return value;
       }
     }
@@ -604,7 +604,7 @@ Let me know what you think!`
   async getRelationshipsByReferrer(referrerId) {
     const relationships = [];
     for (const [key, value] of this.db) {
-      if (key.startsWith("relationship:") && value.referrerId === referrerId) {
+      if (key.startsWith('relationship:') && value.referrerId === referrerId) {
         relationships.push(value);
       }
     }
@@ -623,10 +623,8 @@ Let me know what you think!`
     return false;
   }
   getRewardValue(reward) {
-    if (reward.type === "credits")
-      return reward.amount;
-    if (reward.type === "subscription")
-      return reward.duration * 10;
+    if (reward.type === 'credits') return reward.amount;
+    if (reward.type === 'subscription') return reward.duration * 10;
     return 0;
   }
 }
@@ -634,22 +632,22 @@ module.exports = ReferralSystem;
 if (require.main === module) {
   const system = new ReferralSystem();
   async function demo() {
-    console.log("\u{1F3AF} REFERRAL SYSTEM DEMO\n");
-    const { code, url } = await system.generateReferralCode("user-123");
+    console.log('\u{1F3AF} REFERRAL SYSTEM DEMO\n');
+    const { code, url } = await system.generateReferralCode('user-123');
     console.log(`Referral code generated: ${code}`);
     console.log(`URL: ${url}
 `);
-    await system.trackClick(code, { source: "twitter", ip: "1.2.3.4" });
-    await system.trackClick(code, { source: "twitter", ip: "1.2.3.5" });
-    await system.trackClick(code, { source: "linkedin", ip: "1.2.3.6" });
-    console.log("3 clicks tracked from Twitter and LinkedIn\n");
-    await system.trackSignup("user-456", code, { source: "twitter" });
-    await system.trackSignup("user-789", code, { source: "linkedin" });
-    console.log("2 signups tracked\n");
-    await system.trackConversion("user-456", 49, "pro");
-    console.log("1 conversion tracked ($49 payment)\n");
-    const stats = await system.getUserStats("user-123");
-    console.log("\u{1F4CA} REFERRER STATS:");
+    await system.trackClick(code, { source: 'twitter', ip: '1.2.3.4' });
+    await system.trackClick(code, { source: 'twitter', ip: '1.2.3.5' });
+    await system.trackClick(code, { source: 'linkedin', ip: '1.2.3.6' });
+    console.log('3 clicks tracked from Twitter and LinkedIn\n');
+    await system.trackSignup('user-456', code, { source: 'twitter' });
+    await system.trackSignup('user-789', code, { source: 'linkedin' });
+    console.log('2 signups tracked\n');
+    await system.trackConversion('user-456', 49, 'pro');
+    console.log('1 conversion tracked ($49 payment)\n');
+    const stats = await system.getUserStats('user-123');
+    console.log('\u{1F4CA} REFERRER STATS:');
     console.log(JSON.stringify(stats, null, 2));
   }
   demo().catch(console.error);

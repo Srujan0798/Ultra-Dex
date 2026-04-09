@@ -1,5 +1,5 @@
-
 # ULTRA-DEX PRE-V2.0 AGENT PROTOCOL
+
 > Single source of truth. No repetition. Execute in order.
 
 ---
@@ -60,6 +60,7 @@ ls node_modules | head
 **File:** `apps/cli/lib/providers/index.js`
 
 Add to the PROVIDERS object:
+
 ```js
 import { NVIDIAProvider } from './nvidia.js';
 
@@ -78,11 +79,14 @@ nvidia: {
 **Create file:** `apps/cli/lib/providers/nvidia.js`
 
 ```js
-import { initNVIDIAKeys, createRotatingClient } from '../../../src/services/ai-providers/nemotron.js';
+import {
+  initNVIDIAKeys,
+  createRotatingClient,
+} from '../../../src/services/ai-providers/nemotron.js';
 
 export class NVIDIAProvider {
   constructor(apiKey, options = {}) {
-    this.model = options.model || "nvidia/nemotron-3-super-120b-a12b";
+    this.model = options.model || 'nvidia/nemotron-3-super-120b-a12b';
     initNVIDIAKeys();
   }
 
@@ -91,17 +95,19 @@ export class NVIDIAProvider {
     const res = await client.chat.completions.create({
       model: this.model,
       messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt }
-      ]
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
     });
     return {
       content: res.choices[0].message.content,
-      model: this.model
+      model: this.model,
     };
   }
 
-  getName() { return "nvidia"; }
+  getName() {
+    return 'nvidia';
+  }
 }
 ```
 
@@ -114,6 +120,7 @@ export class NVIDIAProvider {
 **File:** `apps/cli/lib/commands/run.js`
 
 Verify and ensure:
+
 1. `providerId` flows from CLI args into `createAgentProviderFactory`
 2. `providerInstance.generate(systemPrompt, userPrompt)` is actually called
 3. Response flows back into the agent loop
@@ -160,9 +167,9 @@ stepCount++;
 Every run must print output regardless of flags:
 
 ```js
-console.log("\n=== RESULT ===");
+console.log('\n=== RESULT ===');
 console.log(finalOutput);
-console.log("\n=== TRACE SUMMARY ===");
+console.log('\n=== TRACE SUMMARY ===');
 console.log(`steps: ${stepCount} | status: ${status}`);
 ```
 
@@ -180,6 +187,7 @@ src/wasm/runtime.js
 ```
 
 **Replacements:**
+
 ```
 console.log(...)   →  logger.info(...)  or  logger.success(...)
 console.warn(...)  →  logger.warn(...)
@@ -193,6 +201,7 @@ console.error(...) →  logger.error(...)
 ## PHASE 9 — REMOVE FAKE FEATURES
 
 Audit and disable/remove any of the following if NOT implemented:
+
 - `SEARCH_CODE` command
 - `--stream` flag
 - `--cache` flag
@@ -204,18 +213,20 @@ Audit and disable/remove any of the following if NOT implemented:
 ## PHASE 10 — EXECUTION TRACE (MINIMAL)
 
 Add to `run.js` at execution start:
+
 ```js
 const run_id = `run-${Date.now()}`;
 const trace = { run_id, steps: [] };
 ```
 
 After each model call or tool execution:
+
 ```js
 trace.steps.push({
   step: stepCount,
   agent: agentId,
   action: actionType,
-  status: "success" | "error"
+  status: 'success' | 'error',
 });
 ```
 
@@ -230,6 +241,7 @@ npx ultra-dex run planner -t "Write a hello world function in JS" --provider nvi
 ```
 
 **OR if CLI not on PATH:**
+
 ```bash
 node apps/cli/bin/ultra-dex.js run planner -t "Write hello world" --provider nvidia
 ```
@@ -238,14 +250,14 @@ node apps/cli/bin/ultra-dex.js run planner -t "Write hello world" --provider nvi
 
 ## DEBUG TREE (IF TEST FAILS)
 
-| Error | Fix |
-|---|---|
-| `Unknown provider` | PROVIDERS missing `nvidia` entry |
-| `API key error` | Set `export NVIDIA_API_KEY=your_key` |
+| Error               | Fix                                                      |
+| ------------------- | -------------------------------------------------------- |
+| `Unknown provider`  | PROVIDERS missing `nvidia` entry                         |
+| `API key error`     | Set `export NVIDIA_API_KEY=your_key`                     |
 | `No output printed` | Check `provider.generate()` returns `{ content: "..." }` |
-| `Infinite loop` | Add `MAX_STEPS` cap to agent loop |
-| `chalk not found` | Run Phase 1 dependency repair |
-| `Module not found` | Run full `npm install --legacy-peer-deps` |
+| `Infinite loop`     | Add `MAX_STEPS` cap to agent loop                        |
+| `chalk not found`   | Run Phase 1 dependency repair                            |
+| `Module not found`  | Run full `npm install --legacy-peer-deps`                |
 
 ---
 
@@ -293,6 +305,7 @@ Only once execution is confirmed working:
 4. Then: introduce v2.0 components
 
 **V2.0 Core Components (build in order):**
+
 ```
 ExecutionEngine   → deterministic step runner
 Scheduler         → task-to-agent assignment
@@ -306,6 +319,7 @@ ExecutionTrace    → full run observability
 ---
 
 # PRE-V2.0 VISION + FEATURE BACKLOG
+
 > Everything below is confirmed direction for v2.0. Not yet built. Not to be touched during stabilization phase.
 
 ---
@@ -354,6 +368,7 @@ User's own AI tools do the actual work.
 ## V2.0 FEATURE BACKLOG (PRIORITY ORDER)
 
 ### P0 — MCP Server (Highest Priority)
+
 ```
 PURPOSE:
 Make Ultra-Dex callable by Claude and any MCP-compatible tool.
@@ -385,6 +400,7 @@ CLAUDE DESKTOP CONFIG:
 ```
 
 ### P1 — `.agents/` Folder (Role-Based Prompt System)
+
 ```
 PURPOSE:
 Each file = complete prompt for a specialized AI role.
@@ -417,6 +433,7 @@ planner → cto → database → backend → frontend → testing → reviewer
 ```
 
 ### P2 — Persistent Memory / RAG
+
 ```
 PURPOSE:
 Never re-explain architecture to AI. Context persists across sessions.
@@ -433,6 +450,7 @@ TECH:
 ```
 
 ### P3 — LLM Router
+
 ```
 PURPOSE:
 Route each task to the best model automatically.
@@ -447,6 +465,7 @@ SAVES: cost + improves quality
 ```
 
 ### P4 — Swarm Command (Agent Pipeline)
+
 ```
 COMMAND: ultra-dex swarm "Build user authentication"
          ultra-dex swarm "Add payments" --dry-run
@@ -459,6 +478,7 @@ FILE: cli/lib/commands/swarm.js
 ```
 
 ### P5 — Additional CLI Commands
+
 ```
 ultra-dex watch        → Auto-update state when files change
 ultra-dex diff         → Compare IMPLEMENTATION-PLAN.md vs actual code
@@ -471,6 +491,7 @@ ultra-dex align        → Quick alignment score (plan vs code)
 ```
 
 ### P6 — VSCode Extension
+
 ```
 STRUCTURE:
 vscode-extension/
@@ -528,12 +549,14 @@ PHASE 3 (Ecosystem):
 You have two separate provider systems that are NOT unified. This is the root cause of provider failures.
 
 **Current (wrong):**
+
 ```
 nemotron.js     → separate NVIDIA wrapper
 providers/index.js → separate factory
 ```
 
 **Required (correct):**
+
 ```
 providers/
   index.js   ← SINGLE ENTRY POINT for all providers
@@ -542,6 +565,7 @@ providers/
 ```
 
 **Keep these — do NOT delete:**
+
 ```
 nvidia-key-manager.js  ✔ (key rotation infra)
 nemotron.js            ✔ (API wrapper)
@@ -549,13 +573,18 @@ nemotron.js            ✔ (API wrapper)
 ```
 
 **nvidia.js adapter must import FROM nemotron.js**, not duplicate it:
+
 ```js
 // providers/nvidia.js
-import { initNVIDIAKeys, createRotatingClient } from '../../../src/services/ai-providers/nemotron.js';
+import {
+  initNVIDIAKeys,
+  createRotatingClient,
+} from '../../../src/services/ai-providers/nemotron.js';
 // then wrap it into the standard provider interface
 ```
 
 **index.js must be the only file run.js imports from:**
+
 ```js
 // run.js — only this import, nothing else
 import { createProvider } from './providers/index.js';
@@ -567,6 +596,7 @@ const provider = createProvider(providerId);
 ## PHASE 12 — FAKE MODULE DETECTION + DETOX
 
 Scan these files for fake implementations:
+
 ```
 src/core/integrations/git.js
 src/core/mcp/*
@@ -575,12 +605,14 @@ src/core/performance/*
 ```
 
 **Mark as FAKE if function:**
+
 - returns hardcoded/constant values
 - returns empty arrays always
 - has no external interaction
 - is a placeholder stub
 
 **For each fake module, choose ONE:**
+
 - A. Implement real logic
 - B. Remove the module completely
 
@@ -612,6 +644,7 @@ grep -r "from.*apps/cli" src/core/
 **prune() returning `false` = fake = NOT acceptable.**
 
 **Async init must be explicit:**
+
 ```js
 // WRONG
 titansMemory.initialize().catch(console.error);
@@ -627,6 +660,7 @@ await titansMemory.initialize();
 Agents will claim completion. These claims are INVALID unless proven by execution.
 
 **Invalid completion signals (ignore these):**
+
 ```
 - "All tasks completed"
 - "100% passing tests"
@@ -636,6 +670,7 @@ Agents will claim completion. These claims are INVALID unless proven by executio
 ```
 
 **Valid completion signal (only this):**
+
 ```bash
 npx ultra-dex run planner -t "build a REST API" --provider nvidia
 → returns real, usable model output
@@ -691,12 +726,13 @@ Before testing real NVIDIA calls, validate the full flow using mock:
 
 ```js
 // Inside provider layer, add:
-if (process.env.MOCK_AI === "true") {
-  return { content: "MOCK RESPONSE: hello" };
+if (process.env.MOCK_AI === 'true') {
+  return { content: 'MOCK RESPONSE: hello' };
 }
 ```
 
 Then test:
+
 ```bash
 MOCK_AI=true npx ultra-dex run planner -t "hello"
 ```
@@ -758,7 +794,9 @@ Use 4 windows running in parallel. Each has a single role. Do not mix.
 ---
 
 ### WINDOW 1 — CONTROLLER
+
 **Paste this prompt:**
+
 ```
 ROLE: ULTRA-DEX CONTROLLER (CTO)
 
@@ -801,7 +839,9 @@ OUTPUT FORMAT:
 ---
 
 ### WINDOW 2 — EXECUTOR
+
 **Paste this prompt:**
+
 ```
 ROLE: ULTRA-DEX EXECUTOR
 
@@ -840,7 +880,9 @@ OUTPUT FORMAT:
 ---
 
 ### WINDOW 3 — VALIDATOR
+
 **Paste this prompt:**
+
 ```
 ROLE: ULTRA-DEX VALIDATOR
 
@@ -873,7 +915,9 @@ OUTPUT FORMAT:
 ---
 
 ### WINDOW 4 — EXECUTION VALIDATOR
+
 **Paste this prompt:**
+
 ```
 ROLE: ULTRA-DEX EXECUTION VALIDATOR
 

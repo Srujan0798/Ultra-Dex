@@ -3,13 +3,12 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
+import { singleton } from 'tsyringe';
 import {
   deterministicEmbedding,
   joinUrl,
@@ -17,32 +16,32 @@ import {
   normalizeUsage,
   postJson,
   ProviderError,
-  streamSse
+  streamSse,
 } from './http-utils.js';
 let CohereProvider = class {
   constructor(config = {}) {
-    this.providerName = "cohere";
+    this.providerName = 'cohere';
     this.config = {
       apiKey: config.apiKey || process.env.COHERE_API_KEY,
-      baseUrl: config.baseUrl || "https://api.cohere.com/v2",
-      defaultModel: config.defaultModel || "command-r-plus",
-      embeddingModel: config.embeddingModel || "embed-english-v3.0",
+      baseUrl: config.baseUrl || 'https://api.cohere.com/v2',
+      defaultModel: config.defaultModel || 'command-r-plus',
+      embeddingModel: config.embeddingModel || 'embed-english-v3.0',
       timeoutMs: config.timeoutMs || 45e3,
-      extraHeaders: config.extraHeaders || {}
+      extraHeaders: config.extraHeaders || {},
     };
     if (!this.config.apiKey) {
-      throw new ProviderError(this.providerName, "apiKey is required", { code: "INVALID_CONFIG" });
+      throw new ProviderError(this.providerName, 'apiKey is required', { code: 'INVALID_CONFIG' });
     }
   }
   get headers() {
     return {
       authorization: `Bearer ${this.config.apiKey}`,
-      ...this.config.extraHeaders
+      ...this.config.extraHeaders,
     };
   }
   async chat(messages, opts = {}) {
     const model = opts.model || this.config.defaultModel;
-    const payload = await postJson(this.providerName, joinUrl(this.config.baseUrl, "/chat"), {
+    const payload = await postJson(this.providerName, joinUrl(this.config.baseUrl, '/chat'), {
       headers: this.headers,
       timeoutMs: opts.timeoutMs || this.config.timeoutMs,
       signal: opts.signal,
@@ -51,19 +50,25 @@ let CohereProvider = class {
         messages: normalizeMessages(messages),
         temperature: opts.temperature,
         max_tokens: opts.maxTokens,
-        stream: false
-      }
+        stream: false,
+      },
     });
-    const content = payload?.message?.content?.map((entry) => entry.text).filter(Boolean).join("") || payload?.text || "";
+    const content =
+      payload?.message?.content
+        ?.map((entry) => entry.text)
+        .filter(Boolean)
+        .join('') ||
+      payload?.text ||
+      '';
     return {
       content,
       usage: normalizeUsage(payload?.usage || payload?.meta?.billed_units || {}),
-      model: payload?.model || model
+      model: payload?.model || model,
     };
   }
   async stream(messages, opts = {}) {
     const model = opts.model || this.config.defaultModel;
-    return streamSse(this.providerName, joinUrl(this.config.baseUrl, "/chat"), {
+    return streamSse(this.providerName, joinUrl(this.config.baseUrl, '/chat'), {
       headers: this.headers,
       timeoutMs: opts.timeoutMs || this.config.timeoutMs,
       signal: opts.signal,
@@ -72,54 +77,52 @@ let CohereProvider = class {
         messages: normalizeMessages(messages),
         temperature: opts.temperature,
         max_tokens: opts.maxTokens,
-        stream: true
-      }
+        stream: true,
+      },
     });
   }
   async embed(text, opts = {}) {
     const model = opts.model || this.config.embeddingModel;
     try {
-      const payload = await postJson(this.providerName, joinUrl(this.config.baseUrl, "/embed"), {
+      const payload = await postJson(this.providerName, joinUrl(this.config.baseUrl, '/embed'), {
         headers: this.headers,
         timeoutMs: opts.timeoutMs || this.config.timeoutMs,
         signal: opts.signal,
         body: {
           model,
           texts: [text],
-          input_type: opts.inputType || "search_document",
-          embedding_types: ["float"]
-        }
+          input_type: opts.inputType || 'search_document',
+          embedding_types: ['float'],
+        },
       });
-      const embedding = payload?.embeddings?.float?.[0] || payload?.embeddings?.[0] || payload?.data?.[0]?.embedding;
+      const embedding =
+        payload?.embeddings?.float?.[0] ||
+        payload?.embeddings?.[0] ||
+        payload?.data?.[0]?.embedding;
       if (!Array.isArray(embedding)) {
-        throw new ProviderError(this.providerName, "Invalid embedding response", {
-          code: "INVALID_RESPONSE"
+        throw new ProviderError(this.providerName, 'Invalid embedding response', {
+          code: 'INVALID_RESPONSE',
         });
       }
       return {
         embedding,
-        dimensions: embedding.length
+        dimensions: embedding.length,
       };
     } catch (error) {
       if (error instanceof ProviderError && error.status && error.status < 500) {
         const fallback = deterministicEmbedding(text);
         return {
           embedding: fallback,
-          dimensions: fallback.length
+          dimensions: fallback.length,
         };
       }
       throw error;
     }
   }
   async complete(prompt, opts = {}) {
-    return this.chat([{ role: "user", content: prompt }], opts);
+    return this.chat([{ role: 'user', content: prompt }], opts);
   }
 };
-CohereProvider = __decorateClass([
-  singleton()
-], CohereProvider);
+CohereProvider = __decorateClass([singleton()], CohereProvider);
 var cohere_default = CohereProvider;
-export {
-  CohereProvider,
-  cohere_default as default
-};
+export { CohereProvider, cohere_default as default };

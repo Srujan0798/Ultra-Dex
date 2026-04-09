@@ -30,7 +30,7 @@ async function setupMemoryHarness() {
   vectorStore = new VectorStore({
     storagePath: path.join(tempDir, 'vectors.db'),
     dimensions: 128,
-    provider: 'simulated' // Use simulated provider for tests
+    provider: 'simulated', // Use simulated provider for tests
   });
   await vectorStore.initialize();
 
@@ -84,8 +84,20 @@ test('MemoryManager store/retrieve cycle', async () => {
 test('VectorStore similarity search', async () => {
   await setupMemoryHarness();
 
-  await vectorStore.upsert([{id: 'vec-1', content: 'Postgres scales for analytics workloads', metadata: { category: 'database' }}]);
-  await vectorStore.upsert([{id: 'vec-2', content: 'Redis speeds up cache-heavy API responses', metadata: { category: 'cache' }}]);
+  await vectorStore.upsert([
+    {
+      id: 'vec-1',
+      content: 'Postgres scales for analytics workloads',
+      metadata: { category: 'database' },
+    },
+  ]);
+  await vectorStore.upsert([
+    {
+      id: 'vec-2',
+      content: 'Redis speeds up cache-heavy API responses',
+      metadata: { category: 'cache' },
+    },
+  ]);
 
   const results = await vectorStore.search('Postgres scales for analytics workloads', 1);
   assert.equal(results.length, 1);
@@ -155,8 +167,12 @@ test('Integrated memory flow: store -> embed -> graph retrieve', async () => {
     metadata: {},
   });
 
-  await vectorStore.upsert([{id: decisionA.id, content: decisionA.content, metadata: { type: decisionA.type }}]);
-  await vectorStore.upsert([{id: decisionB.id, content: decisionB.content, metadata: { type: decisionB.type }}]);
+  await vectorStore.upsert([
+    { id: decisionA.id, content: decisionA.content, metadata: { type: decisionA.type } },
+  ]);
+  await vectorStore.upsert([
+    { id: decisionB.id, content: decisionB.content, metadata: { type: decisionB.type } },
+  ]);
 
   await graph.relate(decisionA.id, decisionB.id, 'ENABLES');
 

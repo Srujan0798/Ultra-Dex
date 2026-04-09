@@ -1,7 +1,7 @@
-import fs from "fs/promises";
-import path from "path";
+import fs from 'fs/promises';
+import path from 'path';
 import { extractSection, SECTION_TITLES } from './build-helpers.js';
-async function scanCodeFiles(dir, extensions = [".ts", ".tsx", ".js", ".jsx", ".py", ".go"]) {
+async function scanCodeFiles(dir, extensions = ['.ts', '.tsx', '.js', '.jsx', '.py', '.go']) {
   const files = [];
   async function scan(currentDir) {
     try {
@@ -9,9 +9,11 @@ async function scanCodeFiles(dir, extensions = [".ts", ".tsx", ".js", ".jsx", ".
       for (const entry of entries) {
         const fullPath = path.join(currentDir, entry.name);
         if (entry.isDirectory()) {
-          if (!["node_modules", ".git", ".next", "dist", "build", "__pycache__", ".venv"].includes(
-            entry.name
-          )) {
+          if (
+            !['node_modules', '.git', '.next', 'dist', 'build', '__pycache__', '.venv'].includes(
+              entry.name
+            )
+          ) {
             await scan(fullPath);
           }
         } else if (entry.isFile()) {
@@ -21,8 +23,7 @@ async function scanCodeFiles(dir, extensions = [".ts", ".tsx", ".js", ".jsx", ".
           }
         }
       }
-    } catch {
-    }
+    } catch {}
   }
   await scan(dir);
   return files;
@@ -34,22 +35,30 @@ async function analyzeCodeStructure(files) {
     models: [],
     services: [],
     tests: [],
-    configs: []
+    configs: [],
   };
   for (const file of files) {
     const relativePath = file;
     const filename = path.basename(file);
-    if (relativePath.includes("/components/") || relativePath.includes("/Components/")) {
+    if (relativePath.includes('/components/') || relativePath.includes('/Components/')) {
       structure.components.push(relativePath);
-    } else if (relativePath.includes("/api/") || relativePath.includes("/routes/")) {
+    } else if (relativePath.includes('/api/') || relativePath.includes('/routes/')) {
       structure.apiRoutes.push(relativePath);
-    } else if (relativePath.includes("/models/") || relativePath.includes("/schema/") || filename.includes("schema")) {
+    } else if (
+      relativePath.includes('/models/') ||
+      relativePath.includes('/schema/') ||
+      filename.includes('schema')
+    ) {
       structure.models.push(relativePath);
-    } else if (relativePath.includes("/services/") || relativePath.includes("/lib/")) {
+    } else if (relativePath.includes('/services/') || relativePath.includes('/lib/')) {
       structure.services.push(relativePath);
-    } else if (relativePath.includes("/test") || relativePath.includes(".test.") || relativePath.includes(".spec.")) {
+    } else if (
+      relativePath.includes('/test') ||
+      relativePath.includes('.test.') ||
+      relativePath.includes('.spec.')
+    ) {
       structure.tests.push(relativePath);
-    } else if (filename.includes("config") || filename.includes(".env")) {
+    } else if (filename.includes('config') || filename.includes('.env')) {
       structure.configs.push(relativePath);
     }
   }
@@ -61,17 +70,17 @@ function checkSectionAlignment(planContent, codeStructure, sectionNum) {
     return {
       section: sectionNum,
       score: 0,
-      status: "missing",
-      issues: ["Section not found in plan"]
+      status: 'missing',
+      issues: ['Section not found in plan'],
     };
   }
   const result = {
     section: sectionNum,
     title: SECTION_TITLES[sectionNum] || `Section ${sectionNum}`,
     score: 0,
-    status: "unknown",
+    status: 'unknown',
     issues: [],
-    suggestions: []
+    suggestions: [],
   };
   switch (sectionNum) {
     case 10:
@@ -88,17 +97,17 @@ function checkSectionAlignment(planContent, codeStructure, sectionNum) {
       break;
     default:
       result.score = 50;
-      result.status = "not-verified";
-      result.issues.push("Automated verification not available for this section");
+      result.status = 'not-verified';
+      result.issues.push('Automated verification not available for this section');
   }
   if (result.score >= 90) {
-    result.status = "complete";
+    result.status = 'complete';
   } else if (result.score >= 70) {
-    result.status = "partial";
+    result.status = 'partial';
   } else if (result.score >= 30) {
-    result.status = "incomplete";
+    result.status = 'incomplete';
   } else {
-    result.status = "missing";
+    result.status = 'missing';
   }
   return result;
 }
@@ -108,12 +117,12 @@ function checkDataModelAlignment(section, codeStructure) {
     score += 50;
   }
   const hasPrisma = codeStructure.models.some(
-    (f) => f.includes("prisma") || f.includes("schema.prisma")
+    (f) => f.includes('prisma') || f.includes('schema.prisma')
   );
   if (hasPrisma) {
     score += 30;
   }
-  const hasMigrations = codeStructure.models.some((f) => f.includes("migration"));
+  const hasMigrations = codeStructure.models.some((f) => f.includes('migration'));
   if (hasMigrations) {
     score += 20;
   }
@@ -137,16 +146,19 @@ function checkApiAlignment(section, codeStructure) {
 function checkAuthAlignment(section, codeStructure) {
   let score = 0;
   const authFiles = [...codeStructure.apiRoutes, ...codeStructure.services].filter(
-    (f) => f.toLowerCase().includes("auth") || f.toLowerCase().includes("login") || f.toLowerCase().includes("session")
+    (f) =>
+      f.toLowerCase().includes('auth') ||
+      f.toLowerCase().includes('login') ||
+      f.toLowerCase().includes('session')
   );
   if (authFiles.length > 0) {
     score += 50;
   }
-  const hasNextAuth = codeStructure.configs.some((f) => f.includes("auth"));
+  const hasNextAuth = codeStructure.configs.some((f) => f.includes('auth'));
   if (hasNextAuth) {
     score += 30;
   }
-  const hasMiddleware = codeStructure.services.some((f) => f.includes("middleware"));
+  const hasMiddleware = codeStructure.services.some((f) => f.includes('middleware'));
   if (hasMiddleware) {
     score += 20;
   }
@@ -157,7 +169,10 @@ function checkTestingAlignment(section, codeStructure) {
   if (codeStructure.tests.length > 0) {
     score += 40;
   }
-  const codeFiles = codeStructure.components.length + codeStructure.apiRoutes.length + codeStructure.services.length;
+  const codeFiles =
+    codeStructure.components.length +
+    codeStructure.apiRoutes.length +
+    codeStructure.services.length;
   if (codeFiles > 0) {
     const testRatio = codeStructure.tests.length / codeFiles;
     score += Math.min(Math.round(testRatio * 100), 60);
@@ -167,10 +182,10 @@ function checkTestingAlignment(section, codeStructure) {
 function generateAlignmentReport(results) {
   const totalScore = results.reduce((sum, r) => sum + r.score, 0);
   const avgScore = Math.round(totalScore / results.length);
-  const complete = results.filter((r) => r.status === "complete").length;
-  const partial = results.filter((r) => r.status === "partial").length;
-  const incomplete = results.filter((r) => r.status === "incomplete").length;
-  const missing = results.filter((r) => r.status === "missing").length;
+  const complete = results.filter((r) => r.status === 'complete').length;
+  const partial = results.filter((r) => r.status === 'partial').length;
+  const incomplete = results.filter((r) => r.status === 'incomplete').length;
+  const missing = results.filter((r) => r.status === 'missing').length;
   return {
     overallScore: avgScore,
     grade: getGrade(avgScore),
@@ -179,30 +194,30 @@ function generateAlignmentReport(results) {
       partial,
       incomplete,
       missing,
-      total: results.length
+      total: results.length,
     },
     sections: results,
-    topIssues: results.filter((r) => r.score < 70).sort((a, b) => a.score - b.score).slice(0, 5).map((r) => ({
-      section: r.section,
-      title: r.title,
-      score: r.score,
-      issues: r.issues
-    }))
+    topIssues: results
+      .filter((r) => r.score < 70)
+      .sort((a, b) => a.score - b.score)
+      .slice(0, 5)
+      .map((r) => ({
+        section: r.section,
+        title: r.title,
+        score: r.score,
+        issues: r.issues,
+      })),
   };
 }
 function getGrade(score) {
-  if (score >= 90)
-    return "A";
-  if (score >= 80)
-    return "B";
-  if (score >= 70)
-    return "C";
-  if (score >= 60)
-    return "D";
-  return "F";
+  if (score >= 90) return 'A';
+  if (score >= 80) return 'B';
+  if (score >= 70) return 'C';
+  if (score >= 60) return 'D';
+  return 'F';
 }
 function formatReportForCLI(report) {
-  let output = "";
+  let output = '';
   output += `
 \u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557
 `;
@@ -244,7 +259,7 @@ var review_helpers_default = {
   analyzeCodeStructure,
   checkSectionAlignment,
   generateAlignmentReport,
-  formatReportForCLI
+  formatReportForCLI,
 };
 export {
   analyzeCodeStructure,
@@ -252,5 +267,5 @@ export {
   review_helpers_default as default,
   formatReportForCLI,
   generateAlignmentReport,
-  scanCodeFiles
+  scanCodeFiles,
 };

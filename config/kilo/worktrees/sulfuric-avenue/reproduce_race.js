@@ -1,31 +1,29 @@
-
 import { agentOrchestrator } from './src/core/orchestration/index.js';
 
 // Mock AI Meta Layer to avoid actual calls
 agentOrchestrator.ai = {
   call: async () => ({ text: 'mock response' }),
   generateObject: async () => ({ object: { paths: [], steps: [{ id: '1', task: 't1' }] } }),
-  generateTextWithTools: async () => ({ text: 'mock code', toolCalls: [] })
+  generateTextWithTools: async () => ({ text: 'mock code', toolCalls: [] }),
 };
 
 // Mock Memory
 agentOrchestrator.memory = {
   init: async () => {},
   search: async () => [],
-  add: async () => {}
+  add: async () => {},
 };
 
 // Mock Registry
 agentOrchestrator.registry = {
-    initialize: async () => {},
-    getAgentPrompt: async () => 'mock prompt',
-    findAgentsByCapabilities: () => [],
-    getAgentById: () => ({ name: 'mock' })
-}
+  initialize: async () => {},
+  getAgentPrompt: async () => 'mock prompt',
+  findAgentsByCapabilities: () => [],
+  getAgentById: () => ({ name: 'mock' }),
+};
 
 // Mock MCP
 agentOrchestrator.mcpServer = { toolsMap: new Map() };
-
 
 async function run() {
   console.log('Starting concurrent executions...');
@@ -39,9 +37,9 @@ async function run() {
   // But we can inspect the TaskGraph size
 
   try {
-      await Promise.allSettled([p1, p2]);
+    await Promise.allSettled([p1, p2]);
   } catch (e) {
-      // ignore errors from mocks
+    // ignore errors from mocks
   }
 
   console.log('TaskGraph size:', agentOrchestrator.tasks.tasks.size);

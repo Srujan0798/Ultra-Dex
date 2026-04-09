@@ -10,18 +10,19 @@ export async function buildPlan(goal, _options = {}) {
 
   // 1. Initial Plan via Planner Agent
   const providerId = getDefaultProvider();
-  
+
   // We use a factory to compatible with runAgentLoop
-  const providerFactory = (_agentId) => createProvider(providerId, {
-    maxTokens: 16000
-  });
+  const providerFactory = (_agentId) =>
+    createProvider(providerId, {
+      maxTokens: 16000,
+    });
 
   // Mock project context for planning
   const context = {
     plan: '',
     context: '',
     state: {},
-    graph: { nodeCount: 0, edgeCount: 0 }
+    graph: { nodeCount: 0, edgeCount: 0 },
   };
 
   printInfo(chalk.gray('  Step 1: Generating initial breakdown...'));
@@ -30,9 +31,9 @@ export async function buildPlan(goal, _options = {}) {
   // 2. Neuro-Symbolic Refinement (Simulated O1/R1 reasoning)
   // In a real scenario, we would check for a "reasoning" model specifically
   // For now, we ask the Planner to critique and refine its own plan recursively
-  
+
   printInfo(chalk.gray('  Step 2: Deep reasoning refinement...'));
-  
+
   const refinementPrompt = `
 You are a Deep Reasoning Engine.
 Analyze the following plan for logical gaps, missing edge cases, and architectural flaws.
@@ -59,13 +60,13 @@ Output a rigorous "Thinking Process" followed by the "Final Refined Plan".
   // 3. Recursive Breakdown (Task Atomicity)
   // Scan for tasks that look too big (heuristic: bullet points with no sub-bullets)
   // This is a simplified implementation of the recursive requirement
-  
+
   return {
     goal,
     planText: finalPlan,
     thinkingProcess,
     approved: true, // Auto-approve for now, rules engine integration handles validation
-    violations: []
+    violations: [],
   };
 }
 

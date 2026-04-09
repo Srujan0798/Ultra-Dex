@@ -1,4 +1,3 @@
-
 import { ultraMemory } from '../apps/cli/lib/mcp/memory.js';
 import fs from 'fs/promises';
 import path from 'path';
@@ -38,8 +37,8 @@ async function run() {
   const content = await fs.readFile(memoryPath, 'utf8');
   const data = JSON.parse(content);
 
-  const hasKey1 = data.some(item => item.text === key1);
-  const hasKey2 = data.some(item => item.text === key2);
+  const hasKey1 = data.some((item) => item.text === key1);
+  const hasKey2 = data.some((item) => item.text === key2);
 
   console.log(`File contains "${key1}": ${hasKey1}`);
   console.log(`File contains "${key2}": ${hasKey2}`);
@@ -47,7 +46,9 @@ async function run() {
   if (!hasKey1 || !hasKey2) {
     console.log('SUCCESS: Race condition reproduced. One or both entries are missing from disk.');
   } else {
-    console.log('FAILURE: Both entries were persisted correctly. The race might not have occurred naturally.');
+    console.log(
+      'FAILURE: Both entries were persisted correctly. The race might not have occurred naturally.'
+    );
   }
 }
 

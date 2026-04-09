@@ -17,7 +17,7 @@ function addHeader(filePath) {
 
 function walk(dir) {
   const list = fs.readdirSync(dir);
-  list.forEach(file => {
+  list.forEach((file) => {
     const fullPath = path.join(dir, file);
     const stat = fs.statSync(fullPath);
     if (stat && stat.isDirectory()) {

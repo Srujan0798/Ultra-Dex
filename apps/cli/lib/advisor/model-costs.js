@@ -6,4 +6,3 @@ export const MODEL_COSTS = [
   { name: 'GPT-5.2', input: 1.75, output: 14, bestFor: 'Code gen' },
   { name: 'GPT-5 mini', input: 0.25, output: 2, bestFor: 'Simple tasks' },
 ];
-

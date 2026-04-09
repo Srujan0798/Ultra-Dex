@@ -168,7 +168,10 @@ describe('Extended Production Commands', () => {
  */
 function handleError(error) {
   try {
-    console.error('[production-extended.test]', error instanceof Error ? error.message : String(error));
+    console.error(
+      '[production-extended.test]',
+      error instanceof Error ? error.message : String(error)
+    );
   } catch (_) {
     // Fail silently
   }

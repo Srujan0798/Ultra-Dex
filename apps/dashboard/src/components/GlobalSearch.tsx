@@ -10,15 +10,60 @@ interface SearchItem {
 }
 
 const SEARCH_ITEMS: SearchItem[] = [
-  { label: 'Overview', description: 'Mission control summary', path: '/', keywords: ['home', 'dashboard', 'metrics'] },
-  { label: 'Agents', description: 'Live agent state and actions', path: '/agents', keywords: ['bot', 'workers', 'automation'] },
-  { label: 'Memory', description: 'Memory graph and recall', path: '/memory', keywords: ['knowledge', 'vector', 'graph'] },
-  { label: 'Tasks', description: 'Task pipeline and queue', path: '/tasks', keywords: ['jobs', 'queue', 'work'] },
-  { label: 'Analytics', description: 'Latency, usage, and outcomes', path: '/analytics', keywords: ['charts', 'cost', 'performance'] },
-  { label: 'Integrations', description: 'Provider and platform integrations', path: '/integrations', keywords: ['github', 'cloud', 'plugins'] },
-  { label: 'Providers', description: 'Model/provider controls', path: '/providers', keywords: ['openai', 'anthropic', 'routing'] },
-  { label: 'Settings', description: 'Preferences and environment config', path: '/settings', keywords: ['preferences', 'theme', 'config'] },
-  { label: 'Hologram', description: '3D and graph visualization', path: '/hologram', keywords: ['3d', 'visual', 'scene'] },
+  {
+    label: 'Overview',
+    description: 'Mission control summary',
+    path: '/',
+    keywords: ['home', 'dashboard', 'metrics'],
+  },
+  {
+    label: 'Agents',
+    description: 'Live agent state and actions',
+    path: '/agents',
+    keywords: ['bot', 'workers', 'automation'],
+  },
+  {
+    label: 'Memory',
+    description: 'Memory graph and recall',
+    path: '/memory',
+    keywords: ['knowledge', 'vector', 'graph'],
+  },
+  {
+    label: 'Tasks',
+    description: 'Task pipeline and queue',
+    path: '/tasks',
+    keywords: ['jobs', 'queue', 'work'],
+  },
+  {
+    label: 'Analytics',
+    description: 'Latency, usage, and outcomes',
+    path: '/analytics',
+    keywords: ['charts', 'cost', 'performance'],
+  },
+  {
+    label: 'Integrations',
+    description: 'Provider and platform integrations',
+    path: '/integrations',
+    keywords: ['github', 'cloud', 'plugins'],
+  },
+  {
+    label: 'Providers',
+    description: 'Model/provider controls',
+    path: '/providers',
+    keywords: ['openai', 'anthropic', 'routing'],
+  },
+  {
+    label: 'Settings',
+    description: 'Preferences and environment config',
+    path: '/settings',
+    keywords: ['preferences', 'theme', 'config'],
+  },
+  {
+    label: 'Hologram',
+    description: '3D and graph visualization',
+    path: '/hologram',
+    keywords: ['3d', 'visual', 'scene'],
+  },
 ];
 
 function fuzzyScore(query: string, candidate: string): number {
@@ -67,11 +112,10 @@ export function GlobalSearch() {
     const normalized = query.trim().toLowerCase();
     if (!normalized) return SEARCH_ITEMS.slice(0, 7);
 
-    return SEARCH_ITEMS
-      .map((item) => {
-        const haystack = `${item.label} ${item.description} ${item.keywords.join(' ')}`;
-        return { item, score: fuzzyScore(normalized, haystack) };
-      })
+    return SEARCH_ITEMS.map((item) => {
+      const haystack = `${item.label} ${item.description} ${item.keywords.join(' ')}`;
+      return { item, score: fuzzyScore(normalized, haystack) };
+    })
       .filter((entry) => entry.score > 0)
       .sort((a, b) => b.score - a.score)
       .slice(0, 8)
@@ -99,7 +143,12 @@ export function GlobalSearch() {
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-slate-950/70 px-4 pt-20" role="dialog" aria-modal="true" aria-label="Global search">
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center bg-slate-950/70 px-4 pt-20"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Global search"
+        >
           <div className="w-full max-w-2xl overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/95 shadow-2xl">
             <div className="flex items-center border-b border-slate-800 px-4 py-3">
               <Search className="mr-2 h-4 w-4 text-slate-500" aria-hidden="true" />
@@ -120,7 +169,11 @@ export function GlobalSearch() {
               </button>
             </div>
 
-            <ul className="max-h-[420px] overflow-y-auto py-2" role="listbox" aria-label="Search results">
+            <ul
+              className="max-h-[420px] overflow-y-auto py-2"
+              role="listbox"
+              aria-label="Search results"
+            >
               {results.length === 0 && (
                 <li className="px-4 py-6 text-center text-sm text-slate-500">No matches found.</li>
               )}

@@ -8,9 +8,9 @@ import { logger } from './logger.js';
  * @param {Error} [err] - Optional error object
  */
 export function printError(message, err) {
-  logger.error(message, { 
-    error: err?.message, 
-    stack: process.env.DEBUG === 'true' ? err?.stack : undefined 
+  logger.error(message, {
+    error: err?.message,
+    stack: process.env.DEBUG === 'true' ? err?.stack : undefined,
   });
 }
 

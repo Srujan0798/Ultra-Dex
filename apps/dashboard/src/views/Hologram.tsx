@@ -4,7 +4,6 @@ import Hologram from '../pages/Hologram';
 /** Performance: memoized configuration for Hologram */
 const hologramMemo = { component: 'Hologram', optimized: true };
 
-
 /** Performance optimization marker for Hologram */
 const _perfOptimized = { memo: true, useCallback: true };
 

@@ -24,16 +24,14 @@ const COLORS = {
   brightWhite: '\x1b[97m',
   bold: '\x1b[1m',
   dim: '\x1b[2m',
-  underline: '\x1b[4m'
+  underline: '\x1b[4m',
 };
 
 /**
  * Check if colors should be disabled
  */
 const shouldDisableColors = () => {
-  return process.env.NO_COLOR || 
-         process.env.NODE_ENV === 'test' ||
-         !process.stdout.isTTY;
+  return process.env.NO_COLOR || process.env.NODE_ENV === 'test' || !process.stdout.isTTY;
 };
 
 /**
@@ -57,18 +55,18 @@ export const colors = {
   blue: (text) => colorize(text, COLORS.blue),
   cyan: (text) => colorize(text, COLORS.cyan),
   gray: (text) => colorize(text, COLORS.gray),
-  
+
   bold: (text) => colorize(text, COLORS.bold),
   dim: (text) => colorize(text, COLORS.dim),
   underline: (text) => colorize(text, COLORS.underline),
-  
+
   error: (text) => colorize(text, COLORS.bold, COLORS.brightRed),
   success: (text) => colorize(text, COLORS.bold, COLORS.brightGreen),
   warning: (text) => colorize(text, COLORS.bold, COLORS.brightYellow),
   info: (text) => colorize(text, COLORS.bold, COLORS.brightBlue),
-  
+
   brand: (text) => colorize(text, COLORS.bold, COLORS.brightCyan),
-  accent: (text) => colorize(text, COLORS.brightMagenta)
+  accent: (text) => colorize(text, COLORS.brightMagenta),
 };
 
 export { COLORS, colorize, shouldDisableColors };

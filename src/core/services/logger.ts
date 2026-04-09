@@ -3,37 +3,35 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
+import { singleton } from 'tsyringe';
 let WinstonStyleLogger = class {
   config;
   logHistory = [];
   maxHistory = 1e3;
   constructor() {
     this.config = {
-      level: process.env.LOG_LEVEL || "info",
+      level: process.env.LOG_LEVEL || 'info',
       enableConsole: true,
-      enableFile: false
+      enableFile: false,
     };
   }
   shouldLog(level) {
-    const levels = ["debug", "info", "warn", "error", "fatal"];
+    const levels = ['debug', 'info', 'warn', 'error', 'fatal'];
     return levels.indexOf(level) >= levels.indexOf(this.config.level);
   }
   log(level, message, context, error) {
-    if (!this.shouldLog(level))
-      return;
+    if (!this.shouldLog(level)) return;
     const entry = {
       level,
       message,
       timestamp: /* @__PURE__ */ new Date(),
       context,
-      error
+      error,
     };
     this.logHistory.push(entry);
     if (this.logHistory.length > this.maxHistory) {
@@ -55,35 +53,35 @@ let WinstonStyleLogger = class {
 ${entry.error.stack || entry.error.message}`;
     }
     switch (entry.level) {
-      case "debug":
+      case 'debug':
         console.debug(output);
         break;
-      case "info":
+      case 'info':
         console.info(output);
         break;
-      case "warn":
+      case 'warn':
         console.warn(output);
         break;
-      case "error":
-      case "fatal":
+      case 'error':
+      case 'fatal':
         console.error(output);
         break;
     }
   }
   debug(message, context) {
-    this.log("debug", message, context);
+    this.log('debug', message, context);
   }
   info(message, context) {
-    this.log("info", message, context);
+    this.log('info', message, context);
   }
   warn(message, context) {
-    this.log("warn", message, context);
+    this.log('warn', message, context);
   }
   error(message, error, context) {
-    this.log("error", message, context, error);
+    this.log('error', message, context, error);
   }
   fatal(message, error, context) {
-    this.log("fatal", message, context, error);
+    this.log('fatal', message, context, error);
   }
   child(metadata) {
     const childLogger = new WinstonStyleLogger();
@@ -104,9 +102,5 @@ ${entry.error.stack || entry.error.message}`;
     return result;
   }
 };
-WinstonStyleLogger = __decorateClass([
-  singleton()
-], WinstonStyleLogger);
-export {
-  WinstonStyleLogger
-};
+WinstonStyleLogger = __decorateClass([singleton()], WinstonStyleLogger);
+export { WinstonStyleLogger };

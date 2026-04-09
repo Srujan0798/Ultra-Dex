@@ -1,4 +1,4 @@
-import { singleton } from "tsyringe";
+import { singleton } from 'tsyringe';
 import { DI_TOKENS } from '../di/tokens.js';
 import { container } from '../di/container.js';
 
@@ -21,30 +21,35 @@ class RateLimiter {
       actualOptions = options;
     } else if (loggerOrOptions && typeof loggerOrOptions === 'object') {
       actualOptions = loggerOrOptions;
-      actualLogger = options?.logger || (container.isRegistered(DI_TOKENS.Logger) ? container.resolve(DI_TOKENS.Logger) : null);
+      actualLogger =
+        options?.logger ||
+        (container.isRegistered(DI_TOKENS.Logger) ? container.resolve(DI_TOKENS.Logger) : null);
     } else {
       actualOptions = options;
-      actualLogger = loggerOrOptions || (container.isRegistered(DI_TOKENS.Logger) ? container.resolve(DI_TOKENS.Logger) : null);
+      actualLogger =
+        loggerOrOptions ||
+        (container.isRegistered(DI_TOKENS.Logger) ? container.resolve(DI_TOKENS.Logger) : null);
     }
 
-    this.logger = actualLogger || { 
-      info: () => {}, 
-      debug: () => {}, 
-      warn: () => {}, 
-      error: () => {} 
+    this.logger = actualLogger || {
+      info: () => {},
+      debug: () => {},
+      warn: () => {},
+      error: () => {},
     };
-    
+
     this.options = {
-      tokensPerSecond: actualOptions?.tokensPerSecond || actualOptions?.defaultTokensPerSecond || 10,
+      tokensPerSecond:
+        actualOptions?.tokensPerSecond || actualOptions?.defaultTokensPerSecond || 10,
       burstLimit: actualOptions?.burstLimit || actualOptions?.defaultCapacity || 50,
-      defaultAcquireTimeoutMs: actualOptions?.defaultAcquireTimeoutMs || 5000
+      defaultAcquireTimeoutMs: actualOptions?.defaultAcquireTimeoutMs || 5000,
     };
     this.tokens = this.options.burstLimit;
     this.lastRefillTimestamp = Date.now();
     this.providerRequests = new Map();
     this.providerLimits = new Map();
     this.inFlightCounts = new Map();
-    this.logger.info("RateLimiter initialized", this.options);
+    this.logger.info('RateLimiter initialized', this.options);
   }
   /**
    * Attempts to acquire a token for a given provider.
@@ -55,72 +60,72 @@ class RateLimiter {
   async acquire(providerName: string, options: any = {}): Promise<any> {
     const wait = options.wait !== false;
     const timeout = options.timeout || this.options.defaultAcquireTimeoutMs;
-    
+
     this.refillTokens();
     this.updateSlidingWindow(providerName);
-    
+
     // Check provider-specific limits
     const providerLimit = this.providerLimits.get(providerName);
     if (providerLimit) {
       const providerData = this.providerRequests.get(providerName);
       const recentCount = providerData?.recentRequests?.length || 0;
-      
+
       if (recentCount >= providerLimit.burstMaxRequests) {
         if (!wait) {
           throw new Error(`Rate limit exceeded for provider ${providerName}`);
         }
         // Wait for window to clear
-        await new Promise(resolve => setTimeout(resolve, providerLimit.burstWindowMs || 1000));
+        await new Promise((resolve) => setTimeout(resolve, providerLimit.burstWindowMs || 1000));
       }
-      
+
       if (this.tokens < 1 && providerLimit.tokensPerSecond < 0.5) {
         if (!wait) {
           throw new Error(`Rate limit exceeded for provider ${providerName}`);
         }
-        await new Promise(resolve => setTimeout(resolve, 1000 / providerLimit.tokensPerSecond));
+        await new Promise((resolve) => setTimeout(resolve, 1000 / providerLimit.tokensPerSecond));
       }
     }
-    
+
     if (this.tokens < 1) {
       this.logger.debug(`RateLimiter: DENIED for ${providerName} - No tokens available.`);
       if (!wait) {
         throw new Error(`Rate limit exceeded: No tokens available`);
       }
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
-    
+
     const providerData = this.providerRequests.get(providerName);
     if (providerData && providerData.count >= this.options.tokensPerSecond) {
       this.logger.debug(`RateLimiter: DENIED for ${providerName} - Sliding window limit reached.`);
       if (!wait) {
         throw new Error(`Rate limit exceeded for provider ${providerName}`);
       }
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
-    
+
     this.tokens--;
-    
+
     // Track in-flight
     const currentInFlight = this.inFlightCounts.get(providerName) || 0;
     this.inFlightCounts.set(providerName, currentInFlight + 1);
-    
+
     // Track recent requests for burst limiting
     if (!providerData) {
       this.providerRequests.set(providerName, {
         count: 0,
         windowStart: Date.now(),
-        recentRequests: []
+        recentRequests: [],
       });
     }
     const data = this.providerRequests.get(providerName);
     data.recentRequests = data.recentRequests || [];
     data.recentRequests.push(Date.now());
-    
+
     this.logger.debug(`RateLimiter: ALLOWED for ${providerName}. Tokens remaining: ${this.tokens}`);
-    
+
     return {
       provider: providerName,
-      acquiredAt: Date.now()
+      acquiredAt: Date.now(),
     };
   }
   /**
@@ -130,14 +135,14 @@ class RateLimiter {
     if (lease && lease.provider) {
       const currentInFlight = this.inFlightCounts.get(lease.provider) || 0;
       this.inFlightCounts.set(lease.provider, Math.max(0, currentInFlight - 1));
-      
+
       // Track consumed
       const providerData = this.providerRequests.get(lease.provider);
       if (providerData) {
         providerData.totalConsumed = (providerData.totalConsumed || 0) + 1;
       }
     }
-    this.logger.debug("RateLimiter: Release called", lease);
+    this.logger.debug('RateLimiter: Release called', lease);
   }
   /**
    * Gets statistics about the rate limiter.
@@ -151,14 +156,14 @@ class RateLimiter {
         inFlight,
         tokenBucket: {
           totalConsumed: data.totalConsumed || data.count || 0,
-          remaining: this.tokens
-        }
+          remaining: this.tokens,
+        },
       };
     }
     return {
       currentTokens: this.tokens,
       lastRefill: new Date(this.lastRefillTimestamp).toISOString(),
-      providerRequestCounts: Object.fromEntries(this.providerRequests)
+      providerRequestCounts: Object.fromEntries(this.providerRequests),
     };
   }
   /**
@@ -167,7 +172,7 @@ class RateLimiter {
   refillTokens(): void {
     const now = Date.now();
     const elapsedTime = now - this.lastRefillTimestamp;
-    const tokensToAdd = elapsedTime / 1e3 * this.options.tokensPerSecond;
+    const tokensToAdd = (elapsedTime / 1e3) * this.options.tokensPerSecond;
     if (tokensToAdd > 0) {
       this.tokens = Math.min(this.options.burstLimit, this.tokens + tokensToAdd);
       this.lastRefillTimestamp = now;
@@ -190,14 +195,14 @@ class RateLimiter {
     }
     providerData.count++;
   }
-  
+
   // Compatibility methods for tests
   setLimit(providerName: string, limits: any): void {
     this.providerLimits.set(providerName, {
       tokensPerSecond: limits.tokensPerSecond || this.options.tokensPerSecond,
       capacity: limits.capacity || this.options.burstLimit,
       burstMaxRequests: limits.burstMaxRequests || 100,
-      burstWindowMs: limits.burstWindowMs || 60000
+      burstWindowMs: limits.burstWindowMs || 60000,
     });
   }
 }

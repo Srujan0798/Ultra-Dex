@@ -143,4 +143,3 @@ _Rapid code generation, quick file refactors, test assertion writing._
 # Complex Codebase Fix utilizing OpenCode
 opencode run -m opencode/devstral-2-123b-instruct-2512 -p "Execute the multi-file migration plan"
 ```
-

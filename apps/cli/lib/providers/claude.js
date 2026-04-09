@@ -10,7 +10,6 @@ import { printInfo, printSuccess, printWarning, printError } from '../utils/outp
 import chalk from 'chalk';
 import { AppError } from '../utils/errors.js';
 
-
 // Claude Sonnet 5 model constant
 export const CLAUDE_SONNET_5 = 'claude-sonnet-5-20260201';
 export const CLAUDE_DEFAULT_MODEL = 'claude-sonnet-4-20250514';
@@ -252,7 +251,7 @@ export class ClaudeSonnet5Provider {
           usage,
           model: resolvedModel,
           partial: true,
-          error
+          error,
         };
       }
 
@@ -274,8 +273,7 @@ export class ClaudeSonnet5Provider {
 
 export class ClaudeProvider extends ClaudeSonnet5Provider {
   constructor(apiKey, options = {}) {
-    const envModel =
-      options.model || process.env.ULTRA_DEX_CLAUDE_MODEL || CLAUDE_DEFAULT_MODEL;
+    const envModel = options.model || process.env.ULTRA_DEX_CLAUDE_MODEL || CLAUDE_DEFAULT_MODEL;
     const normalized = normalizeClaudeModel(envModel);
     super({ ...options, apiKey, model: normalized });
     this.model = normalized;

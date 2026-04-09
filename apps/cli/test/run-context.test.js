@@ -56,23 +56,14 @@ describe('run context helpers', () => {
   test('extracts and strips explicit decisions from model output', () => {
     const content = `DECISION: Read the run loop before changing persistence.\n>> READ_CODE: "apps/cli/lib/commands/run.js"`;
 
-    assert.equal(
-      extractDecision(content),
-      'Read the run loop before changing persistence.'
-    );
-    assert.equal(
-      stripDecisionLine(content),
-      '>> READ_CODE: "apps/cli/lib/commands/run.js"'
-    );
+    assert.equal(extractDecision(content), 'Read the run loop before changing persistence.');
+    assert.equal(stripDecisionLine(content), '>> READ_CODE: "apps/cli/lib/commands/run.js"');
   });
 
   test('synthesizes a decision from a tool-only response', () => {
     const content = '>> RUN_SHELL: "npm test -- run-context"';
 
-    assert.equal(
-      extractDecision(content),
-      'Execute RUN_SHELL on npm test -- run-context.'
-    );
+    assert.equal(extractDecision(content), 'Execute RUN_SHELL on npm test -- run-context.');
   });
 });
 

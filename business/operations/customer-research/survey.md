@@ -1,6 +1,7 @@
 # Ultra-Dex Customer Survey
 
 ## Survey Objectives
+
 - Measure customer satisfaction and Net Promoter Score
 - Identify product usage patterns and feature adoption
 - Gather feedback on pricing and packaging
@@ -10,12 +11,13 @@
 ## Survey Structure
 
 ### Section 1: Customer Profile (5 questions)
+
 1. What is your role in your organization?
    - [ ] C-Suite (CEO, CTO, CIO, etc.)
    - [ ] VP/Director
    - [ ] Manager
    - [ ] Individual Contributor
-   - [ ] Other: ___________
+   - [ ] Other: ****\_\_\_****
 
 2. What is the size of your organization?
    - [ ] 1-10 employees
@@ -32,7 +34,7 @@
    - [ ] Manufacturing
    - [ ] Education
    - [ ] Government
-   - [ ] Other: ___________
+   - [ ] Other: ****\_\_\_****
 
 4. How long have you been using Ultra-Dex?
    - [ ] Less than 1 month
@@ -48,9 +50,10 @@
    - [ ] Data analysis
    - [ ] Content generation
    - [ ] Code assistance
-   - [ ] Other: ___________
+   - [ ] Other: ****\_\_\_****
 
 ### Section 2: Product Satisfaction (8 questions)
+
 6. How satisfied are you with Ultra-Dex overall?
    - [ ] Very satisfied
    - [ ] Satisfied
@@ -81,7 +84,7 @@
    - [ ] CLI
    - [ ] GitHub integration
    - [ ] Audit logging
-   - [ ] Other: ___________
+   - [ ] Other: ****\_\_\_****
 
 9. How would you rate the following aspects of Ultra-Dex? (Scale: Excellent, Good, Fair, Poor, N/A)
    - Ease of use: [ ] [ ] [ ] [ ] [ ]
@@ -106,7 +109,7 @@
     - [ ] Better customer experience
     - [ ] Enhanced capabilities
     - [ ] No significant impact
-    - [ ] Other: ___________
+    - [ ] Other: ****\_\_\_****
 
 13. How easy was it to get started with Ultra-Dex?
     - [ ] Very easy
@@ -116,6 +119,7 @@
     - [ ] Very difficult
 
 ### Section 3: Usage & Adoption (6 questions)
+
 14. How often do you use Ultra-Dex?
     - [ ] Multiple times per day
     - [ ] Once per day
@@ -138,7 +142,7 @@
     - [ ] Development/testing
     - [ ] Customer-facing applications
     - [ ] Internal tools
-    - [ ] Other: ___________
+    - [ ] Other: ****\_\_\_****
 
 17. How has your usage of Ultra-Dex changed over the past 3 months?
     - [ ] Increased significantly
@@ -155,7 +159,7 @@
     - [ ] Integration challenges
     - [ ] Security/compliance concerns
     - [ ] Lack of time
-    - [ ] Other: ___________
+    - [ ] Other: ****\_\_\_****
 
 19. How likely are you to expand your use of Ultra-Dex in the next 6 months?
     - [ ] Very likely
@@ -165,6 +169,7 @@
     - [ ] Very unlikely
 
 ### Section 4: Pricing & Competition (5 questions)
+
 20. How satisfied are you with Ultra-Dex's pricing?
     - [ ] Very satisfied
     - [ ] Satisfied
@@ -195,12 +200,13 @@
     - [ ] Custom solution
     - [ ] Zapier/Make
     - [ ] None - Ultra-Dex was our first choice
-    - [ ] Other: ___________
+    - [ ] Other: ****\_\_\_****
 
 24. What would make you consider switching to a competitor?
     [Open text field - 200 characters max]
 
 ### Section 5: Future & Feedback (4 questions)
+
 25. What features would you most like to see added to Ultra-Dex?
     [Open text field - 200 characters max]
 
@@ -218,6 +224,7 @@
     - [ ] Maybe
 
 ### Section 6: Demographics (Optional)
+
 29. What is your age range?
     - [ ] Under 25
     - [ ] 25-34
@@ -234,22 +241,25 @@
     - [ ] Colleague recommendation
     - [ ] Conference/event
     - [ ] Blog/article
-    - [ ] Other: ___________
+    - [ ] Other: ****\_\_\_****
 
 ## Survey Distribution Plan
 
 ### Target Audience
+
 - All active Ultra-Dex users
 - Focus on customers with 30+ days tenure
 - Exclude trial users who haven't converted
 
 ### Distribution Method
+
 - Email invitation with embedded survey link
 - Follow-up reminder after 1 week
 - Final reminder after 2 weeks
 - Incentive: $25 gift card for completion
 
 ### Timing
+
 - Launch: First Monday of each quarter
 - Duration: 3 weeks
 - Target: 200+ responses per quarter
@@ -257,6 +267,7 @@
 ## Analysis Framework
 
 ### Quantitative Analysis
+
 - Net Promoter Score calculation
 - Satisfaction ratings averages
 - Usage pattern analysis
@@ -264,6 +275,7 @@
 - Competitive positioning metrics
 
 ### Qualitative Analysis
+
 - Thematic coding of open-ended responses
 - Customer journey mapping
 - Pain point identification
@@ -273,6 +285,7 @@
 ## Reporting
 
 ### Dashboard Metrics
+
 - Response rate
 - NPS score
 - Satisfaction scores
@@ -280,6 +293,7 @@
 - Competitive insights
 
 ### Quarterly Reports
+
 - Executive summary
 - Key findings
 - Action items
@@ -287,6 +301,7 @@
 - Product roadmap updates
 
 ## Success Metrics
+
 - Target response rate: 15%+
 - NPS target: 4.0+
 - Satisfaction target: 4.0+

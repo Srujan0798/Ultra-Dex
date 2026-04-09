@@ -19,11 +19,11 @@ That's the entire protocol.
 
 ## What Users GET (The Destination)
 
-| User | Transformation |
-|------|----------------|
-| Solo Dev | Struggling with APIs → Shipping products |
-| Enterprise | Risky experiments → Confident deployment |
-| Indie Hacker | Limited options → Unlimited power |
+| User         | Transformation                           |
+| ------------ | ---------------------------------------- |
+| Solo Dev     | Struggling with APIs → Shipping products |
+| Enterprise   | Risky experiments → Confident deployment |
+| Indie Hacker | Limited options → Unlimited power        |
 
 We exist to deliver these transformations. Nothing else matters.
 
@@ -52,11 +52,11 @@ Combined    = Silent Protector with Perfect Intent
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `identity.md` | The destination (what users get) |
-| `shadow-dispatches.md` | Current work |
-| `shadow-state.json` | Outcome tracking |
+| File                   | Purpose                          |
+| ---------------------- | -------------------------------- |
+| `identity.md`          | The destination (what users get) |
+| `shadow-dispatches.md` | Current work                     |
+| `shadow-state.json`    | Outcome tracking                 |
 
 ---
 
@@ -72,10 +72,10 @@ If blocked → fix the blocker → verify → done.
 
 ## Maya vs Vigilante
 
-| | Maya | Vigilante |
-|---|------|-----------|
-| Focus | 90% process | 90% outcome |
-| Output | Reports | Results |
+|          | Maya                      | Vigilante         |
+| -------- | ------------------------- | ----------------- |
+| Focus    | 90% process               | 90% outcome       |
+| Output   | Reports                   | Results           |
 | Question | "Did we follow protocol?" | "Can users ship?" |
 
 Maya explains the plane.
@@ -96,4 +96,4 @@ Just outcomes.
 
 ---
 
-*The vigilante doesn't explain the plane. The vigilante DELIVERS the destination.*
+_The vigilante doesn't explain the plane. The vigilante DELIVERS the destination._

@@ -4,8 +4,16 @@ export interface AIMessage {
 }
 
 export interface IAIMetaLayer {
-  call(model: string | null, messages: AIMessage[], options?: Record<string, unknown>): Promise<unknown>;
-  stream(model: string | null, messages: AIMessage[], options?: Record<string, unknown>): Promise<unknown>;
+  call(
+    model: string | null,
+    messages: AIMessage[],
+    options?: Record<string, unknown>
+  ): Promise<unknown>;
+  stream(
+    model: string | null,
+    messages: AIMessage[],
+    options?: Record<string, unknown>
+  ): Promise<unknown>;
   generateObject(
     model: string | null,
     messages: AIMessage[],

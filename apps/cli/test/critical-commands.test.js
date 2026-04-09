@@ -54,12 +54,16 @@ describe('serve command', () => {
 
   test('serve --stdio starts MCP server mode', async () => {
     // This test starts the server briefly then kills it
-    const result = spawnSync(process.execPath, ['--import', bootstrapPath, cliPath, 'serve', '--stdio'], {
-      env: { ...process.env, FORCE_COLOR: '0' },
-      encoding: 'utf8',
-      timeout: 2000, // Kill after 2 seconds
-      input: '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}\n',
-    });
+    const result = spawnSync(
+      process.execPath,
+      ['--import', bootstrapPath, cliPath, 'serve', '--stdio'],
+      {
+        env: { ...process.env, FORCE_COLOR: '0' },
+        encoding: 'utf8',
+        timeout: 2000, // Kill after 2 seconds
+        input: '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}\n',
+      }
+    );
 
     // Server should start (may timeout, that's ok)
     assert.ok(
@@ -73,11 +77,15 @@ describe('serve command', () => {
 
   test('serve accepts custom port', () => {
     // Just verify the command accepts the option
-    const result = spawnSync(process.execPath, ['--import', bootstrapPath, cliPath, 'serve', '--port', '9999'], {
-      env: { ...process.env, FORCE_COLOR: '0' },
-      encoding: 'utf8',
-      timeout: 1000, // Kill quickly
-    });
+    const result = spawnSync(
+      process.execPath,
+      ['--import', bootstrapPath, cliPath, 'serve', '--port', '9999'],
+      {
+        env: { ...process.env, FORCE_COLOR: '0' },
+        encoding: 'utf8',
+        timeout: 1000, // Kill quickly
+      }
+    );
 
     // Should attempt to start (will likely fail or timeout)
     assert.ok(result.signal === 'SIGTERM' || result.status !== null);
@@ -464,7 +472,10 @@ describe('run command', () => {
  */
 function handleError(error) {
   try {
-    console.error('[critical-commands.test]', error instanceof Error ? error.message : String(error));
+    console.error(
+      '[critical-commands.test]',
+      error instanceof Error ? error.message : String(error)
+    );
   } catch (_) {
     // Fail silently
   }

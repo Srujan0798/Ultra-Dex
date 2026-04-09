@@ -31,7 +31,7 @@ describe('MCP Server Manager Timeout', () => {
         }
       }
     }
-    await new Promise(r => setTimeout(r, 50));
+    await new Promise((r) => setTimeout(r, 50));
   });
 
   it('should log warning and skip server when auto-start times out', async () => {
@@ -50,13 +50,17 @@ describe('MCP Server Manager Timeout', () => {
     console.warn = originalWarn;
 
     assert.ok(result.registered, 'Server should be registered');
-    assert.ok(warnings.some(w => w.includes('MCP server slow-server unreachable at startup')),
-      'Should log warning about unreachable server');
+    assert.ok(
+      warnings.some((w) => w.includes('MCP server slow-server unreachable at startup')),
+      'Should log warning about unreachable server'
+    );
 
     const server = manager.servers.get('slow-server');
     assert.strictEqual(server.status, 'unreachable', 'Server status should be unreachable');
-    assert.ok(server.lastError.includes('Timeout') || server.lastError.includes('timeout'), 
-      'Last error should mention timeout');
+    assert.ok(
+      server.lastError.includes('Timeout') || server.lastError.includes('timeout'),
+      'Last error should mention timeout'
+    );
   });
 
   it('should emit server:startup-timeout event on timeout', async () => {
@@ -98,14 +102,14 @@ describe('MCP Server Manager Timeout', () => {
 
   it('should complete registration even with timeout', async () => {
     const startTime = Date.now();
-    
+
     const result = await manager.registerServer('timing-server', {
       name: 'Timing Server',
       command: 'node',
       args: ['-e', 'setTimeout(() => {}, 60000)'],
       autoStart: true,
     });
-    
+
     const elapsed = Date.now() - startTime;
 
     assert.ok(result.registered, 'Should return registration result');
@@ -139,17 +143,19 @@ describe('MCP Server Manager Timeout', () => {
 
   it('should have 5-second timeout for auto-start', async () => {
     const startTime = Date.now();
-    
+
     await manager.registerServer('five-sec-test', {
       name: 'Five Second Test',
       command: 'node',
       args: ['-e', 'setTimeout(() => {}, 60000)'],
       autoStart: true,
     });
-    
+
     const elapsed = Date.now() - startTime;
-    
-    assert.ok(elapsed >= 4500 && elapsed <= 6000, 
-      `Timeout should be ~5s (4500-6000ms), but was ${elapsed}ms`);
+
+    assert.ok(
+      elapsed >= 4500 && elapsed <= 6000,
+      `Timeout should be ~5s (4500-6000ms), but was ${elapsed}ms`
+    );
   });
 });

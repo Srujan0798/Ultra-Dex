@@ -32,9 +32,9 @@ export interface UserSession {
 
 export const generateApiKey = (): string => {
   const prefix = 'ud_';
-  const random = Array.from({ length: 32 }, () => 
-    Math.floor(Math.random() * 36).toString(36)
-  ).join('');
+  const random = Array.from({ length: 32 }, () => Math.floor(Math.random() * 36).toString(36)).join(
+    ''
+  );
   return prefix + random;
 };
 
@@ -48,10 +48,10 @@ export const createNewUser = (email: string, name: string): User => ({
   apiKey: generateApiKey(),
   usage: {
     requestsThisMonth: 0,
-    tokensThisMonth: 0
+    tokensThisMonth: 0,
   },
   preferences: {
     notifications: true,
-    theme: 'dark'
-  }
+    theme: 'dark',
+  },
 });

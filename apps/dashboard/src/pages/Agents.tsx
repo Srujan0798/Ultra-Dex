@@ -59,13 +59,18 @@ export const Agents = memo(function Agents() {
       agents.length > 0
         ? Math.round(agents.reduce((sum, agent) => sum + agent.avgDurationMs, 0) / agents.length)
         : 0;
-    const totalRuns = agents.reduce((sum, agent) => sum + agent.successCount + agent.failureCount, 0);
+    const totalRuns = agents.reduce(
+      (sum, agent) => sum + agent.successCount + agent.failureCount,
+      0
+    );
 
     return { running, errored, avgDuration, totalRuns };
   }, [agents]);
 
   const handleAction = (agentId: string, action: 'start' | 'stop' | 'logs') => {
-    setActionLog(`Action queued: ${action.toUpperCase()} for ${agentId} at ${new Date().toLocaleTimeString()}`);
+    setActionLog(
+      `Action queued: ${action.toUpperCase()} for ${agentId} at ${new Date().toLocaleTimeString()}`
+    );
   };
 
   return (
@@ -73,7 +78,9 @@ export const Agents = memo(function Agents() {
       <section className="grid gap-4 md:grid-cols-4">
         <article className="rounded-xl border border-slate-800 bg-slate-900/70 p-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs uppercase tracking-[0.15em] text-slate-500">Connected Agents</span>
+            <span className="text-xs uppercase tracking-[0.15em] text-slate-500">
+              Connected Agents
+            </span>
             <Bot className="h-4 w-4 text-blue-300" />
           </div>
           <div className="mt-3 text-2xl font-semibold text-slate-100">{agents.length}</div>
@@ -116,10 +123,14 @@ export const Agents = memo(function Agents() {
         </div>
       )}
 
-      <MetricsPanel agents={agents} costSeries={stream.costSeries} metrics={{
-        ...stream.metrics,
-        activeAgents: stream.metrics.activeAgents || summary.running,
-      }} />
+      <MetricsPanel
+        agents={agents}
+        costSeries={stream.costSeries}
+        metrics={{
+          ...stream.metrics,
+          activeAgents: stream.metrics.activeAgents || summary.running,
+        }}
+      />
 
       <CostDashboard agents={agents} costSeries={stream.costSeries} />
       <LogViewer logs={stream.logs} />

@@ -1,4 +1,4 @@
 # 🛡️ Project Risk Register
 
-| ID | Risk | Probability | Impact | Mitigation | Status |
-| :--- | :--- | :--- | :--- | :--- | :--- |
+| ID  | Risk | Probability | Impact | Mitigation | Status |
+| :-- | :--- | :---------- | :----- | :--------- | :----- |

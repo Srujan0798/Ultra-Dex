@@ -86,7 +86,9 @@ describe('StreamPipeline', () => {
       pipeline.pipe([{ text: 'one' }, { text: 'two' }, { text: 'three' }])
     );
 
-    assert.deepEqual(output, [{ type: 'aggregate', text: 'one|two|three', content: 'one|two|three' }]);
+    assert.deepEqual(output, [
+      { type: 'aggregate', text: 'one|two|three', content: 'one|two|three' },
+    ]);
   });
 
   it('pipes AIMetaLayer provider streams through the configured pipeline', async () => {
@@ -103,9 +105,7 @@ describe('StreamPipeline', () => {
       streamPipeline: pipeline,
     });
 
-    const stream = await ai.stream('mock-model', [
-      { role: 'user', content: 'stream something' },
-    ]);
+    const stream = await ai.stream('mock-model', [{ role: 'user', content: 'stream something' }]);
     const output = await collectReadableStream(stream);
 
     assert.equal(typeof stream.getReader, 'function');

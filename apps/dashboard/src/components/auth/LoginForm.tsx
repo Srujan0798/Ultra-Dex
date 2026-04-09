@@ -10,16 +10,16 @@ export const LoginForm: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
+
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password }),
       });
-      
+
       if (!res.ok) throw new Error('Login failed');
-      
+
       const data = await res.json();
       localStorage.setItem('session_token', data.session.token);
       window.location.href = '/dashboard';
@@ -38,14 +38,14 @@ export const LoginForm: React.FC = () => {
         type="email"
         placeholder="Email"
         value={email}
-        onChange={e => setEmail(e.target.value)}
+        onChange={(e) => setEmail(e.target.value)}
         required
       />
       <input
         type="password"
         placeholder="Password"
         value={password}
-        onChange={e => setPassword(e.target.value)}
+        onChange={(e) => setPassword(e.target.value)}
         required
       />
       <button type="submit" disabled={loading}>

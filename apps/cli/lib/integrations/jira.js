@@ -19,35 +19,39 @@ export class JiraClient {
 
   get headers() {
     return {
-      'Authorization': `Basic ${Buffer.from(`${this.email}:${this.apiToken}`).toString('base64')}`,
+      Authorization: `Basic ${Buffer.from(`${this.email}:${this.apiToken}`).toString('base64')}`,
       'Content-Type': 'application/json',
-      'Accept': 'application/json'
+      Accept: 'application/json',
     };
   }
 
   async createIssue(data) {
     try {
-      const response = await retryWithBackoff(() => fetch(`${this.baseUrl}/issue`, {
-        method: 'POST',
-        headers: this.headers,
-        body: JSON.stringify({
-          fields: {
-            project: { key: data.projectKey },
-            summary: data.summary,
-            description: {
-              type: 'doc',
-              version: 1,
-              content: [{
-                type: 'paragraph',
-                content: [{ type: 'text', text: data.description || '' }]
-              }]
+      const response = await retryWithBackoff(() =>
+        fetch(`${this.baseUrl}/issue`, {
+          method: 'POST',
+          headers: this.headers,
+          body: JSON.stringify({
+            fields: {
+              project: { key: data.projectKey },
+              summary: data.summary,
+              description: {
+                type: 'doc',
+                version: 1,
+                content: [
+                  {
+                    type: 'paragraph',
+                    content: [{ type: 'text', text: data.description || '' }],
+                  },
+                ],
+              },
+              issuetype: { name: data.issueType || 'Task' },
+              priority: data.priority ? { name: data.priority } : undefined,
+              labels: data.labels || [],
             },
-            issuetype: { name: data.issueType || 'Task' },
-            priority: data.priority ? { name: data.priority } : undefined,
-            labels: data.labels || []
-          }
+          }),
         })
-      }));
+      );
 
       if (!response.ok) {
         const error = await response.json();
@@ -63,9 +67,11 @@ export class JiraClient {
 
   async getIssue(issueKey) {
     try {
-      const response = await retryWithBackoff(() => fetch(`${this.baseUrl}/issue/${issueKey}`, {
-        headers: this.headers
-      }));
+      const response = await retryWithBackoff(() =>
+        fetch(`${this.baseUrl}/issue/${issueKey}`, {
+          headers: this.headers,
+        })
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to get issue: ${response.status} ${response.statusText}`);
@@ -80,15 +86,17 @@ export class JiraClient {
 
   async searchIssues(jql, maxResults = 50) {
     try {
-      const response = await retryWithBackoff(() => fetch(`${this.baseUrl}/search`, {
-        method: 'POST',
-        headers: this.headers,
-        body: JSON.stringify({ 
-          jql, 
-          maxResults,
-          fields: ['summary', 'status', 'assignee', 'priority', 'labels', 'description']
+      const response = await retryWithBackoff(() =>
+        fetch(`${this.baseUrl}/search`, {
+          method: 'POST',
+          headers: this.headers,
+          body: JSON.stringify({
+            jql,
+            maxResults,
+            fields: ['summary', 'status', 'assignee', 'priority', 'labels', 'description'],
+          }),
         })
-      }));
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to search issues: ${response.status} ${response.statusText}`);
@@ -103,11 +111,13 @@ export class JiraClient {
 
   async updateIssue(issueKey, updates) {
     try {
-      const response = await retryWithBackoff(() => fetch(`${this.baseUrl}/issue/${issueKey}`, {
-        method: 'PUT',
-        headers: this.headers,
-        body: JSON.stringify({ fields: updates })
-      }));
+      const response = await retryWithBackoff(() =>
+        fetch(`${this.baseUrl}/issue/${issueKey}`, {
+          method: 'PUT',
+          headers: this.headers,
+          body: JSON.stringify({ fields: updates }),
+        })
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to update issue: ${response.status} ${response.statusText}`);
@@ -122,11 +132,13 @@ export class JiraClient {
 
   async transitionIssue(issueKey, transitionId) {
     try {
-      const response = await retryWithBackoff(() => fetch(`${this.baseUrl}/issue/${issueKey}/transitions`, {
-        method: 'POST',
-        headers: this.headers,
-        body: JSON.stringify({ transition: { id: transitionId } })
-      }));
+      const response = await retryWithBackoff(() =>
+        fetch(`${this.baseUrl}/issue/${issueKey}/transitions`, {
+          method: 'POST',
+          headers: this.headers,
+          body: JSON.stringify({ transition: { id: transitionId } }),
+        })
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to transition issue: ${response.status} ${response.statusText}`);
@@ -141,20 +153,24 @@ export class JiraClient {
 
   async addComment(issueKey, comment) {
     try {
-      const response = await retryWithBackoff(() => fetch(`${this.baseUrl}/issue/${issueKey}/comment`, {
-        method: 'POST',
-        headers: this.headers,
-        body: JSON.stringify({
-          body: {
-            type: 'doc',
-            version: 1,
-            content: [{
-              type: 'paragraph',
-              content: [{ type: 'text', text: comment }]
-            }]
-          }
+      const response = await retryWithBackoff(() =>
+        fetch(`${this.baseUrl}/issue/${issueKey}/comment`, {
+          method: 'POST',
+          headers: this.headers,
+          body: JSON.stringify({
+            body: {
+              type: 'doc',
+              version: 1,
+              content: [
+                {
+                  type: 'paragraph',
+                  content: [{ type: 'text', text: comment }],
+                },
+              ],
+            },
+          }),
         })
-      }));
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to add comment: ${response.status} ${response.statusText}`);
@@ -169,9 +185,11 @@ export class JiraClient {
 
   async getTransitions(issueKey) {
     try {
-      const response = await retryWithBackoff(() => fetch(`${this.baseUrl}/issue/${issueKey}/transitions`, {
-        headers: this.headers
-      }));
+      const response = await retryWithBackoff(() =>
+        fetch(`${this.baseUrl}/issue/${issueKey}/transitions`, {
+          headers: this.headers,
+        })
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to get transitions: ${response.status} ${response.statusText}`);
@@ -193,7 +211,7 @@ export async function syncFromPlan(client, planSections) {
         projectKey: section.projectKey,
         summary: section.name,
         description: section.description,
-        issueType: section.type || 'Story'
+        issueType: section.type || 'Story',
       });
       issues.push(issue);
       printSuccess(`Created issue: ${issue.key}`);
@@ -213,7 +231,7 @@ export async function validateJiraConfig(config) {
   const client = new JiraClient(config);
   try {
     const response = await fetch(`${client.baseUrl}/myself`, {
-      headers: client.headers
+      headers: client.headers,
     });
 
     if (!response.ok) {
@@ -232,5 +250,5 @@ export async function validateJiraConfig(config) {
 export default {
   JiraClient,
   syncFromPlan,
-  validateJiraConfig
+  validateJiraConfig,
 };

@@ -14,7 +14,7 @@ describe('Memory Manager Integration', () => {
     memoryManager.entries = [];
     memoryManager.initialized = true;
 
-    memoryManager.add = async function(entry) {
+    memoryManager.add = async function (entry) {
       const storedEntry = {
         id: `mem_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         content: entry.content,
@@ -37,20 +37,20 @@ describe('Memory Manager Integration', () => {
       return storedEntry;
     };
 
-    memoryManager.search = async function(query, limit = 5) {
+    memoryManager.search = async function (query, limit = 5) {
       // Simple search - match query in content
       const results = this.entries
-        .filter(e => e.content.toLowerCase().includes(query.toLowerCase()))
+        .filter((e) => e.content.toLowerCase().includes(query.toLowerCase()))
         .sort((a, b) => b.metadata.importance - a.metadata.importance)
         .slice(0, limit);
       return results;
     };
 
-    memoryManager.getTier = async function(tier) {
-      return this.entries.filter(e => e.tiers.includes(tier));
+    memoryManager.getTier = async function (tier) {
+      return this.entries.filter((e) => e.tiers.includes(tier));
     };
 
-    memoryManager.getAll = async function() {
+    memoryManager.getAll = async function () {
       return this.entries;
     };
   });
@@ -72,12 +72,15 @@ describe('Memory Manager Integration', () => {
     // Retrieve all entries
     const allEntries = await memoryManager.getAll();
     assert.strictEqual(allEntries.length, 5, 'Should retrieve all stored entries');
-    
+
     // Verify importance values are preserved
-    const criticalEntry = allEntries.find(r => r.metadata.type === 'error');
+    const criticalEntry = allEntries.find((r) => r.metadata.type === 'error');
     assert.ok(criticalEntry, 'Should retrieve critical entry');
-    assert.strictEqual(criticalEntry.metadata.importance, 10, 
-      'Critical entry should have importance 10');
+    assert.strictEqual(
+      criticalEntry.metadata.importance,
+      10,
+      'Critical entry should have importance 10'
+    );
   });
 
   it('should return high-importance results first', async () => {
@@ -100,15 +103,18 @@ describe('Memory Manager Integration', () => {
 
     // Search for results (use empty query to get all, then check sorting)
     const results = await memoryManager.getAll();
-    
+
     // Sort by importance and check order
     const sorted = results.sort((a, b) => b.metadata.importance - a.metadata.importance);
-    
+
     assert.ok(results.length >= 3, 'Should retrieve all entries');
-    
+
     // First result should be highest importance
-    assert.strictEqual(sorted[0].metadata.importance, 10,
-      'First result should be highest importance (10)');
+    assert.strictEqual(
+      sorted[0].metadata.importance,
+      10,
+      'First result should be highest importance (10)'
+    );
   });
 
   it('should classify entries into cold/warm/hot tiers', async () => {
@@ -130,21 +136,18 @@ describe('Memory Manager Integration', () => {
 
     // Decision type with high importance should be in cold tier
     assert.ok(
-      coldTier.some(e => e.metadata?.type === 'decision'),
+      coldTier.some((e) => e.metadata?.type === 'decision'),
       'Decision entry should be in cold tier'
     );
 
     // High importance (>5) should be in warm tier
     assert.ok(
-      warmTier.some(e => e.metadata?.importance > 5),
+      warmTier.some((e) => e.metadata?.importance > 5),
       'High importance entry should be in warm tier'
     );
 
     // All entries should be in hot tier initially (new entries)
-    assert.ok(
-      hotTier.length >= 3,
-      'All new entries should be in hot tier initially'
-    );
+    assert.ok(hotTier.length >= 3, 'All new entries should be in hot tier initially');
   });
 
   it('should handle cold tier - archived decisions', async () => {
@@ -163,10 +166,10 @@ describe('Memory Manager Integration', () => {
     });
 
     const coldTier = await memoryManager.getTier('cold');
-    
+
     assert.ok(coldTier.length >= 2, 'Should have decision entries in cold tier');
     assert.ok(
-      coldTier.every(e => e.metadata?.type === 'decision'),
+      coldTier.every((e) => e.metadata?.type === 'decision'),
       'All cold tier entries should be decisions'
     );
   });
@@ -185,10 +188,10 @@ describe('Memory Manager Integration', () => {
     });
 
     const warmTier = await memoryManager.getTier('warm');
-    
+
     assert.ok(warmTier.length >= 2, 'Should have entries in warm tier');
     assert.ok(
-      warmTier.every(e => e.metadata?.importance > 5),
+      warmTier.every((e) => e.metadata?.importance > 5),
       'All warm tier entries should have importance > 5'
     );
   });
@@ -207,7 +210,7 @@ describe('Memory Manager Integration', () => {
     });
 
     const hotTier = await memoryManager.getTier('hot');
-    
+
     assert.ok(hotTier.length >= 2, 'Should have recent entries in hot tier');
   });
 
@@ -232,13 +235,13 @@ describe('Memory Manager Integration', () => {
     // Search for specific terms
     const mlResults = await memoryManager.search('machine');
     assert.ok(
-      mlResults.some(r => r.content?.includes('Machine learning')),
+      mlResults.some((r) => r.content?.includes('Machine learning')),
       'Should find machine learning content'
     );
 
     const dbResults = await memoryManager.search('database');
     assert.ok(
-      dbResults.some(r => r.content?.includes('Database')),
+      dbResults.some((r) => r.content?.includes('Database')),
       'Should find database content'
     );
   });

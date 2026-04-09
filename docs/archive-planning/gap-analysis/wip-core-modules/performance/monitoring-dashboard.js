@@ -22,7 +22,7 @@ export class PerformanceMonitoringDashboard {
       updateInterval: options.updateInterval || 2000, // 2 seconds
       retentionMinutes: options.retentionMinutes || 60, // 1 hour of data
       enableHistoricalData: options.enableHistoricalData !== false,
-      ...options
+      ...options,
     };
 
     this.app = express();
@@ -39,7 +39,7 @@ export class PerformanceMonitoringDashboard {
       activeConnections: 0,
       requestsPerSecond: 0,
       avgResponseTime: 0,
-      errorRate: 0
+      errorRate: 0,
     };
 
     this.setupExpressApp();
@@ -51,7 +51,7 @@ export class PerformanceMonitoringDashboard {
   setupExpressApp() {
     // Serve static files and dashboard UI
     this.app.use(express.static(new URL('../../../../assets/dashboard', import.meta.url).pathname));
-    
+
     // API endpoints
     this.app.get('/api/metrics', (req, res) => {
       res.json(this.getCurrentMetrics());
@@ -70,7 +70,7 @@ export class PerformanceMonitoringDashboard {
         status: 'healthy',
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
-        version: process.env.npm_package_version || '6.0.0'
+        version: process.env.npm_package_version || '6.0.0',
       });
     });
 
@@ -87,9 +87,9 @@ export class PerformanceMonitoringDashboard {
     this.server = createServer(this.app);
     this.io = new Server(this.server, {
       cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-      }
+        origin: '*',
+        methods: ['GET', 'POST'],
+      },
     });
 
     // Start collecting metrics
@@ -99,7 +99,9 @@ export class PerformanceMonitoringDashboard {
 
     // Listen for connections
     this.server.listen(this.config.port, this.config.host, () => {
-      logger.info(`📊 Performance Dashboard started at http://${this.config.host}:${this.config.port}`);
+      logger.info(
+        `📊 Performance Dashboard started at http://${this.config.host}:${this.config.port}`
+      );
     });
 
     // Socket.IO event handling
@@ -143,25 +145,25 @@ export class PerformanceMonitoringDashboard {
         disk: this.getDiskUsage(),
         network: this.getNetworkUsage(),
         load: os.loadavg(),
-        uptime: process.uptime()
+        uptime: process.uptime(),
       },
       process: {
         memory: process.memoryUsage(),
         cpu: process.cpuUsage(),
         pid: process.pid,
-        uptime: process.uptime()
+        uptime: process.uptime(),
       },
       ultraDex: {
         agents: this.getAgentMetrics(),
         aiProviders: this.getAIProviderMetrics(),
         memorySystem: this.getMemorySystemMetrics(),
-        performanceOptimizer: advancedPerfOptimizer.getAdvancedMetrics()
+        performanceOptimizer: advancedPerfOptimizer.getAdvancedMetrics(),
       },
       performance: {
         responseTime: this.getResponseTimeMetrics(),
         throughput: this.getThroughputMetrics(),
-        errorRate: this.getErrorRateMetrics()
-      }
+        errorRate: this.getErrorRateMetrics(),
+      },
     };
 
     // Add to history
@@ -179,7 +181,8 @@ export class PerformanceMonitoringDashboard {
    */
   getCPUUsage() {
     const cpus = os.cpus();
-    let totalIdle = 0, totalTick = 0;
+    let totalIdle = 0,
+      totalTick = 0;
 
     for (const cpu of cpus) {
       for (const type in cpu.times) {
@@ -195,7 +198,7 @@ export class PerformanceMonitoringDashboard {
       count: cpus.length,
       model: cpus[0]?.model,
       speed: cpus[0]?.speed,
-      usagePercent: 100 - (avgIdle / avgTick) * 100
+      usagePercent: 100 - (avgIdle / avgTick) * 100,
     };
   }
 
@@ -211,7 +214,7 @@ export class PerformanceMonitoringDashboard {
       total: totalMemory,
       free: freeMemory,
       used: usedMemory,
-      usagePercent: (usedMemory / totalMemory) * 100
+      usagePercent: (usedMemory / totalMemory) * 100,
     };
   }
 
@@ -223,9 +226,9 @@ export class PerformanceMonitoringDashboard {
     // For now, returning simulated data
     return {
       total: 500 * 1024 * 1024 * 1024, // 500GB
-      free: 200 * 1024 * 1024 * 1024,  // 200GB free
-      used: 300 * 1024 * 1024 * 1024,  // 300GB used
-      usagePercent: 60
+      free: 200 * 1024 * 1024 * 1024, // 200GB free
+      used: 300 * 1024 * 1024 * 1024, // 300GB used
+      usagePercent: 60,
     };
   }
 
@@ -236,7 +239,7 @@ export class PerformanceMonitoringDashboard {
     // In a real implementation, this would check actual network usage
     return {
       connections: this.getActiveConnections(),
-      bandwidth: this.getBandwidthUsage()
+      bandwidth: this.getBandwidthUsage(),
     };
   }
 
@@ -255,7 +258,7 @@ export class PerformanceMonitoringDashboard {
     // Simulated bandwidth usage
     return {
       upload: Math.random() * 10, // 0-10 Mbps
-      download: Math.random() * 50 // 0-50 Mbps
+      download: Math.random() * 50, // 0-50 Mbps
     };
   }
 
@@ -268,7 +271,7 @@ export class PerformanceMonitoringDashboard {
       totalAgents: 17, // Total number of registered agents
       activeAgents: Math.floor(Math.random() * 17), // Simulated active agents
       avgResponseTime: Math.random() * 500 + 100, // 100-600ms
-      totalExecutions: Math.floor(Math.random() * 10000) // Simulated execution count
+      totalExecutions: Math.floor(Math.random() * 10000), // Simulated execution count
     };
   }
 
@@ -281,7 +284,7 @@ export class PerformanceMonitoringDashboard {
       activeProviders: ['openai', 'anthropic', 'google'],
       totalRequests: Math.floor(Math.random() * 5000),
       avgResponseTime: Math.random() * 3000 + 500, // 500-3500ms
-      errorRate: Math.random() * 0.05 // 0-5% error rate
+      errorRate: Math.random() * 0.05, // 0-5% error rate
     };
   }
 
@@ -295,7 +298,7 @@ export class PerformanceMonitoringDashboard {
       warmMemorySize: Math.floor(Math.random() * 10000), // Items in warm memory
       coldMemorySize: Math.floor(Math.random() * 100000), // Items in cold memory
       cacheHitRate: Math.random() * 0.95 + 0.05, // 5-100% hit rate
-      totalMemories: Math.floor(Math.random() * 150000)
+      totalMemories: Math.floor(Math.random() * 150000),
     };
   }
 
@@ -308,7 +311,7 @@ export class PerformanceMonitoringDashboard {
       p95: Math.random() * 1000 + 100, // 100-1100ms
       p99: Math.random() * 2000 + 200, // 200-2200ms
       min: Math.random() * 50, // 0-50ms
-      max: Math.random() * 3000 + 500 // 500-3500ms
+      max: Math.random() * 3000 + 500, // 500-3500ms
     };
   }
 
@@ -319,7 +322,7 @@ export class PerformanceMonitoringDashboard {
     return {
       requestsPerSecond: Math.floor(Math.random() * 100) + 10, // 10-110 RPS
       operationsPerSecond: Math.floor(Math.random() * 200) + 20, // 20-220 OPS
-      aiCallsPerMinute: Math.floor(Math.random() * 500) + 50 // 50-550 calls/min
+      aiCallsPerMinute: Math.floor(Math.random() * 500) + 50, // 50-550 calls/min
     };
   }
 
@@ -330,7 +333,7 @@ export class PerformanceMonitoringDashboard {
     return {
       rate: Math.random() * 0.03, // 0-3% error rate
       totalErrors: Math.floor(Math.random() * 100),
-      criticalErrors: Math.floor(Math.random() * 10)
+      criticalErrors: Math.floor(Math.random() * 10),
     };
   }
 
@@ -346,7 +349,7 @@ export class PerformanceMonitoringDashboard {
       activeConnections: metrics.system.network.connections,
       requestsPerSecond: metrics.performance.throughput.requestsPerSecond,
       avgResponseTime: metrics.performance.responseTime.avg,
-      errorRate: metrics.performance.errorRate.rate
+      errorRate: metrics.performance.errorRate.rate,
     };
   }
 
@@ -369,11 +372,10 @@ export class PerformanceMonitoringDashboard {
       ultraDex: {
         version: process.env.npm_package_version || '6.0.0',
         uptime: process.uptime(),
-        pid: process.pid
+        pid: process.pid,
       },
-      metrics: this.metricsHistory.length > 0 
-        ? this.metricsHistory[this.metricsHistory.length - 1] 
-        : null
+      metrics:
+        this.metricsHistory.length > 0 ? this.metricsHistory[this.metricsHistory.length - 1] : null,
     };
   }
 

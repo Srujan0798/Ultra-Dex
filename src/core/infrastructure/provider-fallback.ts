@@ -3,26 +3,25 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { EventEmitter } from "events";
+import { singleton } from 'tsyringe';
+import { EventEmitter } from 'events';
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 let CircuitBreaker = class extends EventEmitter {
   constructor(config = {}) {
     super();
-    this.name = config.name || "provider";
+    this.name = config.name || 'provider';
     this.failureThreshold = config.failureThreshold || 3;
     this.resetTimeoutMs = config.resetTimeoutMs || 3e4;
     this.successThreshold = config.successThreshold || 1;
     this.timeoutMs = config.timeoutMs || 0;
-    this.state = "CLOSED";
+    this.state = 'CLOSED';
     this.consecutiveFailures = 0;
     this.halfOpenSuccesses = 0;
     this.openedAt = null;
@@ -30,15 +29,15 @@ let CircuitBreaker = class extends EventEmitter {
     this.stats = {
       success: 0,
       failure: 0,
-      rejected: 0
+      rejected: 0,
     };
   }
   canExecute() {
-    if (this.state !== "OPEN") {
+    if (this.state !== 'OPEN') {
       return true;
     }
     if (this.openedAt && Date.now() - this.openedAt >= this.resetTimeoutMs) {
-      this.transitionTo("HALF_OPEN");
+      this.transitionTo('HALF_OPEN');
       return true;
     }
     return false;
@@ -70,35 +69,36 @@ let CircuitBreaker = class extends EventEmitter {
     }
     return await Promise.race([
       operation(),
-      new Promise(
-        (_, reject) => setTimeout(
-          () => reject(new Error(`Circuit breaker "${this.name}" timed out after ${this.timeoutMs}ms`)),
+      new Promise((_, reject) =>
+        setTimeout(
+          () =>
+            reject(new Error(`Circuit breaker "${this.name}" timed out after ${this.timeoutMs}ms`)),
           this.timeoutMs
         )
-      )
+      ),
     ]);
   }
   recordSuccess() {
     this.stats.success++;
     this.consecutiveFailures = 0;
     this.lastError = null;
-    if (this.state === "HALF_OPEN") {
+    if (this.state === 'HALF_OPEN') {
       this.halfOpenSuccesses++;
       if (this.halfOpenSuccesses >= this.successThreshold) {
-        this.transitionTo("CLOSED");
+        this.transitionTo('CLOSED');
       }
       return;
     }
-    this.transitionTo("CLOSED");
+    this.transitionTo('CLOSED');
   }
   recordFailure(error) {
     this.stats.failure++;
     this.consecutiveFailures++;
     this.lastError = error?.message || String(error);
     this.halfOpenSuccesses = 0;
-    if (this.state === "HALF_OPEN" || this.consecutiveFailures >= this.failureThreshold) {
+    if (this.state === 'HALF_OPEN' || this.consecutiveFailures >= this.failureThreshold) {
       this.openedAt = Date.now();
-      this.transitionTo("OPEN");
+      this.transitionTo('OPEN');
     }
   }
   transitionTo(state) {
@@ -107,23 +107,23 @@ let CircuitBreaker = class extends EventEmitter {
     }
     const previous = this.state;
     this.state = state;
-    if (state !== "OPEN") {
+    if (state !== 'OPEN') {
       this.openedAt = null;
     }
-    if (state === "CLOSED") {
+    if (state === 'CLOSED') {
       this.consecutiveFailures = 0;
       this.halfOpenSuccesses = 0;
     }
-    this.emit("state-change", { name: this.name, from: previous, to: state });
+    this.emit('state-change', { name: this.name, from: previous, to: state });
   }
   forceState(state) {
-    if (state === "OPEN") {
+    if (state === 'OPEN') {
       this.openedAt = Date.now();
     }
     this.transitionTo(state);
   }
   reset() {
-    this.forceState("CLOSED");
+    this.forceState('CLOSED');
     this.lastError = null;
   }
   getStatus() {
@@ -135,20 +135,18 @@ let CircuitBreaker = class extends EventEmitter {
       lastError: this.lastError,
       consecutiveFailures: this.consecutiveFailures,
       openedAt: this.openedAt,
-      stats: { ...this.stats }
+      stats: { ...this.stats },
     };
   }
 };
-CircuitBreaker = __decorateClass([
-  singleton()
-], CircuitBreaker);
+CircuitBreaker = __decorateClass([singleton()], CircuitBreaker);
 let CircuitBreakerRegistry = class {
   constructor(config = {}) {
     this.config = {
       failureThreshold: config.failureThreshold || 3,
       resetTimeoutMs: config.resetTimeoutMs || 3e4,
       successThreshold: config.successThreshold || 1,
-      timeoutMs: config.timeoutMs || 0
+      timeoutMs: config.timeoutMs || 0,
     };
     this.breakers = /* @__PURE__ */ new Map();
   }
@@ -159,7 +157,7 @@ let CircuitBreakerRegistry = class {
         new CircuitBreaker({
           name,
           ...this.config,
-          ...overrides
+          ...overrides,
         })
       );
     }
@@ -174,54 +172,71 @@ let CircuitBreakerRegistry = class {
     const statuses = Array.from(this.breakers.values()).map((breaker) => breaker.getStatus());
     return {
       total: statuses.length,
-      closed: statuses.filter((status) => status.state === "CLOSED").length,
-      open: statuses.filter((status) => status.state === "OPEN").length,
-      halfOpen: statuses.filter((status) => status.state === "HALF_OPEN").length,
-      breakers: Object.fromEntries(statuses.map((status) => [status.name, status]))
+      closed: statuses.filter((status) => status.state === 'CLOSED').length,
+      open: statuses.filter((status) => status.state === 'OPEN').length,
+      halfOpen: statuses.filter((status) => status.state === 'HALF_OPEN').length,
+      breakers: Object.fromEntries(statuses.map((status) => [status.name, status])),
     };
   }
 };
-CircuitBreakerRegistry = __decorateClass([
-  singleton()
-], CircuitBreakerRegistry);
+CircuitBreakerRegistry = __decorateClass([singleton()], CircuitBreakerRegistry);
 let ProviderFallback = class extends EventEmitter {
   constructor(config = {}) {
     super();
-    this.strategy = config.strategy || "priority";
+    this.strategy = config.strategy || 'priority';
     this.failureThreshold = config.failureThreshold || 3;
     this.resetTimeoutMs = config.resetTimeoutMs || 3e4;
     this.timeoutMs = config.timeoutMs || 3e4;
     this.fallbackDelayMs = config.fallbackDelayMs || 0;
-    this.registry = config.circuitBreakers || new CircuitBreakerRegistry({
-      failureThreshold: this.failureThreshold,
-      resetTimeoutMs: this.resetTimeoutMs,
-      timeoutMs: this.timeoutMs
-    });
+    this.registry =
+      config.circuitBreakers ||
+      new CircuitBreakerRegistry({
+        failureThreshold: this.failureThreshold,
+        resetTimeoutMs: this.resetTimeoutMs,
+        timeoutMs: this.timeoutMs,
+      });
     this.providers = /* @__PURE__ */ new Map();
     this.stats = {
       executions: 0,
       successes: 0,
       failures: 0,
-      failovers: 0
+      failovers: 0,
     };
   }
   addProvider(name, config = {}) {
     const current = this.providers.get(name);
-    const circuitBreaker = current?.circuitBreaker || this.registry.get(name, {
-      name,
-      failureThreshold: config.failureThreshold || this.failureThreshold,
-      resetTimeoutMs: config.resetTimeoutMs || this.resetTimeoutMs,
-      timeoutMs: config.timeoutMs || this.timeoutMs
-    });
+    const circuitBreaker =
+      current?.circuitBreaker ||
+      this.registry.get(name, {
+        name,
+        failureThreshold: config.failureThreshold || this.failureThreshold,
+        resetTimeoutMs: config.resetTimeoutMs || this.resetTimeoutMs,
+        timeoutMs: config.timeoutMs || this.timeoutMs,
+      });
     const provider = {
       name,
-      priority: config.priority !== void 0 ? config.priority : current?.priority !== void 0 ? current.priority : 1,
-      costPer1kTokens: config.costPer1kTokens !== void 0 ? config.costPer1kTokens : current?.costPer1kTokens !== void 0 ? current.costPer1kTokens : 0,
-      enabled: config.enabled !== void 0 ? config.enabled : current?.enabled !== void 0 ? current.enabled : true,
+      priority:
+        config.priority !== void 0
+          ? config.priority
+          : current?.priority !== void 0
+            ? current.priority
+            : 1,
+      costPer1kTokens:
+        config.costPer1kTokens !== void 0
+          ? config.costPer1kTokens
+          : current?.costPer1kTokens !== void 0
+            ? current.costPer1kTokens
+            : 0,
+      enabled:
+        config.enabled !== void 0
+          ? config.enabled
+          : current?.enabled !== void 0
+            ? current.enabled
+            : true,
       execute: config.execute || current?.execute || (async () => ({ ok: true })),
       healthCheck: config.healthCheck || current?.healthCheck || null,
       metadata: config.metadata || current?.metadata || {},
-      circuitBreaker
+      circuitBreaker,
     };
     this.providers.set(name, provider);
     return provider;
@@ -241,12 +256,14 @@ let ProviderFallback = class extends EventEmitter {
     return true;
   }
   getExecutionOrder(providerOrder = null) {
-    const entries = providerOrder ? providerOrder.map((name) => this.providers.get(name)).filter(Boolean) : Array.from(this.providers.values());
+    const entries = providerOrder
+      ? providerOrder.map((name) => this.providers.get(name)).filter(Boolean)
+      : Array.from(this.providers.values());
     const enabledEntries = entries.filter((provider) => provider.enabled !== false);
     if (providerOrder) {
       return enabledEntries;
     }
-    if (this.strategy === "cost-optimized") {
+    if (this.strategy === 'cost-optimized') {
       return enabledEntries.sort((left, right) => {
         if (left.costPer1kTokens !== right.costPer1kTokens) {
           return left.costPer1kTokens - right.costPer1kTokens;
@@ -264,7 +281,7 @@ let ProviderFallback = class extends EventEmitter {
   async execute(payload, options = {}) {
     const order = this.getExecutionOrder(options.providerOrder);
     if (!order.length) {
-      throw new Error("No providers available");
+      throw new Error('No providers available');
     }
     this.stats.executions++;
     const attemptedProviders = [];
@@ -275,12 +292,13 @@ let ProviderFallback = class extends EventEmitter {
       options.onProviderAttempt?.({
         provider: provider.name,
         attempt: index + 1,
-        attemptedProviders: [...attemptedProviders]
+        attemptedProviders: [...attemptedProviders],
       });
       const startedAt = Date.now();
       try {
         const result = await provider.circuitBreaker.execute(
-          async () => await provider.execute(payload, { providerName: provider.name, attempt: index + 1 }),
+          async () =>
+            await provider.execute(payload, { providerName: provider.name, attempt: index + 1 }),
           async (error) => {
             throw error;
           }
@@ -294,9 +312,9 @@ let ProviderFallback = class extends EventEmitter {
           provider: provider.name,
           result,
           latencyMs,
-          attemptedProviders: [...attemptedProviders]
+          attemptedProviders: [...attemptedProviders],
         };
-        this.emit("provider:success", summary);
+        this.emit('provider:success', summary);
         options.onProviderSuccess?.(summary);
         return summary;
       } catch (error) {
@@ -304,9 +322,9 @@ let ProviderFallback = class extends EventEmitter {
         const failure = {
           provider: provider.name,
           error,
-          attemptedProviders: [...attemptedProviders]
+          attemptedProviders: [...attemptedProviders],
         };
-        this.emit("provider:failure", failure);
+        this.emit('provider:failure', failure);
         options.onProviderFailure?.(failure);
         if (index < order.length - 1 && this.fallbackDelayMs > 0) {
           await sleep(this.fallbackDelayMs);
@@ -315,20 +333,20 @@ let ProviderFallback = class extends EventEmitter {
     }
     this.stats.failures++;
     throw new Error(
-      `All providers failed [${attemptedProviders.join(", ")}]: ${lastError?.message || "unknown error"}`
+      `All providers failed [${attemptedProviders.join(', ')}]: ${lastError?.message || 'unknown error'}`
     );
   }
   async healthCheck() {
     const results = {};
     for (const [name, provider] of this.providers.entries()) {
       let customHealth = null;
-      if (typeof provider.healthCheck === "function") {
+      if (typeof provider.healthCheck === 'function') {
         try {
           customHealth = await provider.healthCheck();
         } catch (error) {
           customHealth = {
-            status: "unhealthy",
-            error: error?.message || String(error)
+            status: 'unhealthy',
+            error: error?.message || String(error),
           };
         }
       }
@@ -337,7 +355,7 @@ let ProviderFallback = class extends EventEmitter {
         priority: provider.priority,
         costPer1kTokens: provider.costPer1kTokens,
         circuitBreaker: provider.circuitBreaker.getStatus(),
-        ...customHealth || {}
+        ...(customHealth || {}),
       };
     }
     return results;
@@ -346,7 +364,7 @@ let ProviderFallback = class extends EventEmitter {
     return {
       ...this.stats,
       totalProviders: this.providers.size,
-      strategy: this.strategy
+      strategy: this.strategy,
     };
   }
   getDashboard() {
@@ -360,20 +378,18 @@ let ProviderFallback = class extends EventEmitter {
             enabled: provider.enabled !== false,
             priority: provider.priority,
             costPer1kTokens: provider.costPer1kTokens,
-            state: provider.circuitBreaker.getStatus().state
-          }
+            state: provider.circuitBreaker.getStatus().state,
+          },
         ])
-      )
+      ),
     };
   }
 };
-ProviderFallback = __decorateClass([
-  singleton()
-], ProviderFallback);
+ProviderFallback = __decorateClass([singleton()], ProviderFallback);
 var provider_fallback_default = ProviderFallback;
 export {
   CircuitBreaker,
   CircuitBreakerRegistry,
   ProviderFallback,
-  provider_fallback_default as default
+  provider_fallback_default as default,
 };

@@ -313,7 +313,11 @@ export const RECOVERY_STRATEGIES = {
         const jitter = Math.random() * 0.1 * baseDelay; // 10% jitter
         const actualDelay = baseDelay + jitter;
 
-        logger.log(chalk.yellow(`⚠️  Attempt ${i}/${maxAttempts} failed, retrying in ${Math.round(actualDelay)}ms...`));
+        logger.log(
+          chalk.yellow(
+            `⚠️  Attempt ${i}/${maxAttempts} failed, retrying in ${Math.round(actualDelay)}ms...`
+          )
+        );
         logger.log(chalk.gray(`   Error: ${error.message || error}`));
 
         await sleep(actualDelay);
@@ -362,7 +366,7 @@ export const RECOVERY_STRATEGIES = {
     const opts = {
       threshold: options.threshold || 5, // Number of failures before opening
       timeout: options.timeout || 60000, // Time to wait before half-open state
-      ...options
+      ...options,
     };
 
     let failures = 0;
@@ -461,7 +465,7 @@ export const RECOVERY_STRATEGIES = {
         }
       }
     }
-  }
+  },
 };
 
 function sleep(ms) {

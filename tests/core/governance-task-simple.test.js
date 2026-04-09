@@ -5,12 +5,12 @@ import assert from 'node:assert';
 describe.skip('Governance Task Blocking (requires full system setup)', { timeout: 15000 }, () => {
   it('MUST block tasks before execution', async () => {
     const orchestrator = new AgentOrchestrator();
-    
+
     // Add blocking policy
     orchestrator.governance.policies.addPolicy({
       id: 'block-dangerous',
       condition: (ctx) => !ctx.resource.includes('dangerous'),
-      enforcement: 'block'
+      enforcement: 'block',
     });
 
     // Attempt dangerous task
@@ -19,26 +19,28 @@ describe.skip('Governance Task Blocking (requires full system setup)', { timeout
       assert.fail('Should have thrown GovernanceDeniedException');
     } catch (error) {
       console.log('Error caught:', error.name, error.message);
-      assert.ok(error instanceof GovernanceDeniedException || error.name === 'GovernanceDeniedException', 
-        `Expected GovernanceDeniedException but got ${error.name}: ${error.message}`);
+      assert.ok(
+        error instanceof GovernanceDeniedException || error.name === 'GovernanceDeniedException',
+        `Expected GovernanceDeniedException but got ${error.name}: ${error.message}`
+      );
     }
   });
 
   it('MUST allow safe tasks', async () => {
     const orchestrator = new AgentOrchestrator();
-    
+
     // Mock AI layer to avoid dependency
     orchestrator.getAiLayer = async () => ({
-      call: async () => ({ text: 'task complete' })
+      call: async () => ({ text: 'task complete' }),
     });
-    
+
     orchestrator.memory = {
       search: async () => [],
-      add: async () => {}
+      add: async () => {},
     };
-    
+
     orchestrator.registry = {
-      getAgentPrompt: async () => 'system prompt'
+      getAgentPrompt: async () => 'system prompt',
     };
 
     const result = await orchestrator.executeTask('safe task', {});

@@ -5,7 +5,7 @@ on:
     branches: [main]
   workflow_dispatch:
   schedule:
-    - cron: '*/10 * * * *'  # Check every 10 minutes
+    - cron: '*/10 * * * *' # Check every 10 minutes
 
 jobs:
   check-and-heal:
@@ -13,49 +13,49 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          
+
       - name: Install dependencies
         run: npm ci
-        
+
       - name: Check Deployment Health
         id: health-check
         run: |
           echo "Checking deployment health..."
           RESPONSE=$(curl -sf https://ultra-dex.onrender.com/health || echo "DOWN")
           echo "response=$RESPONSE" >> $GITHUB_OUTPUT
-          
+
           if [ "$RESPONSE" != "DOWN" ]; then
             echo "✅ Deployment is healthy"
             exit 0
           fi
-          
+
           echo "❌ Deployment is down"
           exit 1
         continue-on-error: true
-        
+
       - name: Auto-Fix Common Issues
         if: steps.health-check.outcome == 'failure'
         run: |
           echo "🔧 Attempting auto-fix..."
-          
+
           # Fix 1: Check for vite missing
           if grep -r "vite: not found" . 2>/dev/null; then
             echo "Fixing vite..."
             cd apps/dashboard && npm install vite --save-dev && cd ../..
           fi
-          
+
           # Fix 2: Reinstall dependencies
           if [ -f "package-lock.json" ]; then
             echo "Cleaning node_modules..."
             rm -rf node_modules apps/*/node_modules
             npm install
           fi
-          
+
       - name: Commit Fixes
         if: steps.health-check.outcome == 'failure'
         run: |
@@ -64,7 +64,7 @@ jobs:
           git add -A
           git diff --cached --quiet || git commit -m "fix: Auto-heal deployment [bot]"
           git push
-          
+
       - name: Wait for Redeploy
         if: steps.health-check.outcome == 'failure'
         run: |
@@ -79,7 +79,7 @@ jobs:
           done
           echo "❌ Auto-heal failed - needs manual intervention"
           exit 1
-          
+
       - name: Notify Status
         if: always()
         run: |

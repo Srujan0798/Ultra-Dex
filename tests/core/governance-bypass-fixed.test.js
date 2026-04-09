@@ -11,73 +11,77 @@ import assert from 'node:assert';
 import { GovernanceManager } from '../../src/core/governance/governance-manager.js';
 import { GovernanceDeniedException } from '../../src/core/governance/governance-manager.js';
 
-describe.skip('Governance Bypass Prevention (requires full system setup)', { timeout: 15000 }, () => {
-  let orchestrator;
+describe.skip(
+  'Governance Bypass Prevention (requires full system setup)',
+  { timeout: 15000 },
+  () => {
+    let orchestrator;
 
-  beforeEach(() => {
-    orchestrator = new AgentOrchestrator();
-    orchestrator.mcpServer = {
-      toolsMap: new Map([
-        ['delete_database', { handler: async () => 'DELETED' }],
-        ['read_file', { handler: async () => 'READ' }]
-      ])
-    };
-  });
-
-  it('executeTool MUST enforce governance (no bypass)', async () => {
-    // Block dangerous tool
-    orchestrator.governance.policies.addPolicy({
-      id: 'block-dangerous',
-      condition: (ctx) => ctx.resource !== 'delete_database',
-      enforcement: 'block'
+    beforeEach(() => {
+      orchestrator = new AgentOrchestrator();
+      orchestrator.mcpServer = {
+        toolsMap: new Map([
+          ['delete_database', { handler: async () => 'DELETED' }],
+          ['read_file', { handler: async () => 'READ' }],
+        ]),
+      };
     });
 
-    await assert.rejects(
-      async () => await orchestrator.executeTool('delete_database', {}),
-      GovernanceDeniedException,
-      'executeTool MUST enforce governance'
-    );
-  });
+    it('executeTool MUST enforce governance (no bypass)', async () => {
+      // Block dangerous tool
+      orchestrator.governance.policies.addPolicy({
+        id: 'block-dangerous',
+        condition: (ctx) => ctx.resource !== 'delete_database',
+        enforcement: 'block',
+      });
 
-  it('allowed tools MUST execute', async () => {
-    const result = await orchestrator.executeTool('read_file', {});
-    assert.strictEqual(result, 'READ');
-  });
-
-  it('executeTask MUST enforce governance', async () => {
-    orchestrator.governance.policies.addPolicy({
-      id: 'block-dangerous-tasks',
-      condition: (ctx) => !ctx.resource.includes('dangerous'),
-      enforcement: 'block'
+      await assert.rejects(
+        async () => await orchestrator.executeTool('delete_database', {}),
+        GovernanceDeniedException,
+        'executeTool MUST enforce governance'
+      );
     });
 
-    await assert.rejects(
-      async () => await orchestrator.executeTask('dangerous task', {}),
-      GovernanceDeniedException,
-      'executeTask MUST enforce governance'
-    );
-  });
-
-  it('MUST log blocked attempts', async () => {
-    orchestrator.governance.policies.addPolicy({
-      id: 'block-all',
-      condition: () => false,
-      enforcement: 'block'
+    it('allowed tools MUST execute', async () => {
+      const result = await orchestrator.executeTool('read_file', {});
+      assert.strictEqual(result, 'READ');
     });
 
-    try {
-      await orchestrator.executeTool('delete_database', {});
-    } catch (e) {}
+    it('executeTask MUST enforce governance', async () => {
+      orchestrator.governance.policies.addPolicy({
+        id: 'block-dangerous-tasks',
+        condition: (ctx) => !ctx.resource.includes('dangerous'),
+        enforcement: 'block',
+      });
 
-    const entries = await orchestrator.governance.audit.query({ resource: 'delete_database' });
-    assert.ok(entries.length > 0);
-    assert.strictEqual(entries[0].outcome, 'blocked');
-  });
+      await assert.rejects(
+        async () => await orchestrator.executeTask('dangerous task', {}),
+        GovernanceDeniedException,
+        'executeTask MUST enforce governance'
+      );
+    });
 
-  it('MUST log successful executions', async () => {
-    await orchestrator.executeTool('read_file', {});
+    it('MUST log blocked attempts', async () => {
+      orchestrator.governance.policies.addPolicy({
+        id: 'block-all',
+        condition: () => false,
+        enforcement: 'block',
+      });
 
-    const entries = await orchestrator.governance.audit.query({ resource: 'read_file' });
-    assert.ok(entries.length > 0);
-  });
-});
+      try {
+        await orchestrator.executeTool('delete_database', {});
+      } catch (e) {}
+
+      const entries = await orchestrator.governance.audit.query({ resource: 'delete_database' });
+      assert.ok(entries.length > 0);
+      assert.strictEqual(entries[0].outcome, 'blocked');
+    });
+
+    it('MUST log successful executions', async () => {
+      await orchestrator.executeTool('read_file', {});
+
+      const entries = await orchestrator.governance.audit.query({ resource: 'read_file' });
+      assert.ok(entries.length > 0);
+    });
+  }
+);

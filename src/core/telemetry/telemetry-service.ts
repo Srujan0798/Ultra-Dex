@@ -3,15 +3,14 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
 var __decorateParam = (index, decorator) => (target, key) => decorator(target, key, index);
-import { singleton, inject } from "tsyringe";
-import { randomUUID } from "crypto";
+import { singleton, inject } from 'tsyringe';
+import { randomUUID } from 'crypto';
 import { DI_TOKENS } from '../di/tokens.js';
 let TelemetryService = class {
   constructor(logger, config) {
@@ -24,22 +23,21 @@ let TelemetryService = class {
   tracers = /* @__PURE__ */ new Map();
   initialized = false;
   async initialize() {
-    if (this.initialized)
-      return;
-    this.logger.info("Initializing TelemetryService");
-    const flushInterval = this.config.get("telemetry.flushInterval", 6e4);
+    if (this.initialized) return;
+    this.logger.info('Initializing TelemetryService');
+    const flushInterval = this.config.get('telemetry.flushInterval', 6e4);
     setInterval(() => this.flush(), flushInterval);
     this.initialized = true;
-    this.logger.info("TelemetryService initialized");
+    this.logger.info('TelemetryService initialized');
   }
   recordSpan(span) {
     this.spans.set(span.id, span);
-    if (process.env.NODE_ENV === "development") {
-      this.logger.debug("Span recorded", {
+    if (process.env.NODE_ENV === 'development') {
+      this.logger.debug('Span recorded', {
         traceId: span.traceId,
         spanId: span.id,
         operation: span.operation,
-        duration: span.endTime ? span.endTime - span.startTime : "in-progress"
+        duration: span.endTime ? span.endTime - span.startTime : 'in-progress',
       });
     }
   }
@@ -48,7 +46,7 @@ let TelemetryService = class {
       name,
       value,
       timestamp: Date.now(),
-      tags
+      tags,
     };
     if (!this.metrics.has(name)) {
       this.metrics.set(name, []);
@@ -64,7 +62,7 @@ let TelemetryService = class {
     if (this.events.length > 1e4) {
       this.events.shift();
     }
-    if (event.type.startsWith("self-heal") || event.type.startsWith("error")) {
+    if (event.type.startsWith('self-heal') || event.type.startsWith('error')) {
       this.logger.info(`[Telemetry] ${event.type}`, event.data);
     }
   }
@@ -72,7 +70,7 @@ let TelemetryService = class {
     if (!this.tracers.has(name)) {
       this.tracers.set(name, {
         name,
-        spans: /* @__PURE__ */ new Map()
+        spans: /* @__PURE__ */ new Map(),
       });
     }
     const tracer = this.tracers.get(name);
@@ -85,7 +83,7 @@ let TelemetryService = class {
           operation,
           startTime: Date.now(),
           tags: {},
-          logs: []
+          logs: [],
         };
         tracer.spans.set(span.id, span);
         return span;
@@ -98,10 +96,10 @@ let TelemetryService = class {
       log: (span, fields) => {
         const log = {
           timestamp: Date.now(),
-          fields
+          fields,
         };
         span.logs.push(log);
-      }
+      },
     };
   }
   getMetrics(name, timeRange) {
@@ -124,24 +122,25 @@ let TelemetryService = class {
       totalSpans: this.spans.size,
       activeSpans: Array.from(this.spans.values()).filter((s) => !s.endTime).length,
       totalMetrics: Array.from(this.metrics.values()).reduce((sum, arr) => sum + arr.length, 0),
-      totalEvents: this.events.length
+      totalEvents: this.events.length,
     };
   }
   async shutdown() {
-    this.logger.info("Shutting down TelemetryService");
+    this.logger.info('Shutting down TelemetryService');
     await this.flush();
     this.initialized = false;
   }
   async flush() {
     const stats = this.getServiceMetrics();
-    this.logger.debug("Telemetry flush", stats);
+    this.logger.debug('Telemetry flush', stats);
   }
 };
-TelemetryService = __decorateClass([
-  singleton(),
-  __decorateParam(0, inject(DI_TOKENS.Logger)),
-  __decorateParam(1, inject(DI_TOKENS.ConfigService))
-], TelemetryService);
-export {
+TelemetryService = __decorateClass(
+  [
+    singleton(),
+    __decorateParam(0, inject(DI_TOKENS.Logger)),
+    __decorateParam(1, inject(DI_TOKENS.ConfigService)),
+  ],
   TelemetryService
-};
+);
+export { TelemetryService };

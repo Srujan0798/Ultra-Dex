@@ -361,7 +361,7 @@ export class SelfHealingOrchestrator extends EventEmitter {
           failures: breaker.failures,
           successes: breaker.successes,
           lastFailureTime: breaker.lastFailureTime,
-          metrics: breaker.metrics
+          metrics: breaker.metrics,
         };
       }
       await fs.mkdir(path.dirname(STORAGE_FILE), { recursive: true });
@@ -376,7 +376,7 @@ export class SelfHealingOrchestrator extends EventEmitter {
     this.initialized = true;
 
     await this.loadState();
-    
+
     // Register default health checks
     this.healthMonitor.register('memory', async () => {
       const usage = process.memoryUsage();
@@ -591,5 +591,5 @@ export default {
   CircuitBreaker,
   RetryStrategy,
   ChaosEngineering,
-  orchestrator
+  orchestrator,
 };

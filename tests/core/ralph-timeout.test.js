@@ -21,7 +21,7 @@ describe('RALPH Loop Timeout', () => {
 
     // Override methods to make them slow (ensure timeout triggers)
     ralph.reason = async () => {
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 200));
       return { reasoning: 'test' };
     };
 
@@ -34,8 +34,10 @@ describe('RALPH Loop Timeout', () => {
       await ralph.executeRALPHLoop('test problem');
       assert.fail('Should have thrown timeout error');
     } catch (error) {
-      assert.ok(error.message.includes('RALPHLoop timeout after 100ms'), 
-        `Expected timeout error, got: ${error.message}`);
+      assert.ok(
+        error.message.includes('RALPHLoop timeout after 100ms'),
+        `Expected timeout error, got: ${error.message}`
+      );
     }
 
     assert.ok(timeoutEmitted, 'ralph.timeout event should have been emitted');
@@ -47,7 +49,7 @@ describe('RALPH Loop Timeout', () => {
     ralph.config.maxExecutionTimeMs = customTimeout;
 
     ralph.reason = async () => {
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 200));
       return { reasoning: 'test' };
     };
 
@@ -55,8 +57,10 @@ describe('RALPH Loop Timeout', () => {
       await ralph.executeRALPHLoop('test problem');
       assert.fail('Should have thrown timeout error');
     } catch (error) {
-      assert.ok(error.message.includes(`RALPHLoop timeout after ${customTimeout}ms`),
-        `Error message should contain timeout duration: ${error.message}`);
+      assert.ok(
+        error.message.includes(`RALPHLoop timeout after ${customTimeout}ms`),
+        `Error message should contain timeout duration: ${error.message}`
+      );
     }
   });
 
@@ -73,7 +77,7 @@ describe('RALPH Loop Timeout', () => {
     const events = [];
 
     ralph.reason = async () => {
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 200));
       return { reasoning: 'test' };
     };
 
@@ -93,13 +97,19 @@ describe('RALPH Loop Timeout', () => {
 
   it('should have default maxExecutionTimeMs of 300000 (5 minutes)', () => {
     const defaultRalph = new RALPHLoop();
-    assert.strictEqual(defaultRalph.config.maxExecutionTimeMs, 300000,
-      'Default timeout should be 5 minutes (300000ms)');
+    assert.strictEqual(
+      defaultRalph.config.maxExecutionTimeMs,
+      300000,
+      'Default timeout should be 5 minutes (300000ms)'
+    );
   });
 
   it('should allow custom maxExecutionTimeMs in constructor', () => {
     const customRalph = new RALPHLoop({ maxExecutionTimeMs: 60000 });
-    assert.strictEqual(customRalph.config.maxExecutionTimeMs, 60000,
-      'Should accept custom timeout in constructor');
+    assert.strictEqual(
+      customRalph.config.maxExecutionTimeMs,
+      60000,
+      'Should accept custom timeout in constructor'
+    );
   });
 });

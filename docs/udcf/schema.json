@@ -8,15 +8,15 @@
       "type": "object",
       "required": ["name", "version"],
       "properties": {
-        "name": {"type": "string"},
-        "version": {"type": "string"}
+        "name": { "type": "string" },
+        "version": { "type": "string" }
       }
     },
     "context": {
       "type": "object",
       "properties": {
-        "stack": {"type": "array", "items": {"type": "string"}},
-        "constraints": {"type": "array", "items": {"type": "string"}}
+        "stack": { "type": "array", "items": { "type": "string" } },
+        "constraints": { "type": "array", "items": { "type": "string" } }
       }
     },
     "plan": {
@@ -25,9 +25,9 @@
         "type": "object",
         "required": ["id", "title", "priority"],
         "properties": {
-          "id": {"type": "string"},
-          "title": {"type": "string"},
-          "priority": {"type": "string"}
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "priority": { "type": "string" }
         }
       }
     }

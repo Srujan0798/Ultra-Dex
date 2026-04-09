@@ -6,15 +6,10 @@ function setDoomsdayMode(enabled) {
 function isDoomsdayMode() {
   return isDoomsday;
 }
-function _handleModuleError(error, context = "theme-state") {
+function _handleModuleError(error, context = 'theme-state') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     logger.error(`[${context}] Error: ${message}`);
-  } catch (_) {
-  }
+  } catch (_) {}
 }
-export {
-  isDoomsday,
-  isDoomsdayMode,
-  setDoomsdayMode
-};
+export { isDoomsday, isDoomsdayMode, setDoomsdayMode };

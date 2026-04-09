@@ -21,12 +21,14 @@ This example demonstrates how to create an AI-powered chatbot using Ultra-Dex. T
 ## Setup
 
 1. **Install Dependencies**:
+
    ```bash
    # This example uses the UltraDex library
    ```
 
 2. **Environment Variables**:
    Create a `.env` file with the following:
+
    ```env
    ULTRA_DEX_API_KEY=your_ultra_dex_api_key
    ULTRA_DEX_ENDPOINT=https://api.ultra-dex.ai
@@ -55,18 +57,21 @@ The chatbot can handle various types of conversations:
 const chatbot = new Chatbot({
   ultraDex: {
     apiKey: process.env.ULTRA_DEX_API_KEY,
-    endpoint: process.env.ULTRA_DEX_ENDPOINT || 'https://api.ultra-dex.ai'
+    endpoint: process.env.ULTRA_DEX_ENDPOINT || 'https://api.ultra-dex.ai',
   },
   personality: {
     name: 'Ultra-Dex Assistant',
     tone: 'helpful and professional',
     expertise: 'AI, technology, and software development',
-    communicationStyle: 'clear, concise, and informative'
-  }
+    communicationStyle: 'clear, concise, and informative',
+  },
 });
 
 // Process a user message
-const response = await chatbot.processMessage('user123', 'Hello! Can you tell me about AI orchestration?');
+const response = await chatbot.processMessage(
+  'user123',
+  'Hello! Can you tell me about AI orchestration?'
+);
 
 console.log(response.response); // The bot's response
 console.log(response.intent); // The classified intent
@@ -81,16 +86,17 @@ chatbot.clearConversation('user123');
 // Update bot personality
 chatbot.updatePersonality({
   tone: 'friendly and casual',
-  expertise: 'AI, technology, and creative arts'
+  expertise: 'AI, technology, and creative arts',
 });
 
 // Train with examples
 await chatbot.trainWithExamples([
   {
     input: 'What is your favorite programming language?',
-    output: 'I appreciate all programming languages for their unique strengths. JavaScript is versatile for web development, Python excels in data science, and Rust offers excellent performance with safety.',
-    context: { topic: 'programming' }
-  }
+    output:
+      'I appreciate all programming languages for their unique strengths. JavaScript is versatile for web development, Python excels in data science, and Rust offers excellent performance with safety.',
+    context: { topic: 'programming' },
+  },
 ]);
 
 // Simulate a conversation for testing

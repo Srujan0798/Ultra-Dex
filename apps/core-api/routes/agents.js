@@ -14,13 +14,13 @@ router.get('/', async (req, res) => {
     res.json({
       success: true,
       data: agents,
-      count: agents.length
+      count: agents.length,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message,
-      code: 'LIST_AGENTS_FAILED'
+      code: 'LIST_AGENTS_FAILED',
     });
   }
 });
@@ -36,7 +36,7 @@ router.get('/:id', async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Agent ID is required',
-        code: 'AGENT_ID_REQUIRED'
+        code: 'AGENT_ID_REQUIRED',
       });
     }
 
@@ -45,19 +45,19 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({
         success: false,
         error: 'Agent not found',
-        code: 'AGENT_NOT_FOUND'
+        code: 'AGENT_NOT_FOUND',
       });
     }
 
     res.json({
       success: true,
-      data: agent
+      data: agent,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message,
-      code: 'GET_AGENT_FAILED'
+      code: 'GET_AGENT_FAILED',
     });
   }
 });
@@ -73,7 +73,7 @@ router.post('/:id/execute', async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Agent ID is required',
-        code: 'AGENT_ID_REQUIRED'
+        code: 'AGENT_ID_REQUIRED',
       });
     }
 
@@ -83,7 +83,7 @@ router.post('/:id/execute', async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Task is required',
-        code: 'TASK_REQUIRED'
+        code: 'TASK_REQUIRED',
       });
     }
 
@@ -91,7 +91,7 @@ router.post('/:id/execute', async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Context must be an object',
-        code: 'INVALID_CONTEXT'
+        code: 'INVALID_CONTEXT',
       });
     }
 
@@ -99,27 +99,22 @@ router.post('/:id/execute', async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Options must be an object',
-        code: 'INVALID_OPTIONS'
+        code: 'INVALID_OPTIONS',
       });
     }
 
-    const result = await agentOrchestrator.executeAgent(
-      req.params.id,
-      task,
-      context,
-      options
-    );
+    const result = await agentOrchestrator.executeAgent(req.params.id, task, context, options);
 
     res.json({
       success: true,
       data: result,
-      agentId: req.params.id
+      agentId: req.params.id,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message,
-      code: 'EXECUTE_AGENT_FAILED'
+      code: 'EXECUTE_AGENT_FAILED',
     });
   }
 });
@@ -135,20 +130,20 @@ router.get('/:id/status', async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Agent ID is required',
-        code: 'AGENT_ID_REQUIRED'
+        code: 'AGENT_ID_REQUIRED',
       });
     }
 
     const status = agentOrchestrator.getAgentStatus(req.params.id);
     res.json({
       success: true,
-      data: status
+      data: status,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message,
-      code: 'GET_AGENT_STATUS_FAILED'
+      code: 'GET_AGENT_STATUS_FAILED',
     });
   }
 });
@@ -164,7 +159,7 @@ router.get('/:id/logs', async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Agent ID is required',
-        code: 'AGENT_ID_REQUIRED'
+        code: 'AGENT_ID_REQUIRED',
       });
     }
 
@@ -172,10 +167,10 @@ router.get('/:id/logs', async (req, res) => {
     const parsedLimit = parseInt(limit) || 50;
     const parsedOffset = parseInt(offset) || 0;
 
-    const logs = await agentOrchestrator.getAgentLogs(
-      req.params.id,
-      { limit: parsedLimit, offset: parsedOffset }
-    );
+    const logs = await agentOrchestrator.getAgentLogs(req.params.id, {
+      limit: parsedLimit,
+      offset: parsedOffset,
+    });
 
     res.json({
       success: true,
@@ -183,14 +178,14 @@ router.get('/:id/logs', async (req, res) => {
       pagination: {
         limit: parsedLimit,
         offset: parsedOffset,
-        total: logs.length
-      }
+        total: logs.length,
+      },
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message,
-      code: 'GET_AGENT_LOGS_FAILED'
+      code: 'GET_AGENT_LOGS_FAILED',
     });
   }
 });

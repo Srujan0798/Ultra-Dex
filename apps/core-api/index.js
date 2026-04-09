@@ -14,33 +14,32 @@ const PORT = process.env.PORT || 4000;
 async function startServer() {
   try {
     logger.info('🚀 Starting Ultra-Dex Core API Server...');
-    
+
     // Start the API server
     const server = await ultraDexAPIServer.start(PORT);
-    
+
     // Handle graceful shutdown
     process.on('SIGTERM', async () => {
       logger.info('SIGTERM received, shutting down gracefully...');
       await ultraDexAPIServer.stop();
       process.exit(0);
     });
-    
+
     process.on('SIGINT', async () => {
       logger.info('SIGINT received, shutting down gracefully...');
       await ultraDexAPIServer.stop();
       process.exit(0);
     });
-    
+
     process.on('unhandledRejection', (reason, promise) => {
       logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
       process.exit(1);
     });
-    
+
     process.on('uncaughtException', (error) => {
       logger.error('Uncaught Exception:', error);
       process.exit(1);
     });
-    
   } catch (error) {
     logger.error('Failed to start Ultra-Dex Core API Server:', error);
     process.exit(1);

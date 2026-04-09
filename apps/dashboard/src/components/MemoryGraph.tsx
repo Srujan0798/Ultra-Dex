@@ -29,7 +29,11 @@ function generateNodes(memory: MemoryMetrics): MemoryNode[] {
       timestamp: new Date(now - (index + 1) * 60 * 60 * 1_000).toISOString(),
     }));
 
-  return [...build('hot', memory.hot), ...build('warm', memory.warm), ...build('cold', memory.cold)];
+  return [
+    ...build('hot', memory.hot),
+    ...build('warm', memory.warm),
+    ...build('cold', memory.cold),
+  ];
 }
 
 export const MemoryGraph = memo(function MemoryGraph({ memory, nodes }: MemoryGraphProps) {
@@ -37,7 +41,10 @@ export const MemoryGraph = memo(function MemoryGraph({ memory, nodes }: MemoryGr
   const [tierFilter, setTierFilter] = useState<'all' | 'hot' | 'warm' | 'cold'>('all');
   const [timelineHours, setTimelineHours] = useState(24);
 
-  const baseNodes = useMemo(() => (nodes && nodes.length > 0 ? nodes : generateNodes(memory)), [nodes, memory]);
+  const baseNodes = useMemo(
+    () => (nodes && nodes.length > 0 ? nodes : generateNodes(memory)),
+    [nodes, memory]
+  );
 
   const filteredNodes = useMemo(() => {
     const cutoff = Date.now() - timelineHours * 60 * 60 * 1_000;
@@ -68,7 +75,9 @@ export const MemoryGraph = memo(function MemoryGraph({ memory, nodes }: MemoryGr
       <header className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 className="text-lg font-semibold text-slate-100">Memory Relationship Graph</h3>
-          <p className="text-xs text-slate-400">Filter by tier, search nodes, and inspect timeline slices.</p>
+          <p className="text-xs text-slate-400">
+            Filter by tier, search nodes, and inspect timeline slices.
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -81,7 +90,9 @@ export const MemoryGraph = memo(function MemoryGraph({ memory, nodes }: MemoryGr
 
           <select
             className="rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-xs text-slate-300"
-            onChange={(event) => setTierFilter(event.target.value as 'all' | 'hot' | 'warm' | 'cold')}
+            onChange={(event) =>
+              setTierFilter(event.target.value as 'all' | 'hot' | 'warm' | 'cold')
+            }
             value={tierFilter}
           >
             <option value="all">All tiers</option>

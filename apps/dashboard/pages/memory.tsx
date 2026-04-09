@@ -10,7 +10,7 @@ const MemoryPage = () => {
     warm: 0,
     cold: 0,
     entries: [],
-    searchQuery: ''
+    searchQuery: '',
   });
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
@@ -23,12 +23,12 @@ const MemoryPage = () => {
     });
 
     newSocket.on('memory-update', (data) => {
-      setMemoryData(prev => ({
+      setMemoryData((prev) => ({
         ...prev,
         hot: data.hot || prev.hot,
         warm: data.warm || prev.warm,
         cold: data.cold || prev.cold,
-        entries: data.entries || prev.entries
+        entries: data.entries || prev.entries,
       }));
       setLoading(false);
     });
@@ -42,12 +42,42 @@ const MemoryPage = () => {
           warm: 23,
           cold: 12,
           entries: [
-            { id: '1', content: 'User authentication flow', type: 'decision', timestamp: '2026-02-13T10:30:00Z', importance: 8 },
-            { id: '2', content: 'Database schema for users table', type: 'constraint', timestamp: '2026-02-13T09:15:00Z', importance: 9 },
-            { id: '3', content: 'API endpoint for user registration', type: 'observation', timestamp: '2026-02-13T08:45:00Z', importance: 6 },
-            { id: '4', content: 'Security considerations for JWT tokens', type: 'decision', timestamp: '2026-02-13T07:20:00Z', importance: 10 },
-            { id: '5', content: 'Frontend component structure', type: 'observation', timestamp: '2026-02-13T06:10:00Z', importance: 5 },
-          ]
+            {
+              id: '1',
+              content: 'User authentication flow',
+              type: 'decision',
+              timestamp: '2026-02-13T10:30:00Z',
+              importance: 8,
+            },
+            {
+              id: '2',
+              content: 'Database schema for users table',
+              type: 'constraint',
+              timestamp: '2026-02-13T09:15:00Z',
+              importance: 9,
+            },
+            {
+              id: '3',
+              content: 'API endpoint for user registration',
+              type: 'observation',
+              timestamp: '2026-02-13T08:45:00Z',
+              importance: 6,
+            },
+            {
+              id: '4',
+              content: 'Security considerations for JWT tokens',
+              type: 'decision',
+              timestamp: '2026-02-13T07:20:00Z',
+              importance: 10,
+            },
+            {
+              id: '5',
+              content: 'Frontend component structure',
+              type: 'observation',
+              timestamp: '2026-02-13T06:10:00Z',
+              importance: 5,
+            },
+          ],
         });
         setLoading(false);
       }
@@ -61,7 +91,7 @@ const MemoryPage = () => {
     };
   }, []);
 
-  const filteredEntries = memoryData.entries.filter(entry => 
+  const filteredEntries = memoryData.entries.filter((entry) =>
     entry.content.toLowerCase().includes(memoryData.searchQuery.toLowerCase())
   );
 
@@ -73,10 +103,14 @@ const MemoryPage = () => {
 
   const getTypeColor = (type) => {
     switch (type) {
-      case 'decision': return 'bg-blue-100 text-blue-800';
-      case 'constraint': return 'bg-purple-100 text-purple-800';
-      case 'observation': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'decision':
+        return 'bg-blue-100 text-blue-800';
+      case 'constraint':
+        return 'bg-purple-100 text-purple-800';
+      case 'observation':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -153,22 +187,32 @@ const MemoryPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="bg-white rounded-xl shadow p-6">
               <h2 className="text-lg font-medium text-gray-900 mb-4">Memory Distribution</h2>
-              <MemoryGraph memory={{ hot: memoryData.hot, warm: memoryData.warm, cold: memoryData.cold }} />
+              <MemoryGraph
+                memory={{ hot: memoryData.hot, warm: memoryData.warm, cold: memoryData.cold }}
+              />
             </div>
             <div className="bg-white rounded-xl shadow p-6">
               <h2 className="text-lg font-medium text-gray-900 mb-4">Memory Insights</h2>
               <div className="space-y-4">
                 <div className="p-4 bg-blue-50 rounded-lg">
                   <h3 className="font-medium text-blue-900">Hot Memory Trend</h3>
-                  <p className="mt-1 text-sm text-blue-700">Hot memory usage has increased by 15% this week, indicating more frequent access patterns.</p>
+                  <p className="mt-1 text-sm text-blue-700">
+                    Hot memory usage has increased by 15% this week, indicating more frequent access
+                    patterns.
+                  </p>
                 </div>
                 <div className="p-4 bg-green-50 rounded-lg">
                   <h3 className="font-medium text-green-900">Efficiency Score</h3>
-                  <p className="mt-1 text-sm text-green-700">Memory retrieval efficiency is at 94%, suggesting optimal tiering strategy.</p>
+                  <p className="mt-1 text-sm text-green-700">
+                    Memory retrieval efficiency is at 94%, suggesting optimal tiering strategy.
+                  </p>
                 </div>
                 <div className="p-4 bg-yellow-50 rounded-lg">
                   <h3 className="font-medium text-yellow-900">Cold Storage</h3>
-                  <p className="mt-1 text-sm text-yellow-700">Consider archiving {Math.floor(memoryData.cold * 0.3)} entries to reduce memory footprint.</p>
+                  <p className="mt-1 text-sm text-yellow-700">
+                    Consider archiving {Math.floor(memoryData.cold * 0.3)} entries to reduce memory
+                    footprint.
+                  </p>
                 </div>
               </div>
             </div>
@@ -184,7 +228,7 @@ const MemoryPage = () => {
                   Showing {filteredEntries.length} of {memoryData.entries.length} entries
                 </div>
               </div>
-              
+
               {loading ? (
                 <div className="p-12 text-center">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
@@ -197,13 +241,19 @@ const MemoryPage = () => {
                       <li key={entry.id} className="py-4">
                         <div className="flex items-center justify-between">
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">{entry.content}</p>
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {entry.content}
+                            </p>
                             <div className="mt-1 flex items-center text-sm text-gray-500">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeColor(entry.type)}`}>
+                              <span
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeColor(entry.type)}`}
+                              >
                                 {entry.type}
                               </span>
                               <span className="mx-2">•</span>
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getImportanceColor(entry.importance)}`}>
+                              <span
+                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getImportanceColor(entry.importance)}`}
+                              >
                                 Importance: {entry.importance}
                               </span>
                               <span className="mx-2">•</span>
@@ -241,12 +291,21 @@ const MemoryPage = () => {
                     id="search"
                     placeholder="Search memory entries..."
                     value={memoryData.searchQuery}
-                    onChange={(e) => setMemoryData({...memoryData, searchQuery: e.target.value})}
+                    onChange={(e) => setMemoryData({ ...memoryData, searchQuery: e.target.value })}
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   />
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                    <svg
+                      className="h-5 w-5 text-gray-400"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   </div>
                 </div>
@@ -258,13 +317,19 @@ const MemoryPage = () => {
                     <li key={entry.id} className="py-4">
                       <div className="flex items-center justify-between">
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">{entry.content}</p>
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {entry.content}
+                          </p>
                           <div className="mt-1 flex items-center text-sm text-gray-500">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeColor(entry.type)}`}>
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getTypeColor(entry.type)}`}
+                            >
                               {entry.type}
                             </span>
                             <span className="mx-2">•</span>
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getImportanceColor(entry.importance)}`}>
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getImportanceColor(entry.importance)}`}
+                            >
                               {entry.importance}/10
                             </span>
                             <span className="mx-2">•</span>
@@ -284,8 +349,18 @@ const MemoryPage = () => {
 
               {filteredEntries.length === 0 && memoryData.searchQuery && (
                 <div className="text-center py-12">
-                  <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg
+                    className="mx-auto h-12 w-12 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
                   <h3 className="mt-2 text-sm font-medium text-gray-900">No results found</h3>
                   <p className="mt-1 text-sm text-gray-500">

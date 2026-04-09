@@ -13,11 +13,11 @@ export function startBetterStackHeartbeat(options: BetterStackHeartbeatOptions):
       const response = await fetch(options.healthUrl, { method: 'GET' });
       logEvent('heartbeat', {
         healthUrl: options.healthUrl,
-        statusCode: response.status
+        statusCode: response.status,
       });
     } catch (error) {
       logError('Better Stack heartbeat failed', error, {
-        healthUrl: options.healthUrl
+        healthUrl: options.healthUrl,
       });
     }
   }, intervalMs);

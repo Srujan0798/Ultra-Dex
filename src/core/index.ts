@@ -9,20 +9,17 @@ import { RateLimiter, SlidingWindow, TokenBucket } from './infrastructure/rate-l
 import {
   CircuitBreaker,
   CircuitBreakerRegistry,
-  ProviderFallback
+  ProviderFallback,
 } from './infrastructure/provider-fallback.js';
 import { QueueProcessor, Job } from './infrastructure/queue-processor.js';
 import {
   WebhookManager,
   WebhookEndpoint,
-  WebhookDelivery
+  WebhookDelivery,
 } from './infrastructure/webhook-manager.js';
-import { logger } from './utils/logging.js';
+import { logger } from '../utils/logging.js';
 import { enterpriseAnalytics } from './analytics/enterprise-analytics.js';
-import {
-  registerSingleton,
-  resolveFromContainer
-} from './di/container.js';
+import { registerSingleton, resolveFromContainer } from './di/container.js';
 import { DI_TOKENS } from './di/tokens.js';
 class UltraDexMetaLayer {
   constructor(options = {}) {
@@ -30,7 +27,7 @@ class UltraDexMetaLayer {
     this.memory = options.memory || ppmManager;
     this.ai = options.ai || aiMetaLayer;
     this.telemetry = options.telemetry || enterpriseAnalytics;
-    this.version = options.version || "2.1.0";
+    this.version = options.version || '2.1.0';
     this.streaming = null;
     this.webhooks = null;
     this.plugins = null;
@@ -38,7 +35,7 @@ class UltraDexMetaLayer {
     this.circuitBreakers = new CircuitBreakerRegistry();
     this.providerFallback = null;
     this.queue = null;
-    this.health = new HealthService({ appName: "ultra-dex", version: this.version });
+    this.health = new HealthService({ appName: 'ultra-dex', version: this.version });
     this.eventSubscriptions = [];
   }
   async initialize(config = {}) {
@@ -52,7 +49,7 @@ class UltraDexMetaLayer {
     this.queue = new QueueProcessor(config.queue);
     this.providerFallback = new ProviderFallback({
       circuitBreakers: this.circuitBreakers,
-      ...config.providerFallback || {}
+      ...(config.providerFallback || {}),
     });
     this.circuitBreakers = this.providerFallback.registry;
     this.ai.setStreamPipeline?.(this.streaming);
@@ -61,17 +58,17 @@ class UltraDexMetaLayer {
     this.brain.setQueueProcessor?.(this.queue);
     await this.attachWebhookRelays();
     this.health.addCheck({
-      name: "memory",
+      name: 'memory',
       check: async () => this.memory.stats(),
-      critical: true
+      critical: true,
     });
     this.health.addCheck({
-      name: "orchestrator",
+      name: 'orchestrator',
       check: async () => this.brain.getMetrics(),
-      critical: true
+      critical: true,
     });
     this.health.start();
-    logger.info("Ultra-Dex Meta-Layer initialized");
+    logger.info('Ultra-Dex Meta-Layer initialized');
     return this;
   }
   async process(objective, options = {}) {
@@ -90,9 +87,9 @@ class UltraDexMetaLayer {
         circuitBreakers: this.circuitBreakers.getDashboard(),
         providerFallback: this.providerFallback?.getDashboard?.() || null,
         queue: this.queue?.getDashboard?.() || null,
-        health: this.health.getDashboard()
+        health: this.health.getDashboard(),
       },
-      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
     };
   }
   clearEventSubscriptions() {
@@ -105,51 +102,50 @@ class UltraDexMetaLayer {
     if (!this.webhooks?.deliver || !emitter?.on) {
       return;
     }
-    const normalizedEvent = targetEvent || eventName.replace(/[:/]/g, ".").replace(/-+/g, ".");
+    const normalizedEvent = targetEvent || eventName.replace(/[:/]/g, '.').replace(/-+/g, '.');
     const handler = (payload) => {
-      void this.webhooks.deliver(normalizedEvent, {
-        ...payload,
-        sourceEvent: eventName
-      }).catch((error) => {
-        logger.warn("Webhook delivery relay failed", {
-          eventName: normalizedEvent,
-          error: error instanceof Error ? error.message : String(error)
+      void this.webhooks
+        .deliver(normalizedEvent, {
+          ...payload,
+          sourceEvent: eventName,
+        })
+        .catch((error) => {
+          logger.warn('Webhook delivery relay failed', {
+            eventName: normalizedEvent,
+            error: error instanceof Error ? error.message : String(error),
+          });
         });
-      });
     };
     emitter.on(eventName, handler);
     this.eventSubscriptions.push({ emitter, eventName, handler });
   }
   async attachWebhookRelays() {
     this.clearEventSubscriptions();
-    this.subscribeToWebhookEvent(this.brain, "task:start", "task.start");
-    this.subscribeToWebhookEvent(this.brain, "task:queued", "task.queued");
-    this.subscribeToWebhookEvent(this.brain, "task:complete", "task.complete");
-    this.subscribeToWebhookEvent(this.brain, "task:error", "task.error");
-    this.subscribeToWebhookEvent(this.brain, "task:autopsy", "task.autopsy");
-    this.subscribeToWebhookEvent(this.brain, "task:autopsy:error", "task.autopsy.error");
+    this.subscribeToWebhookEvent(this.brain, 'task:start', 'task.start');
+    this.subscribeToWebhookEvent(this.brain, 'task:queued', 'task.queued');
+    this.subscribeToWebhookEvent(this.brain, 'task:complete', 'task.complete');
+    this.subscribeToWebhookEvent(this.brain, 'task:error', 'task.error');
+    this.subscribeToWebhookEvent(this.brain, 'task:autopsy', 'task.autopsy');
+    this.subscribeToWebhookEvent(this.brain, 'task:autopsy:error', 'task.autopsy.error');
     const selfHealing = await this.brain.getSelfHealing?.();
     if (selfHealing?.on) {
-      this.subscribeToWebhookEvent(selfHealing, "agent-error", "agent.error");
-      this.subscribeToWebhookEvent(selfHealing, "agent-recovery", "agent.recovery");
+      this.subscribeToWebhookEvent(selfHealing, 'agent-error', 'agent.error');
+      this.subscribeToWebhookEvent(selfHealing, 'agent-recovery', 'agent.recovery');
     }
   }
   async shutdown() {
-    logger.info("Shutting down Ultra-Dex...");
+    logger.info('Shutting down Ultra-Dex...');
     this.health.stop();
     this.clearEventSubscriptions();
-    if (this.streaming)
-      this.streaming.stop?.();
-    if (this.webhooks)
-      await this.webhooks.stop?.();
-    if (this.queue)
-      await this.queue.stop();
+    if (this.streaming) this.streaming.stop?.();
+    if (this.webhooks) await this.webhooks.stop?.();
+    if (this.queue) await this.queue.stop();
     if (this.plugins) {
       for (const name of this.plugins.plugins?.keys?.() || []) {
         await this.plugins.unload?.(name);
       }
     }
-    logger.info("Ultra-Dex shut down complete");
+    logger.info('Ultra-Dex shut down complete');
   }
 }
 async function initializeDiamondState(config = {}) {
@@ -157,12 +153,13 @@ async function initializeDiamondState(config = {}) {
 }
 registerSingleton(
   UltraDexMetaLayer,
-  (scopedContainer) => new UltraDexMetaLayer({
-    orchestrator: scopedContainer.resolve(AgentOrchestrator),
-    memory: scopedContainer.resolve(DI_TOKENS.memoryManager),
-    ai: scopedContainer.resolve(DI_TOKENS.aiMetaLayer),
-    telemetry: scopedContainer.resolve(DI_TOKENS.telemetryService)
-  })
+  (scopedContainer) =>
+    new UltraDexMetaLayer({
+      orchestrator: scopedContainer.resolve(AgentOrchestrator),
+      memory: scopedContainer.resolve(DI_TOKENS.memoryManager),
+      ai: scopedContainer.resolve(DI_TOKENS.aiMetaLayer),
+      telemetry: scopedContainer.resolve(DI_TOKENS.telemetryService),
+    })
 );
 const ultraDex = resolveFromContainer(UltraDexMetaLayer);
 var core_default = ultraDex;
@@ -195,5 +192,5 @@ export {
   core_default as default,
   initializeDiamondState,
   ppmManager,
-  ultraDex
+  ultraDex,
 };

@@ -12,7 +12,6 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 
-
 const execAsync = promisify(exec);
 
 // Supported package managers
@@ -27,7 +26,7 @@ const PACKAGE_MANAGERS = {
     runCmd: 'npm run',
     listCmd: 'npm list',
     outdatedCmd: 'npm outdated',
-    auditCmd: 'npm audit'
+    auditCmd: 'npm audit',
   },
   yarn: {
     name: 'yarn',
@@ -39,7 +38,7 @@ const PACKAGE_MANAGERS = {
     runCmd: 'yarn',
     listCmd: 'yarn list',
     outdatedCmd: 'yarn outdated',
-    auditCmd: 'yarn audit'
+    auditCmd: 'yarn audit',
   },
   pnpm: {
     name: 'pnpm',
@@ -51,8 +50,8 @@ const PACKAGE_MANAGERS = {
     runCmd: 'pnpm',
     listCmd: 'pnpm list',
     outdatedCmd: 'pnpm outdated',
-    auditCmd: 'pnpm audit'
-  }
+    auditCmd: 'pnpm audit',
+  },
 };
 
 class PackageManager {
@@ -66,7 +65,7 @@ class PackageManager {
    */
   async detectPackageManager() {
     const files = await fs.readdir(this.projectPath);
-    
+
     // Check for lock files in order of preference
     if (files.includes('pnpm-lock.yaml')) {
       this.detectedManager = PACKAGE_MANAGERS.pnpm;
@@ -98,9 +97,9 @@ class PackageManager {
     try {
       const result = await execAsync(fullCommand, {
         cwd: this.projectPath,
-        ...options
+        ...options,
       });
-      
+
       return result;
     } catch (error) {
       throw new Error(`Command failed: ${fullCommand}\n${error.stderr || error.message}`);
@@ -116,27 +115,27 @@ class PackageManager {
     }
 
     printInfo(chalk.cyan(`\n📦 Installing dependencies with ${this.detectedManager.name}...`));
-    
+
     const installArgs = ['install'];
     if (options.frozenLockfile) {
       if (this.detectedManager.name === 'npm') installArgs.push('--frozen-lockfile');
       else if (this.detectedManager.name === 'yarn') installArgs.push('--frozen-lockfile');
       else if (this.detectedManager.name === 'pnpm') installArgs.push('--frozen-lockfile');
     }
-    
+
     if (options.production) {
       installArgs.push('--production');
     }
-    
+
     if (options.ignoreScripts) {
       installArgs.push('--ignore-scripts');
     }
 
     const { stdout, stderr } = await this.executeCommand(this.detectedManager.command, installArgs);
-    
+
     if (stdout) printInfo(chalk.gray(stdout));
     if (stderr) printWarning(chalk.yellow(stderr));
-    
+
     printSuccess(chalk.green(`✅ Dependencies installed with ${this.detectedManager.name}`));
     return { stdout, stderr };
   }
@@ -150,9 +149,9 @@ class PackageManager {
     }
 
     printInfo(chalk.cyan(`\n➕ Adding dependency: ${packageName}`));
-    
+
     const addArgs = [this.detectedManager.name === 'npm' ? 'install' : 'add'];
-    
+
     if (options.dev) {
       if (this.detectedManager.name === 'npm' || this.detectedManager.name === 'pnpm') {
         addArgs.push('--save-dev');
@@ -160,11 +159,11 @@ class PackageManager {
         addArgs.push('--dev');
       }
     }
-    
+
     if (options.global) {
       addArgs.push('-g');
     }
-    
+
     if (options.exact) {
       if (this.detectedManager.name === 'npm' || this.detectedManager.name === 'pnpm') {
         addArgs.push('--save-exact');
@@ -172,7 +171,7 @@ class PackageManager {
         addArgs.push('--exact');
       }
     }
-    
+
     if (options.peer) {
       if (this.detectedManager.name === 'yarn') {
         addArgs.push('--peer');
@@ -180,14 +179,14 @@ class PackageManager {
         printWarning(chalk.yellow('Peer dependencies only supported with yarn'));
       }
     }
-    
+
     addArgs.push(packageName);
 
     const { stdout, stderr } = await this.executeCommand(this.detectedManager.command, addArgs);
-    
+
     if (stdout) printInfo(chalk.gray(stdout));
     if (stderr) printWarning(chalk.yellow(stderr));
-    
+
     printSuccess(chalk.green(`✅ Added dependency: ${packageName}`));
     return { stdout, stderr };
   }
@@ -201,9 +200,9 @@ class PackageManager {
     }
 
     printInfo(chalk.cyan(`\n➖ Removing dependency: ${packageName}`));
-    
+
     const removeArgs = [this.detectedManager.name === 'npm' ? 'uninstall' : 'remove'];
-    
+
     if (options.dev) {
       if (this.detectedManager.name === 'yarn') {
         removeArgs.push('--dev');
@@ -211,18 +210,18 @@ class PackageManager {
         printWarning(chalk.yellow('Dev flag only applicable to yarn for removal'));
       }
     }
-    
+
     if (options.global) {
       removeArgs.push('-g');
     }
-    
+
     removeArgs.push(packageName);
 
     const { stdout, stderr } = await this.executeCommand(this.detectedManager.command, removeArgs);
-    
+
     if (stdout) printInfo(chalk.gray(stdout));
     if (stderr) printWarning(chalk.yellow(stderr));
-    
+
     printSuccess(chalk.green(`✅ Removed dependency: ${packageName}`));
     return { stdout, stderr };
   }
@@ -236,14 +235,14 @@ class PackageManager {
     }
 
     printInfo(chalk.cyan(`\n🏃 Running script: ${scriptName}`));
-    
+
     const runArgs = [this.detectedManager.name === 'npm' ? 'run' : '', scriptName, ...args];
 
     const { stdout, stderr } = await this.executeCommand(this.detectedManager.command, runArgs, {
       stdio: 'inherit', // Pass through stdio for interactive scripts
-      ...options
+      ...options,
     });
-    
+
     return { stdout, stderr };
   }
 
@@ -256,15 +255,15 @@ class PackageManager {
     }
 
     const listArgs = ['list'];
-    
+
     if (options.depth !== undefined) {
       listArgs.push(`--depth=${options.depth}`);
     }
-    
+
     if (options.global) {
       listArgs.push('--global');
     }
-    
+
     const { stdout } = await this.executeCommand(this.detectedManager.command, listArgs);
     return stdout;
   }
@@ -278,7 +277,7 @@ class PackageManager {
     }
 
     const outdatedArgs = [this.detectedManager.name === 'npm' ? 'outdated' : 'outdated'];
-    
+
     if (options.json) {
       outdatedArgs.push('--json');
     }
@@ -296,29 +295,29 @@ class PackageManager {
     }
 
     printInfo(chalk.cyan('\n🔍 Auditing for security vulnerabilities...'));
-    
+
     const auditArgs = [this.detectedManager.name === 'npm' ? 'audit' : 'audit'];
-    
+
     if (options.auditLevel) {
       if (this.detectedManager.name === 'npm') {
         auditArgs.push(`--audit-level=${options.auditLevel}`); // low, moderate, high, critical
       }
     }
-    
+
     if (options.json) {
       auditArgs.push('--json');
     }
 
     const { stdout, _stderr } = await this.executeCommand(this.detectedManager.command, auditArgs);
-    
+
     const auditResult = options.json ? JSON.parse(stdout) : stdout;
-    
+
     if (auditResult.vulnerabilities && auditResult.vulnerabilities.length > 0) {
       printWarning(chalk.yellow(`⚠️  Found ${auditResult.vulnerabilities.length} vulnerabilities`));
     } else {
       printSuccess(chalk.green('✅ No security vulnerabilities found'));
     }
-    
+
     return auditResult;
   }
 
@@ -331,9 +330,9 @@ class PackageManager {
     }
 
     printInfo(chalk.cyan('\n🔄 Updating packages...'));
-    
+
     let updateArgs = [];
-    
+
     if (this.detectedManager.name === 'npm') {
       updateArgs = ['update', ...packages];
       if (options.global) updateArgs.push('--global');
@@ -355,10 +354,10 @@ class PackageManager {
     }
 
     const { stdout, stderr } = await this.executeCommand(this.detectedManager.command, updateArgs);
-    
+
     if (stdout) printInfo(chalk.gray(stdout));
     if (stderr) printWarning(chalk.yellow(stderr));
-    
+
     printSuccess(chalk.green(`✅ Packages updated with ${this.detectedManager.name}`));
     return { stdout, stderr };
   }
@@ -378,12 +377,12 @@ class PackageManager {
       const { stdout } = await execAsync(`${managerName} --version`);
       return {
         available: true,
-        version: stdout.trim()
+        version: stdout.trim(),
       };
     } catch (error) {
       return {
         available: false,
-        error: error.message
+        error: error.message,
       };
     }
   }
@@ -393,18 +392,18 @@ class PackageManager {
    */
   static async getAvailableManagers() {
     const available = [];
-    
+
     for (const [name, config] of Object.entries(PACKAGE_MANAGERS)) {
       const result = await this.isPackageManagerAvailable(config.command);
       if (result.available) {
         available.push({
           name,
           version: result.version,
-          command: config.command
+          command: config.command,
         });
       }
     }
-    
+
     return available;
   }
 
@@ -415,12 +414,12 @@ class PackageManager {
     // Read package.json to get declared dependencies
     const packageJsonPath = path.join(this.projectPath, 'package.json');
     const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
-    
+
     return {
       dependencies: packageJson.dependencies || {},
       devDependencies: packageJson.devDependencies || {},
       peerDependencies: packageJson.peerDependencies || {},
-      optionalDependencies: packageJson.optionalDependencies || {}
+      optionalDependencies: packageJson.optionalDependencies || {},
     };
   }
 
@@ -429,19 +428,19 @@ class PackageManager {
    */
   async getInstalledVersions() {
     const packages = await this.listPackages({ depth: 0 });
-    
+
     // Parse the output to extract package names and versions
     // This is a simplified parsing - in a real implementation, you'd want more robust parsing
     const lines = packages.split('\n');
     const installed = {};
-    
+
     for (const line of lines) {
       const match = line.match(/├──\s+([^@]+)@(.+)/);
       if (match) {
         installed[match[1]] = match[2].trim();
       }
     }
-    
+
     return installed;
   }
 
@@ -454,15 +453,16 @@ class PackageManager {
     }
 
     printInfo(chalk.cyan('\n🔍 Checking for dependency conflicts...'));
-    
+
     try {
       // Different package managers have different ways to check conflicts
       if (this.detectedManager.name === 'npm') {
         const { stdout } = await execAsync('npm ls --depth=0', { cwd: this.projectPath });
-        
+
         // Look for error/warning indicators in the output
-        const hasErrors = stdout.includes('UNMET') || stdout.includes('extraneous') || stdout.includes('invalid');
-        
+        const hasErrors =
+          stdout.includes('UNMET') || stdout.includes('extraneous') || stdout.includes('invalid');
+
         if (hasErrors) {
           printWarning(chalk.yellow('⚠️  Potential dependency conflicts detected'));
           return { conflicts: true, details: stdout };
@@ -472,7 +472,7 @@ class PackageManager {
         }
       } else if (this.detectedManager.name === 'yarn') {
         const { stdout } = await execAsync('yarn check --integrity', { cwd: this.projectPath });
-        
+
         if (!stdout.includes('success')) {
           printWarning(chalk.yellow('⚠️  Potential dependency integrity issues'));
           return { conflicts: true, details: stdout };
@@ -482,10 +482,10 @@ class PackageManager {
         }
       } else if (this.detectedManager.name === 'pnpm') {
         const { stdout } = await execAsync('pnpm audit', { cwd: this.projectPath });
-        
+
         // Check for vulnerabilities in the audit output
         const hasVulnerabilities = stdout.includes('vulnerabilities');
-        
+
         if (hasVulnerabilities) {
           printWarning(chalk.yellow('⚠️  Potential dependency vulnerabilities detected'));
           return { conflicts: true, details: stdout };
@@ -505,11 +505,11 @@ class PackageManager {
    */
   async generateDependencyReport() {
     printInfo(chalk.cyan('\n📋 Generating dependency report...'));
-    
+
     const [projectDeps, installedVersions, auditResult] = await Promise.all([
       this.getProjectDependencies(),
       this.getInstalledVersions(),
-      this.audit({ json: true }).catch(() => ({})) // Don't fail if audit fails
+      this.audit({ json: true }).catch(() => ({})), // Don't fail if audit fails
     ]);
 
     const report = {
@@ -520,13 +520,13 @@ class PackageManager {
           dependencies: Object.keys(projectDeps.dependencies),
           devDependencies: Object.keys(projectDeps.devDependencies),
           peerDependencies: Object.keys(projectDeps.peerDependencies),
-          optionalDependencies: Object.keys(projectDeps.optionalDependencies)
+          optionalDependencies: Object.keys(projectDeps.optionalDependencies),
         },
         installed: installedVersions,
-        mismatched: []
+        mismatched: [],
       },
       audit: auditResult,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     // Check for version mismatches
@@ -536,18 +536,18 @@ class PackageManager {
         report.dependencies.mismatched.push({
           package: pkg,
           declared: declaredVersion,
-          installed: installedVersion
+          installed: installedVersion,
         });
       }
     }
 
     // Generate report in markdown format
     const reportContent = this.formatDependencyReport(report);
-    
+
     // Save report to file
     const reportPath = path.join(this.projectPath, 'DEPENDENCY-REPORT.md');
     await fs.writeFile(reportPath, reportContent);
-    
+
     printSuccess(chalk.green(`✅ Dependency report generated: ${reportPath}`));
     return report;
   }
@@ -583,30 +583,36 @@ class PackageManager {
     content += `**Project:** ${report.projectPath}\n\n`;
 
     content += `## Dependencies Declared in package.json\n\n`;
-    
+
     content += `### Production Dependencies\n`;
     if (report.dependencies.declared.dependencies.length > 0) {
-      content += report.dependencies.declared.dependencies.map(pkg => `- ${pkg}: ${report.dependencies.declared.dependencies[pkg] || 'latest'}\n`).join('');
+      content += report.dependencies.declared.dependencies
+        .map((pkg) => `- ${pkg}: ${report.dependencies.declared.dependencies[pkg] || 'latest'}\n`)
+        .join('');
     } else {
       content += `- None\n`;
     }
-    
+
     content += `\n### Development Dependencies\n`;
     if (report.dependencies.declared.devDependencies.length > 0) {
-      content += report.dependencies.declared.devDependencies.map(pkg => `- ${pkg}: ${report.dependencies.declared.devDependencies[pkg] || 'latest'}\n`).join('');
+      content += report.dependencies.declared.devDependencies
+        .map(
+          (pkg) => `- ${pkg}: ${report.dependencies.declared.devDependencies[pkg] || 'latest'}\n`
+        )
+        .join('');
     } else {
       content += `- None\n`;
     }
 
     content += `\n## Installed Versions\n`;
     content += `**Total Packages Installed:** ${Object.keys(report.dependencies.installed).length}\n\n`;
-    
+
     // Show first 20 packages
     const installedPkgs = Object.entries(report.dependencies.installed).slice(0, 20);
     for (const [pkg, version] of installedPkgs) {
       content += `- ${pkg}: ${version}\n`;
     }
-    
+
     if (Object.keys(report.dependencies.installed).length > 20) {
       content += `\n... and ${Object.keys(report.dependencies.installed).length - 20} more packages\n`;
     }
@@ -614,7 +620,7 @@ class PackageManager {
     if (report.dependencies.mismatched.length > 0) {
       content += `\n## Version Mismatches\n`;
       content += `**Packages with version mismatches:** ${report.dependencies.mismatched.length}\n\n`;
-      
+
       for (const mismatch of report.dependencies.mismatched) {
         content += `- **${mismatch.package}**: declared ${mismatch.declared} vs installed ${mismatch.installed}\n`;
       }
@@ -623,7 +629,7 @@ class PackageManager {
     if (report.audit && report.audit.vulnerabilities) {
       content += `\n## Security Audit\n`;
       content += `**Vulnerabilities Found:** ${report.audit.metadata?.vulnerabilities?.total || 0}\n`;
-      
+
       const vulns = report.audit.metadata?.vulnerabilities || {};
       if (vulns.low) content += `- Low: ${vulns.low}\n`;
       if (vulns.moderate) content += `- Moderate: ${vulns.moderate}\n`;
@@ -642,7 +648,7 @@ class PackageManager {
    */
   async cleanInstall() {
     printInfo(chalk.cyan('\n🧹 Performing clean install...'));
-    
+
     // Remove node_modules
     const nodeModulesPath = path.join(this.projectPath, 'node_modules');
     try {
@@ -671,7 +677,7 @@ class PackageManager {
 
     // Reinstall dependencies
     await this.install();
-    
+
     printSuccess(chalk.green('✅ Clean install completed'));
   }
 
@@ -683,15 +689,17 @@ class PackageManager {
       throw new Error(`Unsupported package manager: ${targetManager}`);
     }
 
-    printInfo(chalk.cyan(`\n🔄 Migrating from ${this.detectedManager.name} to ${targetManager}...`));
-    
+    printInfo(
+      chalk.cyan(`\n🔄 Migrating from ${this.detectedManager.name} to ${targetManager}...`)
+    );
+
     // Get current dependencies
     const _projectDeps = await this.getProjectDependencies();
-    
+
     // Remove current lock file and node_modules
     const lockFile = this.detectedManager.lockFile;
     const lockFilePath = path.join(this.projectPath, lockFile);
-    
+
     try {
       await fs.unlink(lockFilePath);
       printInfo(chalk.gray(`Removed ${lockFile}`));
@@ -710,10 +718,10 @@ class PackageManager {
 
     // Update detected manager
     this.detectedManager = PACKAGE_MANAGERS[targetManager];
-    
+
     // Install dependencies with new package manager
     await this.install();
-    
+
     printSuccess(chalk.green(`✅ Migrated to ${targetManager}`));
   }
 }
@@ -867,7 +875,10 @@ export function registerPackageManagerCommand(program) {
     });
 
   pmCmd._examples = [
-    { command: 'ultra-dex package install', description: 'Install dependencies with detected package manager' },
+    {
+      command: 'ultra-dex package install',
+      description: 'Install dependencies with detected package manager',
+    },
     { command: 'ultra-dex package add react --dev', description: 'Add React as dev dependency' },
     { command: 'ultra-dex package remove lodash', description: 'Remove Lodash dependency' },
     { command: 'ultra-dex package run dev', description: 'Run dev script' },
@@ -875,7 +886,7 @@ export function registerPackageManagerCommand(program) {
     { command: 'ultra-dex package outdated', description: 'Check for outdated packages' },
     { command: 'ultra-dex package conflicts', description: 'Check for dependency conflicts' },
     { command: 'ultra-dex package report', description: 'Generate dependency report' },
-    { command: 'ultra-dex package clean-install', description: 'Perform clean install' }
+    { command: 'ultra-dex package clean-install', description: 'Perform clean install' },
   ];
 }
 
@@ -883,5 +894,5 @@ export default {
   PackageManager,
   packageManager,
   registerPackageManagerCommand,
-  PACKAGE_MANAGERS
+  PACKAGE_MANAGERS,
 };

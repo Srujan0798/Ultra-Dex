@@ -15,10 +15,7 @@ export const Settings = memo(function Settings() {
         <h2 className="text-lg font-semibold text-slate-100">Preferences</h2>
         <form className="mt-6 grid gap-6 md:grid-cols-2" aria-label="Preferences form">
           <div className="space-y-3">
-            <label
-              htmlFor="default-model"
-              className="text-sm text-slate-400"
-            >
+            <label htmlFor="default-model" className="text-sm text-slate-400">
               Default Model
             </label>
             <select
@@ -32,10 +29,7 @@ export const Settings = memo(function Settings() {
             </select>
           </div>
           <div className="space-y-3">
-            <label
-              htmlFor="active-workspace"
-              className="text-sm text-slate-400"
-            >
+            <label htmlFor="active-workspace" className="text-sm text-slate-400">
               Active Workspace
             </label>
             <select
@@ -49,10 +43,7 @@ export const Settings = memo(function Settings() {
             </select>
           </div>
           <div className="space-y-3">
-            <label
-              htmlFor="notification-channel"
-              className="text-sm text-slate-400"
-            >
+            <label htmlFor="notification-channel" className="text-sm text-slate-400">
               Notification Channel
             </label>
             <input
@@ -64,10 +55,7 @@ export const Settings = memo(function Settings() {
             />
           </div>
           <div className="space-y-3">
-            <label
-              htmlFor="budget-limit"
-              className="text-sm text-slate-400"
-            >
+            <label htmlFor="budget-limit" className="text-sm text-slate-400">
               Budget Limit (Monthly)
             </label>
             <input
@@ -98,7 +86,10 @@ export const Settings = memo(function Settings() {
               className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/50 px-4 py-3"
               role="listitem"
             >
-              <span className="text-sm text-slate-300" id={`automation-${item.label.replace(/\s+/g, '-').toLowerCase()}`}>
+              <span
+                className="text-sm text-slate-300"
+                id={`automation-${item.label.replace(/\s+/g, '-').toLowerCase()}`}
+              >
                 {item.label}
               </span>
               <span

@@ -13,6 +13,7 @@ Complete API template built with FastAPI, featuring authentication, database int
 The FastAPI API Template is a comprehensive starter kit that includes all essential features for a production API. Built with FastAPI for optimal performance and developer experience, this template follows industry best practices and includes enterprise-grade security and scalability features.
 
 ### Core Features
+
 - **Authentication:** JWT-based authentication with refresh tokens
 - **Database:** SQLAlchemy with PostgreSQL/MySQL/SQLite
 - **API Documentation:** Auto-generated Swagger/Redoc documentation
@@ -23,6 +24,7 @@ The FastAPI API Template is a comprehensive starter kit that includes all essent
 - **Testing:** Pydantic validation and pytest integration
 
 ### Architecture Highlights
+
 - **FastAPI Framework:** High-performance Python web framework
 - **Python 3.11+:** Full type hinting and async support
 - **Pydantic:** Data validation and settings management
@@ -68,6 +70,7 @@ The FastAPI API Template is a comprehensive starter kit that includes all essent
 ## 🚀 QUICK START
 
 ### Generate Project
+
 ```bash
 # Using Ultra-Dex CLI
 ultra-dex template generate fastapi-api my-api-project
@@ -77,6 +80,7 @@ npx ultra-dex generate "Create an API with FastAPI template" --template fastapi-
 ```
 
 ### Manual Setup
+
 ```bash
 # Clone the template
 npx ultra-dex template clone fastapi-api my-api-project
@@ -109,6 +113,7 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ## 🔧 ENVIRONMENT VARIABLES
 
 ### Required Variables
+
 ```env
 # Database
 DATABASE_URL="postgresql+asyncpg://username:password@localhost:5432/my_api_db"
@@ -136,6 +141,7 @@ VERSION="0.1.0"
 ```
 
 ### Optional Variables
+
 ```env
 # Email (if using email features)
 SMTP_HOST="smtp.gmail.com"
@@ -275,6 +281,7 @@ my-fastapi-api/
 ## 🧩 CORE COMPONENTS
 
 ### 1. Authentication System
+
 - **JWT Tokens:** Secure token-based authentication
 - **Password Hashing:** bcrypt for secure password storage
 - **OAuth2 Integration:** Support for OAuth2 password flow
@@ -282,6 +289,7 @@ my-fastapi-api/
 - **Token Refresh:** Automatic token refresh mechanism
 
 ### 2. Database Layer
+
 - **SQLAlchemy ORM:** Async database operations
 - **Alembic Migrations:** Database schema management
 - **Connection Pooling:** Optimized database connections
@@ -289,6 +297,7 @@ my-fastapi-api/
 - **Query Optimization:** Efficient query patterns
 
 ### 3. API Layer
+
 - **FastAPI Router:** Modular route organization
 - **Pydantic Validation:** Request/response validation
 - **Swagger Documentation:** Auto-generated API docs
@@ -296,6 +305,7 @@ my-fastapi-api/
 - **CORS Management:** Configurable CORS policies
 
 ### 4. Security Features
+
 - **Input Validation:** Pydantic schema validation
 - **SQL Injection Prevention:** SQLAlchemy parameterized queries
 - **XSS Prevention:** Proper output encoding
@@ -303,6 +313,7 @@ my-fastapi-api/
 - **Rate Limiting:** Prevent abuse and DoS attacks
 
 ### 5. Background Processing
+
 - **Celery Integration:** Background task processing
 - **Redis Queue:** Task queuing and management
 - **Task Monitoring:** Task status and monitoring
@@ -314,6 +325,7 @@ my-fastapi-api/
 ## 🛡️ SECURITY FEATURES
 
 ### Authentication Security
+
 - **JWT Token Security:** Secure token generation and validation
 - **Password Security:** bcrypt hashing with salt
 - **Session Management:** Secure session handling
@@ -321,6 +333,7 @@ my-fastapi-api/
 - **Refresh Tokens:** Secure token refresh mechanism
 
 ### API Security
+
 - **Rate Limiting:** Prevent API abuse with Redis-based limits
 - **Input Validation:** Pydantic schema validation for all inputs
 - **SQL Injection Prevention:** SQLAlchemy ORM with parameterized queries
@@ -328,6 +341,7 @@ my-fastapi-api/
 - **Access Control:** Role-based access control for endpoints
 
 ### Data Security
+
 - **Encryption at Rest:** Database encryption
 - **Encryption in Transit:** HTTPS/TLS for all communications
 - **Data Masking:** Sensitive data masking in logs
@@ -339,6 +353,7 @@ my-fastapi-api/
 ## 📊 PERFORMANCE OPTIMIZATIONS
 
 ### FastAPI-Specific Optimizations
+
 - **Async Operations:** Full async/await support for I/O operations
 - **Pydantic Performance:** Fast data validation and serialization
 - **Starlette Integration:** High-performance ASGI framework
@@ -346,6 +361,7 @@ my-fastapi-api/
 - **Dependency Injection:** Efficient resource management
 
 ### Database Optimizations
+
 - **Async SQLAlchemy:** Non-blocking database operations
 - **Connection Pooling:** Optimized database connection management
 - **Query Optimization:** Efficient query patterns and indexing
@@ -353,6 +369,7 @@ my-fastapi-api/
 - **Pagination:** Efficient data retrieval with pagination
 
 ### Caching Strategies
+
 - **Redis Caching:** Distributed caching with Redis
 - **Response Caching:** Cache API responses for performance
 - **Session Caching:** Cache user sessions for faster authentication
@@ -364,6 +381,7 @@ my-fastapi-api/
 ## 🚢 DEPLOYMENT
 
 ### Docker Deployment
+
 ```dockerfile
 FROM python:3.11-slim
 
@@ -394,6 +412,7 @@ CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
 ### Docker Compose for Development
+
 ```yaml
 version: '3.8'
 
@@ -401,7 +420,7 @@ services:
   api:
     build: .
     ports:
-      - "8000:8000"
+      - '8000:8000'
     environment:
       - DATABASE_URL=postgresql+asyncpg://user:password@api-db:5432/myapidb
       - REDIS_URL=redis://api-redis:6379
@@ -420,12 +439,12 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - '5432:5432'
 
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - '6379:6379'
 
   celery:
     build: .
@@ -444,6 +463,7 @@ volumes:
 ```
 
 ### Production Deployment
+
 ```bash
 # Build and deploy with Docker
 docker build -t ultra-dex-fastapi-api .
@@ -465,24 +485,28 @@ aws ecs create-service --service-name my-api --task-definition my-api-task
 ## 🧪 TESTING STRATEGY
 
 ### Unit Tests
+
 - **Pytest:** Python testing framework
 - **Pydantic Validation:** Schema validation tests
 - **FastAPI TestClient:** API endpoint testing
 - **Database Mocking:** Isolated database testing
 
 ### Integration Tests
+
 - **Database Integration:** Full database operation tests
 - **API Integration:** End-to-end API flow testing
 - **Authentication Flow:** Complete auth flow testing
 - **Background Tasks:** Celery task integration testing
 
 ### Performance Tests
+
 - **Load Testing:** Simulate concurrent API requests
 - **Database Performance:** Query optimization testing
 - **Caching Performance:** Cache hit/miss ratio testing
 - **Response Time:** API response time benchmarking
 
 ### Security Tests
+
 - **Dependency Scanning:** Automated vulnerability detection
 - **Penetration Testing:** API security assessment
 - **Rate Limiting:** Abuse prevention testing
@@ -493,22 +517,26 @@ aws ecs create-service --service-name my-api --task-definition my-api-task
 ## 🔌 INTEGRATIONS
 
 ### Database Integration
+
 - **PostgreSQL:** Primary database with async support
 - **MySQL:** Alternative relational database
 - **SQLite:** Lightweight database for development
 - **MongoDB:** NoSQL option (with additional setup)
 
 ### Caching Integration
+
 - **Redis:** Primary caching and session store
 - **Memcached:** Alternative caching solution
 - **In-Memory:** Development-only caching
 
 ### Task Queue Integration
+
 - **Celery:** Primary background task processor
 - **RQ:** Alternative Python task queue
 - **Database Queue:** Simple database-based queuing
 
 ### Monitoring Integration
+
 - **Sentry:** Error tracking and monitoring
 - **Prometheus:** Metrics collection
 - **Grafana:** Metrics visualization
@@ -519,6 +547,7 @@ aws ecs create-service --service-name my-api --task-definition my-api-task
 ## 📋 CUSTOMIZATION GUIDE
 
 ### Adding New Endpoints
+
 1. **Create Schema:** Define Pydantic schema for request/response
 2. **Create Model:** Define SQLAlchemy model if needed
 3. **Create CRUD:** Implement CRUD operations
@@ -526,12 +555,14 @@ aws ecs create-service --service-name my-api --task-definition my-api-task
 5. **Add Tests:** Create unit and integration tests
 
 ### Modifying Authentication
+
 1. **Update Security:** Modify security.py for new auth methods
 2. **Update Schemas:** Update token/user schemas as needed
 3. **Update Dependencies:** Update dependency injection
 4. **Test Changes:** Verify all auth flows work correctly
 
 ### Adding Database Models
+
 1. **Create Model:** Define SQLAlchemy model
 2. **Create Schema:** Define Pydantic schemas
 3. **Create CRUD:** Implement CRUD operations
@@ -543,6 +574,7 @@ aws ecs create-service --service-name my-api --task-definition my-api-task
 ## 🔄 UPDATES & MAINTENANCE
 
 ### Keeping Dependencies Updated
+
 ```bash
 # Update Python dependencies
 pip install --upgrade -r requirements.txt
@@ -555,6 +587,7 @@ pipenv update
 ```
 
 ### Database Migration Management
+
 ```bash
 # Create new migration
 alembic revision --autogenerate -m "Add new feature"
@@ -567,6 +600,7 @@ alembic downgrade -1
 ```
 
 ### Template Versioning
+
 - **Major Updates:** Breaking changes to API structure
 - **Minor Updates:** New features and improvements
 - **Patch Updates:** Bug fixes and security patches
@@ -576,16 +610,19 @@ alembic downgrade -1
 ## 🚀 ADVANCED FEATURES
 
 ### Real-time Updates
+
 - **WebSocket Integration:** Real-time API notifications
 - **Server-Sent Events:** One-way real-time updates
 - **Event Streaming:** API event streaming capabilities
 
 ### AI Integration
+
 - **OpenAI Integration:** AI-powered API endpoints
 - **Anthropic Integration:** Claude-powered features
 - **Custom AI Models:** Integration with self-hosted models
 
 ### Multi-Tenancy
+
 - **Tenant Isolation:** Row-level security for multi-tenancy
 - **Resource Allocation:** Per-tenant resource limits
 - **Billing Separation:** Independent billing per tenant
@@ -595,17 +632,20 @@ alembic downgrade -1
 ## 📞 SUPPORT & RESOURCES
 
 ### Documentation
+
 - [FastAPI Documentation](https://fastapi.tiangolo.com/)
 - [SQLAlchemy Documentation](https://docs.sqlalchemy.org/)
 - [Pydantic Documentation](https://pydantic-docs.helpmanual.io/)
 - [Ultra-Dex Documentation](../../README.md)
 
 ### Community
+
 - [FastAPI Discord](https://discord.gg/xR8YfBV)
 - [Ultra-Dex Discord](https://discord.gg/ultra-dex)
 - [GitHub Issues](https://github.com/Srujan0798/Ultra-Dex/issues)
 
 ### Professional Support
+
 - **Enterprise Support:** Available for production deployments
 - **Consulting Services:** Custom implementation and integration
 - **Training:** Team training and onboarding
@@ -615,6 +655,7 @@ alembic downgrade -1
 ## 🏆 BEST PRACTICES
 
 ### Development Best Practices
+
 - **Type Safety:** Use Python type hints extensively
 - **Async Operations:** Leverage async/await for I/O operations
 - **Security First:** Implement security from the start
@@ -622,6 +663,7 @@ alembic downgrade -1
 - **Testing:** Maintain high test coverage
 
 ### Deployment Best Practices
+
 - **Environment Variables:** Never commit secrets to version control
 - **Database Migrations:** Test migrations in staging first
 - **Monitoring:** Set up comprehensive monitoring
@@ -633,6 +675,7 @@ alembic downgrade -1
 ## 🚀 NEXT STEPS
 
 ### After Setup
+
 1. **Customize API:** Update endpoints for your specific needs
 2. **Configure Database:** Set up production database
 3. **Add Features:** Implement your specific business logic
@@ -640,6 +683,7 @@ alembic downgrade -1
 5. **Deploy:** Launch to production
 
 ### Advanced Customizations
+
 - **Multi-Tenancy:** Add support for multiple tenants
 - **Advanced Analytics:** Implement custom analytics
 - **AI Integration:** Add AI-powered features

@@ -3,18 +3,17 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
+import { singleton } from 'tsyringe';
 function cloneValue(value) {
   if (Array.isArray(value)) {
     return value.map((item) => cloneValue(item));
   }
-  if (value && typeof value === "object") {
+  if (value && typeof value === 'object') {
     return { ...value };
   }
   return value;
@@ -32,7 +31,7 @@ let ContextCache = class {
       evictions: 0,
       writes: 0,
       overflowWrites: 0,
-      overflowReads: 0
+      overflowReads: 0,
     };
   }
   get(taskId) {
@@ -68,7 +67,7 @@ let ContextCache = class {
     this.store.set(taskId, {
       context: cloneValue(context),
       fetchedAt: Date.now(),
-      expiresAt: Date.now() + ttl
+      expiresAt: Date.now() + ttl,
     });
     this.stats.writes++;
     return context;
@@ -105,17 +104,11 @@ let ContextCache = class {
       maxSize: this.maxSize,
       hitRate: totalLookups === 0 ? 0 : this.stats.hits / totalLookups,
       missRate: totalLookups === 0 ? 0 : this.stats.misses / totalLookups,
-      ...this.stats
+      ...this.stats,
     };
   }
 };
-ContextCache = __decorateClass([
-  singleton()
-], ContextCache);
+ContextCache = __decorateClass([singleton()], ContextCache);
 const contextCache = new ContextCache();
 var context_cache_default = ContextCache;
-export {
-  ContextCache,
-  contextCache,
-  context_cache_default as default
-};
+export { ContextCache, contextCache, context_cache_default as default };

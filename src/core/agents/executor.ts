@@ -3,14 +3,13 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { EventEmitter } from "events";
+import { singleton } from 'tsyringe';
+import { EventEmitter } from 'events';
 let Executor = class extends EventEmitter {
   constructor(options = {}) {
     super();
@@ -22,9 +21,9 @@ let Executor = class extends EventEmitter {
       executionTimeout: options.executionTimeout || 3e4,
       maxConcurrentTasks: options.maxConcurrentTasks || 10,
       enableProfiling: options.enableProfiling || false,
-      ...options
+      ...options,
     };
-    this.state = "idle";
+    this.state = 'idle';
     this.activeTasks = /* @__PURE__ */ new Map();
     this.executionQueue = [];
     this.metrics = {
@@ -32,15 +31,15 @@ let Executor = class extends EventEmitter {
       totalSucceeded: 0,
       totalFailed: 0,
       averageExecutionTime: 0,
-      executionTimes: []
+      executionTimes: [],
     };
   }
   /**
    * Initialize executor
    */
   async initialize() {
-    this.state = "ready";
-    this.emit("executor.ready");
+    this.state = 'ready';
+    this.emit('executor.ready');
     return this;
   }
   /**
@@ -49,15 +48,15 @@ let Executor = class extends EventEmitter {
   async execute(task, options = {}) {
     const executionId = this.generateId();
     const startTime = Date.now();
-    this.emit("task.execution.started", { executionId, task });
+    this.emit('task.execution.started', { executionId, task });
     try {
       const result = await this.executeWithRetry(task, options);
       this.recordExecution(executionId, startTime, true, result);
-      this.emit("task.execution.succeeded", { executionId, task, result });
+      this.emit('task.execution.succeeded', { executionId, task, result });
       return result;
     } catch (error) {
       this.recordExecution(executionId, startTime, false, error);
-      this.emit("task.execution.failed", { executionId, task, error });
+      this.emit('task.execution.failed', { executionId, task, error });
       throw error;
     }
   }
@@ -71,24 +70,24 @@ let Executor = class extends EventEmitter {
     let attempt = 0;
     while (attempt <= maxRetries) {
       try {
-        this.emit("task.execution.attempt", { task, attempt: attempt + 1 });
+        this.emit('task.execution.attempt', { task, attempt: attempt + 1 });
         const result = await this.executeWithTimeout(
           task,
           options.executionTimeout || this.config.executionTimeout
         );
         if (attempt > 0) {
-          this.emit("task.execution.retry-succeeded", { task, attempt: attempt + 1 });
+          this.emit('task.execution.retry-succeeded', { task, attempt: attempt + 1 });
         }
         return result;
       } catch (error) {
         lastError = error;
         attempt++;
         if (attempt <= maxRetries) {
-          this.emit("task.execution.retry", {
+          this.emit('task.execution.retry', {
             task,
             attempt,
             delay: retryDelay,
-            error
+            error,
           });
           await this.delay(retryDelay);
         }
@@ -104,13 +103,15 @@ let Executor = class extends EventEmitter {
       const timer = setTimeout(() => {
         reject(new Error(`Task execution timeout after ${timeout}ms`));
       }, timeout);
-      this.performExecution(task).then((result) => {
-        clearTimeout(timer);
-        resolve(result);
-      }).catch((error) => {
-        clearTimeout(timer);
-        reject(error);
-      });
+      this.performExecution(task)
+        .then((result) => {
+          clearTimeout(timer);
+          resolve(result);
+        })
+        .catch((error) => {
+          clearTimeout(timer);
+          reject(error);
+        });
     });
   }
   /**
@@ -118,7 +119,7 @@ let Executor = class extends EventEmitter {
    */
   async performExecution(task) {
     if (!task.handler && !task.agent) {
-      throw new Error("Task must have either handler function or agent");
+      throw new Error('Task must have either handler function or agent');
     }
     if (task.handler) {
       return await task.handler(task.data);
@@ -126,15 +127,15 @@ let Executor = class extends EventEmitter {
     if (task.agent) {
       return await task.agent.execute(task);
     }
-    throw new Error("Unable to execute task");
+    throw new Error('Unable to execute task');
   }
   /**
    * Execute multiple tasks
    */
   async executeMultiple(tasks, options = {}) {
-    const strategy = options.strategy || "parallel";
+    const strategy = options.strategy || 'parallel';
     const results = [];
-    if (strategy === "sequential") {
+    if (strategy === 'sequential') {
       for (const task of tasks) {
         try {
           const result = await this.execute(task, options);
@@ -143,19 +144,23 @@ let Executor = class extends EventEmitter {
           results.push({ task, error, success: false });
         }
       }
-    } else if (strategy === "parallel") {
-      const promises = tasks.map(
-        (task) => this.execute(task, options).then((result) => ({ task, result, success: true })).catch((error) => ({ task, error, success: false }))
+    } else if (strategy === 'parallel') {
+      const promises = tasks.map((task) =>
+        this.execute(task, options)
+          .then((result) => ({ task, result, success: true }))
+          .catch((error) => ({ task, error, success: false }))
       );
       await Promise.all(promises);
-      results.push(...await Promise.all(promises));
-    } else if (strategy === "limited-concurrency") {
+      results.push(...(await Promise.all(promises)));
+    } else if (strategy === 'limited-concurrency') {
       const concurrency = options.concurrency || this.config.maxConcurrentTasks;
       for (let i = 0; i < tasks.length; i += concurrency) {
         const batch = tasks.slice(i, i + concurrency);
         const batchResults = await Promise.all(
-          batch.map(
-            (task) => this.execute(task, options).then((result) => ({ task, result, success: true })).catch((error) => ({ task, error, success: false }))
+          batch.map((task) =>
+            this.execute(task, options)
+              .then((result) => ({ task, result, success: true }))
+              .catch((error) => ({ task, error, success: false }))
           )
         );
         results.push(...batchResults);
@@ -174,13 +179,13 @@ let Executor = class extends EventEmitter {
       id: taskId,
       task,
       options,
-      status: "queued",
+      status: 'queued',
       queuedAt: Date.now(),
-      priority: options.priority || 0
+      priority: options.priority || 0,
     };
     this.executionQueue.push(queuedTask);
     this.executionQueue.sort((a, b) => b.priority - a.priority);
-    this.emit("task.queued", { taskId, task });
+    this.emit('task.queued', { taskId, task });
     this.processQueue();
     return taskId;
   }
@@ -188,23 +193,29 @@ let Executor = class extends EventEmitter {
    * Process task queue
    */
   async processQueue() {
-    while (this.executionQueue.length > 0 && this.activeTasks.size < this.config.maxConcurrentTasks) {
+    while (
+      this.executionQueue.length > 0 &&
+      this.activeTasks.size < this.config.maxConcurrentTasks
+    ) {
       const queuedTask = this.executionQueue.shift();
-      queuedTask.status = "executing";
+      queuedTask.status = 'executing';
       this.activeTasks.set(queuedTask.id, queuedTask);
-      this.execute(queuedTask.task, queuedTask.options).then((result) => {
-        queuedTask.status = "completed";
-        queuedTask.result = result;
-        this.activeTasks.delete(queuedTask.id);
-        this.emit("queued-task.completed", { taskId: queuedTask.id, result });
-      }).catch((error) => {
-        queuedTask.status = "failed";
-        queuedTask.error = error;
-        this.activeTasks.delete(queuedTask.id);
-        this.emit("queued-task.failed", { taskId: queuedTask.id, error });
-      }).finally(() => {
-        this.processQueue();
-      });
+      this.execute(queuedTask.task, queuedTask.options)
+        .then((result) => {
+          queuedTask.status = 'completed';
+          queuedTask.result = result;
+          this.activeTasks.delete(queuedTask.id);
+          this.emit('queued-task.completed', { taskId: queuedTask.id, result });
+        })
+        .catch((error) => {
+          queuedTask.status = 'failed';
+          queuedTask.error = error;
+          this.activeTasks.delete(queuedTask.id);
+          this.emit('queued-task.failed', { taskId: queuedTask.id, error });
+        })
+        .finally(() => {
+          this.processQueue();
+        });
     }
   }
   /**
@@ -222,12 +233,13 @@ let Executor = class extends EventEmitter {
     if (this.metrics.executionTimes.length > 1e3) {
       this.metrics.executionTimes.shift();
     }
-    this.metrics.averageExecutionTime = this.metrics.executionTimes.reduce((a, b) => a + b, 0) / this.metrics.executionTimes.length;
+    this.metrics.averageExecutionTime =
+      this.metrics.executionTimes.reduce((a, b) => a + b, 0) / this.metrics.executionTimes.length;
     this.results.set(executionId, {
       success,
       duration,
       result,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
   /**
@@ -238,7 +250,7 @@ let Executor = class extends EventEmitter {
       ...this.metrics,
       activeTaskCount: this.activeTasks.size,
       queuedTaskCount: this.executionQueue.length,
-      successRate: this.metrics.totalSucceeded / this.metrics.totalExecuted * 100
+      successRate: (this.metrics.totalSucceeded / this.metrics.totalExecuted) * 100,
     };
   }
   /**
@@ -247,15 +259,15 @@ let Executor = class extends EventEmitter {
   cancelTask(taskId) {
     if (this.activeTasks.has(taskId)) {
       const task = this.activeTasks.get(taskId);
-      task.status = "cancelled";
+      task.status = 'cancelled';
       this.activeTasks.delete(taskId);
-      this.emit("task.cancelled", { taskId });
+      this.emit('task.cancelled', { taskId });
       return true;
     }
     const queueIndex = this.executionQueue.findIndex((t) => t.id === taskId);
     if (queueIndex !== -1) {
       this.executionQueue.splice(queueIndex, 1);
-      this.emit("queued-task.cancelled", { taskId });
+      this.emit('queued-task.cancelled', { taskId });
       return true;
     }
     return false;
@@ -276,15 +288,10 @@ let Executor = class extends EventEmitter {
    * Shutdown executor
    */
   async shutdown() {
-    this.state = "shutdown";
-    this.emit("executor.shutdown", { activeTaskCount: this.activeTasks.size });
+    this.state = 'shutdown';
+    this.emit('executor.shutdown', { activeTaskCount: this.activeTasks.size });
   }
 };
-Executor = __decorateClass([
-  singleton()
-], Executor);
+Executor = __decorateClass([singleton()], Executor);
 var executor_default = Executor;
-export {
-  Executor,
-  executor_default as default
-};
+export { Executor, executor_default as default };

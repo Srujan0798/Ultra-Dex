@@ -18,8 +18,8 @@ const DEFAULT_ERROR_PATTERNS = {
   'SQLITE_ERROR: no such table': {
     message: 'Database table not found',
     solution: "💡 Database not initialized. Run 'ultra-dex init' to set up.",
-    category: 'database'
-  }
+    category: 'database',
+  },
 };
 
 export class ErrorTranslator {
@@ -34,13 +34,16 @@ export class ErrorTranslator {
       if (fs.existsSync(MESSAGES_PATH)) {
         const data = fs.readFileSync(MESSAGES_PATH, 'utf8');
         const json = JSON.parse(data);
-        
+
         // Flatten the nested categories from JSON into a single lookup map
         const flattened = {};
         for (const category of Object.values(json)) {
           for (const [key, val] of Object.entries(category)) {
             // Use the key or part of it as the pattern
-            const pattern = key.replace(/_/g, ': ').replace(/([A-Z])/g, ' $1').trim();
+            const pattern = key
+              .replace(/_/g, ': ')
+              .replace(/([A-Z])/g, ' $1')
+              .trim();
             flattened[pattern] = val;
             // Also add the raw key
             flattened[key] = val;
@@ -60,20 +63,28 @@ export class ErrorTranslator {
   translate(error, context = null) {
     const errorMessage = this.getErrorMessage(error);
     const errorType = this.getErrorType(error);
-    
+
     // Check general patterns
     for (const [pattern, translation] of Object.entries(this.patterns)) {
-      if (errorMessage.includes(pattern) || errorType.includes(pattern) || pattern.includes(errorType)) {
+      if (
+        errorMessage.includes(pattern) ||
+        errorType.includes(pattern) ||
+        pattern.includes(errorType)
+      ) {
         return this.buildErrorResult(translation, error, errorMessage);
       }
     }
-    
+
     // Fallback
-    return this.buildErrorResult({
-      message: 'An unexpected error occurred',
-      solution: '⚠️ Something went wrong. Check the logs for details.',
-      category: 'general'
-    }, error, errorMessage);
+    return this.buildErrorResult(
+      {
+        message: 'An unexpected error occurred',
+        solution: '⚠️ Something went wrong. Check the logs for details.',
+        category: 'general',
+      },
+      error,
+      errorMessage
+    );
   }
 
   getErrorMessage(error) {
@@ -94,7 +105,7 @@ export class ErrorTranslator {
       solution: translation.solution,
       category: translation.category,
       suggestedAction: this.extractSuggestedAction(translation.solution),
-      documentationLink: this.getDocumentationLink(translation.category)
+      documentationLink: this.getDocumentationLink(translation.category),
     };
   }
 
@@ -112,26 +123,27 @@ export class ErrorTranslator {
    */
   formatCliError(error, context = null) {
     const translated = this.translate(error, context);
-    
+
     let output = '\n' + gradients.error(' ──────── ERROR ──────── ') + '\n';
     output += ` ${chalk.red.bold('✖')} ${chalk.white.bold(translated.translatedMessage)}\n`;
     output += `   ${chalk.gray(translated.originalMessage)}\n\n`;
     output += ` ${chalk.cyan('💡')} ${chalk.cyan(translated.solution)}\n`;
-    
+
     if (translated.suggestedAction) {
       output += `\n ${chalk.green('➜')}  Suggested command: ${chalk.green.bold(translated.suggestedAction)}\n`;
     }
-    
+
     if (translated.documentationLink) {
       output += ` ${chalk.blue('📖')} More info: ${chalk.blue.underline(translated.documentationLink)}\n`;
     }
-    
+
     output += gradients.error(' ─────────────────────── ') + '\n';
-    
+
     return output;
   }
 }
 
 // Export singleton instance
 export const errorTranslator = new ErrorTranslator();
-export const formatCliError = (error, context = null) => errorTranslator.formatCliError(error, context);
+export const formatCliError = (error, context = null) =>
+  errorTranslator.formatCliError(error, context);

@@ -1,14 +1,14 @@
 import Stripe from 'stripe';
 import { PRICING_TIERS, getTierById, PricingTier } from './pricing-tiers.js';
-import { 
-  logSubscriptionCreated, 
-  logPaymentSucceeded, 
+import {
+  logSubscriptionCreated,
+  logPaymentSucceeded,
   logSubscriptionCancelled,
-  logError 
+  logError,
 } from '../monitoring/better-stack-logger.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy', {
-  apiVersion: '2024-12-18.acacia'
+  apiVersion: '2024-12-18.acacia',
 });
 
 export interface Subscription {
@@ -41,8 +41,8 @@ export class BillingService {
         email,
         name,
         metadata: {
-          source: 'ultra-dex'
-        }
+          source: 'ultra-dex',
+        },
       });
       return customer.id;
     } catch (error) {
@@ -61,16 +61,20 @@ export class BillingService {
     customerIds.set(userId, customerId);
     return customerId;
   }
-  
-  async createSubscription(userId: string, tierId: string, customerId: string): Promise<Subscription> {
+
+  async createSubscription(
+    userId: string,
+    tierId: string,
+    customerId: string
+  ): Promise<Subscription> {
     const tier = getTierById(tierId);
     if (!tier) {
       throw new Error('Invalid tier');
     }
-    
+
     try {
       let stripeSubscription: Stripe.Subscription;
-      
+
       if (tierId === 'free') {
         // Free tier - no Stripe subscription needed
         const subscription: Subscription = {
@@ -81,31 +85,31 @@ export class BillingService {
           status: 'active',
           currentPeriodStart: new Date(),
           currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-          cancelAtPeriodEnd: false
+          cancelAtPeriodEnd: false,
         };
         subscriptions.set(userId, subscription);
         customerIds.set(userId, customerId);
-        
+
         logSubscriptionCreated(userId, tierId, subscription.id, { tier: tier.name });
         return subscription;
       }
-      
+
       // Create Stripe subscription for paid tiers
       const priceId = this.getStripePriceId(tierId);
       if (!priceId) {
         throw new Error('Stripe price ID not configured for tier: ' + tierId);
       }
-      
+
       stripeSubscription = await stripe.subscriptions.create({
         customer: customerId,
         items: [{ price: priceId }],
         metadata: {
           userId,
           tierId,
-          source: 'ultra-dex'
-        }
+          source: 'ultra-dex',
+        },
       });
-      
+
       const subscription: Subscription = {
         id: stripeSubscription.id,
         userId,
@@ -114,34 +118,34 @@ export class BillingService {
         status: stripeSubscription.status as any,
         currentPeriodStart: new Date(stripeSubscription.current_period_start * 1000),
         currentPeriodEnd: new Date(stripeSubscription.current_period_end * 1000),
-        cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end
+        cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
       };
-      
+
       subscriptions.set(userId, subscription);
       customerIds.set(userId, customerId);
-      
-      logSubscriptionCreated(userId, tierId, subscription.id, { 
+
+      logSubscriptionCreated(userId, tierId, subscription.id, {
         tier: tier.name,
-        price: tier.price 
+        price: tier.price,
       });
-      
+
       return subscription;
     } catch (error) {
       logError('Failed to create subscription', error as Error, { userId, tierId });
       throw error;
     }
   }
-  
+
   private getStripePriceId(tierId: string): string | null {
     // Map tier IDs to Stripe Price IDs
     // These should be set as environment variables in production
     const priceMap: Record<string, string> = {
       pro: process.env.STRIPE_PRICE_PRO || '',
-      enterprise: process.env.STRIPE_PRICE_ENTERPRISE || ''
+      enterprise: process.env.STRIPE_PRICE_ENTERPRISE || '',
     };
     return priceMap[tierId] || null;
   }
-  
+
   async getSubscription(userId: string): Promise<Subscription | null> {
     return subscriptions.get(userId) || null;
   }
@@ -175,8 +179,8 @@ export class BillingService {
       cancel_url: cancelUrl,
       metadata: { userId, tierId },
       subscription_data: {
-        metadata: { userId, tierId }
-      }
+        metadata: { userId, tierId },
+      },
     });
 
     if (!session.url) {
@@ -196,13 +200,15 @@ export class BillingService {
 
     const session = await stripe.billingPortal.sessions.create({
       customer: customerId,
-      return_url: returnUrl
+      return_url: returnUrl,
     });
 
     return { url: session.url };
   }
 
-  async listInvoices(userId: string): Promise<Array<{ date: string; amount: number; status: string; pdfUrl?: string }>> {
+  async listInvoices(
+    userId: string
+  ): Promise<Array<{ date: string; amount: number; status: string; pdfUrl?: string }>> {
     const subscription = subscriptions.get(userId);
     const customerId = subscription?.customerId || customerIds.get(userId);
 
@@ -215,34 +221,34 @@ export class BillingService {
       date: new Date(invoice.created * 1000).toISOString(),
       amount: invoice.amount_paid || invoice.amount_due,
       status: invoice.status || 'unknown',
-      pdfUrl: invoice.invoice_pdf || invoice.hosted_invoice_url || undefined
+      pdfUrl: invoice.invoice_pdf || invoice.hosted_invoice_url || undefined,
     }));
   }
-  
+
   async cancelSubscription(userId: string): Promise<void> {
     try {
       const sub = subscriptions.get(userId);
       if (!sub) {
         throw new Error('Subscription not found');
       }
-      
+
       // Cancel Stripe subscription if it's a paid tier
       if (sub.tierId !== 'free' && !sub.id.startsWith('sub_free_')) {
         await stripe.subscriptions.update(sub.id, {
-          cancel_at_period_end: true
+          cancel_at_period_end: true,
         });
       }
-      
+
       sub.cancelAtPeriodEnd = true;
       sub.status = 'canceled';
-      
+
       logSubscriptionCancelled(userId, sub.id, 'user_requested');
     } catch (error) {
       logError('Failed to cancel subscription', error as Error, { userId });
       throw error;
     }
   }
-  
+
   async handleWebhook(event: Stripe.Event): Promise<void> {
     try {
       switch (event.type) {
@@ -250,48 +256,48 @@ export class BillingService {
           const invoice = event.data.object as Stripe.Invoice;
           const userId = invoice.metadata?.userId;
           const subscriptionId = invoice.subscription as string;
-          
+
           if (userId) {
             logPaymentSucceeded(userId, (invoice.amount_paid || 0) / 100, subscriptionId, {
               invoiceId: invoice.id,
-              currency: invoice.currency
+              currency: invoice.currency,
             });
           }
           break;
         }
-        
+
         case 'customer.subscription.created': {
           const subscription = event.data.object as Stripe.Subscription;
           const userId = subscription.metadata?.userId;
           const tierId = subscription.metadata?.tierId;
-          
+
           if (userId && tierId) {
             logSubscriptionCreated(userId, tierId, subscription.id, {
-              status: subscription.status
+              status: subscription.status,
             });
           }
           break;
         }
-        
+
         case 'customer.subscription.deleted': {
           const subscription = event.data.object as Stripe.Subscription;
           const userId = subscription.metadata?.userId;
-          
+
           if (userId) {
             const localSub = subscriptions.get(userId);
             if (localSub) {
               localSub.status = 'canceled';
             }
-            
+
             logSubscriptionCancelled(userId, subscription.id, 'stripe_webhook');
           }
           break;
         }
-        
+
         case 'customer.subscription.updated': {
           const subscription = event.data.object as Stripe.Subscription;
           const userId = subscription.metadata?.userId;
-          
+
           if (userId) {
             const localSub = subscriptions.get(userId);
             if (localSub) {
@@ -304,46 +310,48 @@ export class BillingService {
         }
       }
     } catch (error) {
-      logError('Webhook processing failed', error as Error, { 
+      logError('Webhook processing failed', error as Error, {
         eventType: event.type,
-        eventId: event.id 
+        eventId: event.id,
       });
       throw error;
     }
   }
-  
+
   async recordUsage(userId: string, requests: number, tokens: number): Promise<void> {
     usageRecords.push({
       userId,
       requests,
       tokens,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
-    
+
     // Clean up old records (keep last 30 days)
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const index = usageRecords.findIndex(r => r.timestamp > thirtyDaysAgo);
+    const index = usageRecords.findIndex((r) => r.timestamp > thirtyDaysAgo);
     if (index > 0) {
       usageRecords.splice(0, index);
     }
   }
-  
-  async getUsageForPeriod(userId: string, startDate: Date, endDate: Date): Promise<{
+
+  async getUsageForPeriod(
+    userId: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<{
     totalRequests: number;
     totalTokens: number;
   }> {
-    const records = usageRecords.filter(r => 
-      r.userId === userId &&
-      r.timestamp >= startDate &&
-      r.timestamp <= endDate
+    const records = usageRecords.filter(
+      (r) => r.userId === userId && r.timestamp >= startDate && r.timestamp <= endDate
     );
-    
+
     return {
       totalRequests: records.reduce((sum, r) => sum + r.requests, 0),
-      totalTokens: records.reduce((sum, r) => sum + r.tokens, 0)
+      totalTokens: records.reduce((sum, r) => sum + r.tokens, 0),
     };
   }
-  
+
   async getCurrentMonthUsage(userId: string): Promise<{
     requests: number;
     tokens: number;
@@ -352,19 +360,20 @@ export class BillingService {
   }> {
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    
+
     const usage = await this.getUsageForPeriod(userId, startOfMonth, now);
     const subscription = await this.getSubscription(userId);
     const tier = subscription ? getTierById(subscription.tierId)! : PRICING_TIERS[0];
-    
+
     return {
       requests: usage.totalRequests,
       tokens: usage.totalTokens,
       tier,
-      withinLimits: tier.limits.requestsPerMonth < 0 || usage.totalRequests <= tier.limits.requestsPerMonth
+      withinLimits:
+        tier.limits.requestsPerMonth < 0 || usage.totalRequests <= tier.limits.requestsPerMonth,
     };
   }
-  
+
   getPricingTiers(): PricingTier[] {
     return PRICING_TIERS;
   }

@@ -17,7 +17,9 @@ function safeCleanup(filePath) {
     if (fs.existsSync(filePath)) {
       fs.rmSync(filePath, { force: true });
     }
-  } catch { /* ignore cleanup errors */ }
+  } catch {
+    /* ignore cleanup errors */
+  }
 }
 
 describe('Governance Integration - executeTool Basic', () => {

@@ -33,14 +33,20 @@ const duplicatePatterns = [
 
 try {
   // Check for numbered duplicates (file 2.js patterns)
-  const numberedFiles = execSync('find . -name "*[0-9].js" -o -name "*[0-9].ts" 2>/dev/null | grep -v node_modules | head -20', {
-    cwd: process.cwd(),
-    encoding: 'utf8',
-  }).trim().split('\n').filter(f => f.length > 0);
-  
+  const numberedFiles = execSync(
+    'find . -name "*[0-9].js" -o -name "*[0-9].ts" 2>/dev/null | grep -v node_modules | head -20',
+    {
+      cwd: process.cwd(),
+      encoding: 'utf8',
+    }
+  )
+    .trim()
+    .split('\n')
+    .filter((f) => f.length > 0);
+
   if (numberedFiles.length > 0) {
     console.log(`   ⚠️  Found ${numberedFiles.length} potentially duplicated files:\n`);
-    numberedFiles.forEach(f => {
+    numberedFiles.forEach((f) => {
       console.log(`      - ${f}`);
       duplicates.push(f);
     });
@@ -60,8 +66,11 @@ try {
   const coreFiles = execSync('find src/core -name "*.js" 2>/dev/null | head -20', {
     cwd: process.cwd(),
     encoding: 'utf8',
-  }).trim().split('\n').filter(f => f.length > 0);
-  
+  })
+    .trim()
+    .split('\n')
+    .filter((f) => f.length > 0);
+
   let coreDependsOnCli = false;
   for (const file of coreFiles) {
     try {
@@ -72,7 +81,7 @@ try {
       }
     } catch {}
   }
-  
+
   if (coreDependsOnCli) {
     issues.push('Core modules should not depend on CLI');
     console.log('   ❌ Core depends on CLI (architecture violation)\n');
@@ -91,8 +100,11 @@ try {
   const cliFiles = execSync('find apps/cli -name "*.js" 2>/dev/null | head -20', {
     cwd: process.cwd(),
     encoding: 'utf8',
-  }).trim().split('\n').filter(f => f.length > 0);
-  
+  })
+    .trim()
+    .split('\n')
+    .filter((f) => f.length > 0);
+
   let cliUsesCore = false;
   for (const file of cliFiles) {
     try {
@@ -103,7 +115,7 @@ try {
       }
     } catch {}
   }
-  
+
   if (cliUsesCore) {
     fixes.push('CLI properly uses core modules');
     console.log('   ✅ CLI uses core modules\n');
@@ -122,9 +134,12 @@ try {
   const srcFiles = execSync('find src -name "*.js" 2>/dev/null | grep -v node_modules', {
     cwd: process.cwd(),
     encoding: 'utf8',
-  }).trim().split('\n').filter(f => f.length > 0);
-  
-  const copyrightCount = srcFiles.filter(f => {
+  })
+    .trim()
+    .split('\n')
+    .filter((f) => f.length > 0);
+
+  const copyrightCount = srcFiles.filter((f) => {
     try {
       const content = fs.readFileSync(f, 'utf8');
       return content.includes('Copyright (c) 2026 Ultra-Dex');
@@ -132,10 +147,10 @@ try {
       return false;
     }
   }).length;
-  
+
   console.log(`   ✅ ${copyrightCount}/${srcFiles.length} files have copyright header`);
   console.log('   ℹ️  No obvious copied logic detected\n');
-  
+
   fixes.push('Code ownership properly attributed');
 } catch (e) {
   console.log('   ℹ️  Logic scan completed\n');
@@ -152,11 +167,11 @@ const modules = [
   { name: 'team', path: 'src/core/team' },
 ];
 
-modules.forEach(mod => {
+modules.forEach((mod) => {
   try {
     const modPath = path.join(process.cwd(), mod.path);
     if (fs.existsSync(modPath)) {
-      const files = fs.readdirSync(modPath).filter(f => f.endsWith('.js'));
+      const files = fs.readdirSync(modPath).filter((f) => f.endsWith('.js'));
       console.log(`   ✅ ${mod.name}: ${files.length} file(s)`);
     }
   } catch {}
@@ -188,16 +203,26 @@ fixes.forEach((f, idx) => console.log(`   ${idx + 1}. ${f}`));
 
 // Write report
 const reportPath = path.join(process.cwd(), '.ultra-dex/architecture-report.json');
-fs.writeFileSync(reportPath, JSON.stringify({
-  timestamp: new Date().toISOString(),
-  duplicates,
-  issues,
-  fixes,
-  status: duplicates.length === 0 && issues.filter(i => !i.includes('duplicate')).length === 0 ? 'PASS' : 'REVIEW',
-  coreIndependent: fixes.some(f => f.includes('independent')),
-  cliUsesCore: fixes.some(f => f.includes('CLI')),
-  structureVerified: fixes.some(f => f.includes('Module')),
-}, null, 2));
+fs.writeFileSync(
+  reportPath,
+  JSON.stringify(
+    {
+      timestamp: new Date().toISOString(),
+      duplicates,
+      issues,
+      fixes,
+      status:
+        duplicates.length === 0 && issues.filter((i) => !i.includes('duplicate')).length === 0
+          ? 'PASS'
+          : 'REVIEW',
+      coreIndependent: fixes.some((f) => f.includes('independent')),
+      cliUsesCore: fixes.some((f) => f.includes('CLI')),
+      structureVerified: fixes.some((f) => f.includes('Module')),
+    },
+    null,
+    2
+  )
+);
 
 console.log('');
 console.log(`📄 Report saved to: ${reportPath}\n`);
@@ -207,4 +232,3 @@ const archStatus = duplicates.length === 0 ? 'PASS ✅' : 'REVIEW ⚠️';
 console.log('═══════════════════════════════════════════════════════════');
 console.log('         🎯 ARCHITECTURE STATUS: ' + archStatus);
 console.log('═══════════════════════════════════════════════════════════\n');
-

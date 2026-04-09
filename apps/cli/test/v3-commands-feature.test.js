@@ -174,7 +174,10 @@ Auth: Clerk
  */
 function handleError(error) {
   try {
-    console.error('[v3-commands-feature.test]', error instanceof Error ? error.message : String(error));
+    console.error(
+      '[v3-commands-feature.test]',
+      error instanceof Error ? error.message : String(error)
+    );
   } catch (_) {
     // Fail silently
   }

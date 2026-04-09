@@ -24,7 +24,7 @@ export async function getRedisClient(): Promise<any | null> {
   try {
     const { default: Redis } = await import('ioredis');
     const client = new Redis(process.env.REDIS_URL, {
-      maxRetriesPerRequest: 3
+      maxRetriesPerRequest: 3,
     });
     client.on('error', (err: Error) => {
       logError('Redis client error', err);

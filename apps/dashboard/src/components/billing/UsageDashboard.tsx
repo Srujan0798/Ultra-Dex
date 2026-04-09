@@ -20,10 +20,10 @@ export const UsageDashboard: React.FC = () => {
   useEffect(() => {
     const token = localStorage.getItem('session_token');
     fetch('/api/billing/usage', {
-      headers: { 'Authorization': `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}` },
     })
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         setUsage(data);
         setLoading(false);
       });
@@ -34,7 +34,7 @@ export const UsageDashboard: React.FC = () => {
 
   const requestLimit = usage.tier.limits.requestsPerMonth;
   const tokenLimit = usage.tier.limits.tokensPerMonth;
-  
+
   const requestPercent = requestLimit > 0 ? (usage.requests / requestLimit) * 100 : 0;
   const tokenPercent = tokenLimit > 0 ? (usage.tokens / tokenLimit) * 100 : 0;
 
@@ -42,27 +42,31 @@ export const UsageDashboard: React.FC = () => {
     <div className="usage-dashboard">
       <h2>Usage This Month</h2>
       <div className="tier-badge">{usage.tier.name} Plan</div>
-      
+
       <div className="usage-item">
         <label>Requests</label>
         <div className="progress-bar">
           <div className="progress" style={{ width: `${Math.min(requestPercent, 100)}%` }}></div>
         </div>
-        <span>{usage.requests.toLocaleString()} / {requestLimit > 0 ? requestLimit.toLocaleString() : 'Unlimited'}</span>
+        <span>
+          {usage.requests.toLocaleString()} /{' '}
+          {requestLimit > 0 ? requestLimit.toLocaleString() : 'Unlimited'}
+        </span>
       </div>
-      
+
       <div className="usage-item">
         <label>Tokens</label>
         <div className="progress-bar">
           <div className="progress" style={{ width: `${Math.min(tokenPercent, 100)}%` }}></div>
         </div>
-        <span>{usage.tokens.toLocaleString()} / {tokenLimit > 0 ? tokenLimit.toLocaleString() : 'Unlimited'}</span>
+        <span>
+          {usage.tokens.toLocaleString()} /{' '}
+          {tokenLimit > 0 ? tokenLimit.toLocaleString() : 'Unlimited'}
+        </span>
       </div>
-      
+
       {!usage.withinLimits && (
-        <div className="warning">
-          ⚠️ You've exceeded your plan limits. Please upgrade.
-        </div>
+        <div className="warning">⚠️ You've exceeded your plan limits. Please upgrade.</div>
       )}
     </div>
   );

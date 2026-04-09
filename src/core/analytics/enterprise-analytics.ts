@@ -3,22 +3,17 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import fs from "fs/promises";
-import path from "path";
-import { EventEmitter } from "events";
-import { logger } from '../utils/logging.js';
-import {
-  registerAlias,
-  registerSingleton,
-  resolveFromContainer
-} from '../di/container.js';
+import { singleton } from 'tsyringe';
+import fs from 'fs/promises';
+import path from 'path';
+import { EventEmitter } from 'events';
+import { logger } from '../../utils/logging.js';
+import { registerAlias, registerSingleton, resolveFromContainer } from '../di/container.js';
 import { DI_TOKENS } from '../di/tokens.js';
 let EnterpriseAnalytics = class extends EventEmitter {
   constructor(options = {}) {
@@ -31,8 +26,8 @@ let EnterpriseAnalytics = class extends EventEmitter {
       // 1.0 = 100% sampling
       enableAnomalyDetection: options.enableAnomalyDetection !== false,
       enablePredictiveAnalytics: options.enablePredictiveAnalytics !== false,
-      metricsStoragePath: options.metricsStoragePath || ".ultra-dex/analytics",
-      ...options
+      metricsStoragePath: options.metricsStoragePath || '.ultra-dex/analytics',
+      ...options,
     };
     this.metrics = /* @__PURE__ */ new Map();
     this.realTimeData = /* @__PURE__ */ new Map();
@@ -46,31 +41,30 @@ let EnterpriseAnalytics = class extends EventEmitter {
     if (this.options.enabled !== false) {
       this.flushTimer = setInterval(() => this.saveMetrics(), this.options.flushInterval || 30000);
     }
-    }
+  }
 
-    public flushTimer: any;
+  public flushTimer: any;
 
-    async stop() {
+  async stop() {
     if (this.flushTimer) {
       clearInterval(this.flushTimer);
       this.flushTimer = null;
     }
     await this.saveMetrics();
-    }
+  }
 
-    async shutdown() {
+  async shutdown() {
     await this.stop();
-    }
+  }
 
-    async initialize() {
-
+  async initialize() {
     if (this.initialized) {
       return;
     }
     await fs.mkdir(this.options.metricsStoragePath, { recursive: true });
-    await fs.mkdir(path.join(this.options.metricsStoragePath, "metrics"), { recursive: true });
-    await fs.mkdir(path.join(this.options.metricsStoragePath, "reports"), { recursive: true });
-    await fs.mkdir(path.join(this.options.metricsStoragePath, "dashboards"), { recursive: true });
+    await fs.mkdir(path.join(this.options.metricsStoragePath, 'metrics'), { recursive: true });
+    await fs.mkdir(path.join(this.options.metricsStoragePath, 'reports'), { recursive: true });
+    await fs.mkdir(path.join(this.options.metricsStoragePath, 'dashboards'), { recursive: true });
     this.initializeAnalyticsEngine();
     if (this.options.enableAnomalyDetection) {
       this.initializeAnomalyDetection();
@@ -79,7 +73,7 @@ let EnterpriseAnalytics = class extends EventEmitter {
       this.initializePredictiveModels();
     }
     this.initialized = true;
-    logger.info("Enterprise Analytics System Initialized");
+    logger.info('Enterprise Analytics System Initialized');
   }
   async ensureInitialized() {
     if (this.initialized) {
@@ -88,79 +82,79 @@ let EnterpriseAnalytics = class extends EventEmitter {
     await this.initializationPromise;
   }
   initializeAnalyticsEngine() {
-    this.metrics.set("system.health", {
-      name: "System Health",
-      description: "Overall system health score",
-      type: "gauge",
-      unit: "score",
+    this.metrics.set('system.health', {
+      name: 'System Health',
+      description: 'Overall system health score',
+      type: 'gauge',
+      unit: 'score',
       currentValue: 100,
       history: [],
-      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
     });
-    this.metrics.set("agents.active", {
-      name: "Active Agents",
-      description: "Number of currently active agents",
-      type: "gauge",
-      unit: "count",
+    this.metrics.set('agents.active', {
+      name: 'Active Agents',
+      description: 'Number of currently active agents',
+      type: 'gauge',
+      unit: 'count',
       currentValue: 0,
       history: [],
-      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
     });
-    this.metrics.set("memory.utilization", {
-      name: "Memory Utilization",
-      description: "Memory usage percentage",
-      type: "gauge",
-      unit: "percent",
+    this.metrics.set('memory.utilization', {
+      name: 'Memory Utilization',
+      description: 'Memory usage percentage',
+      type: 'gauge',
+      unit: 'percent',
       currentValue: 0,
       history: [],
-      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
     });
-    this.metrics.set("api.requests", {
-      name: "API Requests",
-      description: "Total API requests served",
-      type: "counter",
-      unit: "count",
+    this.metrics.set('api.requests', {
+      name: 'API Requests',
+      description: 'Total API requests served',
+      type: 'counter',
+      unit: 'count',
       currentValue: 0,
       history: [],
-      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
     });
-    this.metrics.set("costs.daily", {
-      name: "Daily Costs",
-      description: "Daily operational costs",
-      type: "gauge",
-      unit: "usd",
+    this.metrics.set('costs.daily', {
+      name: 'Daily Costs',
+      description: 'Daily operational costs',
+      type: 'gauge',
+      unit: 'usd',
       currentValue: 0,
       history: [],
-      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
     });
-    this.metrics.set("security.incidents", {
-      name: "Security Incidents",
-      description: "Detected security incidents",
-      type: "counter",
-      unit: "count",
+    this.metrics.set('security.incidents', {
+      name: 'Security Incidents',
+      description: 'Detected security incidents',
+      type: 'counter',
+      unit: 'count',
       currentValue: 0,
       history: [],
-      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
     });
-    this.metrics.set("user.saturation", {
-      name: "User Saturation",
-      description: "User engagement and satisfaction metrics",
-      type: "gauge",
-      unit: "score",
+    this.metrics.set('user.saturation', {
+      name: 'User Saturation',
+      description: 'User engagement and satisfaction metrics',
+      type: 'gauge',
+      unit: 'score',
       currentValue: 0,
       history: [],
-      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
     });
-    this.metrics.set("performance.latency", {
-      name: "API Latency",
-      description: "API response time metrics",
-      type: "histogram",
-      unit: "milliseconds",
+    this.metrics.set('performance.latency', {
+      name: 'API Latency',
+      description: 'API response time metrics',
+      type: 'histogram',
+      unit: 'milliseconds',
       p50: 0,
       p95: 0,
       p99: 0,
       history: [],
-      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
     });
   }
   initializeAnomalyDetection() {
@@ -175,48 +169,45 @@ let EnterpriseAnalytics = class extends EventEmitter {
       // Detect anomalies in metric data
       detectAnomalies: (metricName, value) => {
         const threshold = this.anomalyDetector.thresholds.get(metricName);
-        if (!threshold)
-          return false;
-        if (threshold.type === "upper" && value > threshold.value)
-          return true;
-        if (threshold.type === "lower" && value < threshold.value)
-          return true;
-        if (threshold.type === "range" && (value < threshold.min || value > threshold.max))
+        if (!threshold) return false;
+        if (threshold.type === 'upper' && value > threshold.value) return true;
+        if (threshold.type === 'lower' && value < threshold.value) return true;
+        if (threshold.type === 'range' && (value < threshold.min || value > threshold.max))
           return true;
         return false;
-      }
+      },
     };
-    this.anomalyDetector.setThreshold("agents.active", { type: "range", min: 0, max: 1e3 });
-    this.anomalyDetector.setThreshold("memory.utilization", { type: "upper", value: 90 });
-    this.anomalyDetector.setThreshold("api.requests", { type: "range", min: 0, max: 1e5 });
-    this.anomalyDetector.setThreshold("costs.daily", { type: "upper", value: 1e4 });
-    this.anomalyDetector.setThreshold("security.incidents", { type: "upper", value: 10 });
-    this.anomalyDetector.setThreshold("performance.latency", { type: "upper", value: 1e3 });
+    this.anomalyDetector.setThreshold('agents.active', { type: 'range', min: 0, max: 1e3 });
+    this.anomalyDetector.setThreshold('memory.utilization', { type: 'upper', value: 90 });
+    this.anomalyDetector.setThreshold('api.requests', { type: 'range', min: 0, max: 1e5 });
+    this.anomalyDetector.setThreshold('costs.daily', { type: 'upper', value: 1e4 });
+    this.anomalyDetector.setThreshold('security.incidents', { type: 'upper', value: 10 });
+    this.anomalyDetector.setThreshold('performance.latency', { type: 'upper', value: 1e3 });
   }
   initializePredictiveModels() {
-    this.predictiveModels.set("growth", {
-      name: "Growth Prediction",
-      description: "Predicts user growth and adoption",
-      algorithm: "linear_regression",
-      trainedAt: (/* @__PURE__ */ new Date()).toISOString(),
+    this.predictiveModels.set('growth', {
+      name: 'Growth Prediction',
+      description: 'Predicts user growth and adoption',
+      algorithm: 'linear_regression',
+      trainedAt: /* @__PURE__ */ new Date().toISOString(),
       accuracy: 0.85,
-      predictions: []
+      predictions: [],
     });
-    this.predictiveModels.set("cost", {
-      name: "Cost Prediction",
-      description: "Predicts operational costs",
-      algorithm: "time_series",
-      trainedAt: (/* @__PURE__ */ new Date()).toISOString(),
+    this.predictiveModels.set('cost', {
+      name: 'Cost Prediction',
+      description: 'Predicts operational costs',
+      algorithm: 'time_series',
+      trainedAt: /* @__PURE__ */ new Date().toISOString(),
       accuracy: 0.82,
-      predictions: []
+      predictions: [],
     });
-    this.predictiveModels.set("capacity", {
-      name: "Capacity Prediction",
-      description: "Predicts resource utilization",
-      algorithm: "time_series",
-      trainedAt: (/* @__PURE__ */ new Date()).toISOString(),
+    this.predictiveModels.set('capacity', {
+      name: 'Capacity Prediction',
+      description: 'Predicts resource utilization',
+      algorithm: 'time_series',
+      trainedAt: /* @__PURE__ */ new Date().toISOString(),
       accuracy: 0.88,
-      predictions: []
+      predictions: [],
     });
   }
   /**
@@ -233,20 +224,19 @@ let EnterpriseAnalytics = class extends EventEmitter {
     }
     const metric = this.metrics.get(name) || {
       name,
-      type: "gauge",
+      type: 'gauge',
       // Default to gauge
-      unit: "count",
+      unit: 'count',
       currentValue: 0,
       history: [],
       tags: {},
       metadata: {},
-      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
     };
-    if (metric.type === "counter") {
+    if (metric.type === 'counter') {
       metric.currentValue += value;
-    } else if (metric.type === "histogram") {
-      if (!metric.samples)
-        metric.samples = [];
+    } else if (metric.type === 'histogram') {
+      if (!metric.samples) metric.samples = [];
       metric.samples.push(value);
       metric.samples.sort((a, b) => a - b);
       metric.p50 = metric.samples[Math.floor(metric.samples.length * 0.5)] || 0;
@@ -258,16 +248,15 @@ let EnterpriseAnalytics = class extends EventEmitter {
     } else {
       metric.currentValue = value;
     }
-    metric.timestamp = (/* @__PURE__ */ new Date()).toISOString();
+    metric.timestamp = /* @__PURE__ */ new Date().toISOString();
     metric.tags = { ...metric.tags, ...tags };
     metric.metadata = { ...metric.metadata, ...metadata };
-    if (!metric.history)
-      metric.history = [];
+    if (!metric.history) metric.history = [];
     metric.history.push({
       value,
-      timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
       tags,
-      metadata
+      metadata,
     });
     if (metric.history.length > 1e3) {
       metric.history = metric.history.slice(-1e3);
@@ -279,20 +268,20 @@ let EnterpriseAnalytics = class extends EventEmitter {
     if (this.options.enableAnomalyDetection && this.anomalyDetector) {
       const isAnomaly = this.anomalyDetector.detectAnomalies(name, value);
       if (isAnomaly) {
-        this.emit("anomaly:detected", {
+        this.emit('anomaly:detected', {
           metric: name,
           value,
           threshold: this.anomalyDetector.thresholds.get(name),
-          timestamp: (/* @__PURE__ */ new Date()).toISOString()
+          timestamp: /* @__PURE__ */ new Date().toISOString(),
         });
       }
     }
-    this.emit("metric:updated", {
+    this.emit('metric:updated', {
       name,
       value,
       tags,
       metadata,
-      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
     });
     if (Math.random() < 0.1) {
       await this.saveMetrics();
@@ -313,9 +302,9 @@ let EnterpriseAnalytics = class extends EventEmitter {
     const buffer = this.realTimeData.get(name);
     buffer.push({
       value,
-      timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
       tags,
-      metadata
+      metadata,
     });
     if (buffer.length > 100) {
       this.realTimeData.set(name, buffer.slice(-100));
@@ -368,20 +357,20 @@ let EnterpriseAnalytics = class extends EventEmitter {
   async generateReport(options = {}) {
     await this.ensureInitialized();
     const startTime = options.startTime || new Date(Date.now() - 24 * 60 * 60 * 1e3).toISOString();
-    const endTime = options.endTime || (/* @__PURE__ */ new Date()).toISOString();
+    const endTime = options.endTime || /* @__PURE__ */ new Date().toISOString();
     const metrics = options.metrics || Array.from(this.metrics.keys());
     const report = {
       id: `report_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      generatedAt: (/* @__PURE__ */ new Date()).toISOString(),
+      generatedAt: /* @__PURE__ */ new Date().toISOString(),
       period: { startTime, endTime },
       metrics: {},
       summary: {
         totalMetrics: metrics.length,
         startTime,
-        endTime
+        endTime,
       },
       anomalies: [],
-      predictions: {}
+      predictions: {},
     };
     for (const metricName of metrics) {
       const metric = this.getMetric(metricName);
@@ -394,13 +383,13 @@ let EnterpriseAnalytics = class extends EventEmitter {
           avg: values.length > 0 ? values.reduce((sum, val) => sum + val, 0) / values.length : 0,
           min: values.length > 0 ? Math.min(...values) : 0,
           max: values.length > 0 ? Math.max(...values) : 0,
-          latest: values.length > 0 ? values[values.length - 1] : 0
+          latest: values.length > 0 ? values[values.length - 1] : 0,
         };
         report.metrics[metricName] = {
           ...metric,
           history: history.slice(-options.historyLimit || 50),
           // Last 50 entries by default
-          stats
+          stats,
         };
         if (this.options.enableAnomalyDetection && this.anomalyDetector?.detectAnomalies) {
           for (const entry of history) {
@@ -409,7 +398,7 @@ let EnterpriseAnalytics = class extends EventEmitter {
                 metric: metricName,
                 value: entry.value,
                 timestamp: entry.timestamp,
-                threshold: this.anomalyDetector.thresholds.get(metricName)
+                threshold: this.anomalyDetector.thresholds.get(metricName),
               });
             }
           }
@@ -431,7 +420,7 @@ let EnterpriseAnalytics = class extends EventEmitter {
       durationHours: (new Date(endTime) - new Date(startTime)) / (1e3 * 60 * 60),
       totalMetrics: Object.keys(report.metrics).length,
       anomalyCount: report.anomalies.length,
-      predictionCount: Object.keys(report.predictions).length
+      predictionCount: Object.keys(report.predictions).length,
     };
     if (this.options.enablePersistence) {
       await this.saveReport(report);
@@ -455,7 +444,7 @@ let EnterpriseAnalytics = class extends EventEmitter {
     }
     const recentHistory = metric.history.slice(-30);
     if (recentHistory.length < 2) {
-      return { error: "Insufficient data for prediction" };
+      return { error: 'Insufficient data for prediction' };
     }
     let totalGrowth = 0;
     for (let i = 1; i < recentHistory.length; i++) {
@@ -475,7 +464,7 @@ let EnterpriseAnalytics = class extends EventEmitter {
         day: i,
         date: new Date(Date.now() + i * 24 * 60 * 60 * 1e3).toISOString(),
         predictedValue: Math.round(predictedValue),
-        confidence: 0.85
+        confidence: 0.85,
         // Fixed confidence for mock implementation
       });
     }
@@ -485,7 +474,7 @@ let EnterpriseAnalytics = class extends EventEmitter {
       accuracy: model.accuracy,
       predictions,
       confidence: 0.85,
-      generatedAt: (/* @__PURE__ */ new Date()).toISOString()
+      generatedAt: /* @__PURE__ */ new Date().toISOString(),
     };
   }
   /**
@@ -503,10 +492,10 @@ let EnterpriseAnalytics = class extends EventEmitter {
       filters: config.filters || {},
       refreshInterval: config.refreshInterval || 3e4,
       // 30 seconds
-      createdAt: (/* @__PURE__ */ new Date()).toISOString(),
-      updatedAt: (/* @__PURE__ */ new Date()).toISOString(),
+      createdAt: /* @__PURE__ */ new Date().toISOString(),
+      updatedAt: /* @__PURE__ */ new Date().toISOString(),
       owners: config.owners || [],
-      viewers: config.viewers || []
+      viewers: config.viewers || [],
     };
     this.dashboards.set(dashboardId, dashboard);
     return dashboard;
@@ -523,18 +512,18 @@ let EnterpriseAnalytics = class extends EventEmitter {
     }
     const widgetData = {};
     for (const widget of dashboard.widgets) {
-      if (widget.type === "metric") {
+      if (widget.type === 'metric') {
         widgetData[widget.id] = this.getMetric(widget.metric);
-      } else if (widget.type === "history") {
+      } else if (widget.type === 'history') {
         widgetData[widget.id] = this.getMetricHistory(widget.metric, widget.options);
-      } else if (widget.type === "prediction") {
+      } else if (widget.type === 'prediction') {
         widgetData[widget.id] = this.generatePrediction(widget.model, widget.options);
       }
     }
     return {
       ...dashboard,
       widgetData,
-      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
     };
   }
   /**
@@ -552,11 +541,11 @@ let EnterpriseAnalytics = class extends EventEmitter {
       condition: config.condition,
       // 'greater_than', 'less_than', 'equals', 'range'
       threshold: config.threshold,
-      frequency: config.frequency || "real_time",
+      frequency: config.frequency || 'real_time',
       recipients: config.recipients || [],
       enabled: config.enabled !== false,
-      createdAt: (/* @__PURE__ */ new Date()).toISOString(),
-      updatedAt: (/* @__PURE__ */ new Date()).toISOString()
+      createdAt: /* @__PURE__ */ new Date().toISOString(),
+      updatedAt: /* @__PURE__ */ new Date().toISOString(),
     };
     this.alerts.set(alertId, alert);
     return alert;
@@ -572,30 +561,30 @@ let EnterpriseAnalytics = class extends EventEmitter {
       if (alert.enabled && alert.metric === metricName) {
         let shouldTrigger = false;
         switch (alert.condition) {
-          case "greater_than":
+          case 'greater_than':
             shouldTrigger = value > alert.threshold;
             break;
-          case "less_than":
+          case 'less_than':
             shouldTrigger = value < alert.threshold;
             break;
-          case "equals":
+          case 'equals':
             shouldTrigger = value === alert.threshold;
             break;
-          case "not_equals":
+          case 'not_equals':
             shouldTrigger = value !== alert.threshold;
             break;
-          case "range":
+          case 'range':
             shouldTrigger = value >= alert.threshold.min && value <= alert.threshold.max;
             break;
         }
         if (shouldTrigger) {
           triggeredAlerts.push(alert);
-          this.emit("alert:triggered", {
+          this.emit('alert:triggered', {
             alertId,
             alert,
             metricName,
             value,
-            timestamp: (/* @__PURE__ */ new Date()).toISOString()
+            timestamp: /* @__PURE__ */ new Date().toISOString(),
           });
         }
       }
@@ -607,7 +596,7 @@ let EnterpriseAnalytics = class extends EventEmitter {
    * @private
    */
   async saveMetrics() {
-    const metricsPath = path.join(this.options.metricsStoragePath, "metrics", "current.json");
+    const metricsPath = path.join(this.options.metricsStoragePath, 'metrics', 'current.json');
     const metricsObj = {};
     for (const [name, metric] of this.metrics) {
       metricsObj[name] = metric;
@@ -620,15 +609,15 @@ let EnterpriseAnalytics = class extends EventEmitter {
    */
   async loadMetrics() {
     try {
-      const metricsPath = path.join(this.options.metricsStoragePath, "metrics", "current.json");
-      const metricsContent = await fs.readFile(metricsPath, "utf8");
+      const metricsPath = path.join(this.options.metricsStoragePath, 'metrics', 'current.json');
+      const metricsContent = await fs.readFile(metricsPath, 'utf8');
       const metricsObj = JSON.parse(metricsContent);
       for (const [name, metric] of Object.entries(metricsObj)) {
         this.metrics.set(name, metric);
       }
     } catch (error) {
-      if (error.code !== "ENOENT") {
-        logger.warn("Failed to load metrics:", error.message);
+      if (error.code !== 'ENOENT') {
+        logger.warn('Failed to load metrics:', error.message);
       }
     }
   }
@@ -638,7 +627,7 @@ let EnterpriseAnalytics = class extends EventEmitter {
    * @private
    */
   async saveReport(report) {
-    const reportPath = path.join(this.options.metricsStoragePath, "reports", `${report.id}.json`);
+    const reportPath = path.join(this.options.metricsStoragePath, 'reports', `${report.id}.json`);
     await fs.writeFile(reportPath, JSON.stringify(report, null, 2));
   }
   /**
@@ -647,14 +636,14 @@ let EnterpriseAnalytics = class extends EventEmitter {
    */
   getHealth() {
     return {
-      status: "healthy",
+      status: 'healthy',
       metricCount: this.metrics.size,
       realTimeBuffers: this.realTimeData.size,
       anomalyDetection: this.options.enableAnomalyDetection,
       predictiveAnalytics: this.options.enablePredictiveAnalytics,
       retentionDays: this.options.retentionDays,
       samplingRate: this.options.samplingRate,
-      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
     };
   }
   /**
@@ -668,33 +657,27 @@ let EnterpriseAnalytics = class extends EventEmitter {
         currentValue: metric.currentValue,
         unit: metric.unit,
         description: metric.description,
-        timestamp: metric.timestamp
+        timestamp: metric.timestamp,
       };
     }
     return {
       metrics,
       summary: {
         totalMetrics: this.metrics.size,
-        activeAgents: this.metrics.get("agents.active")?.currentValue || 0,
-        dailyCosts: this.metrics.get("costs.daily")?.currentValue || 0,
-        securityIncidents: this.metrics.get("security.incidents")?.currentValue || 0,
-        memoryUtilization: this.metrics.get("memory.utilization")?.currentValue || 0,
-        apiRequests: this.metrics.get("api.requests")?.currentValue || 0,
-        systemHealth: this.metrics.get("system.health")?.currentValue || 0
+        activeAgents: this.metrics.get('agents.active')?.currentValue || 0,
+        dailyCosts: this.metrics.get('costs.daily')?.currentValue || 0,
+        securityIncidents: this.metrics.get('security.incidents')?.currentValue || 0,
+        memoryUtilization: this.metrics.get('memory.utilization')?.currentValue || 0,
+        apiRequests: this.metrics.get('api.requests')?.currentValue || 0,
+        systemHealth: this.metrics.get('system.health')?.currentValue || 0,
       },
-      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
     };
   }
 };
-EnterpriseAnalytics = __decorateClass([
-  singleton()
-], EnterpriseAnalytics);
+EnterpriseAnalytics = __decorateClass([singleton()], EnterpriseAnalytics);
 registerSingleton(EnterpriseAnalytics, () => new EnterpriseAnalytics());
 registerAlias(DI_TOKENS.telemetryService, EnterpriseAnalytics);
 const enterpriseAnalytics = resolveFromContainer(EnterpriseAnalytics);
 var enterprise_analytics_default = EnterpriseAnalytics;
-export {
-  EnterpriseAnalytics,
-  enterprise_analytics_default as default,
-  enterpriseAnalytics
-};
+export { EnterpriseAnalytics, enterprise_analytics_default as default, enterpriseAnalytics };

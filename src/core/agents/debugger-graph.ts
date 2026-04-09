@@ -3,13 +3,12 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
+import { singleton } from 'tsyringe';
 import { GraphUtils } from './graph-utils.js';
 let DebuggerGraph = class {
   constructor() {
@@ -23,8 +22,8 @@ let DebuggerGraph = class {
    */
   addDebugPoint(pointId, metadata = {}) {
     GraphUtils.addNode(this.graph, pointId, {
-      type: "debug-point",
-      ...metadata
+      type: 'debug-point',
+      ...metadata,
     });
     this.traces.set(pointId, []);
     return this;
@@ -34,7 +33,7 @@ let DebuggerGraph = class {
    */
   addDebugFlow(fromPointId, toPointId) {
     GraphUtils.addEdge(this.graph, fromPointId, toPointId, {
-      type: "debug-flow"
+      type: 'debug-flow',
     });
     return this;
   }
@@ -48,7 +47,7 @@ let DebuggerGraph = class {
     this.traces.get(pointId).push({
       timestamp: Date.now(),
       data,
-      stackTrace: new Error().stack
+      stackTrace: new Error().stack,
     });
   }
   /**
@@ -121,15 +120,10 @@ let DebuggerGraph = class {
       connections: this.graph.edges.size,
       breakpoints: this.breakpoints.size,
       watchpoints: this.watchpoints.size,
-      totalTraces: Array.from(this.traces.values()).reduce((sum, traces) => sum + traces.length, 0)
+      totalTraces: Array.from(this.traces.values()).reduce((sum, traces) => sum + traces.length, 0),
     };
   }
 };
-DebuggerGraph = __decorateClass([
-  singleton()
-], DebuggerGraph);
+DebuggerGraph = __decorateClass([singleton()], DebuggerGraph);
 var debugger_graph_default = DebuggerGraph;
-export {
-  DebuggerGraph,
-  debugger_graph_default as default
-};
+export { DebuggerGraph, debugger_graph_default as default };

@@ -5,11 +5,13 @@ The Ultra-Dex Stripe integration enables seamless payment processing, subscripti
 ## Setup
 
 ### Prerequisites
+
 - Stripe account with API access
 - Publishable key and secret key
 - Webhook endpoint for event handling
 
 ### Configuration
+
 ```bash
 # Set your Stripe API keys
 ultra-dex config set STRIPE_PUBLISHABLE_KEY pk_test_...
@@ -18,6 +20,7 @@ ultra-dex config set STRIPE_WEBHOOK_SECRET whsec_...
 ```
 
 ### Environment Variables
+
 ```env
 STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key
 STRIPE_SECRET_KEY=sk_test_your_secret_key
@@ -27,6 +30,7 @@ STRIPE_WEBHOOK_SECRET=whsec_your_webhook_signing_secret
 ## Features
 
 ### Customer Management
+
 ```bash
 # Create a new customer
 ultra-dex stripe customer create --email user@example.com --name "John Doe"
@@ -39,6 +43,7 @@ ultra-dex stripe customer update --id cus_12345 --email newemail@example.com
 ```
 
 ### Subscription Management
+
 ```bash
 # Create a subscription
 ultra-dex stripe subscription create --customer-id cus_12345 --price-id price_12345
@@ -51,6 +56,7 @@ ultra-dex stripe subscription cancel --id sub_12345
 ```
 
 ### Payment Processing
+
 ```bash
 # Process a one-time payment
 ultra-dex stripe payment create --amount 1000 --currency usd --customer-id cus_12345
@@ -60,6 +66,7 @@ ultra-dex stripe refund create --payment-id pay_12345 --amount 500
 ```
 
 ### Product & Pricing
+
 ```bash
 # Create a product
 ultra-dex stripe product create --name "Premium Plan" --description "Access to premium features"
@@ -79,6 +86,7 @@ The Stripe integration automatically handles common webhook events:
 - `customer.subscription.deleted` - Subscription cancelled
 
 Configure your webhook endpoint:
+
 ```bash
 ultra-dex stripe webhook configure --endpoint https://yourdomain.com/webhooks/stripe
 ```
@@ -86,6 +94,7 @@ ultra-dex stripe webhook configure --endpoint https://yourdomain.com/webhooks/st
 ## CLI Commands
 
 ### Main Stripe Commands
+
 - `ultra-dex stripe customer` - Manage customers
 - `ultra-dex stripe subscription` - Manage subscriptions
 - `ultra-dex stripe payment` - Process payments
@@ -97,6 +106,7 @@ ultra-dex stripe webhook configure --endpoint https://yourdomain.com/webhooks/st
 ### Examples
 
 Create a recurring billing setup:
+
 ```bash
 # Create a product
 PRODUCT_ID=$(ultra-dex stripe product create --name "Pro Plan" --description "Professional tier" | jq -r '.id')
@@ -123,6 +133,7 @@ The integration includes robust error handling:
 ## Monitoring & Logging
 
 All Stripe operations are logged in the Ultra-Dex ledger:
+
 ```bash
 # View recent Stripe operations
 ultra-dex ledger view --service stripe --last 10

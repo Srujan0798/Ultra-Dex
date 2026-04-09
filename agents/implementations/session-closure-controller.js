@@ -21,7 +21,7 @@ try {
     encoding: 'utf8',
     timeout: 300000,
   });
-  
+
   console.log(validatorOutput);
 } catch (e) {
   console.log(`Validator output: ${e.message.split('\n').slice(0, 50).join('\n')}`);
@@ -56,7 +56,7 @@ const duplicates = [
   './apps/cli/lib/commands/dashboard 2.js',
 ];
 
-duplicates.forEach(file => {
+duplicates.forEach((file) => {
   const filePath = path.join(process.cwd(), file);
   if (fs.existsSync(filePath)) {
     try {

@@ -75,7 +75,7 @@ describe('Memory System Verification', () => {
 
       // Search for ML-related content
       const results = await store.search('machine learning', 3);
-      
+
       assert.ok(results.length > 0, 'Should find similar documents');
       assert.ok(results[0].similarity >= 0, 'Should have similarity score');
       assert.ok(results[0].text, 'Should return text content');
@@ -124,7 +124,7 @@ describe('Memory System Verification', () => {
       await graph.addNode('A');
       await graph.addNode('B');
       await graph.addNode('C');
-      
+
       await graph.addEdge('A', 'B', 'connects');
       await graph.addEdge('B', 'C', 'connects');
 

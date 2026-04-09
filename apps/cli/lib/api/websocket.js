@@ -19,7 +19,7 @@ import { WebSocketServer } from 'ws';
  * const server = http.createServer(app);
  * const { wss, broadcast } = startWebSocketServer(server, { path: '/ws' });
  * broadcast({ type: 'update', data: { status: 'ready' } });
- * 
+ *
  * @swagger
  * /ws:
  *   websocket:

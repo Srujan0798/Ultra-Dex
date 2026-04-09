@@ -306,7 +306,11 @@ export function registerDoctorCommand(program) {
             checks.push({ name: 'Disk Space', status: 'ok', detail: `${availableGb}GB available` });
           } else {
             diskSpinner.warn(`Disk Space low (${availableGb}GB)`);
-            checks.push({ name: 'Disk Space', status: 'warn', detail: `${availableGb}GB available` });
+            checks.push({
+              name: 'Disk Space',
+              status: 'warn',
+              detail: `${availableGb}GB available`,
+            });
           }
         } catch {
           diskSpinner.info('Disk Space check unavailable');
@@ -346,7 +350,11 @@ export function registerDoctorCommand(program) {
           checks.push({ name: 'Docker', status: 'ok', detail: dockerVersion });
         } catch {
           dockerSpinner.info('Docker not installed');
-          checks.push({ name: 'Docker', status: 'info', detail: 'Optional for container workflows' });
+          checks.push({
+            name: 'Docker',
+            status: 'info',
+            detail: 'Optional for container workflows',
+          });
         }
 
         // Check 12: IDE

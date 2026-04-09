@@ -3,6 +3,7 @@
 ## Development Environment Setup
 
 ### Required Software
+
 - Node.js v18+ LTS
 - Docker Desktop
 - VS Code with recommended extensions
@@ -11,6 +12,7 @@
 - GitHub organization access
 
 ### Development Environment Configuration
+
 ```bash
 # Clone the main repository
 git clone git@github.com:ultra-dex/ultra-dex.git
@@ -28,6 +30,7 @@ npm run dev
 ```
 
 ### Access Management
+
 - GitHub: ultra-dex organization with appropriate permissions
 - Slack: #engineering, #product, #general channels
 - Notion: Product documentation workspace
@@ -37,6 +40,7 @@ npm run dev
 - Datadog: Performance monitoring access
 
 ### Security Protocols
+
 - MFA required for all accounts
 - SSH key rotation every 90 days
 - VPN access for sensitive systems

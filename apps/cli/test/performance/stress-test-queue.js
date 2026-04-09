@@ -1,4 +1,3 @@
-
 import { OptimizedSwarmExecutor } from '../../lib/performance/swarm-optimizer.js';
 
 // Mock Provider
@@ -13,16 +12,16 @@ const mockProvider = {
     const isSlow = prompt.includes('@slow_');
     const delay = isSlow ? 2000 : 10;
 
-    await new Promise(resolve => setTimeout(resolve, delay));
+    await new Promise((resolve) => setTimeout(resolve, delay));
     return { content: `Result...` };
   },
   // Add complete method just in case
   complete: async (prompt) => {
     const isSlow = prompt.includes('@slow_');
     const delay = isSlow ? 2000 : 10;
-    await new Promise(resolve => setTimeout(resolve, delay));
+    await new Promise((resolve) => setTimeout(resolve, delay));
     return `Result...`;
-  }
+  },
 };
 
 async function runStressTest() {
@@ -39,7 +38,7 @@ async function runStressTest() {
   const pipeline = Array.from({ length: count }, (_, i) => ({
     name: `agent_${i}`,
     tier: '2-implementation',
-    description: `Task ${i}`
+    description: `Task ${i}`,
   }));
 
   const startMem = process.memoryUsage().heapUsed;
@@ -61,7 +60,6 @@ async function runStressTest() {
 
     console.log(`Completed ${count} tasks in ${duration}ms`);
     console.log(`Memory Delta: ${(endMem - startMem) / 1024 / 1024} MB`);
-
   } catch (error) {
     console.error('Test 1 Failed:', error);
   }
@@ -71,18 +69,22 @@ async function runStressTest() {
 
   // 4 slow tasks (saturating the 4 concurrent workers) followed by 10 fast tasks
   const blockingPipeline = [
-    ...Array.from({ length: 4 }, (_, i) => ({ name: `slow_${i}`, tier: '2-implementation', description: 'SLOW_TASK' })),
-    ...Array.from({ length: 10 }, (_, i) => ({ name: `fast_${i}`, tier: '2-implementation', description: 'FAST_TASK' }))
+    ...Array.from({ length: 4 }, (_, i) => ({
+      name: `slow_${i}`,
+      tier: '2-implementation',
+      description: 'SLOW_TASK',
+    })),
+    ...Array.from({ length: 10 }, (_, i) => ({
+      name: `fast_${i}`,
+      tier: '2-implementation',
+      description: 'FAST_TASK',
+    })),
   ];
 
   const blockStart = Date.now();
-  await executor.executeSwarm(
-    blockingPipeline,
-    'Blocking Test',
-    'context',
-    mockProvider,
-    { parallel: true }
-  );
+  await executor.executeSwarm(blockingPipeline, 'Blocking Test', 'context', mockProvider, {
+    parallel: true,
+  });
   const blockDuration = Date.now() - blockStart;
   console.log(`Blocking Test Duration: ${blockDuration}ms`);
 
@@ -103,17 +105,13 @@ async function runStressTest() {
   console.log('\n--- Test 2b: Single Slow Task vs Many Fast ---');
   const mixedPipeline = [
     { name: 'slow_0', tier: '2-implementation' },
-    ...Array.from({ length: 100 }, (_, i) => ({ name: `fast_${i}`, tier: '2-implementation' }))
+    ...Array.from({ length: 100 }, (_, i) => ({ name: `fast_${i}`, tier: '2-implementation' })),
   ];
 
   const mixedStart = Date.now();
-  await executor.executeSwarm(
-    mixedPipeline,
-    'Mixed Test',
-    'context',
-    mockProvider,
-    { parallel: true }
-  );
+  await executor.executeSwarm(mixedPipeline, 'Mixed Test', 'context', mockProvider, {
+    parallel: true,
+  });
   const mixedDuration = Date.now() - mixedStart;
   console.log(`Mixed Test Duration: ${mixedDuration}ms`);
 
@@ -124,7 +122,7 @@ async function runStressTest() {
   // If it takes 2000ms, it means parallelization works.
 
   if (mixedDuration < 1900) {
-    console.log('WARNING: Slow task didn\'t run slow enough?');
+    console.log("WARNING: Slow task didn't run slow enough?");
   } else if (mixedDuration > 2500) {
     console.log('OBSERVATION: Overhead detected or blocking.');
   } else {

@@ -53,16 +53,7 @@ test('--help shows all commands', () => {
   const result = runCli(['--help']);
   assert.equal(result.status, 0);
   // Core commands that must be present
-  const commands = [
-    'init',
-    'audit',
-    'agents',
-    'brain',
-    'memory',
-    'serve',
-    'config',
-    'help',
-  ];
+  const commands = ['init', 'audit', 'agents', 'brain', 'memory', 'serve', 'config', 'help'];
   commands.forEach((cmd) => {
     assert.match(result.output, new RegExp(cmd));
   });

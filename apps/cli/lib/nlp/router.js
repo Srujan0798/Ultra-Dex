@@ -31,7 +31,15 @@ const EXPANDED_INTENTS = [
   // Core Development (1-10)
   {
     intent: 'init',
-    keywords: ['init', 'new project', 'create project', 'start project', 'setup', 'scaffold', 'bootstrap'],
+    keywords: [
+      'init',
+      'new project',
+      'create project',
+      'start project',
+      'setup',
+      'scaffold',
+      'bootstrap',
+    ],
     description: 'create new project application setup scaffold initialize',
     aliases: ['initialize', 'kickstart', 'begin'],
   },
@@ -482,9 +490,19 @@ export function routeIntent(input) {
 
   // Priority 3: Contextual phrase matching
   if (text.includes('how do i') || text.includes('how to')) return 'help';
-  if (text.includes('is it working') || text.includes('ready') || text.includes('system health') || text.includes('check health')) return 'doctor';
+  if (
+    text.includes('is it working') ||
+    text.includes('ready') ||
+    text.includes('system health') ||
+    text.includes('check health')
+  )
+    return 'doctor';
   if (text.includes('what are you') || text.includes('who are you')) return 'help';
-  if (text.includes('build') && (text.includes('fail') || text.includes('fix') || text.includes('broken'))) return 'fix';
+  if (
+    text.includes('build') &&
+    (text.includes('fail') || text.includes('fix') || text.includes('broken'))
+  )
+    return 'fix';
   if (text.includes('new saas') || text.includes('new app')) return 'init';
   if (text.includes('run all') || text.includes('run agents')) return 'swarm';
   if (text.includes('check version') || text.includes('what version')) return 'version';
@@ -557,13 +575,16 @@ export function extractParams(intent, input) {
 
   // Enhanced named entity patterns - 15+ parameter types
   const patterns = {
-    projectName: /(?:called|named|project\s+(?:called\s+)?|app\s+(?:called\s+)?|create\s+(?:project\s+)?)([a-z0-9-_]+)/i,
-    stack: /(?:stack|framework|with)\s+([a-z0-9-]+)|using\s+(?!model|provider|ai|agent|bot)([a-z0-9-]+)/i,
+    projectName:
+      /(?:called|named|project\s+(?:called\s+)?|app\s+(?:called\s+)?|create\s+(?:project\s+)?)([a-z0-9-_]+)/i,
+    stack:
+      /(?:stack|framework|with)\s+([a-z0-9-]+)|using\s+(?!model|provider|ai|agent|bot)([a-z0-9-]+)/i,
     file: /(?:file|in)\s+([a-z0-9./-]+\.[a-z]+)/i,
     component: /(?:component|page|api)\s+([A-Za-z0-9]+)/i,
     directory: /(?:dir|directory|folder|path)\s+([a-z0-9./_-]+)/i,
     branch: /(?:branch)\s+([a-z0-9._/-]+)/i,
-    provider: /(?:provider|model|ai)\s+([a-z0-9.-]+)|(\b(?!(?:using|with|stack|framework|and|the|for|from)\b)[a-z0-9.-]+)\s+(?:provider|model|ai)/i,
+    provider:
+      /(?:provider|model|ai)\s+([a-z0-9.-]+)|(\b(?!(?:using|with|stack|framework|and|the|for|from)\b)[a-z0-9.-]+)\s+(?:provider|model|ai)/i,
     port: /(?:port)\s*(\d+)/i,
     url: /(?:url|endpoint|api)\s+(https?:\/\/[^\s]+)/i,
     count: /(?:count|number|limit|max)\s*(\d+)/i,
@@ -585,16 +606,36 @@ export function extractParams(intent, input) {
   if (input.includes('--help') || input.includes('-h') || text.includes('how to')) {
     params.help = true;
   }
-  if (input.includes('--verbose') || input.includes('-v') || text.includes('verbose') || text.includes('detailed')) {
+  if (
+    input.includes('--verbose') ||
+    input.includes('-v') ||
+    text.includes('verbose') ||
+    text.includes('detailed')
+  ) {
     params.verbose = true;
   }
-  if (input.includes('--force') || input.includes('-f') || text.includes('force') || text.includes('overwrite')) {
+  if (
+    input.includes('--force') ||
+    input.includes('-f') ||
+    text.includes('force') ||
+    text.includes('overwrite')
+  ) {
     params.force = true;
   }
-  if (input.includes('--dry-run') || text.includes('dry run') || text.includes('preview') || text.includes('simulate')) {
+  if (
+    input.includes('--dry-run') ||
+    text.includes('dry run') ||
+    text.includes('preview') ||
+    text.includes('simulate')
+  ) {
     params.dryRun = true;
   }
-  if (input.includes('--watch') || input.includes('-w') || text.includes('watch') || text.includes('observe')) {
+  if (
+    input.includes('--watch') ||
+    input.includes('-w') ||
+    text.includes('watch') ||
+    text.includes('observe')
+  ) {
     params.watch = true;
   }
 
@@ -618,7 +659,7 @@ export function extractParams(intent, input) {
 export function getIntentConfidence(input) {
   const text = input.toLowerCase().trim();
   const intent = routeIntent(input);
-  
+
   if (!intent) {
     return { intent: null, confidence: 0, matchType: 'none', alternatives: [] };
   }
@@ -735,19 +776,22 @@ export function getAllIntents(input, limit = 5) {
  */
 export function needsClarification(input, threshold = 0.6) {
   const { intent, confidence, alternatives } = getIntentConfidence(input);
-  
+
   // Needs clarification if:
   // 1. Confidence is below threshold
   // 2. Multiple alternatives with similar confidence
-  const needsClarify = confidence < threshold || 
+  const needsClarify =
+    confidence < threshold ||
     (alternatives.length > 0 && alternatives[0].confidence > threshold - 0.1);
-  
+
   return {
     needsClarification: needsClarify,
     intent,
     confidence,
     alternatives,
-    clarificationQuestion: needsClarify ? generateClarificationQuestion(intent, alternatives) : null,
+    clarificationQuestion: needsClarify
+      ? generateClarificationQuestion(intent, alternatives)
+      : null,
   };
 }
 
@@ -830,33 +874,33 @@ class ConversationHistory {
    */
   resolveContextualReference(input) {
     const text = input.toLowerCase();
-    
+
     // Pronoun resolution
     if (text.includes(' it ') || text === 'it' || text.startsWith('it ')) {
       if (this.context.lastIntent) {
         return input.replace(/\bit\b/gi, this.context.lastIntent);
       }
     }
-    
+
     // "that" resolution
     if (text.includes(' that ') || text.startsWith('that ')) {
       if (this.context.lastIntent) {
         return input.replace(/\bthat\b/gi, this.context.lastIntent);
       }
     }
-    
+
     // "the project" resolution
     if (text.includes('the project') || text.includes('this project')) {
       if (this.context.projectContext) {
         return input.replace(/the project|this project/gi, this.context.projectContext);
       }
     }
-    
+
     // "add tests" after a generate command -> add tests to the generated component
     if (text.startsWith('add tests') && this.context.lastParams?.component) {
       return `${input} to ${this.context.lastParams.component}`;
     }
-    
+
     return input;
   }
 }
@@ -871,15 +915,15 @@ export function routeIntentWithContext(input) {
   // Resolve contextual references first
   const resolvedInput = conversationHistory.resolveContextualReference(input);
   const intent = routeIntent(resolvedInput);
-  
+
   if (intent) {
     const params = extractParams(intent, resolvedInput);
     const confidence = getIntentConfidence(resolvedInput);
-    
+
     // Add to conversation history
     conversationHistory.add(input, intent, params, confidence.confidence);
   }
-  
+
   return intent;
 }
 
@@ -889,13 +933,13 @@ export function routeIntentWithContext(input) {
 export function getContextualSuggestions() {
   const context = conversationHistory.getContext();
   const suggestions = [];
-  
+
   if (context.lastIntent) {
     // Suggest follow-up actions
     const followups = getFollowUpSuggestions(context.lastIntent);
     suggestions.push(...followups);
   }
-  
+
   if (context.projectContext) {
     // Suggest project-specific actions
     suggestions.push({
@@ -907,7 +951,7 @@ export function getContextualSuggestions() {
       description: `Build ${context.projectContext}`,
     });
   }
-  
+
   return suggestions.slice(0, 5);
 }
 
@@ -941,7 +985,7 @@ function getFollowUpSuggestions(intent) {
       { intent: 'status', description: 'Check deployment status' },
     ],
   };
-  
+
   return followupMap[intent] || [];
 }
 /**
@@ -957,9 +1001,15 @@ export function translateToCommand(input) {
   let command = `ultra-dex ${intent}`;
 
   // Special phrase matching for common natural language requests
-  if (text.includes('build') && (text.includes('fail') || text.includes('fix') || text.includes('broken'))) {
+  if (
+    text.includes('build') &&
+    (text.includes('fail') || text.includes('fix') || text.includes('broken'))
+  ) {
     command = 'ultra-dex fix --build';
-  } else if (text.includes('system health') || (text.includes('check') && text.includes('health'))) {
+  } else if (
+    text.includes('system health') ||
+    (text.includes('check') && text.includes('health'))
+  ) {
     command = 'ultra-dex doctor';
   } else {
     // General mapping based on intent

@@ -3,31 +3,25 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
+import { singleton } from 'tsyringe';
 import { OpenAICompatibleProvider } from './openai-compatible-provider.js';
 let ZhipuProvider = class extends OpenAICompatibleProvider {
   constructor(config = {}) {
-    super("zhipu", {
+    super('zhipu', {
       apiKey: config.apiKey || process.env.ZHIPU_API_KEY,
-      baseUrl: config.baseUrl || "https://open.bigmodel.cn/api/paas/v4",
-      defaultModel: config.defaultModel || "glm-4",
-      embeddingModel: config.embeddingModel || "text-embedding-3-small",
+      baseUrl: config.baseUrl || 'https://open.bigmodel.cn/api/paas/v4',
+      defaultModel: config.defaultModel || 'glm-4',
+      embeddingModel: config.embeddingModel || 'text-embedding-3-small',
       timeoutMs: config.timeoutMs,
-      extraHeaders: config.extraHeaders
+      extraHeaders: config.extraHeaders,
     });
   }
 };
-ZhipuProvider = __decorateClass([
-  singleton()
-], ZhipuProvider);
+ZhipuProvider = __decorateClass([singleton()], ZhipuProvider);
 var zhipu_default = ZhipuProvider;
-export {
-  ZhipuProvider,
-  zhipu_default as default
-};
+export { ZhipuProvider, zhipu_default as default };

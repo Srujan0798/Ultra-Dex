@@ -2,7 +2,7 @@
 /**
  * Add DI Decorators Tool
  * Adds @singleton/@inject to existing TypeScript files
- * 
+ *
  * Usage: node scripts/add-di-decorators.js <files...>
  */
 
@@ -13,7 +13,7 @@ const args = process.argv.slice(2);
 const patterns = args.length > 0 ? args : ['src/core/**/*.ts'];
 
 console.log(`\n🔄 Adding DI Decorators to: ${patterns.join(', ')}`);
-console.log('=' .repeat(60));
+console.log('='.repeat(60));
 
 // Find all matching files
 const files = [];

@@ -3,13 +3,12 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
+import { singleton } from 'tsyringe';
 import { UnifiedMemory } from '../memory/unified-api.js';
 let AgentMemoryManager = class {
   constructor(config = {}) {
@@ -18,12 +17,11 @@ let AgentMemoryManager = class {
     this.config = {
       maxContextTokens: config.maxContextTokens || 8192,
       pruneThreshold: config.pruneThreshold || 0.8,
-      ...config
+      ...config,
     };
   }
   async initialize() {
-    if (this.initialized)
-      return;
+    if (this.initialized) return;
     await this.memory.initialize();
     this.initialized = true;
   }
@@ -36,11 +34,11 @@ let AgentMemoryManager = class {
    */
   async store(tier, key, value, options = {}) {
     const priorityMap = {
-      hot: "high",
-      warm: "normal",
-      cold: "low"
+      hot: 'high',
+      warm: 'normal',
+      cold: 'low',
     };
-    const text = typeof value === "string" ? value : JSON.stringify(value);
+    const text = typeof value === 'string' ? value : JSON.stringify(value);
     const tokens = options.tokens || this._estimateTokens(text);
     const context = {
       text,
@@ -49,15 +47,15 @@ let AgentMemoryManager = class {
         key,
         tier,
         originalValue: value,
-        ...options.metadata
-      }
+        ...options.metadata,
+      },
     };
     const result = await this.memory.store(context, {
-      priority: priorityMap[tier] || "normal",
-      tags: [tier, ...options.tags || []],
-      ...options
+      priority: priorityMap[tier] || 'normal',
+      tags: [tier, ...(options.tags || [])],
+      ...options,
     });
-    if (tier === "hot") {
+    if (tier === 'hot') {
       await this.checkAndPrune();
     }
     return result;
@@ -77,7 +75,7 @@ let AgentMemoryManager = class {
     const stats = await this.getTierStats();
     const threshold = this.config.maxContextTokens * this.config.pruneThreshold;
     if (stats.hot.tokens > threshold) {
-      return await this.prune("hot", "warm");
+      return await this.prune('hot', 'warm');
     }
     return false;
   }
@@ -94,24 +92,23 @@ let AgentMemoryManager = class {
     if (!force && stats[fromTier].tokens <= threshold) {
       return false;
     }
-    const items = await this.retrieve("", {
+    const items = await this.retrieve('', {
       tags: [fromTier],
       limit: 1e3,
-      sort: "created_at_asc"
+      sort: 'created_at_asc',
     });
-    if (items.items.length === 0)
-      return false;
+    if (items.items.length === 0) return false;
     const itemsToMoveCount = Math.ceil(items.items.length * amount);
     const itemsToMove = items.items.slice(0, itemsToMoveCount);
     const priorityMap = {
-      hot: "high",
-      warm: "normal",
-      cold: "low"
+      hot: 'high',
+      warm: 'normal',
+      cold: 'low',
     };
     for (const item of itemsToMove) {
       await this.memory.update(item.id, {
-        priority: priorityMap[toTier] || "normal",
-        tags: [toTier]
+        priority: priorityMap[toTier] || 'normal',
+        tags: [toTier],
       });
     }
     return true;
@@ -120,14 +117,14 @@ let AgentMemoryManager = class {
    * Get statistics for each tier
    */
   async getTierStats() {
-    const tiers = ["hot", "warm", "cold"];
+    const tiers = ['hot', 'warm', 'cold'];
     const result = {};
     for (const tier of tiers) {
-      const items = await this.retrieve("", { tags: [tier], limit: 1e3 });
+      const items = await this.retrieve('', { tags: [tier], limit: 1e3 });
       const tokens = items.items.reduce((sum, item) => sum + (item.content.tokens || 0), 0);
       result[tier] = {
         count: items.items.length,
-        tokens
+        tokens,
       };
     }
     return result;
@@ -138,9 +135,9 @@ let AgentMemoryManager = class {
    */
   async getHotContext(query) {
     return await this.retrieve(query, {
-      priority: "high",
-      tags: ["hot"],
-      limit: 5
+      priority: 'high',
+      tags: ['hot'],
+      limit: 5,
     });
   }
   /**
@@ -149,9 +146,9 @@ let AgentMemoryManager = class {
    */
   async getWarmContext(query) {
     return await this.retrieve(query, {
-      priority: "normal",
-      tags: ["warm"],
-      limit: 10
+      priority: 'normal',
+      tags: ['warm'],
+      limit: 10,
     });
   }
   /**
@@ -160,9 +157,9 @@ let AgentMemoryManager = class {
    */
   async getColdContext(query) {
     return await this.retrieve(query, {
-      priority: "low",
-      tags: ["cold"],
-      limit: 20
+      priority: 'low',
+      tags: ['cold'],
+      limit: 20,
     });
   }
   /**
@@ -172,12 +169,12 @@ let AgentMemoryManager = class {
    */
   async promote(id, newTier) {
     const priorityMap = {
-      hot: "high",
-      warm: "normal"
+      hot: 'high',
+      warm: 'normal',
     };
     return await this.memory.update(id, {
       priority: priorityMap[newTier],
-      tags: [newTier]
+      tags: [newTier],
     });
   }
   /**
@@ -187,12 +184,12 @@ let AgentMemoryManager = class {
    */
   async demote(id, newTier) {
     const priorityMap = {
-      warm: "normal",
-      cold: "low"
+      warm: 'normal',
+      cold: 'low',
     };
     return await this.memory.update(id, {
       priority: priorityMap[newTier],
-      tags: [newTier]
+      tags: [newTier],
     });
   }
   /**
@@ -205,13 +202,7 @@ let AgentMemoryManager = class {
     return Math.ceil(text.length / 4);
   }
 };
-AgentMemoryManager = __decorateClass([
-  singleton()
-], AgentMemoryManager);
+AgentMemoryManager = __decorateClass([singleton()], AgentMemoryManager);
 const memoryManager = new AgentMemoryManager();
 var memory_manager_default = AgentMemoryManager;
-export {
-  AgentMemoryManager,
-  memory_manager_default as default,
-  memoryManager
-};
+export { AgentMemoryManager, memory_manager_default as default, memoryManager };

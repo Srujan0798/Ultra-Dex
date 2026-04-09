@@ -19,7 +19,9 @@ describe.skip('CLI Command: serve (requires server environment)', { timeout: 150
           if (server.listening) resolve();
           else server.on('listening', resolve);
         }),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Server start timeout')), 2000))
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Server start timeout')), 2000)
+        ),
       ]);
 
       assert.strictEqual(server.listening, true, 'Server should be listening');
@@ -32,7 +34,9 @@ describe.skip('CLI Command: serve (requires server environment)', { timeout: 150
           if (!server.listening) resolve();
           else server.on('close', resolve);
         }),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Server close timeout')), 2000))
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Server close timeout')), 2000)
+        ),
       ]);
 
       assert.strictEqual(server.listening, false, 'Server should stop listening after close()');

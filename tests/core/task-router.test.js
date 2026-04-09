@@ -11,7 +11,7 @@ describe('TfIdfVectorizer', () => {
   it('should tokenize text correctly', () => {
     const vectorizer = new TfIdfVectorizer();
     const tokens = vectorizer.tokenize('Build a React component for user authentication');
-    
+
     assert.ok(tokens.includes('react'), 'Should include react');
     assert.ok(tokens.includes('component'), 'Should include component');
     assert.ok(tokens.includes('authentication'), 'Should include authentication');
@@ -48,11 +48,17 @@ describe('TfIdfVectorizer', () => {
 
   it('should calculate cosine similarity', () => {
     const vectorizer = new TfIdfVectorizer();
-    const vecA = new Map([['react', 1.0], ['component', 0.5]]);
-    const vecB = new Map([['react', 0.8], ['component', 0.4]]);
+    const vecA = new Map([
+      ['react', 1.0],
+      ['component', 0.5],
+    ]);
+    const vecB = new Map([
+      ['react', 0.8],
+      ['component', 0.4],
+    ]);
 
     const similarity = vectorizer.cosineSimilarity(vecA, vecB);
-    
+
     assert.ok(similarity > 0.9 && similarity <= 1.0, 'Similar vectors should have high similarity');
   });
 });
@@ -64,7 +70,14 @@ describe('TaskRouter', () => {
     router = new TaskRouter();
     // Register agents with capabilities
     router.registerAgent('frontend', ['react', 'component', 'ui', 'css', 'styling', 'dom', 'html']);
-    router.registerAgent('backend', ['api', 'server', 'database', 'endpoint', 'middleware', 'controller']);
+    router.registerAgent('backend', [
+      'api',
+      'server',
+      'database',
+      'endpoint',
+      'middleware',
+      'controller',
+    ]);
     router.registerAgent('database', ['sql', 'schema', 'migration', 'query', 'table', 'index']);
     router.registerAgent('testing', ['jest', 'vitest', 'test', 'spec', 'coverage', 'mock']);
   });
@@ -78,7 +91,7 @@ describe('TaskRouter', () => {
 
   it('should route UI tasks to frontend agent', () => {
     const result = router.route('Build a React login form with CSS styling');
-    
+
     assert.strictEqual(result.agentId, 'frontend');
     assert.strictEqual(result.method, 'semantic');
     assert.ok(result.confidence > 0.3, 'Should have high confidence for clear match');
@@ -86,32 +99,35 @@ describe('TaskRouter', () => {
 
   it('should route API tasks to backend agent', () => {
     const result = router.route('Create REST API endpoint for user management');
-    
+
     assert.strictEqual(result.agentId, 'backend');
     assert.ok(result.confidence > 0.3);
   });
 
   it('should route database tasks to database agent', () => {
     const result = router.route('Create SQL schema for users table with indexes');
-    
+
     assert.strictEqual(result.agentId, 'database');
     assert.ok(result.confidence > 0.3);
   });
 
   it('should route test tasks to testing agent', () => {
     const result = router.route('Write Jest unit tests for authentication module coverage');
-    
+
     assert.strictEqual(result.agentId, 'testing');
     assert.ok(result.confidence > 0.2);
   });
 
   it('should provide alternative matches', () => {
     const result = router.route('Build React component with API integration');
-    
+
     assert.ok(result.alternatives.length > 0, 'Should provide alternatives');
     // Frontend should be first, backend should be in alternatives
-    const hasBackendAlt = result.alternatives.some(alt => alt.agentId === 'backend');
-    assert.ok(hasBackendAlt || result.agentId === 'backend', 'Should consider backend for API-related task');
+    const hasBackendAlt = result.alternatives.some((alt) => alt.agentId === 'backend');
+    assert.ok(
+      hasBackendAlt || result.agentId === 'backend',
+      'Should consider backend for API-related task'
+    );
   });
 
   it('should fall back to keyword matching for low similarity', () => {
@@ -119,9 +135,9 @@ describe('TaskRouter', () => {
     const strictRouter = new TaskRouter({ similarityThreshold: 0.9 });
     strictRouter.registerAgent('frontend', ['react', 'ui']);
     strictRouter.registerAgent('backend', ['api', 'server']);
-    
+
     const result = strictRouter.route('ui css design');
-    
+
     assert.strictEqual(result.method, 'fallback');
     assert.strictEqual(result.agentId, 'frontend');
   });
@@ -129,36 +145,36 @@ describe('TaskRouter', () => {
   it('should use fallback for orchestrator when no match', () => {
     // Task with no clear match
     const result = router.route('xyz unknown random task');
-    
+
     assert.strictEqual(result.method, 'fallback');
   });
 
   it('should handle object tasks', () => {
     const task = { type: 'component', framework: 'react', feature: 'login' };
     const result = router.route(task);
-    
+
     assert.strictEqual(result.agentId, 'frontend');
   });
 
   it('should get scores for all agents', () => {
     const scores = router.getScores('React component testing');
-    
+
     assert.strictEqual(scores.length, 4);
     assert.ok(scores[0].similarity >= scores[1].similarity, 'Scores should be sorted');
   });
 
   it('should handle empty task', () => {
     const result = router.route('');
-    
+
     assert.ok(result.agentId);
     assert.strictEqual(result.method, 'fallback');
   });
 
   it('should re-fit when new agents are registered', () => {
     router.route('react component'); // First route triggers fit
-    
+
     router.registerAgent('devops', ['docker', 'kubernetes', 'deploy']);
-    
+
     const result = router.route('docker deployment');
     assert.strictEqual(result.agentId, 'devops');
   });
@@ -168,14 +184,14 @@ describe('TaskRouter Edge Cases', () => {
   it('should handle single agent', () => {
     const router = new TaskRouter({ similarityThreshold: 0 }); // Lower threshold for single agent
     router.registerAgent('only', ['everything', 'task', 'any', 'generic']);
-    
+
     const result = router.route('any task');
     assert.strictEqual(result.agentId, 'only');
   });
 
   it('should handle no agents', () => {
     const router = new TaskRouter();
-    
+
     const result = router.route('any task');
     assert.strictEqual(result.agentId, 'orchestrator');
   });
@@ -184,7 +200,7 @@ describe('TaskRouter Edge Cases', () => {
     const router = new TaskRouter();
     router.registerAgent('agent1', ['react', 'react', 'react']);
     router.registerAgent('agent2', ['react', 'vue']);
-    
+
     const result = router.route('react');
     // Should not throw and should return one of the agents
     assert.ok(['agent1', 'agent2'].includes(result.agentId));
@@ -194,10 +210,10 @@ describe('TaskRouter Edge Cases', () => {
     const router = new TaskRouter();
     router.registerAgent('frontend', ['react', 'ui']);
     router.registerAgent('backend', ['api', 'server']);
-    
+
     const longTask = 'react '.repeat(1000);
     const result = router.route(longTask);
-    
+
     assert.strictEqual(result.agentId, 'frontend');
   });
 });

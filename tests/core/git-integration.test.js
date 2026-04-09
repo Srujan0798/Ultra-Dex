@@ -20,7 +20,7 @@ describe('Git Integration', () => {
   describe('Branch Operations', () => {
     it('should get current branch name', async () => {
       const branch = await gitIntegrationInstance.getCurrentBranch();
-        // In CI detached HEAD state, branch might be empty or 'HEAD'
+      // In CI detached HEAD state, branch might be empty or 'HEAD'
       assert.strictEqual(typeof branch, 'string');
     });
   });
@@ -77,7 +77,12 @@ describe('Git Integration', () => {
       try {
         const userConfig = await gitIntegrationInstance.getConfig('user.name');
         // If config exists, verify it's a string or object
-        assert.ok(userConfig === null || userConfig === undefined || typeof userConfig === 'string' || typeof userConfig === 'object');
+        assert.ok(
+          userConfig === null ||
+            userConfig === undefined ||
+            typeof userConfig === 'string' ||
+            typeof userConfig === 'object'
+        );
       } catch (error) {
         // Acceptable if git config is not set in test environment
         assert.ok(true, 'Git config call completed (may throw if not configured)');

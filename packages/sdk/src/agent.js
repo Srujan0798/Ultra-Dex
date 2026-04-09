@@ -1,11 +1,5 @@
 export class Agent {
-  constructor({
-    id,
-    name = id,
-    description = '',
-    capabilities = [],
-    meta = {},
-  } = {}) {
+  constructor({ id, name = id, description = '', capabilities = [], meta = {} } = {}) {
     if (!id || typeof id !== 'string') {
       throw new Error('UltraDex SDK: Agent requires a non-empty string id');
     }

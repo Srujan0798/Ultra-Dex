@@ -46,8 +46,8 @@ function findNextTask(state) {
 
   for (const phase of state.phases) {
     if (phase.status === 'completed') continue;
-    
-    const nextTask = phase.steps.find(s => s.status === 'pending');
+
+    const nextTask = phase.steps.find((s) => s.status === 'pending');
     if (nextTask) {
       return { nextTask, currentPhase: phase };
     }

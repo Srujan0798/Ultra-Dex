@@ -48,8 +48,14 @@ describe('Atomic writes and corruption recovery', () => {
       const recovered = await readLedger();
 
       assert.strictEqual(recovered.length, 99);
-      assert.strictEqual(recovered.some((entry) => entry.id === 'entry-49'), true);
-      assert.strictEqual(recovered.some((entry) => entry.id === 'entry-51'), true);
+      assert.strictEqual(
+        recovered.some((entry) => entry.id === 'entry-49'),
+        true
+      );
+      assert.strictEqual(
+        recovered.some((entry) => entry.id === 'entry-51'),
+        true
+      );
     });
   });
 
@@ -87,13 +93,16 @@ describe('Atomic writes and corruption recovery', () => {
 
       await assert.rejects(
         () => memory.init(),
-        (error) => error?.name === 'CorruptionError' && /Data corruption detected/.test(error.message)
+        (error) =>
+          error?.name === 'CorruptionError' && /Data corruption detected/.test(error.message)
       );
     });
   });
 
   test('sessionPersistence wraps decision saves in a transaction and rolls back on failure', async () => {
-    const { createSessionPersistence } = await importFresh('../../apps/cli/lib/utils/sessionPersistence.js');
+    const { createSessionPersistence } = await importFresh(
+      '../../apps/cli/lib/utils/sessionPersistence.js'
+    );
     const persistence = createSessionPersistence('/tmp/ultra-dex-atomic-session-test');
     const transactionLog = [];
     let memoryIndexWrites = 0;

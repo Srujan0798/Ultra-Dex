@@ -5,7 +5,7 @@ async function uploadMedia(ownerId, data) {
   const media = await createMedia(ownerId, { url: mediaUrl, type: data.mimeType });
   return {
     media,
-    uploadUrl
+    uploadUrl,
   };
 }
 async function getMedia(ownerId) {
@@ -16,12 +16,7 @@ async function removeMedia(ownerId, mediaId) {
 }
 function handleMediaError(error) {
   try {
-    console.error("[media]", error instanceof Error ? error.message : String(error));
-  } catch (_) {
-  }
+    console.error('[media]', error instanceof Error ? error.message : String(error));
+  } catch (_) {}
 }
-export {
-  getMedia,
-  removeMedia,
-  uploadMedia
-};
+export { getMedia, removeMedia, uploadMedia };

@@ -1,34 +1,34 @@
-import { EventEmitter } from "events";
+import { EventEmitter } from 'events';
 class AgentRegistry extends EventEmitter {
   constructor(config = {}) {
     super();
     this.config = {
       maxAgents: config.maxAgents || 100,
-      ...config
+      ...config,
     };
     this.agents = /* @__PURE__ */ new Map();
     this.initialized = false;
   }
   async initialize() {
     this.initialized = true;
-    this.emit("initialized");
+    this.emit('initialized');
     return true;
   }
   async register(agent) {
     if (!agent?.id) {
-      throw new Error("Agent id is required");
+      throw new Error('Agent id is required');
     }
     if (this.agents.size >= this.config.maxAgents && !this.agents.has(agent.id)) {
-      throw new Error("Agent registry is full");
+      throw new Error('Agent registry is full');
     }
     const normalized = {
       capabilities: [],
-      description: "",
+      description: '',
       name: agent.id,
-      ...agent
+      ...agent,
     };
     this.agents.set(normalized.id, normalized);
-    this.emit("agent:registered", { agentId: normalized.id });
+    this.emit('agent:registered', { agentId: normalized.id });
     return this._sanitizeAgent(normalized);
   }
   get(agentId) {
@@ -44,15 +44,20 @@ class AgentRegistry extends EventEmitter {
     }
     const normalizedQuery = String(query).toLowerCase();
     return this.list().filter((agent) => {
-      return agent.id.toLowerCase().includes(normalizedQuery) || agent.name.toLowerCase().includes(normalizedQuery) || agent.description.toLowerCase().includes(normalizedQuery) || agent.capabilities.some(
-        (capability) => String(capability).toLowerCase().includes(normalizedQuery)
+      return (
+        agent.id.toLowerCase().includes(normalizedQuery) ||
+        agent.name.toLowerCase().includes(normalizedQuery) ||
+        agent.description.toLowerCase().includes(normalizedQuery) ||
+        agent.capabilities.some((capability) =>
+          String(capability).toLowerCase().includes(normalizedQuery)
+        )
       );
     });
   }
   findAgentsByCapabilities(capabilities = []) {
     const wanted = new Set(capabilities.map((capability) => String(capability).toLowerCase()));
-    return this.list().filter(
-      (agent) => agent.capabilities.some((capability) => wanted.has(String(capability).toLowerCase()))
+    return this.list().filter((agent) =>
+      agent.capabilities.some((capability) => wanted.has(String(capability).toLowerCase()))
     );
   }
   async execute(agentId, input = {}, context = {}) {
@@ -60,7 +65,7 @@ class AgentRegistry extends EventEmitter {
     if (!agent) {
       throw new Error(`Agent not found: ${agentId}`);
     }
-    if (typeof agent.handler !== "function") {
+    if (typeof agent.handler !== 'function') {
       throw new Error(`Agent ${agentId} does not have a handler`);
     }
     const startedAt = Date.now();
@@ -69,19 +74,19 @@ class AgentRegistry extends EventEmitter {
       const payload = {
         agentId,
         duration: Date.now() - startedAt,
-        result
+        result,
       };
-      this.emit("agent:executed", payload);
+      this.emit('agent:executed', payload);
       return {
         agentId,
         result,
-        executionId: this._generateExecutionId()
+        executionId: this._generateExecutionId(),
       };
     } catch (error) {
-      this.emit("agent:failed", {
+      this.emit('agent:failed', {
         agentId,
         duration: Date.now() - startedAt,
-        error
+        error,
       });
       throw error;
     }
@@ -91,7 +96,7 @@ class AgentRegistry extends EventEmitter {
     if (!agent) {
       return `You are agent ${agentId}.`;
     }
-    return `${agent.name}: ${agent.description || "Execute the assigned task."}`;
+    return `${agent.name}: ${agent.description || 'Execute the assigned task.'}`;
   }
   _sanitizeAgent(agent) {
     const { handler, ...rest } = agent;
@@ -102,7 +107,4 @@ class AgentRegistry extends EventEmitter {
   }
 }
 var registry_enhanced_default = AgentRegistry;
-export {
-  AgentRegistry,
-  registry_enhanced_default as default
-};
+export { AgentRegistry, registry_enhanced_default as default };

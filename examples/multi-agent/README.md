@@ -21,12 +21,14 @@ This example demonstrates how to create a multi-agent system using Ultra-Dex. Mu
 ## Setup
 
 1. **Install Dependencies**:
+
    ```bash
    # This example uses the UltraDex library
    ```
 
 2. **Environment Variables**:
    Create a `.env` file with the following:
+
    ```env
    ULTRA_DEX_API_KEY=your_ultra_dex_api_key
    ULTRA_DEX_ENDPOINT=https://api.ultra-dex.ai
@@ -56,8 +58,8 @@ The multi-agent system can execute various types of workflows:
 const multiAgentSystem = new MultiAgentWorkflow({
   ultraDex: {
     apiKey: process.env.ULTRA_DEX_API_KEY,
-    endpoint: process.env.ULTRA_DEX_ENDPOINT || 'https://api.ultra-dex.ai'
-  }
+    endpoint: process.env.ULTRA_DEX_ENDPOINT || 'https://api.ultra-dex.ai',
+  },
 });
 
 // Execute a complex task using multiple agents
@@ -68,7 +70,7 @@ const complexResult = await multiAgentSystem.executeComplexTask(
     analysisType: 'quantitative',
     outputFormat: 'executive_summary',
     audience: 'executives',
-    reviewCriteria: ['accuracy', 'relevance', 'actionability']
+    reviewCriteria: ['accuracy', 'relevance', 'actionability'],
   }
 );
 
@@ -79,7 +81,7 @@ const specializedResult = await multiAgentSystem.executeSpecializedTask(
   {
     expertise: 'deep_learning',
     constraints: ['memory_efficient', 'fast_training'],
-    precision: 'very_high'
+    precision: 'very_high',
   }
 );
 
@@ -87,7 +89,7 @@ const specializedResult = await multiAgentSystem.executeSpecializedTask(
 const parallelResult = await multiAgentSystem.executeParallelTasks([
   { type: 'research', query: 'latest trends in AI' },
   { type: 'analyze', data: 'software development metrics' },
-  { type: 'write', content: 'executive summary template' }
+  { type: 'write', content: 'executive summary template' },
 ]);
 
 // Define and execute a custom workflow
@@ -96,20 +98,20 @@ const customWorkflow = {
     {
       agent: 'researcher',
       description: 'Gather market data',
-      payload: { query: 'market analysis for product X', sources: ['web', 'internal'] }
+      payload: { query: 'market analysis for product X', sources: ['web', 'internal'] },
     },
     {
       agent: 'analyst',
       description: 'Analyze gathered data',
-      payload: { data: '/* data from previous step */', analysisType: 'trend_analysis' }
+      payload: { data: '/* data from previous step */', analysisType: 'trend_analysis' },
     },
     {
       agent: 'writer',
       description: 'Create report',
-      payload: { analysis: '/* analysis from previous step */', format: 'market_report' }
-    }
+      payload: { analysis: '/* analysis from previous step */', format: 'market_report' },
+    },
   ],
-  finalizeWithCoordinator: true
+  finalizeWithCoordinator: true,
 };
 
 const customResult = await multiAgentSystem.executeCustomWorkflow(customWorkflow);

@@ -93,12 +93,16 @@ describe('watch command', () => {
     });
 
     // Run watch briefly with timeout - it will be killed after timeout
-    const result = spawnSync(process.execPath, ['--import', bootstrapPath, cliPath, 'watch', '--interval', '100'], {
-      cwd: tmpDir,
-      env: { ...process.env, FORCE_COLOR: '0' },
-      encoding: 'utf8',
-      timeout: 2000, // Kill after 2 seconds
-    });
+    const result = spawnSync(
+      process.execPath,
+      ['--import', bootstrapPath, cliPath, 'watch', '--interval', '100'],
+      {
+        cwd: tmpDir,
+        env: { ...process.env, FORCE_COLOR: '0' },
+        encoding: 'utf8',
+        timeout: 2000, // Kill after 2 seconds
+      }
+    );
 
     // Combine all output sources
     const allOutput = [result.stdout, result.stderr].filter(Boolean).join('');
@@ -457,11 +461,11 @@ describe('agents marketplace (v3.4)', () => {
     assert.match(result.output, /Ultra-Dex AI Agents|Agent|Tier|Status/i);
     // Check that specific agents are mentioned somewhere in the output
     assert.ok(
-      result.output.includes('orchestrator') || 
-      result.output.includes('planner') || 
-      result.output.includes('backend') || 
-      result.output.includes('frontend') ||
-      result.output.includes('Total') // If role-based access is hiding agents, it should mention total
+      result.output.includes('orchestrator') ||
+        result.output.includes('planner') ||
+        result.output.includes('backend') ||
+        result.output.includes('frontend') ||
+        result.output.includes('Total') // If role-based access is hiding agents, it should mention total
     );
   });
 

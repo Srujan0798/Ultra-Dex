@@ -15,18 +15,22 @@ Copy this when transferring work between agents:
 **DATE:** [YYYY-MM-DD]
 
 ### Context
+
 [2-3 sentences: what was being done]
 
 ### Current State
+
 - Files modified: [list]
 - Tests status: [pass/fail count]
 - Blockers: [any issues]
 
 ### Next Steps
+
 1. [Immediate next action]
 2. [Following action]
 
 ### Recovery Command
+
 [Single command to verify state, e.g., `npm test`]
 ```
 
@@ -34,7 +38,7 @@ Copy this when transferring work between agents:
 
 ## Active Handoffs
 
-*None currently*
+_None currently_
 
 ---
 
@@ -52,21 +56,25 @@ Copy this when transferring work between agents:
 Use this every week to prevent drift and bloat.
 
 ### Minute 0-3: Health Snapshot
+
 - Tests pass/fail summary
 - Lint/build status
 - Any new blockers
 
 ### Minute 4-7: Dispatch Reality Check
+
 - What is still in progress officially?
 - Which shadow-watch items are now truly orphaned?
 - Remove stale or duplicate tasks
 
 ### Minute 8-11: Single-Intervention Decision
+
 - Pick at most one high-impact gap
 - Define verification command first
 - Define done criteria in one sentence
 
 ### Minute 12-15: Closure Update
+
 - Update `shadow-state.json`
 - Update `shadow-dispatches.md`
 - Record one lesson learned (short)
@@ -75,4 +83,4 @@ Rule: If no measurable high-impact gap exists, do **no intervention**.
 
 ---
 
-*Handoffs complete what sessions cannot.*
+_Handoffs complete what sessions cannot._

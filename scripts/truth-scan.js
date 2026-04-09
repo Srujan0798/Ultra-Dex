@@ -14,13 +14,20 @@ const REPORT_DIR = path.join(ROOT_DIR, 'docs', 'completed', 'reports');
 
 async function runTruthScan() {
   console.log('🔍 Initiating Final Truth Scan...');
-  
+
   let report = `# 🔍 ULTRA-DEX v6.0.0 TRUTH REPORT\n\n`;
   report += `> **Generated:** ${new Date().toISOString()}\n\n`;
 
   // 1. Architecture Truth
   report += `## 1. Architectural Integrity\n`;
-  const dirs = ['apps/cli', 'apps/dashboard', 'apps/core-api', 'src/core', 'packages/sdk', '.ultra-dex/agents'];
+  const dirs = [
+    'apps/cli',
+    'apps/dashboard',
+    'apps/core-api',
+    'src/core',
+    'packages/sdk',
+    '.ultra-dex/agents',
+  ];
   for (const dir of dirs) {
     const exists = fs.existsSync(path.join(ROOT_DIR, dir));
     report += `- [${exists ? 'x' : ' '}] **${dir}**: ${exists ? 'Verified' : 'MISSING'}\n`;
@@ -32,7 +39,7 @@ async function runTruthScan() {
     'src/core/orchestration/index.js',
     'src/core/agents/ralph-loop.js',
     'src/core/memory/sqlite.js',
-    'apps/cli/lib/quality/protocol-21.js'
+    'apps/cli/lib/quality/protocol-21.js',
   ];
   for (const file of logic) {
     const exists = fs.existsSync(path.join(ROOT_DIR, file));
@@ -40,8 +47,9 @@ async function runTruthScan() {
   }
 
   // 3. Swarm Truth
-  const agentCount = fs.readdirSync(path.join(ROOT_DIR, '.ultra-dex/agents'), { recursive: true })
-    .filter(f => f.endsWith('.md')).length;
+  const agentCount = fs
+    .readdirSync(path.join(ROOT_DIR, '.ultra-dex/agents'), { recursive: true })
+    .filter((f) => f.endsWith('.md')).length;
   report += `\n## 3. Swarm Intelligence\n`;
   report += `- **Total Verified Agents:** ${agentCount} (Target: 18)\n`;
 

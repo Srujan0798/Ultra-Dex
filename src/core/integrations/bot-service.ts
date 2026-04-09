@@ -45,18 +45,30 @@ export class BotService {
     }
   }
 
-  async handleMessage(botId: string, channelId: string, userId: string, text: string): Promise<string> {
+  async handleMessage(
+    botId: string,
+    channelId: string,
+    userId: string,
+    text: string
+  ): Promise<string> {
     logger.info('Bot message received', { botId, userId, textLength: text.length });
-    
+
     // Simple AI response
     try {
-      const result = await aiMetaLayer.call('gpt-4o', [
-        { role: 'system', content: 'You are Ultra-Dex Bot, a helpful AI orchestration assistant.' },
-        { role: 'user', content: text }
-      ], {
-        metadata: { userId }
-      });
-      
+      const result = await aiMetaLayer.call(
+        'gpt-4o',
+        [
+          {
+            role: 'system',
+            content: 'You are Ultra-Dex Bot, a helpful AI orchestration assistant.',
+          },
+          { role: 'user', content: text },
+        ],
+        {
+          metadata: { userId },
+        }
+      );
+
       return result.text || 'I processed your request but have no text response.';
     } catch (error) {
       logger.error('Bot AI call failed', { error: String(error) });

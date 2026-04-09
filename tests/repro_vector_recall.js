@@ -1,4 +1,3 @@
-
 import { VectorStore } from '../apps/cli/lib/memory/vector-store.js';
 import path from 'path';
 import fs from 'fs/promises';
@@ -35,9 +34,15 @@ async function run() {
   // So "parked" != "parking".
 
   if (!bestMatch || bestMatch.score < 0.1) {
-     console.log('SUCCESS: Semantic recall failed (synonyms not matched). Score:', bestMatch ? bestMatch.score : 'N/A');
+    console.log(
+      'SUCCESS: Semantic recall failed (synonyms not matched). Score:',
+      bestMatch ? bestMatch.score : 'N/A'
+    );
   } else {
-     console.log('FAILURE: Unexpectedly high score. Maybe accidental collision? Score:', bestMatch.score);
+    console.log(
+      'FAILURE: Unexpectedly high score. Maybe accidental collision? Score:',
+      bestMatch.score
+    );
   }
 
   await store.close();

@@ -57,7 +57,7 @@ export const Chart = memo(function Chart({
   return (
     <figure
       role="img"
-      aria-label={`${title}: ${variant} chart showing ${series.map(s => s.key).join(', ')}`}
+      aria-label={`${title}: ${variant} chart showing ${series.map((s) => s.key).join(', ')}`}
     >
       <ResponsiveContainer width="100%" height={height}>
         {variant === 'bar' ? (

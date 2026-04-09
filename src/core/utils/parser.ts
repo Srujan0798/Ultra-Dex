@@ -8,7 +8,7 @@ function extractProjectName(content) {
   if (productMatch) {
     return productMatch[1].trim().slice(0, 50);
   }
-  return "My SaaS Project";
+  return 'My SaaS Project';
 }
 function extractSummary(content) {
   const visionMatch = content.match(/### 1\.1 Product Vision.*?\n(.+?)(?=\n###|\n##|$)/is);
@@ -19,20 +19,19 @@ function extractSummary(content) {
   if (problemMatch) {
     return problemMatch[1].trim().slice(0, 200);
   }
-  return "A SaaS application";
+  return 'A SaaS application';
 }
 function extractTechStack(content) {
   const defaults = {
-    frontend: "Next.js + TypeScript",
-    backend: "Next.js API Routes",
-    database: "PostgreSQL + Prisma",
-    auth: "NextAuth.js",
-    payments: "Stripe",
-    hosting: "Vercel"
+    frontend: 'Next.js + TypeScript',
+    backend: 'Next.js API Routes',
+    database: 'PostgreSQL + Prisma',
+    auth: 'NextAuth.js',
+    payments: 'Stripe',
+    hosting: 'Vercel',
   };
   const stackSection = content.match(/## SECTION 15.*?(?=## SECTION 16|$)/is);
-  if (!stackSection)
-    return defaults;
+  if (!stackSection) return defaults;
   const text = stackSection[0];
   const frontendMatch = text.match(/Frontend.*?:\s*(.+?)(?=\n|$)/i);
   const backendMatch = text.match(/Backend.*?:\s*(.+?)(?=\n|$)/i);
@@ -43,29 +42,32 @@ function extractTechStack(content) {
     database: databaseMatch?.[1]?.trim() || defaults.database,
     auth: defaults.auth,
     payments: defaults.payments,
-    hosting: defaults.hosting
+    hosting: defaults.hosting,
   };
 }
 function validateCompleteness(content) {
   const missingSections = [];
   for (let i = 1; i <= 34; i++) {
-    const regex = new RegExp(`## SECTION ${i}:`, "i");
+    const regex = new RegExp(`## SECTION ${i}:`, 'i');
     if (!regex.test(content)) {
       missingSections.push(i);
     }
   }
-  const percentage = Math.round((34 - missingSections.length) / 34 * 100);
+  const percentage = Math.round(((34 - missingSections.length) / 34) * 100);
   return {
     complete: missingSections.length === 0,
     missingSections,
-    percentage
+    percentage,
   };
 }
 function splitIntoSections(content) {
   const sections = /* @__PURE__ */ new Map();
   for (let i = 1; i <= 34; i++) {
-    const nextSection = i < 34 ? `## SECTION ${i + 1}:` : "\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550";
-    const regex = new RegExp(`(## SECTION ${i}:.*?)(?=${nextSection}|$)`, "is");
+    const nextSection =
+      i < 34
+        ? `## SECTION ${i + 1}:`
+        : '\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550';
+    const regex = new RegExp(`(## SECTION ${i}:.*?)(?=${nextSection}|$)`, 'is');
     const match = content.match(regex);
     if (match) {
       sections.set(i, match[1].trim());
@@ -87,14 +89,13 @@ var parser_default = {
   validateCompleteness,
   splitIntoSections,
   formatUsage,
-  formatCost
+  formatCost,
 };
-function _handleModuleError(error, context = "parser") {
+function _handleModuleError(error, context = 'parser') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     logger.error(`[${context}] Error: ${message}`);
-  } catch (_) {
-  }
+  } catch (_) {}
 }
 export {
   parser_default as default,
@@ -104,5 +105,5 @@ export {
   formatCost,
   formatUsage,
   splitIntoSections,
-  validateCompleteness
+  validateCompleteness,
 };

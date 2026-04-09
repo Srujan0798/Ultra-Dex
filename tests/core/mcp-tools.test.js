@@ -84,7 +84,10 @@ describe('MCP core tools', () => {
   });
 
   it('registers the expected in-process MCP tools', () => {
-    const toolNames = manager.listTools().map((tool) => tool.name).sort();
+    const toolNames = manager
+      .listTools()
+      .map((tool) => tool.name)
+      .sort();
     assert.deepEqual(toolNames, ['agent-status', 'memory-search', 'provider-info', 'task-submit']);
   });
 

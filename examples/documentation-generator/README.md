@@ -21,12 +21,14 @@ This example demonstrates how to create an AI-powered documentation generation s
 ## Setup
 
 1. **Install Dependencies**:
+
    ```bash
    # This example uses the UltraDex library
    ```
 
 2. **Environment Variables**:
    Create a `.env` file with the following:
+
    ```env
    ULTRA_DEX_API_KEY=your_ultra_dex_api_key
    ULTRA_DEX_ENDPOINT=https://api.ultra-dex.ai
@@ -55,33 +57,33 @@ The documentation generator can process various types of source code:
 const docGenerator = new DocumentationGenerator({
   ultraDex: {
     apiKey: process.env.ULTRA_DEX_API_KEY,
-    endpoint: process.env.ULTRA_DEX_ENDPOINT || 'https://api.ultra-dex.ai'
-  }
+    endpoint: process.env.ULTRA_DEX_ENDPOINT || 'https://api.ultra-dex.ai',
+  },
 });
 
 // Generate documentation from code
 const doc = await docGenerator.generateFromCode('./path/to/your/code.js', {
   format: 'markdown',
   includeExamples: true,
-  audience: 'beginner-developers'
+  audience: 'beginner-developers',
 });
 
 // Generate API documentation
 const apiDoc = await docGenerator.generateApiDocs('./path/to/api-spec.json', {
   format: 'openapi',
-  includeExamples: true
+  includeExamples: true,
 });
 
 // Generate a tutorial
 const tutorial = await docGenerator.generateTutorial('./path/to/module.js', 'Using the Module', {
   difficulty: 'intermediate',
-  stepsCount: 7
+  stepsCount: 7,
 });
 
 // Generate architecture documentation
 const archDoc = await docGenerator.generateArchitectureDocs('./path/to/project/root', {
   includeDiagrams: true,
-  includeDecisions: true
+  includeDecisions: true,
 });
 ```
 
@@ -131,7 +133,7 @@ Process entire projects at once:
 const results = await docGenerator.bulkGenerate('./path/to/project', {
   format: 'markdown',
   includeExamples: true,
-  audience: 'developers'
+  audience: 'developers',
 });
 ```
 

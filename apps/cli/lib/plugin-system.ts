@@ -102,7 +102,11 @@ export class PluginManager {
   /**
    * Attach a function to a hook
    */
-  attachToHook(hookName: string, pluginName: string, callback: (...args: unknown[]) => unknown): void {
+  attachToHook(
+    hookName: string,
+    pluginName: string,
+    callback: (...args: unknown[]) => unknown
+  ): void {
     if (!this.hooks.has(hookName)) {
       this.hooks.set(hookName, []);
     }
@@ -144,7 +148,10 @@ export class PluginManager {
   /**
    * Install a plugin from a local file or npm package
    */
-  async installPlugin(pluginSource: string, _options = {}): Promise<{ success: boolean; path?: string; error?: string }> {
+  async installPlugin(
+    pluginSource: string,
+    _options = {}
+  ): Promise<{ success: boolean; path?: string; error?: string }> {
     try {
       let pluginPath;
 
@@ -155,12 +162,12 @@ export class PluginManager {
         // NPM package installation coming in v3.6.0
         throw new Error(
           `NPM plugin installation coming in v3.6.0 (March 2026).\n\n` +
-          `For now, install plugins from local files:\n` +
-          `  ultra-dex plugin install ./path/to/plugin.js\n\n` +
-          `Or clone from GitHub:\n` +
-          `  git clone https://github.com/user/ultra-dex-plugin-name\n` +
-          `  ultra-dex plugin install ./ultra-dex-plugin-name/index.js\n\n` +
-          `Community plugins: https://github.com/topics/ultra-dex-plugin`
+            `For now, install plugins from local files:\n` +
+            `  ultra-dex plugin install ./path/to/plugin.js\n\n` +
+            `Or clone from GitHub:\n` +
+            `  git clone https://github.com/user/ultra-dex-plugin-name\n` +
+            `  ultra-dex plugin install ./ultra-dex-plugin-name/index.js\n\n` +
+            `Community plugins: https://github.com/topics/ultra-dex-plugin`
         );
       }
 

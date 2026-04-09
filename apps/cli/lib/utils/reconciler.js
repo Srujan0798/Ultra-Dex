@@ -8,7 +8,6 @@
 import { projectGraph } from '../mcp/graph.js';
 import { loadState } from '../commands/plan.js';
 
-
 export class Reconciler {
   async reconcile() {
     const state = await loadState();

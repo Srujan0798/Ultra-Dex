@@ -16,9 +16,9 @@ class AgentAutopsy extends EventEmitter {
       logRetention: options.logRetention || 7, // days
       maxFailureCount: options.maxFailureCount || 5,
       recoveryStrategies: options.recoveryStrategies || ['restart', 'retry', 'fallback'],
-      ...options
+      ...options,
     };
-    
+
     this.failureLog = new Map();
     this.agentStates = new Map();
     this.recoveryHistory = new Map();
@@ -91,7 +91,7 @@ class AgentAutopsy extends EventEmitter {
       error: failure.error,
       analysis: failure.analysis,
       recommendations: report.recommendations,
-      summary: report.summary
+      summary: report.summary,
     };
   }
 
@@ -110,31 +110,31 @@ class AgentAutopsy extends EventEmitter {
         message: error.message,
         stack: error.stack,
         name: error.name,
-        code: error.code
+        code: error.code,
       },
       context,
-      analysis: await this.analyzeFailure(error, context)
+      analysis: await this.analyzeFailure(error, context),
     };
 
     // Add to failure log
     if (!this.failureLog.has(agentId)) {
       this.failureLog.set(agentId, []);
     }
-    
+
     const agentFailures = this.failureLog.get(agentId);
     agentFailures.push(failure);
-    
+
     // Keep only recent failures based on retention policy
-    const cutoffDate = new Date(Date.now() - (this.options.logRetention * 24 * 60 * 60 * 1000));
-    const recentFailures = agentFailures.filter(f => new Date(f.timestamp) > cutoffDate);
+    const cutoffDate = new Date(Date.now() - this.options.logRetention * 24 * 60 * 60 * 1000);
+    const recentFailures = agentFailures.filter((f) => new Date(f.timestamp) > cutoffDate);
     this.failureLog.set(agentId, recentFailures);
-    
+
     logger.log(`💀 Agent ${agentId} failure logged: ${error.message}`);
     this.emit('failure:logged', { agentId, failure });
-    
+
     // Check if we need to take action based on failure count
     await this.evaluateFailurePattern(agentId);
-    
+
     return failure;
   }
 
@@ -151,7 +151,7 @@ class AgentAutopsy extends EventEmitter {
       cause: 'unknown',
       recoverySuggestions: [],
       isRecoverable: true,
-      requiresManualIntervention: false
+      requiresManualIntervention: false,
     };
 
     const errorMessage = error.message.toLowerCase();
@@ -208,22 +208,24 @@ class AgentAutopsy extends EventEmitter {
    */
   async evaluateFailurePattern(agentId) {
     const failures = this.failureLog.get(agentId) || [];
-    const recentFailures = failures.filter(f => {
+    const recentFailures = failures.filter((f) => {
       const minutesAgo = (Date.now() - new Date(f.timestamp).getTime()) / (1000 * 60);
       return minutesAgo < 10; // Last 10 minutes
     });
 
     if (recentFailures.length >= this.options.maxFailureCount) {
-      logger.log(`🚨 Agent ${agentId} showing concerning failure pattern (${recentFailures.length} recent failures)`);
-      
+      logger.log(
+        `🚨 Agent ${agentId} showing concerning failure pattern (${recentFailures.length} recent failures)`
+      );
+
       // Mark agent as unstable
       this.agentStates.set(agentId, {
         status: 'unstable',
         lastFailure: recentFailures[recentFailures.length - 1],
         failureCount: recentFailures.length,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      
+
       // Attempt recovery
       await this.attemptRecoveryForAgent(agentId);
     }
@@ -249,10 +251,10 @@ class AgentAutopsy extends EventEmitter {
     // Try different recovery strategies based on failure analysis
     for (const strategy of this.options.recoveryStrategies) {
       const recoveryResult = await this.executeRecoveryStrategy(strategy, agentId, analysis);
-      
+
       if (recoveryResult.success) {
         logger.log(`✅ Recovery successful for agent ${agentId} using strategy: ${strategy}`);
-        
+
         // Update agent state
         this.agentStates.set(agentId, {
           ...agentState,
@@ -260,10 +262,10 @@ class AgentAutopsy extends EventEmitter {
           lastRecovery: {
             strategy,
             timestamp: new Date().toISOString(),
-            result: recoveryResult
-          }
+            result: recoveryResult,
+          },
         });
-        
+
         // Add to recovery history
         if (!this.recoveryHistory.has(agentId)) {
           this.recoveryHistory.set(agentId, []);
@@ -272,12 +274,15 @@ class AgentAutopsy extends EventEmitter {
           strategy,
           timestamp: new Date().toISOString(),
           result: recoveryResult,
-          failure: lastFailure
+          failure: lastFailure,
         });
-        
+
         return recoveryResult;
       } else {
-        logger.log(`Recovery strategy ${strategy} failed for agent ${agentId}:`, recoveryResult.error);
+        logger.log(
+          `Recovery strategy ${strategy} failed for agent ${agentId}:`,
+          recoveryResult.error
+        );
       }
     }
 
@@ -317,33 +322,33 @@ class AgentAutopsy extends EventEmitter {
   async restartAgent(agentId) {
     try {
       logger.log(`🔄 Restarting agent: ${agentId}`);
-      
+
       // In a real implementation, this would restart the agent process
       // For now, we'll just update the state
       this.agentStates.set(agentId, {
         status: 'restarting',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      
+
       // Simulate restart process
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       this.agentStates.set(agentId, {
         status: 'running',
         timestamp: new Date().toISOString(),
-        restartedAt: new Date().toISOString()
+        restartedAt: new Date().toISOString(),
       });
-      
-      return { 
-        success: true, 
+
+      return {
+        success: true,
         action: 'restart',
-        details: `Agent ${agentId} restarted successfully`
+        details: `Agent ${agentId} restarted successfully`,
       };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: error.message,
-        action: 'restart'
+        action: 'restart',
       };
     }
   }
@@ -357,13 +362,13 @@ class AgentAutopsy extends EventEmitter {
   async retryAgent(agentId, analysis) {
     try {
       logger.log(`🔄 Retrying agent: ${agentId}`);
-      
+
       // Update agent state
       this.agentStates.set(agentId, {
         status: 'retrying',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      
+
       // Apply any specific retry logic based on analysis
       if (analysis.type === 'timeout') {
         // For timeout errors, we might want to increase timeout
@@ -372,26 +377,26 @@ class AgentAutopsy extends EventEmitter {
         // For resource exhaustion, we might want to reduce workload
         logger.log(`Reducing workload for agent ${agentId}`);
       }
-      
+
       // Simulate retry process
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
       this.agentStates.set(agentId, {
         status: 'running',
         timestamp: new Date().toISOString(),
-        retriedAt: new Date().toISOString()
+        retriedAt: new Date().toISOString(),
       });
-      
-      return { 
-        success: true, 
+
+      return {
+        success: true,
         action: 'retry',
-        details: `Agent ${agentId} retry completed`
+        details: `Agent ${agentId} retry completed`,
       };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: error.message,
-        action: 'retry'
+        action: 'retry',
       };
     }
   }
@@ -405,38 +410,38 @@ class AgentAutopsy extends EventEmitter {
   async fallbackAgent(agentId, analysis) {
     try {
       logger.log(`🔄 Falling back from agent: ${agentId}`);
-      
+
       // Find an alternative agent
       const alternativeAgent = await this.findAlternativeAgent(agentId, analysis);
-      
+
       if (!alternativeAgent) {
-        return { 
-          success: false, 
+        return {
+          success: false,
           error: 'no_alternative_agent_available',
-          action: 'fallback'
+          action: 'fallback',
         };
       }
-      
+
       logger.log(`Using alternative agent: ${alternativeAgent}`);
-      
+
       // Update agent state
       this.agentStates.set(agentId, {
         status: 'fallback_active',
         fallbackAgent: alternativeAgent,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      
-      return { 
-        success: true, 
+
+      return {
+        success: true,
         action: 'fallback',
         details: `Fall back to agent ${alternativeAgent} successful`,
-        fallbackAgent
+        fallbackAgent,
       };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: error.message,
-        action: 'fallback'
+        action: 'fallback',
       };
     }
   }
@@ -449,24 +454,24 @@ class AgentAutopsy extends EventEmitter {
   async throttleAgent(agentId) {
     try {
       logger.log(`⏳ Throttling agent: ${agentId}`);
-      
+
       // Update agent state to throttled
       this.agentStates.set(agentId, {
         status: 'throttled',
         throttleLevel: 'medium',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      
-      return { 
-        success: true, 
+
+      return {
+        success: true,
         action: 'throttle',
-        details: `Agent ${agentId} throttled successfully`
+        details: `Agent ${agentId} throttled successfully`,
       };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: error.message,
-        action: 'throttle'
+        action: 'throttle',
       };
     }
   }
@@ -479,26 +484,26 @@ class AgentAutopsy extends EventEmitter {
   async resetAgent(agentId) {
     try {
       logger.log(`🔄 Resetting agent: ${agentId}`);
-      
+
       // Reset agent state completely
       this.agentStates.set(agentId, {
         status: 'reset',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-      
+
       // Clear any cached data or state
       await this.clearAgentState(agentId);
-      
-      return { 
-        success: true, 
+
+      return {
+        success: true,
         action: 'reset',
-        details: `Agent ${agentId} reset successfully`
+        details: `Agent ${agentId} reset successfully`,
       };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: error.message,
-        action: 'reset'
+        action: 'reset',
       };
     }
   }
@@ -544,26 +549,27 @@ class AgentAutopsy extends EventEmitter {
         totalRecoveries: recoveryHistory.length,
         currentStatus: currentState?.status || 'unknown',
         lastFailure: failures.length > 0 ? failures[failures.length - 1].timestamp : null,
-        lastRecovery: recoveryHistory.length > 0 ? recoveryHistory[recoveryHistory.length - 1].timestamp : null
+        lastRecovery:
+          recoveryHistory.length > 0 ? recoveryHistory[recoveryHistory.length - 1].timestamp : null,
       },
-      failures: failures.map(f => ({
+      failures: failures.map((f) => ({
         timestamp: f.timestamp,
         error: f.error.message,
         type: f.analysis.type,
         severity: f.analysis.severity,
-        cause: f.analysis.cause
+        cause: f.analysis.cause,
       })),
-      recoveryHistory: recoveryHistory.map(r => ({
+      recoveryHistory: recoveryHistory.map((r) => ({
         timestamp: r.timestamp,
         strategy: r.strategy,
         success: r.result.success,
-        details: r.result.details
+        details: r.result.details,
       })),
-      recommendations: await this.generateRecommendations(agentId)
+      recommendations: await this.generateRecommendations(agentId),
     };
 
     this.autopsyReports.push(report);
-    
+
     // Keep only recent reports
     const maxReports = 50;
     if (this.autopsyReports.length > maxReports) {
@@ -635,16 +641,16 @@ class AgentAutopsy extends EventEmitter {
     let score = 100;
 
     // Deduct points for recent failures
-    const recentFailures = failures.filter(f => {
+    const recentFailures = failures.filter((f) => {
       const hoursAgo = (Date.now() - new Date(f.timestamp).getTime()) / (1000 * 60 * 60);
       return hoursAgo < 24; // Last 24 hours
     });
-    
+
     score -= recentFailures.length * 10; // 10 points per recent failure
 
     // Adjust for recovery success rate
     if (recoveryHistory.length > 0) {
-      const successfulRecoveries = recoveryHistory.filter(r => r.result.success).length;
+      const successfulRecoveries = recoveryHistory.filter((r) => r.result.success).length;
       const successRate = successfulRecoveries / recoveryHistory.length;
       score += successRate * 20; // Up to 20 bonus points for good recovery rate
     }
@@ -702,7 +708,7 @@ class AgentAutopsy extends EventEmitter {
     this.agentStates.clear();
     this.recoveryHistory.clear();
     this.autopsyReports = [];
-    
+
     logger.log('🧹 All agent autopsy logs cleared');
   }
 }

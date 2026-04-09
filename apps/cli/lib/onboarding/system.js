@@ -9,7 +9,6 @@ import inquirer from 'inquirer';
 import chalk from 'chalk';
 import fs from 'fs/promises';
 
-
 import { logger } from '../utils/logger.js';
 
 export default class OnboardingSystem {

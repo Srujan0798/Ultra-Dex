@@ -3,6 +3,7 @@
 ## Current Database Architecture
 
 ### PostgreSQL Configuration
+
 ```
 Primary Database: PostgreSQL 15.4
 Replicas: 2 read replicas
@@ -13,6 +14,7 @@ CPU: 8-core processor
 ```
 
 ### Current Performance Metrics
+
 ```
 Average Query Time: 45ms
 Peak Concurrent Connections: 85
@@ -25,8 +27,11 @@ Memory Utilization: 78%
 ## Scaling Strategy
 
 ### Phase 1: Optimization (Week 7)
+
 #### 1. Query Optimization
+
 **Identified Slow Queries:**
+
 ```sql
 -- Query 1: Agent execution history (currently 230ms average)
 SELECT a.name, ae.status, ae.created_at, ae.duration_ms
@@ -37,8 +42,8 @@ ORDER BY ae.created_at DESC
 LIMIT 100;
 
 -- Optimization: Add composite index
-CREATE INDEX CONCURRENTLY idx_agent_executions_created_agent 
-ON agent_executions(created_at DESC, agent_id) 
+CREATE INDEX CONCURRENTLY idx_agent_executions_created_agent
+ON agent_executions(created_at DESC, agent_id)
 WHERE created_at > NOW() - INTERVAL '30 days';
 ```
 
@@ -52,12 +57,14 @@ ORDER BY m.importance DESC, m.created_at DESC
 LIMIT 50;
 
 -- Optimization: Add full-text search index
-CREATE INDEX CONCURRENTLY idx_memory_content_fts 
+CREATE INDEX CONCURRENTLY idx_memory_content_fts
 ON memory_entries USING gin(to_tsvector('english', content));
 ```
 
 #### 2. Index Optimization
+
 **Current Indexes Analysis:**
+
 ```sql
 -- High-use tables that need optimization
 -- agents table: Currently has 3 indexes, could benefit from 2 more
@@ -66,23 +73,26 @@ ON memory_entries USING gin(to_tsvector('english', content));
 ```
 
 **Recommended Indexes:**
+
 ```sql
 -- Agents table optimization
-CREATE INDEX CONCURRENTLY idx_agents_status_created 
+CREATE INDEX CONCURRENTLY idx_agents_status_created
 ON agents(status, created_at DESC);
 
 -- Memory entries optimization
-CREATE INDEX CONCURRENTLY idx_memory_type_importance 
+CREATE INDEX CONCURRENTLY idx_memory_type_importance
 ON memory_entries(type, importance DESC, created_at DESC);
 
 -- Performance monitoring index
-CREATE INDEX CONCURRENTLY idx_agent_executions_performance 
+CREATE INDEX CONCURRENTLY idx_agent_executions_performance
 ON agent_executions(agent_id, duration_ms DESC, created_at DESC)
 WHERE duration_ms > 1000; -- Only for slow executions
 ```
 
 #### 3. Configuration Tuning
+
 **PostgreSQL Configuration Adjustments:**
+
 ```conf
 # Memory settings
 shared_buffers = 8GB           # ~25% of total RAM
@@ -106,13 +116,17 @@ effective_io_concurrency = 200 # SSD optimized
 ```
 
 ### Phase 2: Read Scaling (Week 7)
+
 #### 1. Read Replica Optimization
+
 **Current Setup:**
+
 - 2 read replicas in same region
 - Async replication with minimal lag
 - Load balancing with application-level routing
 
 **Optimization Plan:**
+
 ```bash
 # Add third read replica for additional capacity
 aws rds create-db-instance \
@@ -128,7 +142,9 @@ aws rds create-db-instance \
 ```
 
 #### 2. Connection Pooling Enhancement
+
 **Current PgBouncer Configuration:**
+
 ```ini
 [databases]
 ultra_dex_main = host=primary-db port=5432 dbname=ultra_dex
@@ -142,6 +158,7 @@ reserve_pool_timeout = 5
 ```
 
 **Enhanced Configuration:**
+
 ```ini
 # Separate pools for different use cases
 [ultra_dex_write]
@@ -164,8 +181,11 @@ server_reset_query = DISCARD ALL # Cleaner connection resets
 ```
 
 ### Phase 3: Partitioning (Week 8)
+
 #### 1. Historical Data Partitioning
+
 **Agent Executions Table Partitioning:**
+
 ```sql
 -- Create partitioned table for agent executions
 CREATE TABLE agent_executions_partitioned (
@@ -190,6 +210,7 @@ FOR VALUES FROM ('2026-03-01') TO ('2026-04-01');
 ```
 
 **Memory Entries Partitioning:**
+
 ```sql
 -- Partition memory entries by type and date
 CREATE TABLE memory_entries_partitioned (
@@ -208,21 +229,23 @@ CREATE TABLE memory_entries_partitioned (
 ```
 
 #### 2. Data Lifecycle Management
+
 **Archival Strategy:**
+
 ```sql
 -- Archive data older than 1 year to separate tables
 CREATE OR REPLACE FUNCTION archive_old_data()
 RETURNS void AS $$
 BEGIN
     -- Move agent executions older than 1 year
-    INSERT INTO agent_executions_archive 
+    INSERT INTO agent_executions_archive
     SELECT * FROM agent_executions_partitioned
     WHERE created_at < CURRENT_DATE - INTERVAL '1 year';
-    
+
     -- Delete from main table
     DELETE FROM agent_executions_partitioned
     WHERE created_at < CURRENT_DATE - INTERVAL '1 year';
-    
+
     -- Update statistics
     ANALYZE agent_executions_partitioned;
 END;
@@ -233,12 +256,15 @@ SELECT cron.schedule('0 2 * * *', $$SELECT archive_old_data()$$);
 ```
 
 ### Phase 4: Monitoring & Alerting (Week 8)
+
 #### 1. Performance Monitoring Setup
+
 **Query Performance Dashboard:**
+
 ```sql
 -- Slow query monitoring
 CREATE VIEW slow_queries_monitor AS
-SELECT 
+SELECT
     query,
     calls,
     total_time,
@@ -253,7 +279,7 @@ LIMIT 20;
 
 -- Connection monitoring
 CREATE VIEW connection_monitor AS
-SELECT 
+SELECT
     datname,
     usename,
     application_name,
@@ -267,34 +293,37 @@ HAVING COUNT(*) > 1;
 ```
 
 #### 2. Alerting Configuration
+
 **Critical Alerts:**
+
 ```yaml
 # Database monitoring alerts
 alerts:
-  - name: "High Query Latency"
-    condition: "avg(query_time_p95) > 200ms for 5m"
-    severity: "critical"
-    notification: ["#engineering", "on-call"]
+  - name: 'High Query Latency'
+    condition: 'avg(query_time_p95) > 200ms for 5m'
+    severity: 'critical'
+    notification: ['#engineering', 'on-call']
 
-  - name: "Connection Pool Exhausted" 
-    condition: "connections_used > 90% of pool_max for 2m"
-    severity: "high"
-    notification: ["#engineering", "on-call"]
+  - name: 'Connection Pool Exhausted'
+    condition: 'connections_used > 90% of pool_max for 2m'
+    severity: 'high'
+    notification: ['#engineering', 'on-call']
 
-  - name: "Replica Lag High"
-    condition: "replica_lag_seconds > 30s for 1m"
-    severity: "high" 
-    notification: ["#engineering", "on-call"]
+  - name: 'Replica Lag High'
+    condition: 'replica_lag_seconds > 30s for 1m'
+    severity: 'high'
+    notification: ['#engineering', 'on-call']
 
-  - name: "Slow Query Detected"
-    condition: "count(slow_queries > 500ms) > 5 in 10m"
-    severity: "medium"
-    notification: ["#engineering"]
+  - name: 'Slow Query Detected'
+    condition: 'count(slow_queries > 500ms) > 5 in 10m'
+    severity: 'medium'
+    notification: ['#engineering']
 ```
 
 ## Implementation Timeline
 
 ### Week 7 Tasks:
+
 - [ ] Query optimization and index creation (Days 1-3)
 - [ ] PostgreSQL configuration tuning (Days 2-4)
 - [ ] Read replica setup and configuration (Days 3-5)
@@ -302,6 +331,7 @@ alerts:
 - [ ] Performance baseline measurement (Day 7)
 
 ### Week 8 Tasks:
+
 - [ ] Table partitioning implementation (Days 1-3)
 - [ ] Data archival procedures (Days 2-4)
 - [ ] Monitoring and alerting setup (Days 4-5)
@@ -311,12 +341,14 @@ alerts:
 ## Expected Outcomes
 
 ### Performance Improvements:
+
 - **Query Response Time**: Reduce average from 45ms to 25ms
 - **Connection Handling**: Support 2x more concurrent users
 - **Storage Efficiency**: 30% reduction in storage growth rate
 - **Replica Performance**: 50% faster read queries
 
 ### Scalability Targets:
+
 - **Concurrent Users**: Support 10,000+ users (currently 500+)
 - **Query Volume**: Handle 2,000+ queries per second
 - **Data Growth**: Manage 1TB+ of data efficiently
@@ -325,6 +357,7 @@ alerts:
 ## Rollback Plan
 
 ### If Issues Occur:
+
 1. **Immediate Response**: Revert to previous configuration
 2. **Index Rollback**: Drop problematic indexes
 3. **Configuration Restore**: Revert PostgreSQL settings
@@ -333,12 +366,14 @@ alerts:
 ## Success Metrics
 
 ### Quantitative Measures:
+
 - Query response time improvement: Target 40% reduction
 - Connection capacity increase: Target 100% increase
 - Storage efficiency: Target 30% improvement
 - System uptime: Maintain 99.95%+
 
 ### Qualitative Measures:
+
 - Developer experience improvement
 - Customer-reported performance gains
 - Reduced database-related support tickets

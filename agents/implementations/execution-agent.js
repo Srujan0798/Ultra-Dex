@@ -37,16 +37,22 @@ console.log('2️⃣  Checking provider configuration...\n');
 try {
   const nemotronPath = path.join(process.cwd(), 'src/services/ai-providers/nemotron.js');
   const nemotronContent = fs.readFileSync(nemotronPath, 'utf8');
-  
+
   const hasKeyManager = nemotronContent.includes('keyManager');
   const hasInitKeys = nemotronContent.includes('initNVIDIAKeys');
   const hasRotatingClient = nemotronContent.includes('createRotatingClient');
-  
-  console.log(`   ${hasKeyManager ? '✅' : '❌'} Key manager: ${hasKeyManager ? 'Present' : 'Missing'}`);
-  console.log(`   ${hasInitKeys ? '✅' : '❌'} Key initialization: ${hasInitKeys ? 'Present' : 'Missing'}`);
-  console.log(`   ${hasRotatingClient ? '✅' : '❌'} Rotating client: ${hasRotatingClient ? 'Present' : 'Missing'}`);
+
+  console.log(
+    `   ${hasKeyManager ? '✅' : '❌'} Key manager: ${hasKeyManager ? 'Present' : 'Missing'}`
+  );
+  console.log(
+    `   ${hasInitKeys ? '✅' : '❌'} Key initialization: ${hasInitKeys ? 'Present' : 'Missing'}`
+  );
+  console.log(
+    `   ${hasRotatingClient ? '✅' : '❌'} Rotating client: ${hasRotatingClient ? 'Present' : 'Missing'}`
+  );
   console.log('');
-  
+
   if (!hasKeyManager || !hasInitKeys || !hasRotatingClient) {
     issues.push('Provider configuration incomplete');
   }
@@ -60,18 +66,24 @@ console.log('3️⃣  Checking request/response handling...\n');
 try {
   const testPath = path.join(process.cwd(), 'test-nvidia-api.js');
   const testContent = fs.readFileSync(testPath, 'utf8');
-  
+
   const hasChatCompletion = testContent.includes('chat.completions');
   const hasModel = testContent.includes('model:');
   const hasMessages = testContent.includes('messages:');
   const hasErrorHandling = testContent.includes('catch') || testContent.includes('try');
-  
-  console.log(`   ${hasChatCompletion ? '✅' : '❌'} Chat completion: ${hasChatCompletion ? 'Present' : 'Missing'}`);
+
+  console.log(
+    `   ${hasChatCompletion ? '✅' : '❌'} Chat completion: ${hasChatCompletion ? 'Present' : 'Missing'}`
+  );
   console.log(`   ${hasModel ? '✅' : '❌'} Model config: ${hasModel ? 'Present' : 'Missing'}`);
-  console.log(`   ${hasMessages ? '✅' : '❌'} Messages format: ${hasMessages ? 'Present' : 'Missing'}`);
-  console.log(`   ${hasErrorHandling ? '✅' : '❌'} Error handling: ${hasErrorHandling ? 'Present' : 'Missing'}`);
+  console.log(
+    `   ${hasMessages ? '✅' : '❌'} Messages format: ${hasMessages ? 'Present' : 'Missing'}`
+  );
+  console.log(
+    `   ${hasErrorHandling ? '✅' : '❌'} Error handling: ${hasErrorHandling ? 'Present' : 'Missing'}`
+  );
   console.log('');
-  
+
   if (!hasChatCompletion || !hasModel || !hasMessages) {
     issues.push('Request handling incomplete');
   }
@@ -84,21 +96,28 @@ try {
 console.log('4️⃣  Running execution test...\n');
 try {
   console.log('   Running: npx ultra-dex run planner -t "execution test" --provider nvidia\n');
-  const output = execSync('npx ultra-dex run planner -t "execution test" --provider nvidia 2>&1 | tail -20', {
-    cwd: process.cwd(),
-    encoding: 'utf8',
-    timeout: 90000,
-  });
-  
+  const output = execSync(
+    'npx ultra-dex run planner -t "execution test" --provider nvidia 2>&1 | tail -20',
+    {
+      cwd: process.cwd(),
+      encoding: 'utf8',
+      timeout: 90000,
+    }
+  );
+
   const has401 = output.includes('401');
   const hasSuccess = output.includes('success') || output.includes('Result');
   const hasArtifacts = output.includes('.ultra-dex/runs');
-  
-  console.log(`   ${has401 ? '⚠️' : '✅'} API Response: ${has401 ? '401 (placeholder keys)' : 'Success'}`);
+
+  console.log(
+    `   ${has401 ? '⚠️' : '✅'} API Response: ${has401 ? '401 (placeholder keys)' : 'Success'}`
+  );
   console.log(`   ${hasSuccess ? '✅' : '❌'} Execution: ${hasSuccess ? 'Completed' : 'Failed'}`);
-  console.log(`   ${hasArtifacts ? '✅' : '❌'} Artifacts: ${hasArtifacts ? 'Generated' : 'Missing'}`);
+  console.log(
+    `   ${hasArtifacts ? '✅' : '❌'} Artifacts: ${hasArtifacts ? 'Generated' : 'Missing'}`
+  );
   console.log('');
-  
+
   if (hasSuccess && hasArtifacts) {
     fixes.push('CLI execution working (401 expected with placeholder keys)');
   } else {
@@ -131,14 +150,21 @@ if (fixes.length > 0) {
 
 // Write report
 const reportPath = path.join(process.cwd(), '.ultra-dex/execution-agent-report.json');
-fs.writeFileSync(reportPath, JSON.stringify({
-  timestamp: new Date().toISOString(),
-  issues,
-  fixes,
-  status: issues.length === 0 ? 'PASS' : 'FAIL',
-  executionWorking: fixes.some(f => f.includes('working')),
-  apiStatus: issues.some(i => i.includes('API')) ? 'FAIL' : 'PASS (401 expected)',
-}, null, 2));
+fs.writeFileSync(
+  reportPath,
+  JSON.stringify(
+    {
+      timestamp: new Date().toISOString(),
+      issues,
+      fixes,
+      status: issues.length === 0 ? 'PASS' : 'FAIL',
+      executionWorking: fixes.some((f) => f.includes('working')),
+      apiStatus: issues.some((i) => i.includes('API')) ? 'FAIL' : 'PASS (401 expected)',
+    },
+    null,
+    2
+  )
+);
 
 console.log('');
 console.log(`📄 Report saved to: ${reportPath}\n`);
@@ -146,4 +172,3 @@ console.log(`📄 Report saved to: ${reportPath}\n`);
 console.log('═══════════════════════════════════════════════════════════');
 console.log('         🎯 EXECUTION STATUS: ' + (issues.length === 0 ? 'PASS ✅' : 'NEEDS FIX ⚠️'));
 console.log('═══════════════════════════════════════════════════════════\n');
-

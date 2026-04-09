@@ -1,4 +1,3 @@
-
 import { MockOpenAI } from '../../lib/providers/mock.js';
 
 async function run() {

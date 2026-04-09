@@ -3,23 +3,22 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import fs from "fs/promises";
-import path from "path";
-import { pathToFileURL } from "url";
-import chalk from "chalk";
-import os from "os";
-import { exec } from "child_process";
-import { promisify } from "util";
+import { singleton } from 'tsyringe';
+import fs from 'fs/promises';
+import path from 'path';
+import { pathToFileURL } from 'url';
+import chalk from 'chalk';
+import os from 'os';
+import { exec } from 'child_process';
+import { promisify } from 'util';
 import { logger } from './logging.js';
-const PLUGIN_DIR = ".ultra/plugins";
-const PLUGIN_MANIFEST = "ultra-dex-plugin.json";
+const PLUGIN_DIR = '.ultra/plugins';
+const PLUGIN_MANIFEST = 'ultra-dex-plugin.json';
 const execAsync = promisify(exec);
 let PluginManager = class {
   constructor(projectRoot) {
@@ -39,8 +38,7 @@ let PluginManager = class {
           await this.loadPlugin(path.join(pluginDir, entry.name));
         }
       }
-    } catch {
-    }
+    } catch {}
   }
   /**
    * Load a single plugin
@@ -48,18 +46,18 @@ let PluginManager = class {
   async loadPlugin(pluginPath) {
     try {
       const manifestPath = path.join(pluginPath, PLUGIN_MANIFEST);
-      const manifest = JSON.parse(await fs.readFile(manifestPath, "utf8"));
+      const manifest = JSON.parse(await fs.readFile(manifestPath, 'utf8'));
       if (!manifest.name || !manifest.version) {
         logger.warn(chalk.yellow(`Invalid plugin manifest: ${pluginPath}`));
         return;
       }
-      const indexPath = path.join(pluginPath, manifest.main || "index.js");
+      const indexPath = path.join(pluginPath, manifest.main || 'index.js');
       const pluginModule = await import(pathToFileURL(indexPath).href);
       const plugin = {
         manifest,
         module: pluginModule,
         path: pluginPath,
-        hooks: /* @__PURE__ */ new Set()
+        hooks: /* @__PURE__ */ new Set(),
       };
       this.plugins.set(manifest.name, plugin);
       if (pluginModule.default?.activate) {
@@ -103,7 +101,7 @@ let PluginManager = class {
       name: p.manifest.name,
       version: p.manifest.version,
       description: p.manifest.description,
-      author: p.manifest.author
+      author: p.manifest.author,
     }));
   }
   /**
@@ -113,7 +111,7 @@ let PluginManager = class {
     const pluginDir = path.join(this.projectRoot, PLUGIN_DIR);
     await fs.mkdir(pluginDir, { recursive: true });
     logger.log(chalk.blue(`Installing plugin from ${source}...`));
-    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "ultra-dex-plugin-"));
+    const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ultra-dex-plugin-'));
     let pluginSourceDir = null;
     const exists = async (target) => {
       try {
@@ -133,36 +131,40 @@ let PluginManager = class {
     };
     if (await isDirectory(source)) {
       pluginSourceDir = source;
-    } else if (source.startsWith("http") || source.endsWith(".git") || source.includes("github.com")) {
+    } else if (
+      source.startsWith('http') ||
+      source.endsWith('.git') ||
+      source.includes('github.com')
+    ) {
       await execAsync(`git clone --depth=1 ${source} ${tempDir}`);
       pluginSourceDir = tempDir;
-    } else if (await exists(source) && source.endsWith(".tgz")) {
+    } else if ((await exists(source)) && source.endsWith('.tgz')) {
       await execAsync(`tar -xzf ${source} -C ${tempDir}`);
-      pluginSourceDir = path.join(tempDir, "package");
+      pluginSourceDir = path.join(tempDir, 'package');
     } else {
       await execAsync(`npm pack ${source}`, { cwd: tempDir });
       const files = await fs.readdir(tempDir);
-      const tarball = files.find((f) => f.endsWith(".tgz"));
+      const tarball = files.find((f) => f.endsWith('.tgz'));
       if (!tarball) {
-        throw new Error("Failed to download npm package");
+        throw new Error('Failed to download npm package');
       }
       await execAsync(`tar -xzf ${tarball} -C ${tempDir}`, { cwd: tempDir });
-      pluginSourceDir = path.join(tempDir, "package");
+      pluginSourceDir = path.join(tempDir, 'package');
     }
     const manifestPath = path.join(pluginSourceDir, PLUGIN_MANIFEST);
-    if (!await exists(manifestPath)) {
+    if (!(await exists(manifestPath))) {
       throw new Error(`Missing ${PLUGIN_MANIFEST} in plugin`);
     }
-    const manifest = JSON.parse(await fs.readFile(manifestPath, "utf8"));
+    const manifest = JSON.parse(await fs.readFile(manifestPath, 'utf8'));
     if (!manifest.name) {
-      throw new Error("Plugin manifest missing name");
+      throw new Error('Plugin manifest missing name');
     }
     const targetPath = path.join(pluginDir, manifest.name);
     await fs.rm(targetPath, { recursive: true, force: true });
     await fs.cp(pluginSourceDir, targetPath, { recursive: true });
     await this.loadPlugin(targetPath);
     logger.log(chalk.green(`\u2713 Plugin installed: ${manifest.name}`));
-    logger.log(chalk.gray("Restart Ultra-Dex to reload plugins if already running"));
+    logger.log(chalk.gray('Restart Ultra-Dex to reload plugins if already running'));
   }
   /**
    * Uninstall a plugin
@@ -180,26 +182,24 @@ let PluginManager = class {
     logger.log(chalk.green(`\u2713 Uninstalled plugin: ${name}`));
   }
 };
-PluginManager = __decorateClass([
-  singleton()
-], PluginManager);
+PluginManager = __decorateClass([singleton()], PluginManager);
 const PLUGIN_MANIFEST_EXAMPLE = {
-  name: "my-awesome-plugin",
-  version: "1.0.0",
-  description: "Does awesome things with Ultra-Dex",
-  main: "index.js",
-  author: "Your Name",
-  license: "MIT",
-  hooks: ["pre-init", "post-generate"],
+  name: 'my-awesome-plugin',
+  version: '1.0.0',
+  description: 'Does awesome things with Ultra-Dex',
+  main: 'index.js',
+  author: 'Your Name',
+  license: 'MIT',
+  hooks: ['pre-init', 'post-generate'],
   commands: [
     {
-      name: "my-command",
-      description: "Custom command provided by plugin"
-    }
+      name: 'my-command',
+      description: 'Custom command provided by plugin',
+    },
   ],
   dependencies: {
-    "ultra-dex": ">=3.0.0"
-  }
+    'ultra-dex': '>=3.0.0',
+  },
 };
 const PLUGIN_EXAMPLE = `
 // index.js - Example Ultra-Dex Plugin
@@ -233,9 +233,4 @@ export default {
 };
 `;
 var plugin_system_default = { PluginManager, PLUGIN_MANIFEST_EXAMPLE };
-export {
-  PLUGIN_EXAMPLE,
-  PLUGIN_MANIFEST_EXAMPLE,
-  PluginManager,
-  plugin_system_default as default
-};
+export { PLUGIN_EXAMPLE, PLUGIN_MANIFEST_EXAMPLE, PluginManager, plugin_system_default as default };

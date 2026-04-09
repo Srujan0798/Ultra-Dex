@@ -6,7 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["ultra-dex", "demo"],
+  "keywords": [
+    "ultra-dex",
+    "demo"
+  ],
   "author": "Demo User",
   "license": "MIT"
 }

@@ -3,11 +3,12 @@
 ## Quick Start Commands
 
 ### Copy Any Agent
+
 ```bash
 # Backend
 cat ../.agents/backend.md | pbcopy
 
-# Frontend  
+# Frontend
 cat ../.agents/frontend.md | pbcopy
 
 # Reviewer
@@ -18,6 +19,7 @@ ls ../.agents/
 ```
 
 ### Try Example Workflows
+
 ```bash
 # Auth feature
 cat ../examples/auth-workflow.md
@@ -40,6 +42,7 @@ cat ../examples/code-review-workflow.md
 - [ ] Test & Deploy!
 
 ## Need Help?
+
 - Quick reference: `../.agents/QUICK_REFERENCE.md`
 - FAQ: `../.github/FAQ.md`
 - Cheat sheet: `../CHEATSHEET.md`

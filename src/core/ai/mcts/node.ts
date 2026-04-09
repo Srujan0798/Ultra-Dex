@@ -3,15 +3,14 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { v4 as uuidv4 } from "uuid";
-import { logger } from '../../utils/logging.js';
+import { singleton } from 'tsyringe';
+import { v4 as uuidv4 } from 'uuid';
+import { logger } from '../../../utils/logging.js';
 let MCTSNode = class {
   constructor(state, parent = null, action = null) {
     this.id = uuidv4();
@@ -43,8 +42,7 @@ let MCTSNode = class {
     let best = null;
     let bestScore = -Infinity;
     for (const child of this.children) {
-      if (child.visits === 0)
-        return child;
+      if (child.visits === 0) return child;
       const exploit = child.value / child.visits;
       const explore = c * Math.sqrt(Math.log(this.visits) / child.visits);
       const score = exploit + explore;
@@ -70,15 +68,10 @@ let MCTSNode = class {
     childNode.parent = this;
   }
 };
-MCTSNode = __decorateClass([
-  singleton()
-], MCTSNode);
+MCTSNode = __decorateClass([singleton()], MCTSNode);
 function _handleError(error) {
   try {
-    logger.error("[node]", error instanceof Error ? error.message : String(error));
-  } catch (_) {
-  }
+    logger.error('[node]', error instanceof Error ? error.message : String(error));
+  } catch (_) {}
 }
-export {
-  MCTSNode
-};
+export { MCTSNode };

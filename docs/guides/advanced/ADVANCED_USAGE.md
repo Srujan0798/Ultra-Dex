@@ -7,6 +7,7 @@ This guide covers advanced features and techniques for experienced Ultra-Dex use
 ### Advanced Swarm Patterns
 
 #### Parallel Execution with Dependencies
+
 ```bash
 # Define tasks with dependencies
 ultra-dex swarm start --tasks "
@@ -20,6 +21,7 @@ ultra-dex swarm start --tasks "
 ```
 
 #### Competitive Agent Pattern
+
 ```bash
 # Run multiple agents competing to solve the same problem
 ultra-dex swarm start "Implement authentication" --competitive --agents 3
@@ -29,6 +31,7 @@ ultra-dex compare --results latest
 ```
 
 #### Meta-Orchestrator Usage
+
 ```bash
 # Use the meta-orchestrator to select appropriate agents
 ultra-dex architect analyze "complex security feature"
@@ -38,6 +41,7 @@ ultra-dex swarm start --meta-orchestrator
 ## 🧬 Context Management Advanced
 
 ### Context Pruning and Optimization
+
 ```bash
 # View detailed memory usage
 ultra-dex memory status --visual
@@ -51,6 +55,7 @@ ultra-dex config set contextPruning.pruneThreshold 0.75
 ```
 
 ### Context Serialization and Transfer
+
 ```bash
 # Export context for transfer
 ultra-dex context export --format json --destination ./context.json
@@ -65,6 +70,7 @@ ultra-dex context sync --team
 ## 🤖 Agent Development
 
 ### Creating Custom Agents
+
 ```bash
 # Generate a new agent template
 ultra-dex agent-gen create my-custom-agent
@@ -74,6 +80,7 @@ ultra-dex agent-gen create my-custom-agent
 ```
 
 Example custom agent:
+
 ```javascript
 // cli/lib/agents/performance-analyzer.js
 import { BaseAgent } from './base-agent.js';
@@ -84,7 +91,7 @@ export class PerformanceAnalyzerAgent extends BaseAgent {
       name: 'performance-analyzer',
       description: 'Analyzes code performance and suggests optimizations',
       capabilities: ['performance-analysis', 'profiling', 'optimization'],
-      ...options
+      ...options,
     });
   }
 
@@ -92,15 +99,15 @@ export class PerformanceAnalyzerAgent extends BaseAgent {
     // Custom logic for performance analysis
     const analysis = await this.analyzePerformance(context.code);
     const suggestions = await this.generateOptimizations(analysis);
-    
+
     return {
       success: true,
       analysis,
       suggestions,
       metrics: {
         performanceScore: this.calculateScore(analysis),
-        optimizationPotential: this.calculatePotential(suggestions)
-      }
+        optimizationPotential: this.calculatePotential(suggestions),
+      },
     };
   }
 
@@ -109,7 +116,7 @@ export class PerformanceAnalyzerAgent extends BaseAgent {
     return {
       bottlenecks: [],
       memoryUsage: {},
-      cpuProfiling: {}
+      cpuProfiling: {},
     };
   }
 
@@ -117,13 +124,14 @@ export class PerformanceAnalyzerAgent extends BaseAgent {
     // Generate optimization suggestions
     return [
       { type: 'algorithm', suggestion: 'Use more efficient algorithm' },
-      { type: 'caching', suggestion: 'Implement caching strategy' }
+      { type: 'caching', suggestion: 'Implement caching strategy' },
     ];
   }
 }
 ```
 
 Register the agent:
+
 ```bash
 # Add to agent registry
 ultra-dex agents register performance-analyzer
@@ -132,6 +140,7 @@ ultra-dex agents register performance-analyzer
 ## 🎛️ MCP Server Advanced
 
 ### Custom Tool Registration
+
 ```javascript
 // cli/lib/mcp/custom-tools.js
 import { createMcpServer } from './server.js';
@@ -150,10 +159,10 @@ server.tool(
       parameters: {
         type: 'object',
         properties: {
-          projectPath: { type: 'string', description: 'Path to project' }
-        }
-      }
-    }
+          projectPath: { type: 'string', description: 'Path to project' },
+        },
+      },
+    },
   },
   async ({ projectPath }) => {
     // Custom dependency analysis logic
@@ -163,6 +172,7 @@ server.tool(
 ```
 
 ### MCP Client Integration
+
 ```bash
 # Connect to remote MCP server
 ultra-dex mcp-remote connect wss://mcp.ultra-dex.io
@@ -174,6 +184,7 @@ ultra-dex serve --port 8866 --cors-origin "*"
 ## 🎨 Custom Templates
 
 ### Creating Advanced Templates
+
 ```bash
 # Generate template structure
 ultra-dex template generate --new my-advanced-template
@@ -190,6 +201,7 @@ my-advanced-template/
 ```
 
 Template configuration (`template.json`):
+
 ```json
 {
   "name": "my-advanced-template",
@@ -215,11 +227,7 @@ Template configuration (`template.json`):
     }
   },
   "hooks": {
-    "post-create": [
-      "npm install",
-      "npx prisma generate",
-      "echo 'Template setup complete!'"
-    ]
+    "post-create": ["npm install", "npx prisma generate", "echo 'Template setup complete!'"]
   }
 }
 ```
@@ -227,6 +235,7 @@ Template configuration (`template.json`):
 ## 🛡️ Security & Compliance
 
 ### Advanced Security Scanning
+
 ```bash
 # Run comprehensive security audit
 ultra-dex security audit --deep
@@ -239,6 +248,7 @@ ultra-dex security compliance --standard pci-dss
 ```
 
 ### Secret Management
+
 ```bash
 # Use vault integration
 ultra-dex config set secrets.provider hashicorp-vault
@@ -251,6 +261,7 @@ ultra-dex security rotate-secrets
 ## 📊 Monitoring & Observability
 
 ### Custom Metrics
+
 ```bash
 # View detailed metrics
 ultra-dex metrics show --all
@@ -260,6 +271,7 @@ ultra-dex metrics export --format prometheus --port 9090
 ```
 
 ### Performance Profiling
+
 ```bash
 # Profile command performance
 ultra-dex benchmark run --iterations 10 --command "ultra-dex generate 'simple component'"
@@ -271,6 +283,7 @@ ultra-dex performance analyze --target build-process
 ## 🔧 Advanced Configuration
 
 ### Environment-Specific Configs
+
 ```bash
 # Development config
 .ultra-dex/config.development.json
@@ -283,6 +296,7 @@ ultra-dex performance analyze --target build-process
 ```
 
 ### Conditional Execution
+
 ```bash
 # Run command with specific config
 ultra-dex run --config production plan.md
@@ -294,52 +308,54 @@ ultra-dex run plan.md --if "context.featureFlags.advancedMode"
 ## 🔄 Continuous Integration
 
 ### Advanced CI/CD Integration
+
 ```yaml
 # .github/workflows/advanced.yml
 name: Advanced Ultra-Dex CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   ultra-dex-validation:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-        
-    - name: Install Ultra-Dex
-      run: npm install -g ultra-dex
-      
-    - name: Validate Implementation Plan
-      run: |
-        ultra-dex check --p0-only
-        ultra-dex verify --json | jq '.score > 80' || exit 1
-        
-    - name: Run Quality Gates
-      run: ultra-dex quality --report
-      env:
-        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        
-    - name: Security Scan
-      run: ultra-dex security audit --fail-on-high
-      env:
-        SEMGREP_API_KEY: ${{ secrets.SEMGREP_API_KEY }}
-        
-    - name: Performance Baseline
-      run: ultra-dex benchmark compare --baseline main
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Ultra-Dex
+        run: npm install -g ultra-dex
+
+      - name: Validate Implementation Plan
+        run: |
+          ultra-dex check --p0-only
+          ultra-dex verify --json | jq '.score > 80' || exit 1
+
+      - name: Run Quality Gates
+        run: ultra-dex quality --report
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Security Scan
+        run: ultra-dex security audit --fail-on-high
+        env:
+          SEMGREP_API_KEY: ${{ secrets.SEMGREP_API_KEY }}
+
+      - name: Performance Baseline
+        run: ultra-dex benchmark compare --baseline main
 ```
 
 ## 🧪 Advanced Testing
 
 ### AI-Powered Testing
+
 ```bash
 # Generate test cases automatically
 ultra-dex test generate --target src/components/Button.js
@@ -352,6 +368,7 @@ ultra-dex test mutation --target src/
 ```
 
 ### Contract Testing
+
 ```bash
 # API contract validation
 ultra-dex test contract --spec openapi.yaml
@@ -363,6 +380,7 @@ ultra-dex test integration --scenario "user-signup-flow"
 ## 🌐 Multi-Repository Management
 
 ### Cross-Repository Operations
+
 ```bash
 # Work across multiple repositories
 ultra-dex multi-repo sync --repos "repo1,repo2,repo3"
@@ -374,6 +392,7 @@ ultra-dex context share --repos "all" --context-type "architecture"
 ## 🎯 Performance Optimization
 
 ### Caching Strategies
+
 ```bash
 # Enable advanced caching
 ultra-dex config set cache.enabled true
@@ -385,6 +404,7 @@ ultra-dex cache invalidate --pattern "api-*"
 ```
 
 ### Resource Management
+
 ```bash
 # Configure resource limits
 ultra-dex config set performance.maxWorkers 8
@@ -398,6 +418,7 @@ ultra-dex performance monitor --resources
 ## 🤝 Team Collaboration
 
 ### Advanced Team Features
+
 ```bash
 # Team context synchronization
 ultra-dex team sync --project my-project
@@ -412,6 +433,7 @@ ultra-dex team plan --collaborate --participants "alice,bob,charlie"
 ## 📈 Analytics & Insights
 
 ### Usage Analytics
+
 ```bash
 # View usage statistics
 ultra-dex analytics show --period monthly
@@ -426,6 +448,7 @@ ultra-dex analytics insights --trends
 ## 🔄 Migration & Upgrades
 
 ### Advanced Migration
+
 ```bash
 # Migrate between versions
 ultra-dex migrate --from v3.5 --to v4.0
@@ -440,6 +463,7 @@ ultra-dex rollback --to latest-successful
 ## 🛠️ Plugin Development
 
 ### Creating Custom Plugins
+
 ```bash
 # Generate plugin structure
 ultra-dex plugin generate my-custom-plugin
@@ -454,43 +478,43 @@ my-custom-plugin/
 ```
 
 Plugin configuration:
+
 ```javascript
 // plugin.js
 export default {
   name: 'my-custom-plugin',
   version: '1.0.0',
   description: 'Custom plugin for specific functionality',
-  
+
   // Plugin hooks
   hooks: {
     'command:register': (program) => {
       // Register custom commands
-      program.command('my-command')
-        .description('Custom command')
-        .action(myCustomAction);
+      program.command('my-command').description('Custom command').action(myCustomAction);
     },
-    
+
     'context:updated': (context) => {
       // Handle context updates
       console.log('Context updated:', context);
     },
-    
+
     'task:completed': (task) => {
       // Handle task completion
       console.log('Task completed:', task);
-    }
+    },
   },
-  
+
   // Custom middleware
   middleware: [
     // Add custom middleware functions
-  ]
+  ],
 };
 ```
 
 ## 🎨 Custom Themes & UI
 
 ### Advanced Theming
+
 ```bash
 # Create custom theme
 ultra-dex theme create --name cyberpunk --colors "rgb(255,0,255),rgb(0,255,255)"
@@ -505,6 +529,7 @@ ultra-dex theme export --name cyberpunk --destination ./themes/
 ## 🧠 AI Model Management
 
 ### Advanced Model Configuration
+
 ```bash
 # Configure multiple AI models
 ultra-dex config set models.fast gpt-3.5-turbo
@@ -519,6 +544,7 @@ ultra-dex route --task planning --model claude-sonnet
 ## 🚀 Production Deployment
 
 ### Advanced Production Setup
+
 ```bash
 # Production readiness check
 ultra-dex production-ready --all

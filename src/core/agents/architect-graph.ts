@@ -3,13 +3,12 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
+import { singleton } from 'tsyringe';
 import { GraphUtils } from './graph-utils.js';
 let ArchitectGraph = class {
   constructor() {
@@ -22,9 +21,9 @@ let ArchitectGraph = class {
    */
   addAgent(agentId, agentType, metadata = {}) {
     GraphUtils.addNode(this.graph, agentId, {
-      type: "agent",
+      type: 'agent',
       agentType,
-      ...metadata
+      ...metadata,
     });
     return this;
   }
@@ -33,8 +32,8 @@ let ArchitectGraph = class {
    */
   addService(serviceId, metadata = {}) {
     GraphUtils.addNode(this.graph, serviceId, {
-      type: "service",
-      ...metadata
+      type: 'service',
+      ...metadata,
     });
     return this;
   }
@@ -43,8 +42,8 @@ let ArchitectGraph = class {
    */
   addDependency(fromId, toId, metadata = {}) {
     GraphUtils.addEdge(this.graph, fromId, toId, {
-      type: "dependency",
-      ...metadata
+      type: 'dependency',
+      ...metadata,
     });
     return this;
   }
@@ -53,8 +52,8 @@ let ArchitectGraph = class {
    */
   addCommunication(fromId, toId, metadata = {}) {
     GraphUtils.addEdge(this.graph, fromId, toId, {
-      type: "communication",
-      ...metadata
+      type: 'communication',
+      ...metadata,
     });
     return this;
   }
@@ -79,10 +78,10 @@ let ArchitectGraph = class {
    * Create master-worker pattern
    */
   createMasterWorkerPattern(masterId, workerIds) {
-    this.addAgent(masterId, "master", { pattern: "master-worker" });
+    this.addAgent(masterId, 'master', { pattern: 'master-worker' });
     for (const workerId of workerIds) {
-      this.addAgent(workerId, "worker", { pattern: "master-worker" });
-      this.addDependency(masterId, workerId, { type: "delegates-to" });
+      this.addAgent(workerId, 'worker', { pattern: 'master-worker' });
+      this.addDependency(masterId, workerId, { type: 'delegates-to' });
     }
     return this;
   }
@@ -90,10 +89,10 @@ let ArchitectGraph = class {
    * Create hierarchical pattern
    */
   createHierarchicalPattern(hierarchy) {
-    this.addAgent(hierarchy.parent, "hierarchical-parent");
+    this.addAgent(hierarchy.parent, 'hierarchical-parent');
     for (const childId of hierarchy.children) {
-      this.addAgent(childId, "hierarchical-child");
-      this.addDependency(hierarchy.parent, childId, { type: "supervises" });
+      this.addAgent(childId, 'hierarchical-child');
+      this.addDependency(hierarchy.parent, childId, { type: 'supervises' });
     }
     return this;
   }
@@ -102,7 +101,7 @@ let ArchitectGraph = class {
    */
   createMeshPattern(agentIds) {
     for (const agentId of agentIds) {
-      this.addAgent(agentId, "mesh-node", { pattern: "mesh" });
+      this.addAgent(agentId, 'mesh-node', { pattern: 'mesh' });
     }
     for (let i = 0; i < agentIds.length; i++) {
       for (let j = i + 1; j < agentIds.length; j++) {
@@ -116,10 +115,10 @@ let ArchitectGraph = class {
    */
   createPipelinePattern(stageIds) {
     for (const stageId of stageIds) {
-      this.addService(stageId, { pattern: "pipeline-stage" });
+      this.addService(stageId, { pattern: 'pipeline-stage' });
     }
     for (let i = 0; i < stageIds.length - 1; i++) {
-      this.addDependency(stageIds[i], stageIds[i + 1], { type: "pipeline" });
+      this.addDependency(stageIds[i], stageIds[i + 1], { type: 'pipeline' });
     }
     return this;
   }
@@ -131,30 +130,30 @@ let ArchitectGraph = class {
     const cycles = GraphUtils.findCycles(this.graph);
     if (cycles.length > 0) {
       issues.push({
-        severity: "warning",
+        severity: 'warning',
         message: `Found ${cycles.length} cycles in architecture`,
-        cycles
+        cycles,
       });
     }
     const components = GraphUtils.getConnectedComponents(this.graph);
     if (components.length > 1) {
       issues.push({
-        severity: "warning",
+        severity: 'warning',
         message: `Architecture has ${components.length} disconnected components`,
-        components
+        components,
       });
     }
     for (const [nodeId, node] of this.graph.nodes) {
       if (node.incoming.size === 0 && node.outgoing.size === 0) {
         issues.push({
-          severity: "info",
-          message: `Node ${nodeId} has no connections`
+          severity: 'info',
+          message: `Node ${nodeId} has no connections`,
         });
       }
     }
     return {
-      valid: issues.filter((i) => i.severity === "error").length === 0,
-      issues
+      valid: issues.filter((i) => i.severity === 'error').length === 0,
+      issues,
     };
   }
   /**
@@ -167,7 +166,7 @@ let ArchitectGraph = class {
       components: GraphUtils.getConnectedComponents(this.graph).length,
       cycles: GraphUtils.findCycles(this.graph),
       densityScore: this.calculateDensityScore(),
-      centralityAnalysis: this.calculateCentrality()
+      centralityAnalysis: this.calculateCentrality(),
     };
     return analysis;
   }
@@ -177,8 +176,7 @@ let ArchitectGraph = class {
   calculateDensityScore() {
     const n = this.graph.nodes.size;
     const m = this.graph.edges.size;
-    if (n <= 1)
-      return 0;
+    if (n <= 1) return 0;
     const maxEdges = n * (n - 1);
     return m / maxEdges;
   }
@@ -189,14 +187,13 @@ let ArchitectGraph = class {
     const centrality = {};
     for (const nodeId of this.graph.nodes.keys()) {
       const node = this.graph.nodes.get(nodeId);
-      const degreeCentrality = (node.incoming.size + node.outgoing.size) / (this.graph.nodes.size - 1);
+      const degreeCentrality =
+        (node.incoming.size + node.outgoing.size) / (this.graph.nodes.size - 1);
       let betweenness = 0;
       for (const sourceId of this.graph.nodes.keys()) {
-        if (sourceId === nodeId)
-          continue;
+        if (sourceId === nodeId) continue;
         for (const targetId of this.graph.nodes.keys()) {
-          if (targetId === nodeId || sourceId === targetId)
-            continue;
+          if (targetId === nodeId || sourceId === targetId) continue;
           const path = GraphUtils.shortestPath(this.graph, sourceId, targetId);
           if (path && path.includes(nodeId)) {
             betweenness++;
@@ -205,7 +202,7 @@ let ArchitectGraph = class {
       }
       centrality[nodeId] = {
         degree: degreeCentrality,
-        betweenness
+        betweenness,
       };
     }
     return centrality;
@@ -217,7 +214,7 @@ let ArchitectGraph = class {
     return {
       nodes: Array.from(this.graph.nodes.values()),
       edges: Array.from(this.graph.edges.values()),
-      patterns: Array.from(this.patterns.keys())
+      patterns: Array.from(this.patterns.keys()),
     };
   }
   /**
@@ -227,11 +224,6 @@ let ArchitectGraph = class {
     return GraphUtils.visualize(this.graph);
   }
 };
-ArchitectGraph = __decorateClass([
-  singleton()
-], ArchitectGraph);
+ArchitectGraph = __decorateClass([singleton()], ArchitectGraph);
 var architect_graph_default = ArchitectGraph;
-export {
-  ArchitectGraph,
-  architect_graph_default as default
-};
+export { ArchitectGraph, architect_graph_default as default };

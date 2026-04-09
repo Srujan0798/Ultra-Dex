@@ -23,17 +23,17 @@ export async function validateCapabilities(toolName, context) {
     if (!capability) {
       return {
         valid: true,
-        reason: 'No specific capability requirements defined for tool'
+        reason: 'No specific capability requirements defined for tool',
       };
     }
 
     // Block if risk score too high based on context
     const riskScore = capability.riskScore || 'low';
     const riskLevelMap = {
-      'critical': 4,
-      'high': 3,
-      'medium': 2,
-      'low': 1
+      critical: 4,
+      high: 3,
+      medium: 2,
+      low: 1,
     };
 
     // In certain contexts, we might want to block higher risk tools
@@ -41,7 +41,7 @@ export async function validateCapabilities(toolName, context) {
       if (riskLevelMap[riskScore] > riskLevelMap['medium']) {
         return {
           valid: false,
-          reason: `Tool blocked in strict mode due to risk level: ${riskScore}`
+          reason: `Tool blocked in strict mode due to risk level: ${riskScore}`,
         };
       }
     }
@@ -51,7 +51,7 @@ export async function validateCapabilities(toolName, context) {
       return {
         valid: false,
         requiresApproval: true,
-        reason: 'Tool requires explicit user approval'
+        reason: 'Tool requires explicit user approval',
       };
     }
 
@@ -62,7 +62,7 @@ export async function validateCapabilities(toolName, context) {
       } catch (error) {
         return {
           valid: false,
-          reason: error.message
+          reason: error.message,
         };
       }
     }
@@ -70,13 +70,12 @@ export async function validateCapabilities(toolName, context) {
     return {
       valid: true,
       capability,
-      reason: 'All capability checks passed'
+      reason: 'All capability checks passed',
     };
   } catch (error) {
     return {
       valid: false,
-      reason: `Validation error: ${error.message}`
+      reason: `Validation error: ${error.message}`,
     };
   }
 }
-

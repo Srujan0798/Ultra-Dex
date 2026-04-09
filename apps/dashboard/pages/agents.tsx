@@ -25,14 +25,70 @@ const AgentsPage = () => {
     const timer = setTimeout(() => {
       if (agents.length === 0) {
         setAgents([
-          { id: 'planner', name: 'Project Planner', status: 'active', tasks: 2, lastActive: '2 min ago', description: 'Breaks down complex tasks into manageable steps' },
-          { id: 'cto', name: 'System Architect', status: 'idle', tasks: 0, lastActive: '5 min ago', description: 'Designs system architecture and technology stack' },
-          { id: 'backend', name: 'Backend Developer', status: 'active', tasks: 1, lastActive: '1 min ago', description: 'Implements server-side logic and APIs' },
-          { id: 'frontend', name: 'Frontend Developer', status: 'error', tasks: 0, lastActive: '10 min ago', description: 'Creates user interfaces and experiences' },
-          { id: 'reviewer', name: 'Code Reviewer', status: 'active', tasks: 3, lastActive: '30 sec ago', description: 'Reviews code for quality and security' },
-          { id: 'security', name: 'Security Auditor', status: 'warning', tasks: 1, lastActive: '1 min ago', description: 'Audits code for security vulnerabilities' },
-          { id: 'tester', name: 'QA Engineer', status: 'idle', tasks: 0, lastActive: '3 min ago', description: 'Writes and executes test cases' },
-          { id: 'deployer', name: 'Deployment Manager', status: 'active', tasks: 1, lastActive: '45 sec ago', description: 'Manages deployment and release processes' },
+          {
+            id: 'planner',
+            name: 'Project Planner',
+            status: 'active',
+            tasks: 2,
+            lastActive: '2 min ago',
+            description: 'Breaks down complex tasks into manageable steps',
+          },
+          {
+            id: 'cto',
+            name: 'System Architect',
+            status: 'idle',
+            tasks: 0,
+            lastActive: '5 min ago',
+            description: 'Designs system architecture and technology stack',
+          },
+          {
+            id: 'backend',
+            name: 'Backend Developer',
+            status: 'active',
+            tasks: 1,
+            lastActive: '1 min ago',
+            description: 'Implements server-side logic and APIs',
+          },
+          {
+            id: 'frontend',
+            name: 'Frontend Developer',
+            status: 'error',
+            tasks: 0,
+            lastActive: '10 min ago',
+            description: 'Creates user interfaces and experiences',
+          },
+          {
+            id: 'reviewer',
+            name: 'Code Reviewer',
+            status: 'active',
+            tasks: 3,
+            lastActive: '30 sec ago',
+            description: 'Reviews code for quality and security',
+          },
+          {
+            id: 'security',
+            name: 'Security Auditor',
+            status: 'warning',
+            tasks: 1,
+            lastActive: '1 min ago',
+            description: 'Audits code for security vulnerabilities',
+          },
+          {
+            id: 'tester',
+            name: 'QA Engineer',
+            status: 'idle',
+            tasks: 0,
+            lastActive: '3 min ago',
+            description: 'Writes and executes test cases',
+          },
+          {
+            id: 'deployer',
+            name: 'Deployment Manager',
+            status: 'active',
+            tasks: 1,
+            lastActive: '45 sec ago',
+            description: 'Manages deployment and release processes',
+          },
         ]);
         setLoading(false);
       }
@@ -46,17 +102,17 @@ const AgentsPage = () => {
     };
   }, []);
 
-  const filteredAgents = agents.filter(agent => {
+  const filteredAgents = agents.filter((agent) => {
     if (filter === 'all') return true;
     return agent.status === filter;
   });
 
   const statusCounts = {
     all: agents.length,
-    active: agents.filter(a => a.status === 'active').length,
-    idle: agents.filter(a => a.status === 'idle').length,
-    error: agents.filter(a => a.status === 'error').length,
-    warning: agents.filter(a => a.status === 'warning').length,
+    active: agents.filter((a) => a.status === 'active').length,
+    idle: agents.filter((a) => a.status === 'idle').length,
+    error: agents.filter((a) => a.status === 'error').length,
+    warning: agents.filter((a) => a.status === 'warning').length,
   };
 
   return (
@@ -105,12 +161,17 @@ const AgentsPage = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
                       <div className="flex-shrink-0">
-                        <div className={`w-4 h-4 rounded-full ${
-                          agent.status === 'active' ? 'bg-green-500' :
-                          agent.status === 'idle' ? 'bg-gray-500' :
-                          agent.status === 'error' ? 'bg-red-500' :
-                          'bg-yellow-500'
-                        }`}></div>
+                        <div
+                          className={`w-4 h-4 rounded-full ${
+                            agent.status === 'active'
+                              ? 'bg-green-500'
+                              : agent.status === 'idle'
+                                ? 'bg-gray-500'
+                                : agent.status === 'error'
+                                  ? 'bg-red-500'
+                                  : 'bg-yellow-500'
+                          }`}
+                        ></div>
                       </div>
                       <div className="ml-4">
                         <div className="flex items-center">
@@ -121,12 +182,17 @@ const AgentsPage = () => {
                         </div>
                         <p className="mt-1 text-sm text-gray-500">{agent.description}</p>
                         <div className="mt-2 flex items-center text-sm text-gray-500">
-                          <span className={`inline-block w-2 h-2 rounded-full mr-1 ${
-                            agent.status === 'active' ? 'bg-green-500' :
-                            agent.status === 'idle' ? 'bg-gray-500' :
-                            agent.status === 'error' ? 'bg-red-500' :
-                            'bg-yellow-500'
-                          }`}></span>
+                          <span
+                            className={`inline-block w-2 h-2 rounded-full mr-1 ${
+                              agent.status === 'active'
+                                ? 'bg-green-500'
+                                : agent.status === 'idle'
+                                  ? 'bg-gray-500'
+                                  : agent.status === 'error'
+                                    ? 'bg-red-500'
+                                    : 'bg-yellow-500'
+                            }`}
+                          ></span>
                           <span className="capitalize">{agent.status}</span>
                           <span className="mx-2">•</span>
                           <span>{agent.tasks} active tasks</span>
@@ -152,8 +218,18 @@ const AgentsPage = () => {
 
         {filteredAgents.length === 0 && !loading && (
           <div className="text-center py-12">
-            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            <svg
+              className="mx-auto h-12 w-12 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+              />
             </svg>
             <h3 className="mt-2 text-sm font-medium text-gray-900">No agents found</h3>
             <p className="mt-1 text-sm text-gray-500">

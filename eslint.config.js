@@ -56,7 +56,10 @@ const tsLintConfig =
             ...tsPlugin.configs.recommended.rules,
             '@typescript-eslint/no-explicit-any': 'warn',
             '@typescript-eslint/explicit-function-return-type': 'warn',
-            '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
+            '@typescript-eslint/no-unused-vars': [
+              'error',
+              { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+            ],
           },
         },
       ]
@@ -125,7 +128,10 @@ export default [
       },
     },
     rules: {
-      'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
+      'no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+      ],
       'no-undef': 'error',
       'no-useless-assignment': 'off',
       'preserve-caught-error': 'off',
@@ -168,7 +174,10 @@ export default [
       'apps/dashboard/src/**/*.tsx',
     ],
     rules: {
-      'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' }],
+      'no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+      ],
       'no-undef': 'error',
     },
   },

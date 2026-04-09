@@ -1,11 +1,13 @@
 # GitHub Copilot CLI — Elite AI Assistant Protocol (Maya Lane)
 
 ## Executive Overview
+
 **Primary Models**: Claude Sonnet 4.5 (default), Claude Sonnet 4, GPT-5  
 **Core Strengths**: Terminal-native development, GitHub integration, agentic capabilities, MCP extensibility  
-**Role**: Secondary governance lane for PR/review/fleet orchestration and overflow execution  
+**Role**: Secondary governance lane for PR/review/fleet orchestration and overflow execution
 
 ## Local CLI Evidence
+
 ```bash
 Version: GitHub Copilot CLI 1.0.14
 Binary: copilot
@@ -14,7 +16,8 @@ Authentication: GitHub account + Copilot subscription required
 ```
 
 ## Lane Priority + Task Assignment Policy
-- **Lane Status**: Secondary (overflow/governance)  
+
+- **Lane Status**: Secondary (overflow/governance)
 - **Default Windows**: 0-2 concurrent tasks
 - **Primary Use Cases**: Code review, PR management, fleet coordination, complex reasoning
 - **Escalation Target**: Use when primary lanes are saturated or governance oversight needed
@@ -24,22 +27,24 @@ Authentication: GitHub account + Copilot subscription required
 ## 🚀 CORE POWER CAPABILITIES
 
 ### 1. MODEL & REASONING SYSTEM
+
 ```bash
 # Model Selection & Power Levels
 --model <model>              # Select AI model
-  • Claude Sonnet 4.5         # DEFAULT - Premier reasoning & code generation  
+  • Claude Sonnet 4.5         # DEFAULT - Premier reasoning & code generation
   • Claude Sonnet 4           # Advanced reasoning variant
   • GPT-5                     # Premium high-performance alternative
 
 # Interactive model switching
 /model                       # Switch models mid-conversation
 
-# Reasoning Control  
+# Reasoning Control
 --effort <level>             # low, medium, high, xhigh
 --enable-reasoning-summaries # Enable detailed reasoning traces (OpenAI models)
 ```
 
 ### 2. AUTONOMOUS EXECUTION MODES
+
 ```bash
 # Autopilot Mode (Experimental)
 --experimental               # Enable experimental features
@@ -47,7 +52,7 @@ shift+tab                   # Cycle modes: interactive → plan → autopilot
 --autopilot                 # Enable autonomous continuation
 --max-autopilot-continues <n> # Limit autopilot iterations
 
-# Non-Interactive/Scripting  
+# Non-Interactive/Scripting
 -p, --prompt <text>         # Execute prompt non-interactively
 -s, --silent                # Output only agent response (scripting)
 --output-format <format>    # text | json | jsonl
@@ -55,16 +60,17 @@ shift+tab                   # Cycle modes: interactive → plan → autopilot
 ```
 
 ### 3. ADVANCED PERMISSIONS & SECURITY
+
 ```bash
 # Full Permissions (Use with caution)
 --allow-all                 # Enable all permissions (tools, paths, URLs)
 --allow-all-tools          # Auto-approve all tools (required for non-interactive)
---allow-all-paths          # Access any file path  
+--allow-all-paths          # Access any file path
 --allow-all-urls           # Access all URLs
 
 # Granular Control
 --allow-tool[=tools]       # Whitelist specific tools
---deny-tool[=tools]        # Blacklist specific tools  
+--deny-tool[=tools]        # Blacklist specific tools
 --available-tools[=tools]  # Limit tools available to model
 --excluded-tools[=tools]   # Hide tools from model
 
@@ -76,32 +82,34 @@ shift+tab                   # Cycle modes: interactive → plan → autopilot
 ```
 
 ### 4. GITHUB INTEGRATION POWERHOUSE
+
 ```bash
 # GitHub MCP Integration
 --enable-all-github-mcp-tools    # Enable all GitHub MCP capabilities
 --add-github-mcp-tool <tool>     # Enable specific GitHub tool
 --additional-mcp-config <json>   # Add custom MCP servers
 
-# PR & Code Review  
+# PR & Code Review
 /pr                             # PR-related operations
 /review                         # Launch code review agent
 /diff                          # Review current directory changes
 /delegate                      # Send session to GitHub for PR creation
 
 # Repository Management
-/cwd                           # Change/show working directory  
+/cwd                           # Change/show working directory
 @ <file>                       # Mention files, include in context
 /init                          # Initialize Copilot instructions for repo
 ```
 
 ### 5. FLEET & TASK ORCHESTRATION
+
 ```bash
 # Fleet Operations
 /fleet                         # Enable fleet mode (parallel subagents)
 /tasks                         # View and manage background tasks
 /delegate                      # Delegate tasks to GitHub
 
-# Session Management  
+# Session Management
 /resume [sessionId]            # Switch/resume sessions
 /rename                        # Rename current session
 /share [path]                  # Share session to markdown/gist
@@ -109,10 +117,11 @@ shift+tab                   # Cycle modes: interactive → plan → autopilot
 ```
 
 ### 6. DEVELOPMENT ENVIRONMENT INTEGRATION
+
 ```bash
 # IDE & Language Server Integration
 /ide                           # Connect to IDE workspace
-/lsp                           # Manage language server configuration  
+/lsp                           # Manage language server configuration
 /terminal-setup                # Configure multiline input support
 
 # Agent & Skills System
@@ -127,13 +136,15 @@ shift+tab                   # Cycle modes: interactive → plan → autopilot
 ## 💪 ADVANCED USAGE PATTERNS
 
 ### Pattern 1: Autonomous Code Review
+
 ```bash
 # Full autonomous PR review with maximum permissions
 copilot --allow-all --autopilot --effort xhigh -p "Review the current PR for security issues, performance problems, and code quality. Generate comprehensive feedback and suggested improvements."
 ```
 
 ### Pattern 2: Fleet-Based Development
-```bash  
+
+```bash
 # Launch fleet mode for parallel development tasks
 copilot --experimental --enable-all-github-mcp-tools
 /fleet
@@ -141,12 +152,14 @@ copilot --experimental --enable-all-github-mcp-tools
 ```
 
 ### Pattern 3: Repository Intelligence Analysis
+
 ```bash
 # Deep repository analysis with GitHub integration
 copilot --allow-all-paths --enable-all-github-mcp-tools -p "Analyze this repository's architecture, identify technical debt, suggest refactoring priorities, and create implementation roadmap."
 ```
 
 ### Pattern 4: Silent Automation Pipeline
+
 ```bash
 # Scripting integration for CI/CD
 copilot -s --allow-all-tools --output-format json -p "Run security scan and generate JSON report" > security-report.json
@@ -157,18 +170,21 @@ copilot -s --allow-all-tools --output-format json -p "Run security scan and gene
 ## 🎯 MAYA ASSIGNMENT OPTIMIZATION
 
 ### When to Assign Copilot CLI
+
 1. **Code Review Requirements** - Complex PR reviews, security audits
-2. **GitHub Integration Needs** - Repository analysis, issue management  
+2. **GitHub Integration Needs** - Repository analysis, issue management
 3. **Fleet Coordination** - Managing multiple parallel development tasks
 4. **Overflow Capacity** - When primary lanes are at capacity
 5. **Governance Tasks** - Policy enforcement, compliance checking
 
 ### Power Level Recommendations
+
 - **xhigh effort**: Complex multi-repo analysis, security reviews, architectural decisions
-- **high effort**: Standard PR reviews, code refactoring, feature planning  
+- **high effort**: Standard PR reviews, code refactoring, feature planning
 - **medium/low effort**: Quick fixes, documentation updates, simple queries
 
 ### Context Window Management
+
 ```bash
 /context                       # Monitor token usage
 /compact                      # Summarize to reduce context window
@@ -180,14 +196,16 @@ ctrl+t                        # Toggle reasoning display
 ## ⚡ POWER USER SHORTCUTS
 
 ### Essential Keyboard Controls
+
 - `shift+tab` - Cycle modes (interactive → plan → autopilot)
-- `ctrl+s` - Execute command while preserving input  
+- `ctrl+s` - Execute command while preserving input
 - `ctrl+t` - Toggle model reasoning display
 - `ctrl+x → o` - Open links from timeline
 - `ctrl+c ×2` - Exit CLI
 - `!` - Execute local shell command (bypass Copilot)
 
-### Critical Slash Commands  
+### Critical Slash Commands
+
 - `/model` - Switch AI models
 - `/fleet` - Enable parallel subagents
 - `/allow-all` - Maximum permissions

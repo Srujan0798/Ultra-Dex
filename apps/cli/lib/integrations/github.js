@@ -21,7 +21,7 @@ export class GitHubClient {
     this.token = token;
     this.owner = options.owner;
     this.repo = options.repo;
-    
+
     // Initialize Octokit with proper configuration
     this.octokit = new MyOctokit({
       auth: this.token,
@@ -33,11 +33,11 @@ export class GitHubClient {
         onSecondaryRateLimit: (retryAfter, _options) => {
           printWarning(`Secondary rate limit exceeded. Retrying after ${retryAfter} seconds.`);
           return true; // Retry the request
-        }
+        },
       },
       retry: {
-        doNotRetry: ['429'] // Don't retry on rate limit errors
-      }
+        doNotRetry: ['429'], // Don't retry on rate limit errors
+      },
     });
   }
 
@@ -53,7 +53,7 @@ export class GitHubClient {
         body,
         labels: options.labels || [],
         assignees: options.assignees || [],
-        milestone: options.milestone
+        milestone: options.milestone,
       });
 
       printSuccess(`✅ Created GitHub issue: #${response.data.number} - ${response.data.title}`);
@@ -72,7 +72,7 @@ export class GitHubClient {
       const response = await this.octokit.rest.issues.get({
         owner,
         repo,
-        issue_number: issueNumber
+        issue_number: issueNumber,
       });
 
       return response.data;
@@ -91,7 +91,7 @@ export class GitHubClient {
         owner,
         repo,
         issue_number: issueNumber,
-        ...updates
+        ...updates,
       });
 
       printSuccess(`✅ Updated GitHub issue: #${response.data.number}`);
@@ -115,7 +115,7 @@ export class GitHubClient {
         base,
         body,
         draft: options.draft || false,
-        maintainer_can_modify: options.maintainerCanModify !== false
+        maintainer_can_modify: options.maintainerCanModify !== false,
       });
 
       printSuccess(`✅ Created GitHub PR: #${response.data.number} - ${response.data.title}`);
@@ -134,7 +134,7 @@ export class GitHubClient {
       const response = await this.octokit.rest.pulls.get({
         owner,
         repo,
-        pull_number: prNumber
+        pull_number: prNumber,
       });
 
       return response.data;
@@ -153,7 +153,7 @@ export class GitHubClient {
         owner,
         repo,
         pull_number: prNumber,
-        ...updates
+        ...updates,
       });
 
       printSuccess(`✅ Updated GitHub PR: #${response.data.number}`);
@@ -175,7 +175,7 @@ export class GitHubClient {
         pull_number: prNumber,
         commit_title: options.commitTitle,
         commit_message: options.commitMessage,
-        merge_method: options.mergeMethod || 'merge' // 'merge', 'squash', or 'rebase'
+        merge_method: options.mergeMethod || 'merge', // 'merge', 'squash', or 'rebase'
       });
 
       if (response.data.merged) {
@@ -199,7 +199,7 @@ export class GitHubClient {
       const { data: refData } = await this.octokit.rest.git.getRef({
         owner,
         repo,
-        ref: `heads/${baseRef}`
+        ref: `heads/${baseRef}`,
       });
 
       // Create the new branch
@@ -207,7 +207,7 @@ export class GitHubClient {
         owner,
         repo,
         ref: `refs/heads/${branchName}`,
-        sha: refData.object.sha
+        sha: refData.object.sha,
       });
 
       printSuccess(`✅ Created GitHub branch: ${branchName}`);
@@ -230,7 +230,7 @@ export class GitHubClient {
         tree,
         parents,
         author: options.author,
-        committer: options.committer
+        committer: options.committer,
       });
 
       printSuccess(`✅ Created GitHub commit: ${response.data.sha.substring(0, 7)}`);
@@ -252,7 +252,7 @@ export class GitHubClient {
         existingFile = await this.octokit.rest.repos.getContent({
           owner,
           repo,
-          path
+          path,
         });
       } catch (_error) {
         // File doesn't exist, that's fine
@@ -264,7 +264,7 @@ export class GitHubClient {
         repo,
         path,
         message: commitMessage,
-        content: Buffer.from(content).toString('base64')
+        content: Buffer.from(content).toString('base64'),
       };
 
       if (existingFile && existingFile.data.sha) {
@@ -293,7 +293,7 @@ export class GitHubClient {
     try {
       const response = await this.octokit.rest.repos.get({
         owner,
-        repo
+        repo,
       });
 
       return response.data;
@@ -312,7 +312,7 @@ export class GitHubClient {
         owner,
         repo,
         path,
-        ref: options.ref
+        ref: options.ref,
       });
 
       return response.data;
@@ -336,7 +336,7 @@ export class GitHubClient {
         since: options.since,
         until: options.until,
         per_page: options.perPage || 30,
-        page: options.page || 1
+        page: options.page || 1,
       });
 
       return response.data;
@@ -360,7 +360,7 @@ export class GitHubClient {
         sort: options.sort || 'created',
         direction: options.direction || 'desc',
         per_page: options.perPage || 30,
-        page: options.page || 1
+        page: options.page || 1,
       });
 
       return response.data;
@@ -383,7 +383,7 @@ export class GitHubClient {
         sort: options.sort || 'created',
         direction: options.direction || 'desc',
         per_page: options.perPage || 30,
-        page: options.page || 1
+        page: options.page || 1,
       });
 
       return response.data;
@@ -402,7 +402,7 @@ export class GitHubClient {
         owner,
         repo,
         issue_number: issueNumber,
-        labels
+        labels,
       });
 
       printSuccess(`✅ Added labels to GitHub issue #${issueNumber}: ${labels.join(', ')}`);
@@ -422,7 +422,7 @@ export class GitHubClient {
         owner,
         repo,
         issue_number: issueNumber,
-        name: label
+        name: label,
       });
 
       printSuccess(`✅ Removed label from GitHub issue #${issueNumber}: ${label}`);
@@ -446,7 +446,7 @@ export class GitHubClient {
         body: options.body || '',
         draft: options.draft || false,
         prerelease: options.prerelease || false,
-        target_commitish: options.targetCommitish
+        target_commitish: options.targetCommitish,
       });
 
       printSuccess(`✅ Created GitHub release: ${response.data.tag_name}`);
@@ -466,7 +466,7 @@ export class GitHubClient {
         owner,
         repo,
         per_page: options.perPage || 30,
-        page: options.page || 1
+        page: options.page || 1,
       });
 
       return response.data;
@@ -492,7 +492,7 @@ export class GitHubClient {
         environment: options.environment || 'production',
         description: options.description || '',
         transient_environment: options.transientEnvironment || false,
-        production_environment: options.productionEnvironment !== false
+        production_environment: options.productionEnvironment !== false,
       });
 
       printSuccess(`✅ Created GitHub deployment for ref: ${ref}`);
@@ -516,7 +516,7 @@ export class GitHubClient {
         log_url: options.logUrl,
         description: options.description,
         environment_url: options.environmentUrl,
-        auto_inactive: options.autoInactive !== false
+        auto_inactive: options.autoInactive !== false,
       });
 
       printSuccess(`✅ Created GitHub deployment status: ${state}`);
@@ -537,7 +537,7 @@ export class GitHubClient {
         repo,
         deployment_id: deploymentId,
         per_page: options.perPage || 30,
-        page: options.page || 1
+        page: options.page || 1,
       });
 
       return response.data;
@@ -557,7 +557,7 @@ export class GitHubClient {
         repo,
         affiliation: options.affiliation || 'all',
         per_page: options.perPage || 30,
-        page: options.page || 1
+        page: options.page || 1,
       });
 
       return response.data;
@@ -575,7 +575,7 @@ export class GitHubClient {
       const response = await this.octokit.rest.repos.getCollaboratorPermissionLevel({
         owner,
         repo,
-        username
+        username,
       });
 
       return response.data;
@@ -593,7 +593,7 @@ export class GitHubClient {
       const response = await this.octokit.rest.projects.createCard({
         column_id: projectId, // Actually the column ID
         content_id: contentId,
-        content_type: contentType
+        content_type: contentType,
       });
 
       printSuccess(`✅ Created GitHub project card: ${response.data.id}`);
@@ -611,7 +611,7 @@ export class GitHubClient {
     try {
       const response = await this.octokit.rest.repos.listLanguages({
         owner,
-        repo
+        repo,
       });
 
       return response.data;
@@ -631,7 +631,7 @@ export class GitHubClient {
         repo,
         anon: options.anon || false,
         per_page: options.perPage || 30,
-        page: options.page || 1
+        page: options.page || 1,
       });
 
       return response.data;
@@ -650,7 +650,7 @@ export class GitHubClient {
         owner,
         repo,
         per_page: options.perPage || 30,
-        page: options.page || 1
+        page: options.page || 1,
       });
 
       return response.data;
@@ -670,7 +670,7 @@ export class GitHubClient {
         repo,
         sort: options.sort || 'newest',
         per_page: options.perPage || 30,
-        page: options.page || 1
+        page: options.page || 1,
       });
 
       return response.data;
@@ -689,7 +689,7 @@ export class GitHubClient {
         owner,
         repo,
         per_page: options.perPage || 30,
-        page: options.page || 1
+        page: options.page || 1,
       });
 
       return response.data;
@@ -709,7 +709,7 @@ export class GitHubClient {
         repo,
         protected: options.protected,
         per_page: options.perPage || 30,
-        page: options.page || 1
+        page: options.page || 1,
       });
 
       return response.data;
@@ -727,7 +727,7 @@ export class GitHubClient {
       const response = await this.octokit.rest.repos.getBranchProtection({
         owner,
         repo,
-        branch
+        branch,
       });
 
       return response.data;
@@ -758,7 +758,8 @@ export class GitHubClient {
         allow_force_pushes: protectionSettings.allowForcePushes || null,
         allow_deletions: protectionSettings.allowDeletions || false,
         block_creations: protectionSettings.blockCreations || false,
-        required_conversation_resolution: protectionSettings.requiredConversationResolution || false
+        required_conversation_resolution:
+          protectionSettings.requiredConversationResolution || false,
       });
 
       printSuccess(`✅ Updated GitHub branch protection for: ${branch}`);
@@ -778,7 +779,7 @@ export class GitHubClient {
         owner,
         repo,
         per_page: options.perPage || 30,
-        page: options.page || 1
+        page: options.page || 1,
       });
 
       return response.data;
@@ -802,7 +803,7 @@ export class GitHubClient {
         event: options.event,
         status: options.status,
         per_page: options.perPage || 30,
-        page: options.page || 1
+        page: options.page || 1,
       });
 
       return response.data;
@@ -822,7 +823,7 @@ export class GitHubClient {
         repo,
         workflow_id: workflowId,
         ref,
-        inputs
+        inputs,
       });
 
       printSuccess(`✅ Triggered GitHub workflow dispatch: ${workflowId}`);
@@ -840,7 +841,7 @@ export class GitHubClient {
     try {
       const response = await this.octokit.rest.actions.listRepoSecrets({
         owner,
-        repo
+        repo,
       });
 
       return response.data;
@@ -858,18 +859,18 @@ export class GitHubClient {
       // Get public key for encryption
       const { data: keyData } = await this.octokit.rest.actions.getRepoPublicKey({
         owner,
-        repo
+        repo,
       });
 
       // Encrypt the secret value
       const encryptedValue = await encryptSecret(secretValue, keyData.key);
-      
+
       const response = await this.octokit.rest.actions.createOrUpdateRepoSecret({
         owner,
         repo,
         secret_name: secretName,
         encrypted_value: encryptedValue,
-        key_id: keyData.key_id
+        key_id: keyData.key_id,
       });
 
       const action = response.status === 201 ? 'Created' : 'Updated';
@@ -888,7 +889,7 @@ export class GitHubClient {
     try {
       const response = await this.octokit.rest.actions.listRepoVariables({
         owner,
-        repo
+        repo,
       });
 
       return response.data;
@@ -907,7 +908,7 @@ export class GitHubClient {
         owner,
         repo,
         name: variableName,
-        value: variableValue
+        value: variableValue,
       });
 
       const action = response.status === 201 ? 'Created' : 'Updated';
@@ -926,7 +927,7 @@ export class GitHubClient {
     try {
       const response = await this.octokit.rest.repos.getAllEnvironments({
         owner,
-        repo
+        repo,
       });
 
       return response.data;
@@ -947,7 +948,7 @@ export class GitHubClient {
         environment_name: environmentName,
         wait_timer: options.waitTimer,
         reviewers: options.reviewers,
-        deployment_branch_policy: options.deploymentBranchPolicy
+        deployment_branch_policy: options.deploymentBranchPolicy,
       });
 
       const action = response.status === 201 ? 'Created' : 'Updated';
@@ -966,7 +967,7 @@ export class GitHubClient {
     try {
       const response = await this.octokit.rest.codeScanning.listAlertsForRepo({
         owner,
-        repo
+        repo,
       });
 
       return response.data;
@@ -990,7 +991,7 @@ export class GitHubClient {
         repo,
         state: options.state,
         severity: options.severity,
-        ecosystem: options.ecosystem
+        ecosystem: options.ecosystem,
       });
 
       return response.data;
@@ -1011,7 +1012,7 @@ export class GitHubClient {
     try {
       const response = await this.octokit.rest.securityAdvisories.listRepoAdvisories({
         owner,
-        repo
+        repo,
       });
 
       return response.data;
@@ -1030,13 +1031,13 @@ export class GitHubClient {
       const [views, clones, referrers] = await Promise.allSettled([
         this.octokit.rest.repos.getViews({ owner, repo }),
         this.octokit.rest.repos.getClones({ owner, repo }),
-        this.octokit.rest.repos.getTopReferrers({ owner, repo })
+        this.octokit.rest.repos.getTopReferrers({ owner, repo }),
       ]);
 
       const insights = {
         views: views.status === 'fulfilled' ? views.value.data : null,
         clones: clones.status === 'fulfilled' ? clones.value.data : null,
-        referrers: referrers.status === 'fulfilled' ? referrers.value.data : null
+        referrers: referrers.status === 'fulfilled' ? referrers.value.data : null,
       };
 
       return insights;
@@ -1054,18 +1055,18 @@ export class GitHubClient {
       // Get weekly commit activity
       const { data: weeklyActivity } = await this.octokit.rest.repos.getWeeklyCommitActivity({
         owner,
-        repo
+        repo,
       });
 
       // Get contributor activity
       const { data: contributorActivity } = await this.octokit.rest.repos.getCodeFrequency({
         owner,
-        repo
+        repo,
       });
 
       return {
         weeklyActivity,
-        contributorActivity
+        contributorActivity,
       };
     } catch (error) {
       printError(`Failed to get GitHub repository activity insights: ${error.message}`);
@@ -1083,7 +1084,7 @@ export class GitHubClient {
         this.getContributors(owner, repo),
         this.getLanguages(owner, repo),
         this.getIssues(owner, repo, { state: 'open' }),
-        this.getPullRequests(owner, repo, { state: 'open' })
+        this.getPullRequests(owner, repo, { state: 'open' }),
       ]);
 
       const metrics = {
@@ -1097,14 +1098,14 @@ export class GitHubClient {
           language: repoData.language,
           license: repoData.license?.name || 'None',
           createdAt: repoData.created_at,
-          updatedAt: repoData.updated_at
+          updatedAt: repoData.updated_at,
         },
         activity: {
           contributors: contributors.length,
           openIssues: issues.length,
           openPullRequests: pulls.length,
-          languages: Object.keys(languages).length
-        }
+          languages: Object.keys(languages).length,
+        },
       };
 
       return metrics;
@@ -1123,7 +1124,7 @@ export class GitHubClient {
         this.getVulnerabilityAlerts(owner, repo),
         this.getDependabotAlerts(owner, repo),
         this.getSecurityAdvisories(owner, repo),
-        this.getRepository(owner, repo)
+        this.getRepository(owner, repo),
       ]);
 
       const report = {
@@ -1132,17 +1133,19 @@ export class GitHubClient {
           totalVulnerabilities: vulnerabilities.length,
           totalDependabotAlerts: dependabotAlerts.length,
           totalSecurityAdvisories: securityAdvisories.length,
-          hasVulnerabilityScanning: vulnerabilities.length > 0 || dependabotAlerts.length > 0
+          hasVulnerabilityScanning: vulnerabilities.length > 0 || dependabotAlerts.length > 0,
         },
         vulnerabilities: vulnerabilities,
         dependabotAlerts: dependabotAlerts,
         securityAdvisories: securityAdvisories,
-        recommendations: []
+        recommendations: [],
       };
 
       // Add recommendations based on findings
       if (vulnerabilities.length > 0) {
-        report.recommendations.push('Enable GitHub Security Advisories to track and fix vulnerabilities');
+        report.recommendations.push(
+          'Enable GitHub Security Advisories to track and fix vulnerabilities'
+        );
       }
 
       if (dependabotAlerts.length > 0) {
@@ -1150,7 +1153,9 @@ export class GitHubClient {
       }
 
       if (!repoData.private && !repoData.security_and_analysis) {
-        report.recommendations.push('Enable security features like secret scanning and dependency review');
+        report.recommendations.push(
+          'Enable security features like secret scanning and dependency review'
+        );
       }
 
       return report;
@@ -1169,7 +1174,7 @@ export class GitHubClient {
         this.getHealthMetrics(owner, repo),
         this.getTrafficInsights(owner, repo),
         this.getActivityInsights(owner, repo),
-        this.generateSecurityReport(owner, repo)
+        this.generateSecurityReport(owner, repo),
       ]);
 
       const report = {
@@ -1178,7 +1183,7 @@ export class GitHubClient {
         traffic: trafficInsights,
         activity: activityInsights,
         security: securityReport,
-        generatedAt: new Date().toISOString()
+        generatedAt: new Date().toISOString(),
       };
 
       return report;
@@ -1207,11 +1212,11 @@ export async function validateGitHubConfig(config) {
   }
 
   const client = new GitHubClient(config.token);
-  
+
   try {
     // Test by fetching user information
     const response = await client.octokit.rest.users.getAuthenticated();
-    
+
     if (response.status === 200) {
       printSuccess(`✅ GitHub connection validated for user: ${response.data.login}`);
       return true;
@@ -1226,5 +1231,5 @@ export async function validateGitHubConfig(config) {
 
 export default {
   GitHubClient,
-  validateGitHubConfig
+  validateGitHubConfig,
 };

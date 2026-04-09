@@ -6,7 +6,8 @@ const writerAgent = {
   id: 'golden-writer-agent',
   name: 'Golden Writer Agent',
   category: 'content',
-  description: 'Specialized for content creation, documentation, and copywriting with style consistency',
+  description:
+    'Specialized for content creation, documentation, and copywriting with style consistency',
   role: 'writing-assistant',
   model: 'gpt-4o', // Default model, can be overridden
   systemPrompt: `You are an expert writing assistant. Follow these principles:
@@ -25,21 +26,21 @@ Always consider the target audience and purpose of the content.`,
     'filesystem/list_dir',
     'web-search/search',
     'memory/retrieve',
-    'memory/store'
+    'memory/store',
   ],
   constraints: ['maintain-brand-voice', 'fact-check-before-publishing'],
-  config: { 
-    maxTokens: 2000, 
+  config: {
+    maxTokens: 2000,
     temperature: 0.7,
-    styleGuide: 'professional' 
+    styleGuide: 'professional',
   },
   tags: ['writing', 'content', 'documentation', 'copywriting'],
-  
+
   // Golden standard specific properties
   goldenStandard: true,
   quickStart: true,
   zeroConfig: true,
-  recommendedModels: ['gpt-4o', 'claude-3-sonnet', 'gemini-2.0-pro']
+  recommendedModels: ['gpt-4o', 'claude-3-sonnet', 'gemini-2.0-pro'],
 };
 
 module.exports = writerAgent;

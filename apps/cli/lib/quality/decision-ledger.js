@@ -11,7 +11,6 @@ import path from 'path';
 import inquirer from 'inquirer';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 
-
 // Decision ledger file path
 const DECISION_LEDGER_PATH = path.join(process.cwd(), 'DECISION-LEDGER.md');
 
@@ -22,7 +21,7 @@ const DECISION_FRAMEWORK = {
   FACTS: 'Facts',
   CONSTRAINTS: 'Constraints',
   ALTERNATIVES: 'Alternatives Considered',
-  TRADEOFFS: 'Tradeoffs'
+  TRADEOFFS: 'Tradeoffs',
 };
 
 class DecisionLedger {
@@ -62,10 +61,10 @@ This immutable log tracks all architectural and strategic decisions for this pro
    */
   async logDecision(decisionData) {
     await this.initializeLedger();
-    
+
     const decisionId = `DEC-${Date.now()}`;
     const timestamp = new Date().toISOString();
-    
+
     // Format the decision according to ARFCAT framework
     const decisionEntry = `
 ## ${decisionId}: ${decisionData.title}
@@ -102,18 +101,18 @@ ${decisionData.tradeoffs || 'No tradeoffs documented'}
 ${decisionData.implementation_notes || 'No implementation notes'}
 
 ### References
-${decisionData.references?.map(ref => `- ${ref}`).join('\n') || 'No references'}
+${decisionData.references?.map((ref) => `- ${ref}`).join('\n') || 'No references'}
 
 ---
 `;
 
     // Append the decision to the ledger
     await fs.appendFile(this.ledgerPath, decisionEntry);
-    
+
     printSuccess(chalk.green(`✅ Decision logged: ${decisionId}`));
     printInfo(chalk.gray(`Title: ${decisionData.title}`));
     printInfo(chalk.gray(`File: ${this.ledgerPath}`));
-    
+
     return { id: decisionId, timestamp, path: this.ledgerPath };
   }
 
@@ -122,25 +121,25 @@ ${decisionData.references?.map(ref => `- ${ref}`).join('\n') || 'No references'}
    */
   async recordDecision() {
     printInfo(chalk.cyan('\n📋 Recording New Decision\n'));
-    
+
     const questions = [
       {
         type: 'input',
         name: 'title',
         message: 'Decision Title:',
-        validate: input => input.trim().length > 0 || 'Title is required'
+        validate: (input) => input.trim().length > 0 || 'Title is required',
       },
       {
         type: 'input',
         name: 'description',
         message: 'Brief Description:',
-        validate: input => input.trim().length > 0 || 'Description is required'
+        validate: (input) => input.trim().length > 0 || 'Description is required',
       },
       {
         type: 'editor',
         name: 'rationale',
         message: 'What was the rationale for this decision?',
-        default: 'Explain the reasoning behind this decision...'
+        default: 'Explain the reasoning behind this decision...',
       },
       {
         type: 'checkbox',
@@ -155,20 +154,20 @@ ${decisionData.references?.map(ref => `- ${ref}`).join('\n') || 'No references'}
           { name: 'Security requirements', value: 'security' },
           { name: 'Performance requirements', value: 'performance' },
           { name: 'Compliance requirements', value: 'compliance' },
-          { name: 'Other', value: 'other' }
-        ]
+          { name: 'Other', value: 'other' },
+        ],
       },
       {
         type: 'editor',
         name: 'alternatives',
         message: 'What alternatives were considered?',
-        default: '- Alternative 1: ...\n- Alternative 2: ...\n- Alternative 3: ...'
+        default: '- Alternative 1: ...\n- Alternative 2: ...\n- Alternative 3: ...',
       },
       {
         type: 'editor',
         name: 'tradeoffs',
         message: 'What tradeoffs were made?',
-        default: '- Pros: ...\n- Cons: ...'
+        default: '- Pros: ...\n- Cons: ...',
       },
       {
         type: 'checkbox',
@@ -180,23 +179,23 @@ ${decisionData.references?.map(ref => `- ${ref}`).join('\n') || 'No references'}
           { name: 'Maintainability', value: 'maintainability' },
           { name: 'Scalability', value: 'scalability' },
           { name: 'Team productivity', value: 'productivity' },
-          { name: 'Future flexibility', value: 'flexibility' }
-        ]
+          { name: 'Future flexibility', value: 'flexibility' },
+        ],
       },
       {
         type: 'input',
         name: 'reviewed_by',
-        message: 'Reviewed by (optional):'
-      }
+        message: 'Reviewed by (optional):',
+      },
     ];
 
     const answers = await inquirer.prompt(questions);
-    
+
     // Format constraints and consequences as strings
     const formattedDecision = {
       ...answers,
       constraints: answers.constraints?.join(', ') || 'None',
-      consequences: answers.consequences?.join(', ') || 'None'
+      consequences: answers.consequences?.join(', ') || 'None',
     };
 
     return await this.logDecision(formattedDecision);
@@ -209,40 +208,48 @@ ${decisionData.references?.map(ref => `- ${ref}`).join('\n') || 'No references'}
     try {
       await fs.access(this.ledgerPath);
       const content = await fs.readFile(this.ledgerPath, 'utf8');
-      
+
       // Extract decision IDs and titles using regex
       const decisionRegex = /## (DEC-\d+): (.+?)\n\*\*Date:\*\* (.+?)\n\*\*Status:\*\* (.+?)\n/g;
       const decisions = [];
       let match;
-      
+
       while ((match = decisionRegex.exec(content)) !== null) {
         const [, id, title, date, status] = match;
         if (!filter || status.toLowerCase().includes(filter.toLowerCase())) {
           decisions.push({ id, title, date, status });
         }
       }
-      
+
       if (decisions.length === 0) {
         printInfo(chalk.gray('No decisions recorded yet.'));
         return [];
       }
-      
+
       printSuccess(chalk.green(`\n📋 Found ${decisions.length} decisions:\n`));
-      
+
       decisions.forEach((decision, index) => {
-        const statusColor = decision.status === 'DECIDED' ? chalk.green :
-                          decision.status === 'RFC' ? chalk.blue :
-                          decision.status === 'DEPRECATED' ? chalk.red :
-                          decision.status === 'SUPERSEDED' ? chalk.yellow : chalk.gray;
-        
+        const statusColor =
+          decision.status === 'DECIDED'
+            ? chalk.green
+            : decision.status === 'RFC'
+              ? chalk.blue
+              : decision.status === 'DEPRECATED'
+                ? chalk.red
+                : decision.status === 'SUPERSEDED'
+                  ? chalk.yellow
+                  : chalk.gray;
+
         printInfo(`${index + 1}. ${statusColor(decision.id)} - ${decision.title}`);
         printInfo(chalk.gray(`   Date: ${decision.date} | Status: ${decision.status}`));
         printInfo('');
       });
-      
+
       return decisions;
     } catch (_error) {
-      printWarning(chalk.yellow('No decision ledger found. Run `ultra-dex decision record` to create one.'));
+      printWarning(
+        chalk.yellow('No decision ledger found. Run `ultra-dex decision record` to create one.')
+      );
       return [];
     }
   }
@@ -254,10 +261,10 @@ ${decisionData.references?.map(ref => `- ${ref}`).join('\n') || 'No references'}
     try {
       await fs.access(this.ledgerPath);
       const content = await fs.readFile(this.ledgerPath, 'utf8');
-      
+
       // Split content into individual decisions
-      const decisionSections = content.split(/(?=## DEC-\d+:)/).filter(section => section.trim());
-      
+      const decisionSections = content.split(/(?=## DEC-\d+:)/).filter((section) => section.trim());
+
       const matches = [];
       for (const section of decisionSections) {
         if (section.toLowerCase().includes(keyword.toLowerCase())) {
@@ -267,25 +274,25 @@ ${decisionData.references?.map(ref => `- ${ref}`).join('\n') || 'No references'}
             matches.push({
               id: idMatch[1],
               title: idMatch[2],
-              snippet: section.substring(0, 200) + '...'
+              snippet: section.substring(0, 200) + '...',
             });
           }
         }
       }
-      
+
       if (matches.length === 0) {
         printInfo(chalk.gray(`No decisions found containing: ${keyword}`));
         return [];
       }
-      
+
       printSuccess(chalk.green(`\n🔍 Found ${matches.length} decisions matching "${keyword}":\n`));
-      
+
       matches.forEach((match, index) => {
         printInfo(`${index + 1}. ${chalk.cyan(match.id)} - ${match.title}`);
         printInfo(chalk.gray(`   Snippet: ${match.snippet}`));
         printInfo('');
       });
-      
+
       return matches;
     } catch (_error) {
       printWarning(chalk.yellow('No decision ledger found to search.'));
@@ -300,19 +307,19 @@ ${decisionData.references?.map(ref => `- ${ref}`).join('\n') || 'No references'}
     try {
       await fs.access(this.ledgerPath);
       const content = await fs.readFile(this.ledgerPath, 'utf8');
-      
+
       // Find the specific decision
       const decisionRegex = new RegExp(`## ${decisionId}: (.+?)\n.*?---`, 's');
       const match = content.match(decisionRegex);
-      
+
       if (!match) {
         printError(chalk.red(`Decision not found: ${decisionId}`));
         return null;
       }
-      
+
       printSuccess(chalk.green(`\n📋 Decision Details: ${decisionId}\n`));
       console.log(match[0]);
-      
+
       return match[0];
     } catch (error) {
       printError(chalk.red(`Failed to read decision: ${error.message}`));
@@ -327,55 +334,67 @@ ${decisionData.references?.map(ref => `- ${ref}`).join('\n') || 'No references'}
     try {
       await fs.access(this.ledgerPath);
       const content = await fs.readFile(this.ledgerPath, 'utf8');
-      
+
       // Extract all decisions
       const decisionRegex = /## (DEC-\d+): (.+?)\n\*\*Date:\*\* (.+?)\n\*\*Status:\*\* (.+?)\n/g;
       const decisions = [];
       let match;
-      
+
       while ((match = decisionRegex.exec(content)) !== null) {
         decisions.push({
           id: match[1],
           title: match[2],
           date: match[3],
-          status: match[4]
+          status: match[4],
         });
       }
-      
+
       // Count by status
       const statusCounts = decisions.reduce((acc, dec) => {
         acc[dec.status] = (acc[dec.status] || 0) + 1;
         return acc;
       }, {});
-      
+
       printSuccess(chalk.green('\n📊 Decision Ledger Summary\n'));
       printInfo(chalk.cyan(`Total Decisions: ${decisions.length}`));
-      
+
       for (const [status, count] of Object.entries(statusCounts)) {
-        const color = status === 'DECIDED' ? chalk.green :
-                     status === 'RFC' ? chalk.blue :
-                     status === 'DEPRECATED' ? chalk.red :
-                     status === 'SUPERSEDED' ? chalk.yellow : chalk.gray;
+        const color =
+          status === 'DECIDED'
+            ? chalk.green
+            : status === 'RFC'
+              ? chalk.blue
+              : status === 'DEPRECATED'
+                ? chalk.red
+                : status === 'SUPERSEDED'
+                  ? chalk.yellow
+                  : chalk.gray;
         printInfo(color(`${status}: ${count}`));
       }
-      
+
       // Show recent decisions
       if (decisions.length > 0) {
         printInfo(chalk.cyan('\nRecent Decisions:'));
         const recent = decisions.slice(-5).reverse(); // Last 5, most recent first
-        recent.forEach(dec => {
-          const statusColor = dec.status === 'DECIDED' ? chalk.green :
-                            dec.status === 'RFC' ? chalk.blue :
-                            dec.status === 'DEPRECATED' ? chalk.red :
-                            dec.status === 'SUPERSEDED' ? chalk.yellow : chalk.gray;
+        recent.forEach((dec) => {
+          const statusColor =
+            dec.status === 'DECIDED'
+              ? chalk.green
+              : dec.status === 'RFC'
+                ? chalk.blue
+                : dec.status === 'DEPRECATED'
+                  ? chalk.red
+                  : dec.status === 'SUPERSEDED'
+                    ? chalk.yellow
+                    : chalk.gray;
           printInfo(`${statusColor(dec.id)} - ${dec.title} (${dec.date})`);
         });
       }
-      
+
       return {
         total: decisions.length,
         byStatus: statusCounts,
-        recent: decisions.slice(-5).reverse()
+        recent: decisions.slice(-5).reverse(),
       };
     } catch (_error) {
       printWarning(chalk.yellow('No decision ledger found to summarize.'));
@@ -390,43 +409,43 @@ ${decisionData.references?.map(ref => `- ${ref}`).join('\n') || 'No references'}
     try {
       await fs.access(this.ledgerPath);
       const content = await fs.readFile(this.ledgerPath, 'utf8');
-      
+
       // Check for basic structure
       const hasHeader = content.includes('# Decision Ledger');
       const decisionCount = (content.match(/## DEC-\d+:/g) || []).length;
-      const hasFramework = Object.values(DECISION_FRAMEWORK).every(section => 
+      const hasFramework = Object.values(DECISION_FRAMEWORK).every((section) =>
         content.includes(section)
       );
-      
+
       const validationResult = {
         valid: hasHeader && decisionCount > 0,
         hasHeader,
         decisionCount,
         hasFramework,
-        issues: []
+        issues: [],
       };
-      
+
       if (!hasHeader) {
         validationResult.issues.push('Missing "# Decision Ledger" header');
       }
-      
+
       if (decisionCount === 0) {
         validationResult.issues.push('No decisions found in ledger');
       }
-      
+
       if (!hasFramework) {
         validationResult.issues.push('Missing ARFCAT framework sections');
       }
-      
+
       if (validationResult.valid) {
         printSuccess(chalk.green('✅ Decision ledger format is valid'));
       } else {
         printWarning(chalk.yellow('⚠️  Decision ledger validation issues:'));
-        validationResult.issues.forEach(issue => {
+        validationResult.issues.forEach((issue) => {
           printInfo(chalk.gray(`  - ${issue}`));
         });
       }
-      
+
       return validationResult;
     } catch (error) {
       printError(chalk.red(`Ledger validation failed: ${error.message}`));
@@ -441,30 +460,30 @@ ${decisionData.references?.map(ref => `- ${ref}`).join('\n') || 'No references'}
     try {
       await fs.access(this.ledgerPath);
       const content = await fs.readFile(this.ledgerPath, 'utf8');
-      
+
       // Extract all decisions with full details
       const decisionRegex = /## (DEC-\d+): (.+?)\n([\s\S]*?)(?=\n## DEC-\d+:|$)/g;
       const decisions = [];
       let match;
-      
+
       while ((match = decisionRegex.exec(content)) !== null) {
         const [, id, title, details] = match;
-        
+
         // Extract specific fields from details
         const statusMatch = details.match(/\*\*Status:\*\* (.+?)\n/);
         const dateMatch = details.match(/\*\*Date:\*\* (.+?)\n/);
         const authorMatch = details.match(/\*\*Author:\*\* (.+?)\n/);
-        
+
         decisions.push({
           id,
           title,
           status: statusMatch ? statusMatch[1] : 'Unknown',
           date: dateMatch ? dateMatch[1] : 'Unknown',
           author: authorMatch ? authorMatch[1] : 'Unknown',
-          details: details.trim()
+          details: details.trim(),
         });
       }
-      
+
       if (format === 'json') {
         const jsonPath = path.join(process.cwd(), 'DECISIONS-EXPORT.json');
         await fs.writeFile(jsonPath, JSON.stringify(decisions, null, 2));
@@ -474,14 +493,16 @@ ${decisionData.references?.map(ref => `- ${ref}`).join('\n') || 'No references'}
         const csvPath = path.join(process.cwd(), 'DECISIONS-EXPORT.csv');
         const csvContent = [
           ['ID', 'Title', 'Status', 'Date', 'Author'],
-          ...decisions.map(d => [d.id, d.title, d.status, d.date, d.author])
-        ].map(row => row.map(field => `"${field}"`).join(',')).join('\n');
-        
+          ...decisions.map((d) => [d.id, d.title, d.status, d.date, d.author]),
+        ]
+          .map((row) => row.map((field) => `"${field}"`).join(','))
+          .join('\n');
+
         await fs.writeFile(csvPath, csvContent);
         printSuccess(chalk.green(`✅ Decisions exported to: ${csvPath}`));
         return csvPath;
       }
-      
+
       return decisions;
     } catch (error) {
       printError(chalk.red(`Decision export failed: ${error.message}`));
@@ -598,15 +619,18 @@ export function registerDecisionCommand(program) {
     { command: 'ultra-dex decision list', description: 'List all decisions' },
     { command: 'ultra-dex decision list --status DECIDED', description: 'List only decided items' },
     { command: 'ultra-dex decision find database', description: 'Find decisions about databases' },
-    { command: 'ultra-dex decision show DEC-1234567890', description: 'Show specific decision details' },
+    {
+      command: 'ultra-dex decision show DEC-1234567890',
+      description: 'Show specific decision details',
+    },
     { command: 'ultra-dex decision summary', description: 'Show decision statistics' },
     { command: 'ultra-dex decision validate', description: 'Validate ledger format' },
-    { command: 'ultra-dex decision export --format csv', description: 'Export decisions to CSV' }
+    { command: 'ultra-dex decision export --format csv', description: 'Export decisions to CSV' },
   ];
 }
 
 export default {
   DecisionLedger,
   decisionLedger,
-  registerDecisionCommand
+  registerDecisionCommand,
 };

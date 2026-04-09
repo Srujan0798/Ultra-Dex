@@ -3,17 +3,16 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { randomUUID } from "crypto";
+import { singleton } from 'tsyringe';
+import { randomUUID } from 'crypto';
 import MessageBus from './bus-interface.js';
 function makeEnvelope(channel, message, nodeId) {
-  if (message && typeof message === "object" && message.channel && message.timestamp) {
+  if (message && typeof message === 'object' && message.channel && message.timestamp) {
     return message;
   }
   return {
@@ -21,7 +20,7 @@ function makeEnvelope(channel, message, nodeId) {
     channel,
     message,
     nodeId,
-    timestamp: (/* @__PURE__ */ new Date()).toISOString()
+    timestamp: /* @__PURE__ */ new Date().toISOString(),
   };
 }
 let KafkaMessageBus = class extends MessageBus {
@@ -37,73 +36,75 @@ let KafkaMessageBus = class extends MessageBus {
     this.stats = {
       published: 0,
       delivered: 0,
-      errors: 0
+      errors: 0,
     };
   }
   async connect() {
     if (!this.producer || !this.consumerFactory) {
-      const { Kafka } = await import("kafkajs");
-      this.kafka = this.kafka || new Kafka({
-        clientId: this.config.clientId || "ultra-dex",
-        brokers: this.config.brokers || ["127.0.0.1:9092"]
-      });
+      const { Kafka } = await import('kafkajs');
+      this.kafka =
+        this.kafka ||
+        new Kafka({
+          clientId: this.config.clientId || 'ultra-dex',
+          brokers: this.config.brokers || ['127.0.0.1:9092'],
+        });
       this.producer = this.kafka.producer();
       await this.producer.connect();
       this.consumerFactory = (groupId) => this.kafka.consumer({ groupId });
-    } else if (typeof this.producer.connect === "function") {
+    } else if (typeof this.producer.connect === 'function') {
       await this.producer.connect();
     }
     this.connected = true;
   }
   async disconnect() {
     for (const consumer of this.consumers.values()) {
-      if (typeof consumer.disconnect === "function") {
+      if (typeof consumer.disconnect === 'function') {
         await consumer.disconnect();
       }
     }
     this.consumers.clear();
-    if (typeof this.producer?.disconnect === "function") {
+    if (typeof this.producer?.disconnect === 'function') {
       await this.producer.disconnect();
     }
     this.connected = false;
   }
   async publish(channel, message) {
     if (!this.connected) {
-      throw new Error("Message bus is not connected");
+      throw new Error('Message bus is not connected');
     }
     const envelope = makeEnvelope(channel, message, this.nodeId);
     await this.producer.send({
       topic: channel,
-      messages: [{ key: envelope.id, value: JSON.stringify(envelope) }]
+      messages: [{ key: envelope.id, value: JSON.stringify(envelope) }],
     });
     this.stats.published++;
     return envelope;
   }
   async subscribe(channel, handler) {
     if (!this.connected) {
-      throw new Error("Message bus is not connected");
+      throw new Error('Message bus is not connected');
     }
     const consumer = this.consumerFactory(
-      `${this.config.groupIdPrefix || "ultra-dex"}-${channel}-${this.nodeId}`
+      `${this.config.groupIdPrefix || 'ultra-dex'}-${channel}-${this.nodeId}`
     );
-    if (typeof consumer.connect === "function") {
+    if (typeof consumer.connect === 'function') {
       await consumer.connect();
     }
-    if (typeof consumer.subscribe === "function") {
+    if (typeof consumer.subscribe === 'function') {
       await consumer.subscribe({ topic: channel, fromBeginning: false });
     }
-    if (typeof consumer.run === "function") {
+    if (typeof consumer.run === 'function') {
       await consumer.run({
         eachMessage: async ({ message }) => {
           const parsed = JSON.parse(String(message.value));
           this.stats.delivered++;
           await handler(makeEnvelope(channel, parsed, this.nodeId));
-        }
+        },
       });
     }
     this.consumers.set(channel, consumer);
     return async () => {
-      if (typeof consumer.disconnect === "function") {
+      if (typeof consumer.disconnect === 'function') {
         await consumer.disconnect();
       }
       this.consumers.delete(channel);
@@ -126,7 +127,7 @@ let KafkaMessageBus = class extends MessageBus {
       await this.publish(channel, {
         ...message,
         requestId,
-        replyChannel
+        replyChannel,
       });
     });
   }
@@ -135,21 +136,16 @@ let KafkaMessageBus = class extends MessageBus {
   }
   getStats() {
     return {
-      type: "kafka",
+      type: 'kafka',
       connected: this.connected,
       nodeId: this.nodeId,
       published: this.stats.published,
       delivered: this.stats.delivered,
       errors: this.stats.errors,
-      consumers: this.consumers.size
+      consumers: this.consumers.size,
     };
   }
 };
-KafkaMessageBus = __decorateClass([
-  singleton()
-], KafkaMessageBus);
+KafkaMessageBus = __decorateClass([singleton()], KafkaMessageBus);
 var kafka_adapter_default = KafkaMessageBus;
-export {
-  KafkaMessageBus,
-  kafka_adapter_default as default
-};
+export { KafkaMessageBus, kafka_adapter_default as default };

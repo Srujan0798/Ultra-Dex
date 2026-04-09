@@ -1,4 +1,4 @@
-import "reflect-metadata";
+import 'reflect-metadata';
 import { container } from './di/container.js';
 import { DI_TOKENS } from './di/tokens.js';
 import { WinstonStyleLogger } from './services/logger.js';
@@ -18,37 +18,43 @@ import { StreamPipeline } from './streaming/pipeline.js';
 import { AgentCommunicationBus } from './orchestration/communication-bus.js';
 import { MCPRegistry } from './mcp/registry.js';
 import { PluginManager } from './infrastructure/plugin-manager.js';
-async function initializeDiamondState(config = {
-  mesh: { enabled: true, region: "default", nodeId: `node-${process.pid}` },
-  streaming: { enabled: true, port: 3002 },
-  selfHealing: { enabled: true }
-}) {
-  console.log("\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557");
-  console.log("\u2551           INITIALIZING DIAMOND STATE ARCHITECTURE            \u2551");
-  console.log("\u255A\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255D");
+async function initializeDiamondState(
+  config = {
+    mesh: { enabled: true, region: 'default', nodeId: `node-${process.pid}` },
+    streaming: { enabled: true, port: 3002 },
+    selfHealing: { enabled: true },
+  }
+) {
+  console.log(
+    '\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557'
+  );
+  console.log('\u2551           INITIALIZING DIAMOND STATE ARCHITECTURE            \u2551');
+  console.log(
+    '\u255A\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255D'
+  );
   container.registerInstance(DI_TOKENS.Logger, new WinstonStyleLogger());
   container.registerInstance(DI_TOKENS.ConfigService, new ConfigService());
   const logger = container.resolve(DI_TOKENS.Logger);
   const configService = container.resolve(DI_TOKENS.ConfigService);
-  logger.info("Initializing Diamond State components...");
+  logger.info('Initializing Diamond State components...');
   const alertManager = new AlertManager(logger);
   container.registerInstance(DI_TOKENS.AlertManager, alertManager);
-  logger.info("\u2713 AlertManager initialized");
+  logger.info('\u2713 AlertManager initialized');
   const telemetry = new TelemetryService(logger, configService);
   await telemetry.initialize();
   container.registerInstance(DI_TOKENS.TelemetryService, telemetry);
-  logger.info("\u2713 TelemetryService initialized");
+  logger.info('\u2713 TelemetryService initialized');
   const embeddingModel = new EmbeddingModel(logger, configService);
   await embeddingModel.initialize();
   container.registerInstance(DI_TOKENS.EmbeddingModel, embeddingModel);
-  logger.info("\u2713 EmbeddingModel initialized (all-MiniLM-L6-v2)");
+  logger.info('\u2713 EmbeddingModel initialized (all-MiniLM-L6-v2)');
   const semanticRouter = new SemanticRouter(embeddingModel, logger, configService);
   await semanticRouter.initialize();
   container.registerInstance(DI_TOKENS.SemanticRouter, semanticRouter);
-  logger.info("\u2713 SemanticRouter initialized");
+  logger.info('\u2713 SemanticRouter initialized');
   const isolatedVMSandbox = new IsolatedVMSandbox(logger, configService);
   container.registerInstance(DI_TOKENS.IsolatedVMSandbox, isolatedVMSandbox);
-  logger.info("\u2713 IsolatedVMSandbox initialized");
+  logger.info('\u2713 IsolatedVMSandbox initialized');
   let siteReliability;
   if (config.selfHealing?.enabled) {
     const communicationBus = new AgentCommunicationBus({});
@@ -60,38 +66,25 @@ async function initializeDiamondState(config = {
       healthCheck: async (provider) => ({
         provider,
         healthy: true,
-        latency: 100
-      })
+        latency: 100,
+      }),
     };
-    siteReliability = new SiteReliabilityAgent(
-      alertManager,
-      mockAIMetaLayer,
-      telemetry,
-      logger
-    );
+    siteReliability = new SiteReliabilityAgent(alertManager, mockAIMetaLayer, telemetry, logger);
     container.registerInstance(DI_TOKENS.SiteReliabilityAgent, siteReliability);
-    logger.info("\u2713 SiteReliabilityAgent initialized (self-healing enabled)");
+    logger.info('\u2713 SiteReliabilityAgent initialized (self-healing enabled)');
   }
   let distributedMesh;
   if (config.mesh?.enabled) {
     const communicationBus = new AgentCommunicationBus({});
     await communicationBus.initialize();
-    distributedMesh = new DistributedAgentMesh(
-      logger,
-      configService,
-      communicationBus
-    );
+    distributedMesh = new DistributedAgentMesh(logger, configService, communicationBus);
     await distributedMesh.initialize();
-    logger.info("\u2713 DistributedAgentMesh initialized");
+    logger.info('\u2713 DistributedAgentMesh initialized');
   }
   let streamingService;
   if (config.streaming?.enabled) {
-    const streamPipeline = new StreamPipeline({ name: "agent-streams" });
-    streamingService = new AgentStreamingService(
-      logger,
-      configService,
-      streamPipeline
-    );
+    const streamPipeline = new StreamPipeline({ name: 'agent-streams' });
+    streamingService = new AgentStreamingService(logger, configService, streamPipeline);
     await streamingService.initialize();
     logger.info(`\u2713 AgentStreamingService initialized (port ${config.streaming.port})`);
   }
@@ -99,22 +92,21 @@ async function initializeDiamondState(config = {
   const mcpRegistry = new MCPRegistry({ pluginManager });
   const appStore = new MCPAppStore(mcpRegistry, pluginManager, logger);
   await appStore.initialize();
-  logger.info("\u2713 MCPAppStore initialized");
+  logger.info('\u2713 MCPAppStore initialized');
   const mockAgentRegistry = {
-    findByCapabilities: (caps) => []
+    findByCapabilities: (caps) => [],
   };
-  const hybridRouter = new HybridRouter(
-    semanticRouter,
-    mockAgentRegistry,
-    logger,
-    configService
-  );
+  const hybridRouter = new HybridRouter(semanticRouter, mockAgentRegistry, logger, configService);
   container.registerInstance(DI_TOKENS.HybridRouter, hybridRouter);
-  logger.info("\u2713 HybridRouter initialized");
-  console.log("");
-  console.log("\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557");
-  console.log("\u2551              DIAMOND STATE INITIALIZED \u2705                     \u2551");
-  console.log("\u255A\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255D");
+  logger.info('\u2713 HybridRouter initialized');
+  console.log('');
+  console.log(
+    '\u2554\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2557'
+  );
+  console.log('\u2551              DIAMOND STATE INITIALIZED \u2705                     \u2551');
+  console.log(
+    '\u255A\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u255D'
+  );
   return {
     logger,
     config: configService,
@@ -128,7 +120,7 @@ async function initializeDiamondState(config = {
     sandboxRouter: new SandboxRouter(isolatedVMSandbox, configService, logger),
     distributedMesh,
     streamingService,
-    appStore
+    appStore,
   };
 }
 function getDiamondStats(state) {
@@ -139,7 +131,7 @@ function getDiamondStats(state) {
     selfHealing: state.siteReliability?.getStats(),
     streaming: state.streamingService?.getStats(),
     mesh: state.distributedMesh?.getStats(),
-    appStore: state.appStore?.getStats()
+    appStore: state.appStore?.getStats(),
   };
 }
 export * from './di/tokens.js';
@@ -160,7 +152,4 @@ export * from './reliability/healing-strategies.js';
 export * from './mesh/distributed-mesh.js';
 export * from './streaming/agent-stream.js';
 export * from './mcp/app-store.js';
-export {
-  getDiamondStats,
-  initializeDiamondState
-};
+export { getDiamondStats, initializeDiamondState };

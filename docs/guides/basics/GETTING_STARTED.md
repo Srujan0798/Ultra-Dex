@@ -13,6 +13,7 @@ Complete guide to installing Ultra-Dex and creating your first project with the 
 Ultra-Dex transforms how you build software with AI by providing the infrastructure that makes AI tools unstoppable together. This guide walks you through installation and your first project.
 
 ### What You'll Accomplish
+
 - Install Ultra-Dex globally
 - Initialize your first project
 - Generate an implementation plan
@@ -20,6 +21,7 @@ Ultra-Dex transforms how you build software with AI by providing the infrastruct
 - Verify implementation quality
 
 ### Prerequisites
+
 - **Node.js:** v18.0.0 or higher
 - **Git:** Git version control system
 - **AI Provider Key:** OpenAI, Anthropic, or Google API key
@@ -30,6 +32,7 @@ Ultra-Dex transforms how you build software with AI by providing the infrastruct
 ## 🔧 SYSTEM REQUIREMENTS
 
 ### Minimum Requirements
+
 - **Operating System:** macOS, Linux, or Windows 10/11
 - **Node.js:** v18.0.0+ (v20+ recommended)
 - **Memory:** 8GB RAM (16GB+ recommended)
@@ -37,6 +40,7 @@ Ultra-Dex transforms how you build software with AI by providing the infrastruct
 - **Network:** Internet connection for AI provider access
 
 ### Recommended Requirements
+
 - **Operating System:** macOS 12+, Ubuntu 20.04+, Windows 11
 - **Node.js:** v20.0.0+
 - **Memory:** 16GB+ RAM
@@ -44,6 +48,7 @@ Ultra-Dex transforms how you build software with AI by providing the infrastruct
 - **Network:** High-speed internet for optimal AI response times
 
 ### Optional Dependencies
+
 - **Docker:** For secure code execution sandboxing
 - **Python:** For certain AI model integrations
 - **Git LFS:** For large file versioning
@@ -53,6 +58,7 @@ Ultra-Dex transforms how you build software with AI by providing the infrastruct
 ## 📦 INSTALLATION
 
 ### Option 1: Global Installation (Recommended)
+
 ```bash
 # Install Ultra-Dex globally
 npm install -g ultra-dex@latest
@@ -66,6 +72,7 @@ ultra-dex serve
 ```
 
 ### Option 2: npx (No Installation Required)
+
 ```bash
 # Run Ultra-Dex without installation
 npx ultra-dex --version
@@ -75,6 +82,7 @@ npx ultra-dex init my-first-project
 ```
 
 ### Option 3: Development Installation
+
 ```bash
 # Clone the repository
 git clone https://github.com/Srujan0798/Ultra-Dex.git
@@ -95,9 +103,11 @@ npm link
 ## 🔐 AI PROVIDER SETUP
 
 ### Required Configuration
+
 Ultra-Dex works with multiple AI providers. Set up at least one:
 
 #### OpenAI Setup
+
 ```bash
 # Set your OpenAI API key
 export OPENAI_API_KEY="sk-...your-openai-key..."
@@ -108,18 +118,21 @@ source ~/.zshrc
 ```
 
 #### Anthropic Setup
+
 ```bash
 # Set your Anthropic API key
 export ANTHROPIC_API_KEY="sk-ant-...your-anthropic-key..."
 ```
 
 #### Google AI Setup
+
 ```bash
 # Set your Google AI API key
 export GOOGLE_AI_API_KEY="...your-google-key..."
 ```
 
 ### Verification
+
 ```bash
 # Test AI provider connectivity
 ultra-dex doctor --ai
@@ -130,6 +143,7 @@ ultra-dex doctor --ai
 ## 🏗️ FIRST PROJECT INITIALIZATION
 
 ### Create New Project
+
 ```bash
 # Create project directory
 mkdir my-ultra-project && cd my-ultra-project
@@ -142,6 +156,7 @@ ultra-dex init --template nextjs-saas
 ```
 
 ### Project Structure Created
+
 ```
 my-ultra-project/
 ├── CONTEXT.md                    # Project context and decisions
@@ -160,31 +175,38 @@ my-ultra-project/
 ## 🧠 CONTEXT & PLANNING
 
 ### Understanding CONTEXT.md
+
 The `CONTEXT.md` file is Ultra-Dex's persistent memory system:
 
 ```markdown
 # Project Context
 
 ## Mission
+
 [Your project's mission and purpose]
 
 ## Constraints
+
 - [Technical constraints]
 - [Business constraints]
 - [Timeline constraints]
 
 ## Decisions
+
 ### [Date] - Decision Title
+
 - **Context:** [Situation that led to decision]
 - **Decision:** [What was decided]
 - **Status:** [Accepted/Superseded/Amended]
 - **Consequences:** [Positive and negative impacts]
 
 ## Architecture
+
 [High-level architecture decisions]
 ```
 
 ### Generate Implementation Plan
+
 ```bash
 # Generate plan from project description
 ultra-dex generate "Create a task management SaaS with user authentication"
@@ -205,13 +227,14 @@ The implementation plan follows the 34-section template that ensures comprehensi
 8. **Testing Strategy** - Testing approach and coverage
 9. **Deployment Architecture** - Deployment strategy
 10. **Monitoring & Observability** - Monitoring and alerting
-...continuing through all 34 sections...
+    ...continuing through all 34 sections...
 
 ---
 
 ## 🤖 AGENT SWARM EXECUTION
 
 ### Start Interactive Dashboard
+
 ```bash
 # Launch the interactive dashboard
 ultra-dex
@@ -220,6 +243,7 @@ ultra-dex
 ```
 
 ### Execute Agent Swarm
+
 ```bash
 # Run a coordinated agent swarm
 ultra-dex swarm start "Implement user authentication system"
@@ -232,6 +256,7 @@ ultra-dex swarm start "Build frontend components" --parallel
 ```
 
 ### Agent Orchestration Flow
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    AGENT SWARM FLOW                             │
@@ -253,6 +278,7 @@ ultra-dex swarm start "Build frontend components" --parallel
 ## 🔍 QUALITY VERIFICATION
 
 ### 21-Step Verification
+
 Every implementation undergoes 21-step verification:
 
 ```bash
@@ -267,6 +293,7 @@ ultra-dex verify --report --format detailed
 ```
 
 ### Verification Steps Include:
+
 1. **Requirements Validation** - Verify implementation matches requirements
 2. **Architecture Review** - Validate system architecture decisions
 3. **Security Assessment** - Check for security vulnerabilities
@@ -277,13 +304,14 @@ ultra-dex verify --report --format detailed
 8. **Integration Validation** - Test all integrations
 9. **Database Validation** - Verify database schemas and queries
 10. **API Validation** - Test all API endpoints and contracts
-...continuing through 21 steps...
+    ...continuing through 21 steps...
 
 ---
 
 ## 🚀 ADVANCED FEATURES
 
 ### MCP Context Bus
+
 Enable real-time context synchronization across AI tools:
 
 ```bash
@@ -295,6 +323,7 @@ ultra-dex serve
 ```
 
 ### Interactive REPL Mode
+
 ```bash
 # Enter interactive mode
 ultra-dex repl
@@ -306,6 +335,7 @@ ultra-dex repl
 ```
 
 ### Template System
+
 ```bash
 # Generate from templates
 ultra-dex generate --template saas-starter
@@ -323,7 +353,9 @@ ultra-dex template create my-template
 ### Common Issues
 
 #### Issue: "Command not found: ultra-dex"
-**Solution:** 
+
+**Solution:**
+
 ```bash
 # Check if installed globally
 npm list -g ultra-dex
@@ -333,7 +365,9 @@ npm install -g ultra-dex@latest
 ```
 
 #### Issue: "API key not found"
+
 **Solution:**
+
 ```bash
 # Verify environment variables are set
 echo $OPENAI_API_KEY
@@ -343,7 +377,9 @@ export OPENAI_API_KEY="your-api-key"
 ```
 
 #### Issue: "Context synchronization not working"
+
 **Solution:**
+
 ```bash
 # Check if MCP server is running
 ultra-dex health check
@@ -357,12 +393,14 @@ ultra-dex serve
 ## 📚 NEXT STEPS
 
 ### Learning Path
+
 1. **[User Guide](./USER-GUIDE.md)** - Comprehensive usage manual
 2. **[CLI Reference](../api/reference/CLI-REFERENCE.md)** - Complete command reference
 3. **[Agent Prompts](../AgPrompts/INDEX.md)** - AI agent prompt library
 4. **[Architecture](../architecture/)** - System design specifications
 
 ### Advanced Topics
+
 - **[Custom Agents](../guides/ai/CUSTOM-AGENTS-GUIDE.md)** - Create specialized agents
 - **[Template Development](../guides/templates/README.md)** - Build custom templates
 - **[CI/CD Integration](../guides/CICD-GUIDE.md)** - Automated workflows
@@ -373,12 +411,14 @@ ultra-dex serve
 ## 🤝 COMMUNITY & SUPPORT
 
 ### Getting Help
+
 - **[Documentation](../README.md)** - Complete documentation index
 - **[FAQ](../api/reference/FAQ.md)** - Frequently asked questions
 - **[Troubleshooting](../api/reference/TROUBLESHOOTING.md)** - Problem solving
 - **[GitHub Issues](https://github.com/Srujan0798/Ultra-Dex/issues)** - Report bugs
 
 ### Community
+
 - **[Discord](https://discord.gg/ultra-dex)** - Real-time community support
 - **[GitHub Discussions](https://github.com/Srujan0798/Ultra-Dex/discussions)** - Community forum
 - **[Twitter](https://twitter.com/ultra_dex)** - Updates and announcements
@@ -388,6 +428,7 @@ ultra-dex serve
 ## 📋 QUICK REFERENCE
 
 ### Essential Commands
+
 ```bash
 ultra-dex init [project]          # Initialize new project
 ultra-dex generate [idea]         # Generate implementation plan
@@ -398,6 +439,7 @@ ultra-dex --help                  # Show all commands
 ```
 
 ### Environment Variables
+
 ```bash
 export OPENAI_API_KEY="..."       # OpenAI API key
 export ANTHROPIC_API_KEY="..."    # Anthropic API key
@@ -411,6 +453,7 @@ export ULTRA_DEX_ENV="production" # Environment mode
 ## 🏆 SUCCESS METRICS
 
 ### What Success Looks Like
+
 - ✅ **Project Initialized:** CONTEXT.md and IMPLEMENTATION-PLAN.md created
 - ✅ **AI Connected:** API key validated and working
 - ✅ **First Swarm:** Agent swarm executed successfully
@@ -418,6 +461,7 @@ export ULTRA_DEX_ENV="production" # Environment mode
 - ✅ **MCP Working:** Context synchronization functional
 
 ### Performance Targets
+
 - **Initialization Time:** <30 seconds
 - **Plan Generation:** <60 seconds
 - **Agent Response:** <5 seconds average

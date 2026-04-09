@@ -1,27 +1,19 @@
 {
-    "name": "ultra-dex",
-    "version": "5.0.0",
-    "description": "AI Orchestration Meta-Layer",
-    "structure": {
-        "type": "monorepo",
-        "packages": [
-            "cli",
-            "dashboard",
-            "apps/desktop",
-            "extensions/vscode"
-        ]
-    },
-    "architecture": {
-        "pattern": "meta-layer",
-        "core": "cli",
-        "visualization": "dashboard",
-        "extensions": [
-            "vscode",
-            "desktop"
-        ]
-    },
-    "verification": {
-        "framework": "21-step",
-        "protocol": "protocol-21"
-    }
+  "name": "ultra-dex",
+  "version": "5.0.0",
+  "description": "AI Orchestration Meta-Layer",
+  "structure": {
+    "type": "monorepo",
+    "packages": ["cli", "dashboard", "apps/desktop", "extensions/vscode"]
+  },
+  "architecture": {
+    "pattern": "meta-layer",
+    "core": "cli",
+    "visualization": "dashboard",
+    "extensions": ["vscode", "desktop"]
+  },
+  "verification": {
+    "framework": "21-step",
+    "protocol": "protocol-21"
+  }
 }

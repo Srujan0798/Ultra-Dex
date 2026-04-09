@@ -21,16 +21,16 @@ npx ultra-dex verify --full
 
 ## 🎭 The 8 Core Agents (Personas)
 
-| Icon | Agent | Focus | File Path |
-| :--- | :--- | :--- | :--- |
-| 🏛️ | **Architect** | Design & "The Moat" | `core-systems/ARCHITECT-PROMPT.md` |
-| 💻 | **Coder** | Implementation | `core-systems/CODER-PROMPT.md` |
-| 🪐 | **Reviewer** | Meta-Layer Audit | `core-systems/REVIEWER-PROMPT.md` |
-| 🐞 | **Debugger** | Root Cause Analysis | `core-systems/DEBUGGER-PROMPT.md` |
-| 🐝 | **Swarm** | Orchestration | `core-systems/SWARM-PROMPT.md` |
-| 💾 | **Memory** | Context Retrieval | `core-systems/MEMORY-PROMPT.md` |
-| ✅ | **QA** | Gatekeeping (Protocol 21) | `core-systems/QA-PROMPT.md` |
-| ⚖️ | **Governor** | Policy Enforcement | `core-systems/GOVERNANCE-PROMPT.md` |
+| Icon | Agent         | Focus                     | File Path                           |
+| :--- | :------------ | :------------------------ | :---------------------------------- |
+| 🏛️   | **Architect** | Design & "The Moat"       | `core-systems/ARCHITECT-PROMPT.md`  |
+| 💻   | **Coder**     | Implementation            | `core-systems/CODER-PROMPT.md`      |
+| 🪐   | **Reviewer**  | Meta-Layer Audit          | `core-systems/REVIEWER-PROMPT.md`   |
+| 🐞   | **Debugger**  | Root Cause Analysis       | `core-systems/DEBUGGER-PROMPT.md`   |
+| 🐝   | **Swarm**     | Orchestration             | `core-systems/SWARM-PROMPT.md`      |
+| 💾   | **Memory**    | Context Retrieval         | `core-systems/MEMORY-PROMPT.md`     |
+| ✅   | **QA**        | Gatekeeping (Protocol 21) | `core-systems/QA-PROMPT.md`         |
+| ⚖️   | **Governor**  | Policy Enforcement        | `core-systems/GOVERNANCE-PROMPT.md` |
 
 **Full Index:** [AgPrompts/INDEX.md](../../AgPrompts/INDEX.md)
 
@@ -66,26 +66,28 @@ npx ultra-dex verify --full
 
 ## 💻 Essential CLI Commands
 
-| Command | Description |
-| :--- | :--- |
-| `ultra-dex init` | Scaffold new project |
-| `ultra-dex plan` | Create implementation plan |
-| `ultra-dex run [file]` | Execute a plan |
-| `ultra-dex verify` | Run 21-step checks |
-| `ultra-dex serve` | Start MCP server |
-| `ultra-dex context` | Update CONTEXT.md |
-| `ultra-dex memory` | Query vector store |
+| Command                | Description                |
+| :--------------------- | :------------------------- |
+| `ultra-dex init`       | Scaffold new project       |
+| `ultra-dex plan`       | Create implementation plan |
+| `ultra-dex run [file]` | Execute a plan             |
+| `ultra-dex verify`     | Run 21-step checks         |
+| `ultra-dex serve`      | Start MCP server           |
+| `ultra-dex context`    | Update CONTEXT.md          |
+| `ultra-dex memory`     | Query vector store         |
 
 ---
 
 ## 🎯 Decision Trees
 
 ### Which Database?
+
 - **Relational (SQL)**: Default. Use Postgres/Supabase.
 - **Vector (Embeddings)**: Use Chroma/Pinecone.
 - **Graph (Relationships)**: Use Neo4j.
 
 ### Which Model?
+
 - **Architecting**: Claude 3.5 Sonnet / Opus.
 - **Coding**: GPT-4o or Claude 3.5 Sonnet.
 - **Refactoring**: GPT-4o (Lazy).

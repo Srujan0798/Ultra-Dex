@@ -3,14 +3,13 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { EventEmitter } from "events";
+import { singleton } from 'tsyringe';
+import { EventEmitter } from 'events';
 let Registry = class extends EventEmitter {
   constructor(options = {}) {
     super();
@@ -20,9 +19,9 @@ let Registry = class extends EventEmitter {
       enableDiscovery: options.enableDiscovery !== false,
       discoveryInterval: options.discoveryInterval || 1e4,
       heartbeatInterval: options.heartbeatInterval || 5e3,
-      ...options
+      ...options,
     };
-    this.state = "idle";
+    this.state = 'idle';
     this.discoveryTimer = null;
     this.heartbeatTimer = null;
   }
@@ -30,12 +29,12 @@ let Registry = class extends EventEmitter {
    * Initialize registry
    */
   async initialize() {
-    this.state = "ready";
+    this.state = 'ready';
     if (this.config.enableDiscovery) {
       this.startDiscovery();
       this.startHeartbeat();
     }
-    this.emit("registry.ready");
+    this.emit('registry.ready');
     return this;
   }
   /**
@@ -51,12 +50,12 @@ let Registry = class extends EventEmitter {
       metadata,
       registeredAt: Date.now(),
       lastHeartbeat: Date.now(),
-      status: "active",
+      status: 'active',
       capabilities: agent.capabilities || [],
-      version: agent.version || "1.0.0"
+      version: agent.version || '1.0.0',
     };
     this.agents.set(agentId, registration);
-    this.emit("agent.registered", { agentId, metadata });
+    this.emit('agent.registered', { agentId, metadata });
     return registration;
   }
   /**
@@ -67,7 +66,7 @@ let Registry = class extends EventEmitter {
       return false;
     }
     this.agents.delete(agentId);
-    this.emit("agent.unregistered", { agentId });
+    this.emit('agent.unregistered', { agentId });
     return true;
   }
   /**
@@ -82,7 +81,7 @@ let Registry = class extends EventEmitter {
   getAgentsByCapability(capability) {
     const results = [];
     for (const [agentId, registration] of this.agents) {
-      if (registration.status === "active" && registration.capabilities.includes(capability)) {
+      if (registration.status === 'active' && registration.capabilities.includes(capability)) {
         results.push(registration);
       }
     }
@@ -113,11 +112,11 @@ let Registry = class extends EventEmitter {
       handler,
       metadata,
       registeredAt: Date.now(),
-      status: "available",
-      invocationCount: 0
+      status: 'available',
+      invocationCount: 0,
     };
     this.services.set(serviceId, service);
-    this.emit("service.registered", { serviceId, metadata });
+    this.emit('service.registered', { serviceId, metadata });
     return service;
   }
   /**
@@ -128,7 +127,7 @@ let Registry = class extends EventEmitter {
       return false;
     }
     this.services.delete(serviceId);
-    this.emit("service.unregistered", { serviceId });
+    this.emit('service.unregistered', { serviceId });
     return true;
   }
   /**
@@ -152,7 +151,7 @@ let Registry = class extends EventEmitter {
       throw new Error(`Agent ${agentId} not found`);
     }
     registration.metadata = { ...registration.metadata, ...metadata };
-    this.emit("agent.metadata-updated", { agentId, metadata });
+    this.emit('agent.metadata-updated', { agentId, metadata });
     return registration;
   }
   /**
@@ -164,7 +163,7 @@ let Registry = class extends EventEmitter {
       return false;
     }
     registration.lastHeartbeat = Date.now();
-    registration.status = "active";
+    registration.status = 'active';
     return true;
   }
   /**
@@ -193,7 +192,7 @@ let Registry = class extends EventEmitter {
    * Perform discovery (scan for new agents)
    */
   async performDiscovery() {
-    this.emit("discovery.performed", { agentCount: this.agents.size });
+    this.emit('discovery.performed', { agentCount: this.agents.size });
   }
   /**
    * Start heartbeat monitoring
@@ -213,11 +212,11 @@ let Registry = class extends EventEmitter {
     const maxAge = 3e4;
     const now = Date.now();
     for (const [agentId, registration] of this.agents) {
-      if (registration.status === "active") {
+      if (registration.status === 'active') {
         const age = now - registration.lastHeartbeat;
         if (age > maxAge) {
-          registration.status = "unhealthy";
-          this.emit("agent.unhealthy", { agentId, age });
+          registration.status = 'unhealthy';
+          this.emit('agent.unhealthy', { agentId, age });
         }
       }
     }
@@ -239,13 +238,11 @@ let Registry = class extends EventEmitter {
    */
   matchesQuery(registration, query) {
     for (const [key, value] of Object.entries(query)) {
-      if (key === "capabilities") {
+      if (key === 'capabilities') {
         if (!Array.isArray(value)) {
           continue;
         }
-        const hasAll = value.every(
-          (cap) => registration.capabilities.includes(cap)
-        );
+        const hasAll = value.every((cap) => registration.capabilities.includes(cap));
         if (!hasAll) {
           return false;
         }
@@ -264,9 +261,9 @@ let Registry = class extends EventEmitter {
     let activeAgents = 0;
     let unhealthyAgents = 0;
     for (const registration of this.agents.values()) {
-      if (registration.status === "active") {
+      if (registration.status === 'active') {
         activeAgents++;
-      } else if (registration.status === "unhealthy") {
+      } else if (registration.status === 'unhealthy') {
         unhealthyAgents++;
       }
     }
@@ -275,7 +272,7 @@ let Registry = class extends EventEmitter {
       activeAgents,
       unhealthyAgents,
       totalServices: this.services.size,
-      registryUptime: Date.now() - this.registryStartTime
+      registryUptime: Date.now() - this.registryStartTime,
     };
   }
   /**
@@ -288,15 +285,10 @@ let Registry = class extends EventEmitter {
     if (this.heartbeatTimer) {
       clearInterval(this.heartbeatTimer);
     }
-    this.state = "shutdown";
-    this.emit("registry.shutdown");
+    this.state = 'shutdown';
+    this.emit('registry.shutdown');
   }
 };
-Registry = __decorateClass([
-  singleton()
-], Registry);
+Registry = __decorateClass([singleton()], Registry);
 var registry_default = Registry;
-export {
-  Registry,
-  registry_default as default
-};
+export { Registry, registry_default as default };

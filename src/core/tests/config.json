@@ -12,11 +12,7 @@
         "branches": 70,
         "statements": 80
       },
-      "reporters": [
-        "text",
-        "html",
-        "lcov"
-      ],
+      "reporters": ["text", "html", "lcov"],
       "exclude": [
         "node_modules/**",
         "tests/**",
@@ -44,14 +40,7 @@
           "finishReason": "stop"
         }
       },
-      "externalApis": [
-        "openai",
-        "anthropic",
-        "google",
-        "github",
-        "notion",
-        "jira"
-      ]
+      "externalApis": ["openai", "anthropic", "google", "github", "notion", "jira"]
     },
     "performance": {
       "benchmarks": {
@@ -77,13 +66,6 @@
     "test:ci": "NODE_ENV=test c8 --reporter=lcov --reporter=text-summary node --test tests/core/*.test.js tests/integration/*.test.js tests/cli/*.test.js"
   },
   "dependencies": {
-    "dev": [
-      "c8",
-      "nodemon",
-      "vitest",
-      "chai",
-      "mocha",
-      "jest"
-    ]
+    "dev": ["c8", "nodemon", "vitest", "chai", "mocha", "jest"]
   }
 }

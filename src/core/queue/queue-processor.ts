@@ -3,14 +3,13 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { EventEmitter } from "events";
+import { singleton } from 'tsyringe';
+import { EventEmitter } from 'events';
 let Job = class {
   constructor({ id = null, type, payload, priority = 5, maxRetries = 3, delayMs = 0 }) {
     this.id = id || `job-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -19,7 +18,7 @@ let Job = class {
     this.priority = priority;
     this.maxRetries = maxRetries;
     this.delayMs = delayMs;
-    this.status = "pending";
+    this.status = 'pending';
     this.attempts = 0;
     this.result = null;
     this.error = null;
@@ -29,18 +28,16 @@ let Job = class {
     this.scheduledFor = Date.now() + delayMs;
   }
   isReady() {
-    return this.status === "pending" && Date.now() >= this.scheduledFor;
+    return this.status === 'pending' && Date.now() >= this.scheduledFor;
   }
 };
-Job = __decorateClass([
-  singleton()
-], Job);
+Job = __decorateClass([singleton()], Job);
 let QueueProcessor = class extends EventEmitter {
   constructor({
     concurrency = 5,
     pollIntervalMs = 100,
     maxQueueSize = 1e4,
-    retryDelayMs = 5e3
+    retryDelayMs = 5e3,
   } = {}) {
     super();
     this.concurrency = concurrency;
@@ -79,14 +76,11 @@ let QueueProcessor = class extends EventEmitter {
       throw new Error(`Queue "${job.type}" is full (${this.maxQueueSize})`);
     }
     const idx = queue.findIndex((j) => j.priority > job.priority);
-    if (idx === -1)
-      queue.push(job);
-    else
-      queue.splice(idx, 0, job);
+    if (idx === -1) queue.push(job);
+    else queue.splice(idx, 0, job);
     this.stats.enqueued++;
-    this.emit("job:enqueued", { id: job.id, type: job.type, priority: job.priority });
-    if (this.running)
-      this._processNext();
+    this.emit('job:enqueued', { id: job.id, type: job.type, priority: job.priority });
+    if (this.running) this._processNext();
     return job;
   }
   /**
@@ -95,7 +89,7 @@ let QueueProcessor = class extends EventEmitter {
   start() {
     this.running = true;
     this.pollTimer = setInterval(() => this._processNext(), this.pollIntervalMs);
-    this.emit("processor:started");
+    this.emit('processor:started');
     this._processNext();
   }
   /**
@@ -110,69 +104,74 @@ let QueueProcessor = class extends EventEmitter {
     while (this.activeJobs.size > 0) {
       await new Promise((r) => setTimeout(r, 100));
     }
-    this.emit("processor:stopped");
+    this.emit('processor:stopped');
   }
   /**
    * Process the next available job
    */
   async _processNext() {
-    if (!this.running)
-      return;
-    if (this.activeJobs.size >= this.concurrency)
-      return;
+    if (!this.running) return;
+    if (this.activeJobs.size >= this.concurrency) return;
     let nextJob = null;
     let nextQueue = null;
     for (const [type, queue] of this.queues) {
-      if (!this.handlers.has(type))
-        continue;
+      if (!this.handlers.has(type)) continue;
       const ready = queue.find((j) => j.isReady());
       if (ready && (!nextJob || ready.priority < nextJob.priority)) {
         nextJob = ready;
         nextQueue = queue;
       }
     }
-    if (!nextJob)
-      return;
+    if (!nextJob) return;
     const idx = nextQueue.indexOf(nextJob);
-    if (idx !== -1)
-      nextQueue.splice(idx, 1);
+    if (idx !== -1) nextQueue.splice(idx, 1);
     this.activeJobs.add(nextJob.id);
-    nextJob.status = "running";
+    nextJob.status = 'running';
     nextJob.startedAt = Date.now();
     nextJob.attempts++;
-    this.emit("job:started", { id: nextJob.id, type: nextJob.type, attempt: nextJob.attempts });
+    this.emit('job:started', { id: nextJob.id, type: nextJob.type, attempt: nextJob.attempts });
     try {
       const handler = this.handlers.get(nextJob.type);
       const result = await handler(nextJob.payload, nextJob);
-      nextJob.status = "completed";
+      nextJob.status = 'completed';
       nextJob.result = result;
       nextJob.completedAt = Date.now();
       this.stats.processed++;
       this.stats.totalMs += nextJob.completedAt - nextJob.startedAt;
       this.completedJobs.push(nextJob);
       this._evictCompleted();
-      this.emit("job:completed", { id: nextJob.id, type: nextJob.type, durationMs: nextJob.completedAt - nextJob.startedAt });
+      this.emit('job:completed', {
+        id: nextJob.id,
+        type: nextJob.type,
+        durationMs: nextJob.completedAt - nextJob.startedAt,
+      });
     } catch (error) {
       nextJob.error = error.message;
       if (nextJob.attempts < nextJob.maxRetries) {
-        nextJob.status = "pending";
+        nextJob.status = 'pending';
         nextJob.scheduledFor = Date.now() + this.retryDelayMs * nextJob.attempts;
         this.stats.retried++;
-        if (!this.queues.has(nextJob.type))
-          this.queues.set(nextJob.type, []);
+        if (!this.queues.has(nextJob.type)) this.queues.set(nextJob.type, []);
         this.queues.get(nextJob.type).push(nextJob);
-        this.emit("job:retry", { id: nextJob.id, attempt: nextJob.attempts, nextRetryMs: this.retryDelayMs * nextJob.attempts });
+        this.emit('job:retry', {
+          id: nextJob.id,
+          attempt: nextJob.attempts,
+          nextRetryMs: this.retryDelayMs * nextJob.attempts,
+        });
       } else {
-        nextJob.status = "failed";
+        nextJob.status = 'failed';
         nextJob.completedAt = Date.now();
         this.stats.failed++;
         this.failedJobs.push(nextJob);
-        this.emit("job:failed", { id: nextJob.id, error: error.message, attempts: nextJob.attempts });
+        this.emit('job:failed', {
+          id: nextJob.id,
+          error: error.message,
+          attempts: nextJob.attempts,
+        });
       }
     } finally {
       this.activeJobs.delete(nextJob.id);
-      if (this.running)
-        setImmediate(() => this._processNext());
+      if (this.running) setImmediate(() => this._processNext());
     }
   }
   /**
@@ -191,12 +190,10 @@ let QueueProcessor = class extends EventEmitter {
   getJob(id) {
     for (const queue of this.queues.values()) {
       const job = queue.find((j) => j.id === id);
-      if (job)
-        return job;
+      if (job) return job;
     }
     const completed = this.completedJobs.find((j) => j.id === id);
-    if (completed)
-      return completed;
+    if (completed) return completed;
     const failed = this.failedJobs.find((j) => j.id === id);
     return failed || null;
   }
@@ -213,18 +210,18 @@ let QueueProcessor = class extends EventEmitter {
       recentCompleted: this.completedJobs.slice(-5).map((j) => ({
         id: j.id,
         type: j.type,
-        durationMs: j.completedAt - j.startedAt
+        durationMs: j.completedAt - j.startedAt,
       })),
       recentFailed: this.failedJobs.slice(-5).map((j) => ({
         id: j.id,
         type: j.type,
         error: j.error,
-        attempts: j.attempts
+        attempts: j.attempts,
       })),
       stats: {
         ...this.stats,
-        avgMs: this.stats.processed > 0 ? Math.round(this.stats.totalMs / this.stats.processed) : 0
-      }
+        avgMs: this.stats.processed > 0 ? Math.round(this.stats.totalMs / this.stats.processed) : 0,
+      },
     };
   }
   _evictCompleted() {
@@ -233,12 +230,6 @@ let QueueProcessor = class extends EventEmitter {
     }
   }
 };
-QueueProcessor = __decorateClass([
-  singleton()
-], QueueProcessor);
+QueueProcessor = __decorateClass([singleton()], QueueProcessor);
 var queue_processor_default = QueueProcessor;
-export {
-  Job,
-  QueueProcessor,
-  queue_processor_default as default
-};
+export { Job, QueueProcessor, queue_processor_default as default };

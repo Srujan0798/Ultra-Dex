@@ -80,15 +80,19 @@ export class ACPHost {
   async start() {
     printInfo(`\n🚀 Starting ACP Host (Agent Client Protocol) v${ACP_PROTOCOL_VERSION}...\n`);
 
-    await logger.event('acp.host_start', {
-      protocolVersion: ACP_PROTOCOL_VERSION,
-      mode: this.options.stdio ? 'stdio' : 'http',
-    }, {
-      level: 'info',
-      message: 'ACP Host starting',
-      console: false,
-      source: 'acp-host',
-    });
+    await logger.event(
+      'acp.host_start',
+      {
+        protocolVersion: ACP_PROTOCOL_VERSION,
+        mode: this.options.stdio ? 'stdio' : 'http',
+      },
+      {
+        level: 'info',
+        message: 'ACP Host starting',
+        console: false,
+        source: 'acp-host',
+      }
+    );
 
     if (this.options.stdio) {
       await this.startStdioMode();
@@ -438,7 +442,7 @@ export class ACPHost {
     for (const t of terminals.values()) {
       try {
         t.process.kill();
-      } catch (_e) {  
+      } catch (_e) {
         // ignore error intentionally
       }
     }

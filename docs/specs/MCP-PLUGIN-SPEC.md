@@ -37,10 +37,7 @@ my-plugin/
     "author": "Your Name",
     "license": "MIT",
     "capabilities": ["task-automation", "data-processing"],
-    "permissions": [
-      "filesystem:read",
-      "network"
-    ],
+    "permissions": ["filesystem:read", "network"],
     "entryPoint": "index.js",
     "hooks": {
       "onInstall": "scripts/install.js",
@@ -67,37 +64,37 @@ my-plugin/
 
 ### Required Fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Unique plugin identifier (kebab-case) |
-| `name` | string | Human-readable name |
-| `version` | string | Semantic version (e.g., "1.0.0") |
-| `author` | string | Author name or organization |
-| `license` | string | SPDX license identifier |
-| `capabilities` | string[] | Plugin capabilities |
-| `entryPoint` | string | Main entry file (relative to package root) |
+| Field          | Type     | Description                                |
+| -------------- | -------- | ------------------------------------------ |
+| `id`           | string   | Unique plugin identifier (kebab-case)      |
+| `name`         | string   | Human-readable name                        |
+| `version`      | string   | Semantic version (e.g., "1.0.0")           |
+| `author`       | string   | Author name or organization                |
+| `license`      | string   | SPDX license identifier                    |
+| `capabilities` | string[] | Plugin capabilities                        |
+| `entryPoint`   | string   | Main entry file (relative to package root) |
 
 ### Optional Fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `permissions` | string[] | Required permissions |
-| `hooks` | object | Lifecycle hooks |
-| `config` | object | Configuration schema |
-| `dependencies` | object | NPM dependencies |
-| `peerDependencies` | object | Peer dependencies |
+| Field              | Type     | Description          |
+| ------------------ | -------- | -------------------- |
+| `permissions`      | string[] | Required permissions |
+| `hooks`            | object   | Lifecycle hooks      |
+| `config`           | object   | Configuration schema |
+| `dependencies`     | object   | NPM dependencies     |
+| `peerDependencies` | object   | Peer dependencies    |
 
 ## Permissions
 
 Plugins must declare required permissions:
 
-| Permission | Description |
-|------------|-------------|
-| `filesystem:read` | Read files |
-| `filesystem:write` | Write files |
-| `network` | Make HTTP requests |
-| `process:spawn` | Spawn child processes |
-| `memory:unlimited` | Remove memory limits |
+| Permission         | Description           |
+| ------------------ | --------------------- |
+| `filesystem:read`  | Read files            |
+| `filesystem:write` | Write files           |
+| `network`          | Make HTTP requests    |
+| `process:spawn`    | Spawn child processes |
+| `memory:unlimited` | Remove memory limits  |
 
 ## Entry Point
 
@@ -113,24 +110,24 @@ The entry point must export an `activate` function:
  */
 function activate(context) {
   const { logger, config, ultraDex } = context;
-  
+
   logger.info('MyPlugin activated');
-  
+
   // Register actions
   ultraDex.registerAction('myPlugin.doSomething', async (params) => {
     // Do something
     return { success: true };
   });
-  
+
   // Return plugin API
   return {
     name: 'my-plugin',
     version: '1.0.0',
-    
+
     // Cleanup on deactivation
     deactivate() {
       logger.info('MyPlugin deactivated');
-    }
+    },
   };
 }
 
@@ -147,32 +144,32 @@ interface PluginContext {
   pluginId: string;
   pluginName: string;
   version: string;
-  
+
   // Utilities
   logger: ILogger;
   config: PluginConfig;
-  
+
   // Ultra-Dex API
   ultraDex: {
     // Register an action
     registerAction(name: string, handler: Function): void;
-    
+
     // Call another plugin's action
     callAction(pluginId: string, actionName: string, params: object): Promise<any>;
-    
+
     // Subscribe to events
     on(event: string, handler: Function): void;
-    
+
     // Emit event
     emit(event: string, data: any): void;
-    
+
     // Get memory
     getMemory(key: string): Promise<any>;
-    
+
     // Set memory
     setMemory(key: string, value: any): Promise<void>;
   };
-  
+
   // Sandbox info
   sandbox: {
     timeout: number;
@@ -192,13 +189,13 @@ Called when plugin is installed:
 // scripts/install.js
 module.exports = async function onInstall(context) {
   const { logger, config } = context;
-  
+
   logger.info('Installing my-plugin...');
-  
+
   // Setup database tables
   // Create default config
   // etc.
-  
+
   return { success: true };
 };
 ```
@@ -211,13 +208,13 @@ Called when plugin is uninstalled:
 // scripts/uninstall.js
 module.exports = async function onUninstall(context) {
   const { logger } = context;
-  
+
   logger.info('Uninstalling my-plugin...');
-  
+
   // Cleanup
   // Remove data
   // etc.
-  
+
   return { success: true };
 };
 ```
@@ -230,9 +227,9 @@ Called when a task completes:
 // hooks/task-complete.js
 module.exports = async function onTaskComplete(context, task) {
   const { logger } = context;
-  
+
   logger.info('Task completed', { taskId: task.id });
-  
+
   // Post to Slack
   // Update dashboard
   // etc.
@@ -254,7 +251,7 @@ Plugins run in an isolated sandbox with:
 
 ```javascript
 // Plugin requests filesystem access
-permissions: ['filesystem:read']
+permissions: ['filesystem:read'];
 
 // Code tries to write without permission
 fs.writeFileSync('/tmp/test.txt', 'data');
@@ -268,7 +265,7 @@ Plugins are validated before execution:
 ```javascript
 const violations = sandbox.validateCode(pluginCode);
 if (violations.length > 0) {
-  throw new Error(`Security violations: ${violations.map(v => v.message).join(', ')}`);
+  throw new Error(`Security violations: ${violations.map((v) => v.message).join(', ')}`);
 }
 ```
 
@@ -279,23 +276,23 @@ if (violations.length > 0) {
 
 function activate(context) {
   const { logger, ultraDex } = context;
-  
+
   logger.info('Calculator plugin activated');
-  
+
   ultraDex.registerAction('calculator.add', async ({ a, b }) => {
     return { result: a + b };
   });
-  
+
   ultraDex.registerAction('calculator.multiply', async ({ a, b }) => {
     return { result: a * b };
   });
-  
+
   return {
     name: 'calculator',
     version: '1.0.0',
     deactivate() {
       logger.info('Calculator plugin deactivated');
-    }
+    },
   };
 }
 

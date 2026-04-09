@@ -3,14 +3,13 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { EventEmitter } from "events";
+import { singleton } from 'tsyringe';
+import { EventEmitter } from 'events';
 let Planner = class extends EventEmitter {
   constructor(options = {}) {
     super();
@@ -20,26 +19,26 @@ let Planner = class extends EventEmitter {
       maxPlanDepth: options.maxPlanDepth || 5,
       enableOptimization: options.enableOptimization !== false,
       enableParallelization: options.enableParallelization !== false,
-      ...options
+      ...options,
     };
-    this.state = "idle";
+    this.state = 'idle';
     this.registerDefaultStrategies();
   }
   /**
    * Register default planning strategies
    */
   registerDefaultStrategies() {
-    this.strategies.set("simple", this.strategySimple.bind(this));
-    this.strategies.set("hierarchical", this.strategyHierarchical.bind(this));
-    this.strategies.set("dependency-based", this.strategyDependencyBased.bind(this));
-    this.strategies.set("constraint-based", this.strategyConstraintBased.bind(this));
+    this.strategies.set('simple', this.strategySimple.bind(this));
+    this.strategies.set('hierarchical', this.strategyHierarchical.bind(this));
+    this.strategies.set('dependency-based', this.strategyDependencyBased.bind(this));
+    this.strategies.set('constraint-based', this.strategyConstraintBased.bind(this));
   }
   /**
    * Register a custom planning strategy
    */
   registerStrategy(name, strategyFunction) {
     this.strategies.set(name, strategyFunction);
-    this.emit("strategy.registered", { strategyName: name });
+    this.emit('strategy.registered', { strategyName: name });
     return this;
   }
   /**
@@ -47,8 +46,8 @@ let Planner = class extends EventEmitter {
    */
   async createPlan(task, options = {}) {
     const planId = this.generateId();
-    const strategy = options.strategy || "hierarchical";
-    this.emit("plan.creation.started", { planId, task, strategy });
+    const strategy = options.strategy || 'hierarchical';
+    this.emit('plan.creation.started', { planId, task, strategy });
     try {
       const strategyFn = this.strategies.get(strategy);
       if (!strategyFn) {
@@ -58,15 +57,15 @@ let Planner = class extends EventEmitter {
       plan.id = planId;
       plan.strategy = strategy;
       plan.createdAt = Date.now();
-      plan.status = "created";
+      plan.status = 'created';
       if (this.config.enableOptimization && options.optimize !== false) {
         this.optimizePlan(plan);
       }
       this.plans.set(planId, plan);
-      this.emit("plan.creation.succeeded", { planId, plan });
+      this.emit('plan.creation.succeeded', { planId, plan });
       return plan;
     } catch (error) {
-      this.emit("plan.creation.failed", { planId, task, error });
+      this.emit('plan.creation.failed', { planId, task, error });
       throw error;
     }
   }
@@ -79,7 +78,7 @@ let Planner = class extends EventEmitter {
       subtasks: [],
       dependencies: [],
       parallelizable: true,
-      estimatedDuration: task.estimatedDuration || 0
+      estimatedDuration: task.estimatedDuration || 0,
     };
   }
   /**
@@ -92,7 +91,7 @@ let Planner = class extends EventEmitter {
         mainTask: task,
         subtasks: [],
         dependencies: [],
-        parallelizable: true
+        parallelizable: true,
       };
     }
     const subtasks = this.decomposeTask(task);
@@ -101,20 +100,17 @@ let Planner = class extends EventEmitter {
       subtasks: [],
       dependencies: [],
       parallelizable: false,
-      estimatedDuration: 0
+      estimatedDuration: 0,
     };
     for (let i = 0; i < subtasks.length; i++) {
       const subtask = subtasks[i];
-      const subplan = await this.strategyHierarchical(
-        subtask,
-        { ...options, depth: depth + 1 }
-      );
+      const subplan = await this.strategyHierarchical(subtask, { ...options, depth: depth + 1 });
       plan.subtasks.push(subplan);
       plan.estimatedDuration += subplan.estimatedDuration || 0;
       if (i > 0) {
         plan.dependencies.push({
           from: subtasks[i - 1].id || `subtask-${i - 1}`,
-          to: subtask.id || `subtask-${i}`
+          to: subtask.id || `subtask-${i}`,
         });
       }
     }
@@ -131,7 +127,7 @@ let Planner = class extends EventEmitter {
       subtasks: topologicalOrder,
       dependencies: dependencyGraph,
       parallelizable: true,
-      estimatedDuration: this.estimateExecutionTime(topologicalOrder)
+      estimatedDuration: this.estimateExecutionTime(topologicalOrder),
     };
   }
   /**
@@ -147,7 +143,7 @@ let Planner = class extends EventEmitter {
       dependencies: this.buildConstraintDependencies(partitions),
       parallelizable: true,
       constraints,
-      estimatedDuration: this.estimateConstrainedExecution(partitions, constraints)
+      estimatedDuration: this.estimateConstrainedExecution(partitions, constraints),
     };
   }
   /**
@@ -155,15 +151,15 @@ let Planner = class extends EventEmitter {
    */
   decomposeTask(task) {
     const subtasks = [];
-    if (task.type === "analysis") {
+    if (task.type === 'analysis') {
       subtasks.push(
-        { type: "data-collection", data: task.data },
-        { type: "preprocessing", data: task.data },
-        { type: "analysis-execution", data: task.data },
-        { type: "result-compilation", data: task.data }
+        { type: 'data-collection', data: task.data },
+        { type: 'preprocessing', data: task.data },
+        { type: 'analysis-execution', data: task.data },
+        { type: 'result-compilation', data: task.data }
       );
-    } else if (task.type === "workflow") {
-      subtasks.push(...task.steps || []);
+    } else if (task.type === 'workflow') {
+      subtasks.push(...(task.steps || []));
     } else if (task.subtasks) {
       subtasks.push(...task.subtasks);
     } else {
@@ -193,8 +189,7 @@ let Planner = class extends EventEmitter {
     const visited = /* @__PURE__ */ new Set();
     const result = [];
     const visit = (node) => {
-      if (visited.has(node))
-        return;
+      if (visited.has(node)) return;
       visited.add(node);
       if (graph.has(node)) {
         for (const neighbor of graph.get(node)) {
@@ -235,7 +230,7 @@ let Planner = class extends EventEmitter {
         deps.push({
           from: partitions[i][partitions[i].length - 1],
           to: partitions[i + 1][0],
-          type: "sequential"
+          type: 'sequential',
         });
       }
     }
@@ -259,8 +254,7 @@ let Planner = class extends EventEmitter {
     const seen = /* @__PURE__ */ new Set();
     plan.subtasks = plan.subtasks.filter((task) => {
       const key = JSON.stringify(task);
-      if (seen.has(key))
-        return false;
+      if (seen.has(key)) return false;
       seen.add(key);
       return true;
     });
@@ -273,8 +267,7 @@ let Planner = class extends EventEmitter {
     const parallelGroups = [];
     const processed = /* @__PURE__ */ new Set();
     for (const task of plan.subtasks) {
-      if (processed.has(task))
-        continue;
+      if (processed.has(task)) continue;
       const group = [task];
       processed.add(task);
       for (const other of plan.subtasks) {
@@ -293,7 +286,7 @@ let Planner = class extends EventEmitter {
    */
   canRunInParallel(task1, task2, plan) {
     for (const dep of plan.dependencies || []) {
-      if (dep.from === task1 && dep.to === task2 || dep.from === task2 && dep.to === task1) {
+      if ((dep.from === task1 && dep.to === task2) || (dep.from === task2 && dep.to === task1)) {
         return false;
       }
     }
@@ -303,9 +296,7 @@ let Planner = class extends EventEmitter {
    * Reorder tasks for optimal execution
    */
   reorderOptimal(plan) {
-    plan.subtasks.sort(
-      (a, b) => (b.estimatedDuration || 0) - (a.estimatedDuration || 0)
-    );
+    plan.subtasks.sort((a, b) => (b.estimatedDuration || 0) - (a.estimatedDuration || 0));
     return plan;
   }
   /**
@@ -320,9 +311,7 @@ let Planner = class extends EventEmitter {
   estimateConstrainedExecution(partitions, constraints = {}) {
     let totalTime = 0;
     for (const partition of partitions) {
-      const maxTime = Math.max(
-        ...partition.map((t) => t.estimatedDuration || 1e3)
-      );
+      const maxTime = Math.max(...partition.map((t) => t.estimatedDuration || 1e3));
       totalTime += maxTime;
     }
     return totalTime;
@@ -335,7 +324,7 @@ let Planner = class extends EventEmitter {
     if (!plan) {
       throw new Error(`Plan ${planId} not found`);
     }
-    this.emit("plan.refinement.started", { planId });
+    this.emit('plan.refinement.started', { planId });
     try {
       if (refinements.addSubtasks) {
         plan.subtasks.push(...refinements.addSubtasks);
@@ -348,10 +337,10 @@ let Planner = class extends EventEmitter {
       }
       plan.refinedAt = Date.now();
       plan.refinementCount = (plan.refinementCount || 0) + 1;
-      this.emit("plan.refinement.succeeded", { planId, plan });
+      this.emit('plan.refinement.succeeded', { planId, plan });
       return plan;
     } catch (error) {
-      this.emit("plan.refinement.failed", { planId, error });
+      this.emit('plan.refinement.failed', { planId, error });
       throw error;
     }
   }
@@ -384,15 +373,10 @@ let Planner = class extends EventEmitter {
    * Shutdown planner
    */
   async shutdown() {
-    this.state = "shutdown";
-    this.emit("planner.shutdown");
+    this.state = 'shutdown';
+    this.emit('planner.shutdown');
   }
 };
-Planner = __decorateClass([
-  singleton()
-], Planner);
+Planner = __decorateClass([singleton()], Planner);
 var planner_default = Planner;
-export {
-  Planner,
-  planner_default as default
-};
+export { Planner, planner_default as default };

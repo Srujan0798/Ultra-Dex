@@ -29,29 +29,29 @@ function isBinary(buffer) {
 export async function executeTool(toolCall, projectRoot = process.cwd()) {
   const { function: func } = toolCall;
   const { name, arguments: argsStr } = func;
-  
+
   try {
     // Parse the arguments string to get parameters
     const args = JSON.parse(argsStr);
-    
+
     switch (name) {
       case 'read_code':
       case 'read_file':
         return await executeReadFile(args, projectRoot);
-        
+
       case 'write_code':
       case 'write_file':
         return await executeWriteFile(args, projectRoot);
-        
+
       case 'search_code':
         return await executeSearchCode(args, projectRoot);
-        
+
       case 'run_shell':
         return await executeRunShell(args);
-        
+
       case 'delegate_task':
         return await executeDelegateTask(args);
-        
+
       default:
         throw new Error(`Unknown tool: ${name}`);
     }
@@ -59,7 +59,7 @@ export async function executeTool(toolCall, projectRoot = process.cwd()) {
     console.error(`Error executing tool ${name}:`, error.message);
     return {
       error: `Tool execution failed: ${error.message}`,
-      success: false
+      success: false,
     };
   }
 }
@@ -72,13 +72,13 @@ export async function executeTool(toolCall, projectRoot = process.cwd()) {
  */
 async function executeReadFile(args, projectRoot) {
   const { filePath } = args;
-  
+
   // Validate file path to prevent directory traversal
   const fullPath = path.resolve(projectRoot, filePath);
   if (!fullPath.startsWith(projectRoot)) {
     throw new Error('Invalid file path: Path traversal detected');
   }
-  
+
   try {
     const buffer = await fs.readFile(fullPath);
 
@@ -86,7 +86,7 @@ async function executeReadFile(args, projectRoot) {
       return {
         success: false,
         error: `Cannot read binary file: ${filePath}. Please use specific tools for binary files.`,
-        filePath
+        filePath,
       };
     }
 
@@ -94,13 +94,13 @@ async function executeReadFile(args, projectRoot) {
     return {
       success: true,
       content,
-      filePath
+      filePath,
     };
   } catch (error) {
     return {
       success: false,
       error: `Could not read file: ${error.message}`,
-      filePath
+      filePath,
     };
   }
 }
@@ -113,30 +113,30 @@ async function executeReadFile(args, projectRoot) {
  */
 async function executeWriteFile(args, projectRoot) {
   const { filePath, content } = args;
-  
+
   // Validate file path to prevent directory traversal
   const fullPath = path.resolve(projectRoot, filePath);
   if (!fullPath.startsWith(projectRoot)) {
     throw new Error('Invalid file path: Path traversal detected');
   }
-  
+
   try {
     // Create directory if it doesn't exist
     await fs.mkdir(path.dirname(fullPath), { recursive: true });
-    
+
     // Write the content to the file
     await fs.writeFile(fullPath, content, 'utf8');
-    
+
     return {
       success: true,
       message: `Successfully wrote to ${filePath}`,
-      filePath
+      filePath,
     };
   } catch (error) {
     return {
       success: false,
       error: `Could not write file: ${error.message}`,
-      filePath
+      filePath,
     };
   }
 }
@@ -149,28 +149,28 @@ async function executeWriteFile(args, projectRoot) {
  */
 async function executeSearchCode(args, _projectRoot) {
   const { query, _filePattern = '*.js' } = args;
-  
+
   try {
-    // This is a simplified search - in a real implementation, 
+    // This is a simplified search - in a real implementation,
     // you might want to use more sophisticated search like ripgrep
     const { _spawn } = await import('child_process');
-    
+
     return new Promise((resolve, _reject) => {
       const _results = [];
-      
+
       // For now, return a mock response
       resolve({
         success: true,
         query,
         results: [`Found matches for "${query}" in mock search`],
-        count: 1
+        count: 1,
       });
     });
   } catch (error) {
     return {
       success: false,
       error: `Could not search code: ${error.message}`,
-      query
+      query,
     };
   }
 }
@@ -182,13 +182,13 @@ async function executeSearchCode(args, _projectRoot) {
  */
 async function executeRunShell(args) {
   const { command } = args;
-  
+
   return new Promise((resolve) => {
     // Timeout in milliseconds (default: 30 seconds)
     const TIMEOUT_MS = 30000;
     // Max buffer size for output (default: 1MB)
     const MAX_BUFFER = 1024 * 1024;
-    
+
     let stdout = '';
     let stderr = '';
     let timedOut = false;
@@ -197,7 +197,7 @@ async function executeRunShell(args) {
     // Using spawn via shell to allow complex commands
     const child = spawn(command, {
       shell: true,
-      stdio: ['ignore', 'pipe', 'pipe']
+      stdio: ['ignore', 'pipe', 'pipe'],
     });
 
     // Set up timeout
@@ -235,7 +235,7 @@ async function executeRunShell(args) {
           error: `Command timed out after ${TIMEOUT_MS}ms`,
           stdout,
           stderr,
-          command
+          command,
         });
       } else if (truncated) {
         resolve({
@@ -243,14 +243,14 @@ async function executeRunShell(args) {
           error: `Output limit exceeded (truncated at ${MAX_BUFFER} bytes)`,
           stdout,
           stderr,
-          command
+          command,
         });
       } else if (code === 0) {
         resolve({
           success: true,
           stdout,
           stderr,
-          command
+          command,
         });
       } else {
         resolve({
@@ -258,7 +258,7 @@ async function executeRunShell(args) {
           error: `Command failed with exit code ${code}`,
           stdout,
           stderr,
-          command
+          command,
         });
       }
     });
@@ -270,7 +270,7 @@ async function executeRunShell(args) {
         error: `Command execution error: ${err.message}`,
         stdout,
         stderr,
-        command
+        command,
       });
     });
   });
@@ -283,14 +283,14 @@ async function executeRunShell(args) {
  */
 async function executeDelegateTask(args) {
   const { agent, task } = args;
-  
+
   // In a real implementation, this would trigger another agent
   // For now, return a mock response
   return {
     success: true,
     message: `Task delegated to @${agent}: ${task}`,
     agent,
-    task
+    task,
   };
 }
 
@@ -304,21 +304,21 @@ export async function processToolCalls(toolCalls, projectRoot = process.cwd()) {
   if (!toolCalls || toolCalls.length === 0) {
     return [];
   }
-  
+
   const results = [];
-  
+
   for (const toolCall of toolCalls) {
     const result = await executeTool(toolCall, projectRoot);
     results.push({
       tool_call_id: toolCall.id,
-      result
+      result,
     });
   }
-  
+
   return results;
 }
 
 export default {
   executeTool,
-  processToolCalls
+  processToolCalls,
 };

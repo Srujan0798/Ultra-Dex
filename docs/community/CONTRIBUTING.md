@@ -10,6 +10,7 @@
 ## Development Workflow
 
 ### Running Tests
+
 ```bash
 npm test           # All tests
 npm run test:unit  # Unit tests only
@@ -17,6 +18,7 @@ npm run test:cli   # CLI tests only
 ```
 
 ### Linting & Formatting
+
 ```bash
 npm run lint       # Check linting
 npm run lint:fix   # Auto-fix issues
@@ -24,13 +26,16 @@ npm run format     # Format code
 ```
 
 ### Building
+
 ```bash
 npm run build      # Build all
 npm run build:core # Build core only
 ```
 
 ## Commit Convention
+
 Use [Conventional Commits](https://www.conventionalcommits.org/):
+
 ```
 feat: add new agent type
 fix: resolve memory leak in planner
@@ -42,6 +47,7 @@ chore: clean up unused dependencies
 ## Pull Request Guidelines
 
 ### Before Submitting
+
 - [ ] Tests pass (`npm test`)
 - [ ] Lint passes (`npm run lint`)
 - [ ] Code formatted (`npm run format`)
@@ -49,20 +55,25 @@ chore: clean up unused dependencies
 - [ ] Documentation updated if needed
 
 ### PR Template
+
 ```markdown
 ## Description
+
 What does this PR do?
 
 ## Testing
+
 How was this tested?
 
 ## Checklist
+
 - [ ] Tests added/updated
 - [ ] Documentation updated
 - [ ] No breaking changes (or documented if breaking)
 ```
 
 ## Code Style
+
 - Use `camelCase` for variables/functions
 - Use `PascalCase` for classes
 - Use `UPPER_SNAKE_CASE` for constants
@@ -71,10 +82,12 @@ How was this tested?
 - No `any` type - use `unknown` for unknown types
 
 ## Reporting Issues
+
 - Use GitHub Issues
 - Include reproduction steps
 - Include environment info (Node version, OS)
 - Attach logs if applicable
 
 ## License
+
 By contributing, you agree that your contributions will be licensed under the MIT License.

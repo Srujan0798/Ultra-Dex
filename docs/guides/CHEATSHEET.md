@@ -1,6 +1,7 @@
 # Ultra-Dex Cheat Sheet
 
 ## 🚀 30-Second Start
+
 ```bash
 cat .agents/BACKEND.md | pbcopy  # Copy
 # Paste in AI + context           # Build!
@@ -8,36 +9,42 @@ cat .agents/BACKEND.md | pbcopy  # Copy
 
 ## 📋 Agent Quick Reference
 
-| When You Need | Use This Agent | Time |
-|---------------|----------------|------|
-| Architecture decision | `cto.md` | 2 min |
-| Plan complex feature | `planner.md` | 2 min |
-| Build API/Database | `backend.md` | 5 min |
-| Create UI Components | `frontend.md` | 5 min |
-| Code Review | `reviewer.md` | 3 min |
-| Fix Bugs | `debugger.md` | 5 min |
-| Deploy | `devops.md` | 3 min |
-| Auth/Security | `auth.md` | 4 min |
-| Database Schema | `database.md` | 4 min |
+| When You Need         | Use This Agent | Time  |
+| --------------------- | -------------- | ----- |
+| Architecture decision | `cto.md`       | 2 min |
+| Plan complex feature  | `planner.md`   | 2 min |
+| Build API/Database    | `backend.md`   | 5 min |
+| Create UI Components  | `frontend.md`  | 5 min |
+| Code Review           | `reviewer.md`  | 3 min |
+| Fix Bugs              | `debugger.md`  | 5 min |
+| Deploy                | `devops.md`    | 3 min |
+| Auth/Security         | `auth.md`      | 4 min |
+| Database Schema       | `database.md`  | 4 min |
 
 ## 🔥 Common Patterns
 
 ### Build Feature
+
 ```
 cto → planner → backend → frontend → reviewer
 ```
+
 **Time:** 15-20 min
 
-### Fix Bug  
+### Fix Bug
+
 ```
 debugger → fix → reviewer
 ```
+
 **Time:** 10-15 min
 
 ### Code Review
+
 ```
 reviewer → fix issues → re-review
 ```
+
 **Time:** 5-10 min
 
 ## 💡 Pro Tips
@@ -55,7 +62,7 @@ reviewer → fix issues → re-review
 cat .agents/cto.md | pbcopy
 # "Plan auth for Next.js + PostgreSQL"
 
-# 2. Plan it out  
+# 2. Plan it out
 cat .agents/planner.md | pbcopy
 # "Break into tasks"
 

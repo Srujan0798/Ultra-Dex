@@ -45,14 +45,17 @@ describe('Diamond State Architecture', () => {
       assert.ok(container.resolve(DI_TOKENS.Logger), 'Logger should be registered');
       assert.ok(container.resolve(DI_TOKENS.ConfigService), 'ConfigService should be registered');
       assert.ok(container.resolve(DI_TOKENS.AlertManager), 'AlertManager should be registered');
-      assert.ok(container.resolve(DI_TOKENS.TelemetryService), 'TelemetryService should be registered');
+      assert.ok(
+        container.resolve(DI_TOKENS.TelemetryService),
+        'TelemetryService should be registered'
+      );
       assert.ok(container.resolve(DI_TOKENS.EmbeddingModel), 'EmbeddingModel should be registered');
     });
 
     it('should create child containers for sessions', () => {
       const sessionContainer = container.createChildContainer();
       sessionContainer.registerInstance(DI_TOKENS.SessionId, 'test-session-123');
-      
+
       const sessionId = sessionContainer.resolve(DI_TOKENS.SessionId);
       assert.strictEqual(sessionId, 'test-session-123');
     });
@@ -61,36 +64,41 @@ describe('Diamond State Architecture', () => {
   describe('Pillar 2: Intelligence (Semantic Router)', () => {
     it('should route frontend tasks correctly', async () => {
       const decision = await diamond.semanticRouter.route('Create a React component with Tailwind');
-      
+
       assert.strictEqual(decision.agentId, 'frontend-agent');
-      assert.ok(decision.confidence > 0.8, `Confidence should be > 0.8, got ${decision.confidence}`);
+      assert.ok(
+        decision.confidence > 0.8,
+        `Confidence should be > 0.8, got ${decision.confidence}`
+      );
       assert.ok(decision.alternatives.length > 0, 'Should have alternatives');
       assert.ok(decision.reasoning, 'Should have reasoning');
     });
 
     it('should route backend tasks correctly', async () => {
       const decision = await diamond.semanticRouter.route('Set up PostgreSQL with Prisma ORM');
-      
+
       assert.strictEqual(decision.agentId, 'backend-agent');
-      assert.ok(decision.confidence > 0.8, `Confidence should be > 0.8, got ${decision.confidence}`);
+      assert.ok(
+        decision.confidence > 0.8,
+        `Confidence should be > 0.8, got ${decision.confidence}`
+      );
     });
 
     it('should route devops tasks correctly', async () => {
       const decision = await diamond.semanticRouter.route('Create Dockerfile for Node.js app');
-      
+
       assert.strictEqual(decision.agentId, 'devops-agent');
-      assert.ok(decision.confidence > 0.8, `Confidence should be > 0.8, got ${decision.confidence}`);
+      assert.ok(
+        decision.confidence > 0.8,
+        `Confidence should be > 0.8, got ${decision.confidence}`
+      );
     });
 
     it('should batch route efficiently', async () => {
-      const tasks = [
-        'Create React component',
-        'Set up database',
-        'Create Dockerfile',
-      ];
+      const tasks = ['Create React component', 'Set up database', 'Create Dockerfile'];
 
       const results = await diamond.semanticRouter.routeBatch(tasks);
-      
+
       assert.strictEqual(results.length, 3);
       assert.strictEqual(results[0].agentId, 'frontend-agent');
       assert.strictEqual(results[1].agentId, 'backend-agent');
@@ -157,21 +165,25 @@ describe('Diamond State Architecture', () => {
       });
 
       assert.strictEqual(result.success, false);
-      assert.ok(result.exitCode === 137 || result.error?.includes('memory'), 'Should hit memory limit');
+      assert.ok(
+        result.exitCode === 137 || result.error?.includes('memory'),
+        'Should hit memory limit'
+      );
     });
   });
 
   describe('Pillar 4: Autonomy (Self-Healing)', () => {
     it('should emit and handle alerts', async () => {
       let alertReceived = false;
-      
+
       const unsubscribe = diamond.alertManager.subscribe((alert) => {
         if (alert.type === 'test.alert') {
           alertReceived = true;
         }
       });
 
-      diamond.alertManager.builder()
+      diamond.alertManager
+        .builder()
         .type('test.alert')
         .severity(AlertSeverity.LOW)
         .message('Test alert')
@@ -179,7 +191,7 @@ describe('Diamond State Architecture', () => {
         .emit();
 
       // Wait for async processing
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       assert.strictEqual(alertReceived, true);
       unsubscribe();
@@ -187,7 +199,7 @@ describe('Diamond State Architecture', () => {
 
     it('should track healing statistics', () => {
       const stats = diamond.siteReliability?.getStats();
-      
+
       assert.ok(stats, 'Should have stats');
       assert.ok(typeof stats.totalAttempts === 'number');
       assert.ok(typeof stats.successful === 'number');
@@ -199,7 +211,7 @@ describe('Diamond State Architecture', () => {
     it('should record spans', () => {
       const tracer = diamond.telemetry.getTracer('test');
       const span = tracer.startSpan('test-operation');
-      
+
       tracer.log(span, { message: 'Test log' });
       tracer.finishSpan(span);
 
@@ -210,7 +222,7 @@ describe('Diamond State Architecture', () => {
 
     it('should record metrics', () => {
       diamond.telemetry.recordMetric('test.metric', 42, { tag: 'value' });
-      
+
       const metrics = diamond.telemetry.getMetrics('test.metric', {
         start: new Date(Date.now() - 60000),
         end: new Date(),
@@ -252,7 +264,7 @@ describe('Diamond State Architecture', () => {
 
       const searchResults = await diamond.appStore.search('test');
       assert.ok(searchResults.length > 0);
-      assert.ok(searchResults.some(p => p.id === 'test-plugin'));
+      assert.ok(searchResults.some((p) => p.id === 'test-plugin'));
     });
 
     it('should audit plugins for security', async () => {
@@ -278,16 +290,17 @@ describe('Diamond State Architecture', () => {
   describe('Integration: End-to-End', () => {
     it('should route, execute, and heal end-to-end', async () => {
       // 1. Route a task
-      const decision = await diamond.hybridRouter.route(
-        'Optimize database queries',
-        ['database', 'sql']
-      );
-      
+      const decision = await diamond.hybridRouter.route('Optimize database queries', [
+        'database',
+        'sql',
+      ]);
+
       assert.ok(decision.agentId);
       assert.ok(decision.confidence > 0);
 
       // 2. Emit an alert (simulating a failure)
-      diamond.alertManager.builder()
+      diamond.alertManager
+        .builder()
         .type('provider.latency.high')
         .severity(AlertSeverity.HIGH)
         .message('Provider slow')
@@ -297,7 +310,7 @@ describe('Diamond State Architecture', () => {
         .emit();
 
       // 3. Wait for healing
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // 4. Check stats
       const alertStats = diamond.alertManager.getStats();
@@ -313,10 +326,10 @@ describe('Mock Embedding Model', () => {
 
     const embedding1 = await model.embed('test text');
     const embedding2 = await model.embed('test text');
-    
+
     // Should be deterministic
     assert.deepStrictEqual(embedding1, embedding2);
-    
+
     // Should be normalized
     const magnitude = Math.sqrt(embedding1.reduce((sum, x) => sum + x * x, 0));
     assert.ok(Math.abs(magnitude - 1) < 0.01, 'Should be normalized');

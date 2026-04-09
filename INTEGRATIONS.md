@@ -7,6 +7,7 @@
 **Status:** ✅ Fully Integrated
 
 **Features:**
+
 - Structured logging with Winston + Logtail transport
 - Event tracking: `user_signup`, `user_login`, `ai_request`, `billing_upgrade`, errors
 - HTTP request logging with duration, status codes, IP tracking
@@ -14,6 +15,7 @@
 - 100k logs/month on free tier
 
 **Setup:**
+
 1. Create account at https://betterstack.com/
 2. Get Source Token from https://logs.betterstack.com/team/<team>/sources
 3. Add to `.env.production`:
@@ -23,6 +25,7 @@
 4. Logs appear in Better Stack dashboard within 60 seconds
 
 **Usage:**
+
 ```typescript
 import { logEvent, logAIRequest, logUserSignup } from 'src/core/monitoring/better-stack-logger.js';
 
@@ -36,7 +39,7 @@ logAIRequest({
   model: 'gpt-4',
   tokens: 1500,
   cost: 0.03,
-  latency: 250
+  latency: 250,
 });
 
 // Log user signup
@@ -44,6 +47,7 @@ logUserSignup('user_123', 'user@example.com', { referral: 'google' });
 ```
 
 **Files:**
+
 - `src/core/monitoring/better-stack-logger.ts` - Main logger implementation
 - `src/core/server/production-server.ts` - HTTP request logging
 
@@ -54,6 +58,7 @@ logUserSignup('user_123', 'user@example.com', { referral: 'google' });
 **Status:** ✅ Fully Integrated
 
 **Features:**
+
 - User registration via Clerk API
 - Session management with Clerk sessions
 - Secure login/logout
@@ -61,6 +66,7 @@ logUserSignup('user_123', 'user@example.com', { referral: 'google' });
 - Auth event logging to Better Stack
 
 **Setup:**
+
 1. Create account at https://clerk.com/
 2. Create application in Clerk Dashboard
 3. Add to `.env.production`:
@@ -70,12 +76,14 @@ logUserSignup('user_123', 'user@example.com', { referral: 'google' });
    ```
 
 **API Endpoints:**
+
 - `POST /api/auth/register` - Create new user
 - `POST /api/auth/login` - Login user
 - `GET /api/user/profile` - Get user profile
 - `POST /api/auth/logout` - Logout (revoke session)
 
 **Example:**
+
 ```bash
 # Register
 curl -X POST https://ultra-dex.onrender.com/api/auth/register \
@@ -93,6 +101,7 @@ curl https://ultra-dex.onrender.com/api/user/profile \
 ```
 
 **Files:**
+
 - `src/core/auth/auth-service.ts` - Clerk integration
 - `src/core/server/production-server.ts` - Auth endpoints
 
@@ -103,6 +112,7 @@ curl https://ultra-dex.onrender.com/api/user/profile \
 **Status:** ✅ Fully Integrated
 
 **Features:**
+
 - Real Stripe customer creation
 - Subscription management (Free, Pro $29, Enterprise $99)
 - Webhook handling for events: `invoice.paid`, `subscription.created`, `subscription.deleted`
@@ -112,6 +122,7 @@ curl https://ultra-dex.onrender.com/api/user/profile \
 **Setup:**
 
 #### Step 1: Stripe Dashboard Setup
+
 1. Go to https://dashboard.stripe.com/
 2. Create products:
    - **Pro**: $29/month recurring
@@ -119,7 +130,9 @@ curl https://ultra-dex.onrender.com/api/user/profile \
 3. Copy Price IDs (e.g., `price_1ABC...`)
 
 #### Step 2: Environment Variables
+
 Add to `.env.production`:
+
 ```
 STRIPE_SECRET_KEY=sk_live_xxx
 STRIPE_PUBLISHABLE_KEY=pk_live_xxx
@@ -129,6 +142,7 @@ STRIPE_PRICE_ENTERPRISE=price_xxx
 ```
 
 #### Step 3: Webhook Configuration
+
 1. Go to https://dashboard.stripe.com/webhooks
 2. Add endpoint: `https://ultra-dex.onrender.com/api/billing/webhook`
 3. Select events:
@@ -139,6 +153,7 @@ STRIPE_PRICE_ENTERPRISE=price_xxx
 4. Copy signing secret → `STRIPE_WEBHOOK_SECRET`
 
 **API Endpoints:**
+
 - `GET /api/billing/pricing` - Get pricing tiers
 - `POST /api/billing/subscribe` - Create subscription
 - `GET /api/billing/usage` - Get current month usage
@@ -146,6 +161,7 @@ STRIPE_PRICE_ENTERPRISE=price_xxx
 - `POST /api/billing/webhook` - Stripe webhook (internal)
 
 **Example:**
+
 ```bash
 # Get pricing
 curl https://ultra-dex.onrender.com/api/billing/pricing
@@ -166,6 +182,7 @@ curl -X POST https://ultra-dex.onrender.com/api/billing/cancel \
 ```
 
 **Files:**
+
 - `src/core/billing/billing-service.ts` - Stripe integration
 - `src/core/billing/pricing-tiers.ts` - Tier definitions
 - `src/core/server/production-server.ts` - Billing endpoints + webhook
@@ -175,6 +192,7 @@ curl -X POST https://ultra-dex.onrender.com/api/billing/cancel \
 ## 🧪 Testing
 
 ### Local Testing
+
 ```bash
 # Run unit tests
 npm test
@@ -212,19 +230,23 @@ npm run test:coverage
 All events are logged to Better Stack:
 
 **User Events:**
+
 - `user_signup` - New user registration
 - `user_login` - User login
 - `billing_upgrade` - Tier upgrade
 
 **AI Events:**
+
 - `ai_request` - AI provider calls (provider, model, tokens, cost, latency)
 
 **Billing Events:**
+
 - `subscription_created` - New subscription
 - `payment_succeeded` - Successful payment
 - `subscription_cancelled` - Cancelled subscription
 
 **System Events:**
+
 - `http_request` - All HTTP requests
 - `error` - Application errors
 
@@ -233,24 +255,28 @@ All events are logged to Better Stack:
 ## 🔧 Troubleshooting
 
 ### Better Stack logs not appearing
+
 - ✅ Check `BETTER_STACK_SOURCE_TOKEN` is set
 - ✅ Verify token at https://logs.betterstack.com/
 - ✅ Wait 60 seconds for logs to appear
 - ✅ Check console for "Better Stack logging error"
 
 ### Clerk authentication failing
+
 - ✅ Check `CLERK_SECRET_KEY` is set
 - ✅ Verify app in Clerk Dashboard
 - ✅ Test with Clerk development keys first
 - ✅ Check Better Stack logs for auth errors
 
 ### Stripe webhook not working
+
 - ✅ Check `STRIPE_WEBHOOK_SECRET` is set
 - ✅ Verify webhook endpoint in Stripe Dashboard
 - ✅ Use Stripe CLI for local testing: `stripe listen --forward-to localhost:3000/api/billing/webhook`
 - ✅ Check Better Stack logs for webhook errors
 
 ### Subscription creation failing
+
 - ✅ Check `STRIPE_PRICE_PRO` and `STRIPE_PRICE_ENTERPRISE` are set
 - ✅ Verify Price IDs exist in Stripe Dashboard
 - ✅ Test with Stripe test mode first

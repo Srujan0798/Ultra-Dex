@@ -12,12 +12,18 @@ import chalk from 'chalk';
  */
 export async function createBarChart(
   data: Array<{ label: string; value: number; maxValue?: number }>,
-  options: { width?: number; barChar?: string; emptyChar?: string; maxValue?: number; color?: typeof chalk } = {}
+  options: {
+    width?: number;
+    barChar?: string;
+    emptyChar?: string;
+    maxValue?: number;
+    color?: typeof chalk;
+  } = {}
 ): Promise<string> {
   const width = options.width || 40;
   const barChar = options.barChar || '█';
   const emptyChar = options.emptyChar || '░';
-  const maxValue = options.maxValue || Math.max(...data.map(d => d.value), 1);
+  const maxValue = options.maxValue || Math.max(...data.map((d) => d.value), 1);
   const color = options.color || chalk.blue;
 
   let output = '';
@@ -55,9 +61,9 @@ export async function createPieChart(
   }
 
   // Calculate percentages
-  const percentages = data.map(item => ({
+  const percentages = data.map((item) => ({
     ...item,
-    percentage: Math.round((item.value / total) * 100)
+    percentage: Math.round((item.value / total) * 100),
   }));
 
   // Create a simple text representation
@@ -94,13 +100,15 @@ export async function createLineChart(
   }
 
   // Normalize data
-  const values = data.map(d => d.y);
+  const values = data.map((d) => d.y);
   const minX = Math.min(...values);
   const maxX = Math.max(...values);
   const range = maxX - minX || 1; // Avoid division by zero
 
   // Create grid
-  const grid = Array(height).fill().map(() => Array(width).fill(' '));
+  const grid = Array(height)
+    .fill()
+    .map(() => Array(width).fill(' '));
 
   // Scale and plot points
   for (let i = 0; i < data.length; i++) {
@@ -135,7 +143,8 @@ export async function createLineChart(
       for (let x = Math.max(0, idx1); x <= Math.min(width - 1, idx2); x++) {
         const y = Math.round(y1 + slope * (x - idx1));
         if (y >= 0 && y < height) {
-          if (grid[y][x] !== pointChar) { // Don't overwrite points
+          if (grid[y][x] !== pointChar) {
+            // Don't overwrite points
             grid[y][x] = options.lineChar || '─';
           }
         }
@@ -174,12 +183,11 @@ export async function createGauge(
   const filledLength = Math.round((value / maxValue) * width);
   const emptyLength = width - filledLength;
 
-  const bar = chalk.green(filledChar.repeat(filledLength)) +
-    chalk.gray(emptyChar.repeat(emptyLength));
+  const bar =
+    chalk.green(filledChar.repeat(filledLength)) + chalk.gray(emptyChar.repeat(emptyLength));
 
-  const displayValue = options.showValues !== false ?
-    `${value}/${maxValue} (${percentage}%)` :
-    `${percentage}%`;
+  const displayValue =
+    options.showValues !== false ? `${value}/${maxValue} (${percentage}%)` : `${percentage}%`;
 
   if (label) {
     return `${chalk.blue(label)}\n[${bar}] ${chalk.bold(displayValue)}`;
@@ -194,10 +202,7 @@ export async function createGauge(
  * @param {object} options - Sparkline options
  * @returns {string} Text-based sparkline
  */
-export async function createSparkline(
-  values: number[],
-  _options: object = {}
-): Promise<string> {
+export async function createSparkline(values: number[], _options: object = {}): Promise<string> {
   if (values.length === 0) {
     return '';
   }
@@ -210,12 +215,12 @@ export async function createSparkline(
   const maxVal = Math.max(...values);
   const range = maxVal - minVal || 1;
 
-  const normalized = values.map(v => {
+  const normalized = values.map((v) => {
     const ratio = (v - minVal) / range;
     return Math.floor(ratio * (blocks.length - 1));
   });
 
-  return normalized.map(i => chalk.blue(blocks[i])).join('');
+  return normalized.map((i) => chalk.blue(blocks[i])).join('');
 }
 
 /**
@@ -301,7 +306,11 @@ export async function createTree(
   const expandChar = options.expandChar || '├─';
   const lastChar = options.lastChar || '└─';
 
-  function buildTree(nodeList: Array<{ name: string; children?: Array<Record<string, unknown>> }>, level: number = 0, isLastList: boolean[] = []): string {
+  function buildTree(
+    nodeList: Array<{ name: string; children?: Array<Record<string, unknown>> }>,
+    level: number = 0,
+    isLastList: boolean[] = []
+  ): string {
     let output = '';
 
     for (let index = 0; index < nodeList.length; index++) {
@@ -351,5 +360,5 @@ export default {
   createSparkline,
   createHeatmap,
   createTree,
-  formatChartTitle
+  formatChartTitle,
 };

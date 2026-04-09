@@ -44,11 +44,13 @@ The router also exposes confidence scoring and follow-up suggestions so the REPL
 The dashboard at `apps/cli/lib/commands/dashboard.js` is a full command surface, not just a static status page.
 
 ### What It Shows
+
 - Recent projects discovered from the current workspace, project history, and common dev directories
 - Quick actions such as `run`, `status`, `align`, `review`, `serve`, and `dashboard --web`
 - System status including git branch, alignment score, phase progress, usage summary, theme, MCP port, and runtime details
 
 ### How It Behaves
+
 - `Enter` on a recent project switches the dashboard context to that project
 - `Enter` on a quick action runs the corresponding Ultra-Dex command
 - `--once` prints a snapshot and exits
@@ -56,6 +58,7 @@ The dashboard at `apps/cli/lib/commands/dashboard.js` is a full command surface,
 - `--web` serves the browser dashboard on the requested port
 
 ### Supporting UI Pieces
+
 - `apps/cli/lib/ui/interactive.js` provides the broader omni-box-style prompt flow used by the TUI
 - `apps/cli/lib/ui/theme.js` and `apps/cli/lib/ui/layout.js` provide the shared visual system
 - `apps/cli/lib/ui/components/GradientBanner.js` and `apps/cli/lib/ui/components/AgentStatus.js` add branded terminal visuals

@@ -3,13 +3,12 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
+import { singleton } from 'tsyringe';
 import { GraphUtils } from './graph-utils.js';
 let PlannerGraph = class {
   constructor() {
@@ -22,8 +21,8 @@ let PlannerGraph = class {
    */
   addTask(taskId, taskData) {
     GraphUtils.addNode(this.graph, taskId, {
-      type: "task",
-      ...taskData
+      type: 'task',
+      ...taskData,
     });
     this.taskNodes.set(taskId, taskData);
     return this;
@@ -33,8 +32,8 @@ let PlannerGraph = class {
    */
   addDependency(fromTaskId, toTaskId, options = {}) {
     GraphUtils.addEdge(this.graph, fromTaskId, toTaskId, {
-      type: "dependency",
-      ...options
+      type: 'dependency',
+      ...options,
     });
     if (!this.dependencyMap.has(toTaskId)) {
       this.dependencyMap.set(toTaskId, []);
@@ -55,8 +54,7 @@ let PlannerGraph = class {
     const paths = [];
     for (const nodeId of this.graph.nodes.keys()) {
       const path = GraphUtils.shortestPath(this.graph, nodeId, null);
-      if (path)
-        paths.push(path);
+      if (path) paths.push(path);
     }
     return paths.length > 0 ? paths[paths.length - 1] : [];
   }
@@ -73,13 +71,11 @@ let PlannerGraph = class {
     const groups = [];
     const processed = /* @__PURE__ */ new Set();
     for (const nodeId of this.graph.nodes.keys()) {
-      if (processed.has(nodeId))
-        continue;
+      if (processed.has(nodeId)) continue;
       const group = [nodeId];
       processed.add(nodeId);
       for (const otherId of this.graph.nodes.keys()) {
-        if (processed.has(otherId))
-          continue;
+        if (processed.has(otherId)) continue;
         if (this.canRunInParallel(nodeId, otherId)) {
           group.push(otherId);
           processed.add(otherId);
@@ -109,11 +105,6 @@ let PlannerGraph = class {
     return totalTime;
   }
 };
-PlannerGraph = __decorateClass([
-  singleton()
-], PlannerGraph);
+PlannerGraph = __decorateClass([singleton()], PlannerGraph);
 var planner_graph_default = PlannerGraph;
-export {
-  PlannerGraph,
-  planner_graph_default as default
-};
+export { PlannerGraph, planner_graph_default as default };

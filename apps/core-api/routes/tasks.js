@@ -16,7 +16,7 @@ router.post('/', async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Objective is required',
-        code: 'OBJECTIVE_REQUIRED'
+        code: 'OBJECTIVE_REQUIRED',
       });
     }
 
@@ -24,7 +24,7 @@ router.post('/', async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Agents must be an array',
-        code: 'INVALID_AGENTS'
+        code: 'INVALID_AGENTS',
       });
     }
 
@@ -32,25 +32,25 @@ router.post('/', async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Context must be an object',
-        code: 'INVALID_CONTEXT'
+        code: 'INVALID_CONTEXT',
       });
     }
 
     const task = await agentOrchestrator.createTask({
       objective: objective.trim(),
       agents: agents || [],
-      context: context || {}
+      context: context || {},
     });
 
     res.status(201).json({
       success: true,
-      data: task
+      data: task,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message,
-      code: 'CREATE_TASK_FAILED'
+      code: 'CREATE_TASK_FAILED',
     });
   }
 });
@@ -66,7 +66,7 @@ router.get('/:id', async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Task ID is required',
-        code: 'TASK_ID_REQUIRED'
+        code: 'TASK_ID_REQUIRED',
       });
     }
 
@@ -75,19 +75,19 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({
         success: false,
         error: 'Task not found',
-        code: 'TASK_NOT_FOUND'
+        code: 'TASK_NOT_FOUND',
       });
     }
 
     res.json({
       success: true,
-      data: task
+      data: task,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message,
-      code: 'GET_TASK_FAILED'
+      code: 'GET_TASK_FAILED',
     });
   }
 });
@@ -103,7 +103,7 @@ router.get('/:id/logs', async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Task ID is required',
-        code: 'TASK_ID_REQUIRED'
+        code: 'TASK_ID_REQUIRED',
       });
     }
 
@@ -111,13 +111,13 @@ router.get('/:id/logs', async (req, res) => {
 
     res.json({
       success: true,
-      data: logs
+      data: logs,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message,
-      code: 'GET_TASK_LOGS_FAILED'
+      code: 'GET_TASK_LOGS_FAILED',
     });
   }
 });

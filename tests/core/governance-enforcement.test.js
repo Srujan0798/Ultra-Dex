@@ -27,7 +27,7 @@ describe('Governance Enforcement - Denial Scenarios', () => {
         const blockedTools = ['delete_database', 'drop_table', 'truncate_all'];
         return !blockedTools.includes(ctx.resource);
       },
-      enforcement: 'block'
+      enforcement: 'block',
     });
 
     // Attempt unauthorized execution
@@ -35,7 +35,7 @@ describe('Governance Enforcement - Denial Scenarios', () => {
       agentId: 'unauthorized-agent',
       action: 'tool:delete_database',
       resource: 'delete_database',
-      details: { toolName: 'delete_database', args: { force: true } }
+      details: { toolName: 'delete_database', args: { force: true } },
     };
 
     const result = await governance.gate(context);
@@ -50,24 +50,21 @@ describe('Governance Enforcement - Denial Scenarios', () => {
       id: 'block-all',
       name: 'Block All',
       condition: () => false,
-      enforcement: 'block'
+      enforcement: 'block',
     });
 
     const context = {
       agentId: 'test',
       action: 'test',
-      resource: 'test'
+      resource: 'test',
     };
 
     const result = await governance.gate(context);
-    
+
     // Simulate what orchestrator does
     if (!result.allowed) {
-      const error = new GovernanceDeniedException(
-        `Action blocked: ${result.reason}`,
-        context
-      );
-      
+      const error = new GovernanceDeniedException(`Action blocked: ${result.reason}`, context);
+
       assert.strictEqual(error.name, 'GovernanceDeniedException');
       assert.strictEqual(error.context.agentId, 'test');
     }
@@ -81,14 +78,14 @@ describe('Governance Enforcement - Denial Scenarios', () => {
         const privilegedActions = ['executeTask', 'system:shutdown', 'config:modify'];
         return !privilegedActions.includes(ctx.action);
       },
-      enforcement: 'block'
+      enforcement: 'block',
     });
 
     const context = {
       agentId: 'viewer-role',
       action: 'executeTask',
       resource: 'system:shutdown',
-      details: { task: 'shutdown system' }
+      details: { task: 'shutdown system' },
     };
 
     const result = await governance.gate(context);
@@ -101,7 +98,7 @@ describe('Governance Enforcement - Denial Scenarios', () => {
     const rolePermissions = {
       admin: ['read', 'write', 'delete', 'execute'],
       editor: ['read', 'write', 'execute'],
-      viewer: ['read']
+      viewer: ['read'],
     };
 
     governance.policies.addPolicy({
@@ -113,7 +110,7 @@ describe('Governance Enforcement - Denial Scenarios', () => {
         const allowed = rolePermissions[userRole]?.includes(permission) || false;
         return allowed;
       },
-      enforcement: 'block'
+      enforcement: 'block',
     });
 
     // Test viewer cannot delete
@@ -121,7 +118,7 @@ describe('Governance Enforcement - Denial Scenarios', () => {
       agentId: 'viewer-user',
       action: 'delete',
       resource: 'sensitive-data',
-      details: { role: 'viewer', permission: 'delete' }
+      details: { role: 'viewer', permission: 'delete' },
     };
 
     const viewerResult = await governance.gate(viewerContext);
@@ -132,7 +129,7 @@ describe('Governance Enforcement - Denial Scenarios', () => {
       agentId: 'editor-user',
       action: 'write',
       resource: 'document',
-      details: { role: 'editor', permission: 'write' }
+      details: { role: 'editor', permission: 'write' },
     };
 
     const editorResult = await governance.gate(editorContext);
@@ -145,14 +142,14 @@ describe('Governance Enforcement - Denial Scenarios', () => {
       id: 'deny-specific',
       name: 'Deny Specific Action',
       condition: (ctx) => ctx.action !== 'forbidden:action',
-      enforcement: 'block'
+      enforcement: 'block',
     });
 
     const context = {
       agentId: 'attacker',
       action: 'forbidden:action',
       resource: 'secret',
-      details: { attempt: 'unauthorized' }
+      details: { attempt: 'unauthorized' },
     };
 
     await governance.gate(context);
@@ -160,7 +157,7 @@ describe('Governance Enforcement - Denial Scenarios', () => {
     // VERIFY: Audit log contains denial
     const auditEntries = await governance.audit.query({ action: 'forbidden:action' });
     assert.ok(auditEntries.length > 0, 'MUST have audit entry');
-    
+
     const entry = auditEntries[0];
     assert.strictEqual(entry.outcome, 'blocked', 'MUST show blocked status');
     assert.strictEqual(entry.agentId, 'attacker', 'MUST record agent');
@@ -170,7 +167,7 @@ describe('Governance Enforcement - Denial Scenarios', () => {
     const context = {
       agentId: 'authorized-user',
       action: 'allowed:action',
-      resource: 'public-data'
+      resource: 'public-data',
     };
 
     await governance.gate(context);
@@ -187,7 +184,7 @@ describe('Governance Enforcement - Denial Scenarios', () => {
     governance.policies.addPolicy({
       id: 'block-test',
       condition: (ctx) => ctx.action !== 'delete',
-      enforcement: 'block'
+      enforcement: 'block',
     });
     await governance.gate({ agentId: 'user3', action: 'delete', resource: 'doc3' });
 
@@ -206,20 +203,20 @@ describe('Governance Enforcement - Denial Scenarios', () => {
       id: 'allow-all',
       name: 'Allow All',
       condition: () => true,
-      enforcement: 'allow'
+      enforcement: 'allow',
     });
 
     governance.policies.addPolicy({
       id: 'block-specific',
       name: 'Block Specific',
       condition: (ctx) => ctx.action !== 'dangerous',
-      enforcement: 'block'
+      enforcement: 'block',
     });
 
     const context = {
       agentId: 'user',
       action: 'dangerous',
-      resource: 'test'
+      resource: 'test',
     };
 
     const result = await governance.gate(context);
@@ -231,7 +228,7 @@ describe('Governance Enforcement - Denial Scenarios', () => {
     const context = {
       agentId: 'unknown-user',
       action: 'unknown:action',
-      resource: 'unknown'
+      resource: 'unknown',
     };
 
     const result = await governance.gate(context);

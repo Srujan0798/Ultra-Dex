@@ -7,14 +7,17 @@ Hiring plan to expand Ultra-Dex from 1 person to a 6-person enterprise team to s
 ## Roles to Hire (6 total)
 
 ### 1. Senior Backend Engineer
+
 **Role**: Senior engineer focused on infrastructure and scalability
 **Responsibilities**:
+
 - Scale Ultra-Dex to handle 10K+ concurrent users
 - Optimize database performance and implement caching layers
 - Build high-availability systems and failover mechanisms
 - Implement security controls and compliance features
 
 **Requirements**:
+
 - 5+ years experience with Node.js/TypeScript
 - Experience with distributed systems and microservices
 - Strong knowledge of database optimization (PostgreSQL, Redis)
@@ -24,14 +27,17 @@ Hiring plan to expand Ultra-Dex from 1 person to a 6-person enterprise team to s
 **Budget**: $180K - $220K + 1-2% equity
 
 ### 2. Product Designer
+
 **Role**: Design lead for dashboard, UX, and visual systems
 **Responsibilities**:
+
 - Design enterprise dashboard and user interfaces
 - Create visual debugging and monitoring tools
 - Develop design system and UI components
 - Ensure delightful user experience across all features
 
 **Requirements**:
+
 - 3+ years experience with enterprise SaaS products
 - Strong portfolio of dashboard and B2B interfaces
 - Experience with React, Figma, and design systems
@@ -41,14 +47,17 @@ Hiring plan to expand Ultra-Dex from 1 person to a 6-person enterprise team to s
 **Budget**: $140K - $180K + 0.5-1% equity
 
 ### 3. Developer Advocate
+
 **Role**: Community building and developer relations
 **Responsibilities**:
+
 - Create technical content and documentation
 - Build developer community and engagement
 - Create tutorials, examples, and educational materials
 - Represent Ultra-Dex at conferences and events
 
 **Requirements**:
+
 - Strong technical background with coding experience
 - Excellent communication and writing skills
 - Experience with developer tools and AI technologies
@@ -58,14 +67,17 @@ Hiring plan to expand Ultra-Dex from 1 person to a 6-person enterprise team to s
 **Budget**: $120K - $160K + 0.5-1% equity
 
 ### 4. Sales Lead
+
 **Role**: Enterprise sales and business development
 **Responsibilities**:
+
 - Lead enterprise sales efforts (6-figure deals)
 - Build relationships with Fortune 500 companies
 - Develop sales processes and playbooks
 - Close $2M+ annual contracts
 
 **Requirements**:
+
 - 5+ years enterprise sales experience (ACV $100K+)
 - Experience selling developer tools or AI platforms
 - Strong technical understanding to speak with CTOs/VPs
@@ -75,14 +87,17 @@ Hiring plan to expand Ultra-Dex from 1 person to a 6-person enterprise team to s
 **Budget**: $150K - $200K + 10-15% commission + 1-2% equity
 
 ### 5. Customer Success Manager
+
 **Role**: Onboard and retain enterprise customers
 **Responsibilities**:
+
 - Onboard new enterprise customers
 - Ensure customer success and adoption
 - Manage customer relationships and renewals
 - Gather customer feedback and requirements
 
 **Requirements**:
+
 - 3+ years customer success or account management experience
 - Experience with developer tools or AI platforms
 - Strong technical background to assist with implementations
@@ -94,12 +109,14 @@ Hiring plan to expand Ultra-Dex from 1 person to a 6-person enterprise team to s
 ## Hiring Process
 
 ### 1. Sourcing Strategy
+
 - **Technical Roles**: GitHub, Stack Overflow, AI conferences
 - **Sales Role**: LinkedIn, sales networks, referrals
 - **Designer Role**: Dribbble, Behance, design communities
 - **Advocate Role**: Developer communities, Twitter, YouTube
 
 ### 2. Interview Process
+
 - **Round 1**: Cultural fit and values alignment
 - **Round 2**: Technical skills assessment
 - **Round 3**: Practical exercise (build feature/demo)
@@ -107,6 +124,7 @@ Hiring plan to expand Ultra-Dex from 1 person to a 6-person enterprise team to s
 - **Round 5**: Final interview with founders
 
 ### 3. Compensation Philosophy
+
 - **Competitive Salary**: Top 25% of market rates
 - **Equity**: Meaningful ownership stake (0.5-2%)
 - **Benefits**: Comprehensive health, dental, vision
@@ -116,16 +134,19 @@ Hiring plan to expand Ultra-Dex from 1 person to a 6-person enterprise team to s
 ## Timeline & Milestones
 
 ### Month 1 (Post-Funding)
+
 - [ ] Hire Senior Backend Engineer
 - [ ] Hire Product Designer
 - [ ] Complete onboarding for both roles
 
 ### Month 2 (Post-Funding)
+
 - [ ] Hire Developer Advocate
 - [ ] Hire Sales Lead
 - [ ] Begin customer acquisition efforts
 
 ### Month 3 (Post-Funding)
+
 - [ ] Hire Customer Success Manager
 - [ ] Complete team formation (6 total)
 - [ ] Establish team processes and workflows
@@ -133,6 +154,7 @@ Hiring plan to expand Ultra-Dex from 1 person to a 6-person enterprise team to s
 ## Budget Allocation
 
 ### Total Hiring Budget: $820K - $1.1M (first year)
+
 - **Backend Engineer**: $200K (salary + benefits + equity value)
 - **Product Designer**: $160K (salary + benefits + equity value)
 - **Developer Advocate**: $140K (salary + benefits + equity value)
@@ -141,6 +163,7 @@ Hiring plan to expand Ultra-Dex from 1 person to a 6-person enterprise team to s
 - **Recruiting/Hiring Costs**: $50K (agencies, interviews, etc.)
 
 ### Funding Use: 40% of $2M seed (~$800K)
+
 - **Salaries**: 70% of hiring budget
 - **Equity**: 20% of hiring budget (equity value)
 - **Benefits**: 7% of hiring budget
@@ -149,12 +172,14 @@ Hiring plan to expand Ultra-Dex from 1 person to a 6-person enterprise team to s
 ## Success Metrics
 
 ### Team Growth Metrics
+
 - **Time to Hire**: < 45 days per role
 - **Retention**: > 80% after 12 months
 - **Productivity**: Feature velocity increases by 3x
 - **Quality**: Bug reports decrease by 50%
 
 ### Business Impact Metrics
+
 - **Revenue Growth**: 300% increase in enterprise bookings
 - **Customer Satisfaction**: > 4.5/5 NPS score
 - **Product Adoption**: 50% increase in feature usage
@@ -163,6 +188,7 @@ Hiring plan to expand Ultra-Dex from 1 person to a 6-person enterprise team to s
 ## Risk Mitigation
 
 ### Key Risks & Mitigation Strategies
+
 1. **Talent Competition**: Offer compelling equity and mission
 2. **Hiring Speed**: Use recruiting agencies and referral bonuses
 3. **Cultural Fit**: Rigorous cultural assessment process
@@ -182,6 +208,7 @@ CEO/Founder (Srujan Sai Karna)
 ```
 
 ### Reporting Structure
+
 - Backend Engineer reports to CTO
 - Product Designer reports to CEO
 - Developer Advocate reports to CEO
@@ -191,18 +218,21 @@ CEO/Founder (Srujan Sai Karna)
 ## Onboarding Plan
 
 ### First 30 Days
+
 - Complete security and compliance training
 - Set up development environment
 - Shadow existing team members
 - Complete first contribution to codebase
 
 ### First 60 Days
+
 - Take ownership of first major feature
 - Participate in customer calls/meetings
 - Contribute to product strategy
 - Begin building relationships with team
 
 ### First 90 Days
+
 - Lead feature development independently
 - Mentor other team members
 - Contribute to hiring of next roles
@@ -211,6 +241,7 @@ CEO/Founder (Srujan Sai Karna)
 ## Job Descriptions
 
 ### Senior Backend Engineer JD
+
 ```
 Senior Backend Engineer - Ultra-Dex
 
@@ -239,6 +270,7 @@ Preferred:
 ```
 
 ### Product Designer JD
+
 ```
 Product Designer - Ultra-Dex
 
@@ -266,6 +298,7 @@ Preferred:
 ```
 
 ### Developer Advocate JD
+
 ```
 Developer Advocate - Ultra-Dex
 
@@ -293,6 +326,7 @@ Preferred:
 ```
 
 ### Sales Lead JD
+
 ```
 Sales Lead - Ultra-Dex
 
@@ -320,6 +354,7 @@ Preferred:
 ```
 
 ### Customer Success Manager JD
+
 ```
 Customer Success Manager - Ultra-Dex
 
@@ -349,24 +384,28 @@ Preferred:
 ## Compensation Packages
 
 ### Senior Backend Engineer
+
 - **Salary**: $180K - $220K
 - **Equity**: 1-2% (negotiable based on experience)
 - **Benefits**: Health, dental, vision, 401k matching
 - **Perks**: Home office stipend, conference budget, learning budget
 
 ### Product Designer
+
 - **Salary**: $140K - $180K
 - **Equity**: 0.5-1%
 - **Benefits**: Health, dental, vision, 401k matching
 - **Perks**: Design tools budget, conference budget, creative freedom
 
 ### Developer Advocate
+
 - **Salary**: $120K - $160K
 - **Equity**: 0.5-1%
 - **Benefits**: Health, dental, vision, 401k matching
 - **Perks**: Conference travel budget, content creation tools
 
 ### Sales Lead
+
 - **Salary**: $150K - $200K
 - **Commission**: 10-15% of deals closed
 - **Equity**: 1-2%
@@ -374,6 +413,7 @@ Preferred:
 - **Perks**: Travel budget, entertainment budget
 
 ### Customer Success Manager
+
 - **Salary**: $130K - $170K
 - **Bonus**: Performance-based bonuses
 - **Equity**: 0.5-1%

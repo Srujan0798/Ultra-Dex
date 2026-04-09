@@ -1,28 +1,23 @@
-import { EventEmitter } from "events";
-import {
-  registerAlias,
-  registerSingleton,
-  resolveFromContainer
-} from '../di/container.js';
+import { EventEmitter } from 'events';
+import { registerAlias, registerSingleton, resolveFromContainer } from '../di/container.js';
 import { DI_TOKENS } from '../di/tokens.js';
 class UnifiedRegistry extends EventEmitter {
   constructor(config = {}) {
     super();
     this.config = {
       maxAgents: config.maxAgents || 100,
-      ...config
+      ...config,
     };
     this.agents = /* @__PURE__ */ new Map();
     this.initialized = false;
   }
   async initialize(initialAgents = []) {
-    if (this.initialized)
-      return true;
+    if (this.initialized) return true;
     for (const agent of initialAgents) {
       await this.register(agent);
     }
     this.initialized = true;
-    this.emit("initialized");
+    this.emit('initialized');
     return true;
   }
   /**
@@ -33,20 +28,20 @@ class UnifiedRegistry extends EventEmitter {
   async register(agent) {
     const agentId = agent.id || agent.name;
     if (!agentId) {
-      throw new Error("Agent id or name is required");
+      throw new Error('Agent id or name is required');
     }
     if (this.agents.size >= this.config.maxAgents && !this.agents.has(agentId)) {
-      throw new Error("Agent registry is full");
+      throw new Error('Agent registry is full');
     }
     const normalized = {
       id: agentId,
       name: agent.name || agentId,
       capabilities: agent.capabilities || [],
-      description: agent.description || "",
-      ...agent
+      description: agent.description || '',
+      ...agent,
     };
     this.agents.set(agentId, normalized);
-    this.emit("agent:registered", { agentId });
+    this.emit('agent:registered', { agentId });
     return this._sanitizeAgent(normalized);
   }
   /**
@@ -55,8 +50,7 @@ class UnifiedRegistry extends EventEmitter {
    * @returns {Object|null} Sanitized agent or null
    */
   get(agentId) {
-    if (!agentId)
-      return null;
+    if (!agentId) return null;
     let agent = this.agents.get(agentId);
     if (!agent) {
       const lowerId = agentId.toLowerCase();
@@ -84,8 +78,13 @@ class UnifiedRegistry extends EventEmitter {
     }
     const normalizedQuery = String(query).toLowerCase();
     return this.list().filter((agent) => {
-      return agent.id.toLowerCase().includes(normalizedQuery) || agent.name.toLowerCase().includes(normalizedQuery) || agent.description.toLowerCase().includes(normalizedQuery) || agent.capabilities.some(
-        (capability) => String(capability).toLowerCase().includes(normalizedQuery)
+      return (
+        agent.id.toLowerCase().includes(normalizedQuery) ||
+        agent.name.toLowerCase().includes(normalizedQuery) ||
+        agent.description.toLowerCase().includes(normalizedQuery) ||
+        agent.capabilities.some((capability) =>
+          String(capability).toLowerCase().includes(normalizedQuery)
+        )
       );
     });
   }
@@ -96,8 +95,8 @@ class UnifiedRegistry extends EventEmitter {
    */
   findAgentsByCapabilities(capabilities = []) {
     const wanted = new Set(capabilities.map((capability) => String(capability).toLowerCase()));
-    return this.list().filter(
-      (agent) => agent.capabilities.some((capability) => wanted.has(String(capability).toLowerCase()))
+    return this.list().filter((agent) =>
+      agent.capabilities.some((capability) => wanted.has(String(capability).toLowerCase()))
     );
   }
   /**
@@ -112,8 +111,9 @@ class UnifiedRegistry extends EventEmitter {
     if (!agent) {
       throw new Error(`Agent not found: ${agentId}`);
     }
-    const handler = agent.handler || (typeof agent.execute === "function" ? agent.execute.bind(agent) : null);
-    if (typeof handler !== "function") {
+    const handler =
+      agent.handler || (typeof agent.execute === 'function' ? agent.execute.bind(agent) : null);
+    if (typeof handler !== 'function') {
       throw new Error(`Agent ${agentId} does not have a valid handler or execute method`);
     }
     const startedAt = Date.now();
@@ -122,19 +122,19 @@ class UnifiedRegistry extends EventEmitter {
       const payload = {
         agentId: agent.id,
         duration: Date.now() - startedAt,
-        result
+        result,
       };
-      this.emit("agent:executed", payload);
+      this.emit('agent:executed', payload);
       return {
         agentId: agent.id,
         result,
-        executionId: this._generateExecutionId()
+        executionId: this._generateExecutionId(),
       };
     } catch (error) {
-      this.emit("agent:failed", {
+      this.emit('agent:failed', {
         agentId: agent.id,
         duration: Date.now() - startedAt,
-        error
+        error,
       });
       throw error;
     }
@@ -149,7 +149,7 @@ class UnifiedRegistry extends EventEmitter {
     if (!agent) {
       return `You are agent ${agentId}.`;
     }
-    return `${agent.name}: ${agent.description || "Execute the assigned task."}`;
+    return `${agent.name}: ${agent.description || 'Execute the assigned task.'}`;
   }
   /**
    * Legacy compatibility: Get agent by name
@@ -178,8 +178,4 @@ registerSingleton(UnifiedRegistry, () => new UnifiedRegistry());
 registerAlias(DI_TOKENS.unifiedRegistry, UnifiedRegistry);
 const registry = resolveFromContainer(UnifiedRegistry);
 var unified_registry_default = UnifiedRegistry;
-export {
-  UnifiedRegistry,
-  unified_registry_default as default,
-  registry
-};
+export { UnifiedRegistry, unified_registry_default as default, registry };

@@ -3,9 +3,11 @@
 ## Investment Opportunity Overview
 
 ### Executive Summary
+
 Ultra-Dex is seeking $15M in Series B funding to accelerate market domination in the rapidly growing AI orchestration platform market. With 35% market share, exceptional unit economics (12.5x LTV/CAC), and 150% annual growth, we're positioned to become the category leader with 50%+ market share by Year 3.
 
 ### Investment Highlights
+
 - **Market Leadership**: #1 position in AI orchestration with 35% market share
 - **Exceptional Growth**: 150% annual revenue growth, $200K+ MRR
 - **Superior Unit Economics**: 12.5x LTV/CAC ratio with 3.2-month payback
@@ -18,6 +20,7 @@ Ultra-Dex is seeking $15M in Series B funding to accelerate market domination in
 ## Market Opportunity
 
 ### Total Addressable Market
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        MARKET SIZE                              │
@@ -46,6 +49,7 @@ Ultra-Dex is seeking $15M in Series B funding to accelerate market domination in
 ```
 
 ### Market Positioning
+
 ```
 COMPETITIVE ADVANTAGES:
 • Visual Debugging: Only platform with real-time execution flow visualization
@@ -58,7 +62,7 @@ COMPETITIVE ADVANTAGES:
 MARKET SHARE PROJECTIONS:
 • Current: 35% market share
 • Year 1: 42% market share
-• Year 2: 48% market share  
+• Year 2: 48% market share
 • Year 3: 52% market share
 • Target: Market leader position with sustainable competitive moat
 ```
@@ -68,6 +72,7 @@ MARKET SHARE PROJECTIONS:
 ## Product & Technology
 
 ### Core Differentiators
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    TECHNOLOGY LEADERSHIP                        │
@@ -102,6 +107,7 @@ MARKET SHARE PROJECTIONS:
 ```
 
 ### Technical Architecture
+
 - **Microservices**: Scalable, resilient architecture
 - **Kubernetes**: Container orchestration and scaling
 - **Multi-Cloud**: AWS, GCP, Azure deployment options
@@ -114,6 +120,7 @@ MARKET SHARE PROJECTIONS:
 ## Financial Performance
 
 ### Current Metrics
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        FINANCIAL METRICS                        │
@@ -149,6 +156,7 @@ MARKET SHARE PROJECTIONS:
 ```
 
 ### Financial Projections (3-Year)
+
 ```
 YEAR 1 PROJECTIONS:
 • ARR: $9,000,000 (275% growth from current $2.4M)
@@ -159,7 +167,7 @@ YEAR 1 PROJECTIONS:
 • Net Revenue Retention: 142%
 • Churn Rate: 3.2% monthly
 
-YEAR 2 PROJECTIONS: 
+YEAR 2 PROJECTIONS:
 • ARR: $30,000,000 (233% growth from Year 1)
 • MRR: $2,500,000
 • Customers: 6,000+ (150% growth)
@@ -184,6 +192,7 @@ YEAR 3 PROJECTIONS:
 ## Team & Leadership
 
 ### Founding Team
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                          FOUNDING TEAM                          │
@@ -215,6 +224,7 @@ YEAR 3 PROJECTIONS:
 ```
 
 ### Advisory Board
+
 - **Former executives from Microsoft, Google, OpenAI**
 - **Seasoned entrepreneurs in AI/developer tools space**
 - **Domain experts in enterprise sales & security**
@@ -225,6 +235,7 @@ YEAR 3 PROJECTIONS:
 ## Use of Funds
 
 ### $15M Series B Allocation
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        USE OF FUNDS                             │
@@ -287,6 +298,7 @@ YEAR 3 PROJECTIONS:
 ## Competitive Analysis
 
 ### Market Position
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    COMPETITIVE LANDSCAPE                        │
@@ -317,6 +329,7 @@ YEAR 3 PROJECTIONS:
 ## Growth Strategy
 
 ### Market Expansion Plan
+
 ```
 PHASE 1: DOMESTIC MARKET CONSOLIDATION (Months 1-6)
 • Increase market share from 35% to 45%
@@ -338,6 +351,7 @@ PHASE 3: ECOSYSTEM DEVELOPMENT (Months 13-18)
 ```
 
 ### Customer Acquisition Strategy
+
 - **Product-Led Growth**: Free tier with delightful experience
 - **Enterprise Sales**: Land-and-expand with 6-figure deals
 - **Channel Partners**: System integrators and resellers
@@ -348,6 +362,7 @@ PHASE 3: ECOSYSTEM DEVELOPMENT (Months 13-18)
 ## Risk Analysis
 
 ### Key Risks & Mitigation
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                           RISKS                                 │
@@ -379,6 +394,7 @@ PHASE 3: ECOSYSTEM DEVELOPMENT (Months 13-18)
 ## Exit Strategy
 
 ### Potential Exit Scenarios
+
 ```
 ACQUISITION TARGETS (Year 4-5):
 • Strategic Acquirers: Microsoft, Google, AWS, Salesforce, Snowflake
@@ -399,6 +415,7 @@ VALUATION MULTIPLES:
 ```
 
 ### Path to Liquidity
+
 - **Series C**: $50M+ at $500M+ valuation (Year 3)
 - **Acquisition**: Strategic buyer at 20-25x revenue (Year 4-5)
 - **IPO**: Public market at 25-35x revenue (Year 5-6)
@@ -408,6 +425,7 @@ VALUATION MULTIPLES:
 ## Investment Terms
 
 ### Proposed Terms
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        INVESTMENT TERMS                         │
@@ -444,6 +462,7 @@ VALUATION MULTIPLES:
 ## Next Steps
 
 ### Series B Process Timeline
+
 ```
 WEEK 1-2: INITIAL OUTREACH
 • Present opportunity to 20+ target investors
@@ -467,6 +486,7 @@ WEEK 9-12: LEGAL CLOSING
 ```
 
 ### Success Criteria
+
 - **Lead Investor Commitment**: Secure lead investor by Month 2
 - **Full Round Closure**: Complete $15M raise by Month 4
 - **Favorable Terms**: Valuation of $75M+ pre-money
@@ -477,6 +497,7 @@ WEEK 9-12: LEGAL CLOSING
 ## Contact Information
 
 ### Investment Team
+
 - **Srujan Sai Karna** - CEO & Founder
   - Email: srujan@ultra-dex.ai
   - Phone: +1 (555) 123-4567
@@ -488,6 +509,7 @@ WEEK 9-12: LEGAL CLOSING
   - LinkedIn: /in/roshwin-ram
 
 ### Investment Materials
+
 - **Pitch Deck**: Available upon request
 - **Financial Model**: Detailed 5-year projections
 - **Technical Architecture**: Comprehensive system design
@@ -496,7 +518,7 @@ WEEK 9-12: LEGAL CLOSING
 
 ---
 
-*This document contains forward-looking statements and projections. Actual results may vary.*
+_This document contains forward-looking statements and projections. Actual results may vary._
 
 **Document Version**: Series B - Final
 **Date**: February 15, 2026

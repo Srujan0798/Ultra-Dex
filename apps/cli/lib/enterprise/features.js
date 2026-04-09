@@ -21,7 +21,7 @@ export class EnterpriseFeatures {
       enableSSO: options.sso !== false,
       enableOnPremise: options.onPremise !== false,
       jwtSecret: options.jwtSecret || process.env.JWT_SECRET || randomBytes(64).toString('hex'),
-      ...options
+      ...options,
     };
 
     this.users = new Map();
@@ -30,7 +30,7 @@ export class EnterpriseFeatures {
     this.teams = new Map();
     this.auditLog = [];
     this.complianceRecords = new Map();
-    
+
     this.initializeDefaultRoles();
     this.initializeDefaultPermissions();
   }
@@ -46,9 +46,9 @@ export class EnterpriseFeatures {
         description: 'Full system access and management',
         permissions: ['*:*'], // All permissions
         inherits: [],
-        level: 100
+        level: 100,
       },
-      'admin': {
+      admin: {
         id: 'admin',
         name: 'Administrator',
         description: 'System administration with limited access',
@@ -59,12 +59,12 @@ export class EnterpriseFeatures {
           'project:create',
           'project:delete',
           'config:manage',
-          'audit:view'
+          'audit:view',
         ],
         inherits: [],
-        level: 90
+        level: 90,
       },
-      'manager': {
+      manager: {
         id: 'manager',
         name: 'Manager',
         description: 'Team and project management',
@@ -74,12 +74,12 @@ export class EnterpriseFeatures {
           'project:update',
           'team:manage',
           'user:read',
-          'task:manage'
+          'task:manage',
         ],
         inherits: ['member'],
-        level: 70
+        level: 70,
       },
-      'member': {
+      member: {
         id: 'member',
         name: 'Member',
         description: 'Standard development access',
@@ -90,24 +90,19 @@ export class EnterpriseFeatures {
           'task:read',
           'task:update',
           'code:read',
-          'code:write'
+          'code:write',
         ],
         inherits: [],
-        level: 50
+        level: 50,
       },
-      'viewer': {
+      viewer: {
         id: 'viewer',
         name: 'Viewer',
         description: 'Read-only access',
-        permissions: [
-          'project:read',
-          'task:read',
-          'code:read',
-          'docs:read'
-        ],
+        permissions: ['project:read', 'task:read', 'code:read', 'docs:read'],
         inherits: [],
-        level: 20
-      }
+        level: 20,
+      },
     };
 
     for (const [id, role] of Object.entries(defaultRoles)) {
@@ -121,44 +116,120 @@ export class EnterpriseFeatures {
   initializeDefaultPermissions() {
     const defaultPermissions = {
       'user:read': { id: 'user:read', name: 'Read Users', description: 'View user information' },
-      'user:write': { id: 'user:write', name: 'Write Users', description: 'Create/update user information' },
-      'user:delete': { id: 'user:delete', name: 'Delete Users', description: 'Remove users from system' },
-      'user:manage': { id: 'user:manage', name: 'Manage Users', description: 'Full user management' },
-      
+      'user:write': {
+        id: 'user:write',
+        name: 'Write Users',
+        description: 'Create/update user information',
+      },
+      'user:delete': {
+        id: 'user:delete',
+        name: 'Delete Users',
+        description: 'Remove users from system',
+      },
+      'user:manage': {
+        id: 'user:manage',
+        name: 'Manage Users',
+        description: 'Full user management',
+      },
+
       'role:read': { id: 'role:read', name: 'Read Roles', description: 'View role information' },
       'role:write': { id: 'role:write', name: 'Write Roles', description: 'Create/update roles' },
       'role:delete': { id: 'role:delete', name: 'Delete Roles', description: 'Remove roles' },
-      'role:manage': { id: 'role:manage', name: 'Manage Roles', description: 'Full role management' },
-      
-      'project:create': { id: 'project:create', name: 'Create Projects', description: 'Create new projects' },
-      'project:read': { id: 'project:read', name: 'Read Projects', description: 'View project information' },
-      'project:update': { id: 'project:update', name: 'Update Projects', description: 'Modify project information' },
-      'project:delete': { id: 'project:delete', name: 'Delete Projects', description: 'Remove projects' },
-      
+      'role:manage': {
+        id: 'role:manage',
+        name: 'Manage Roles',
+        description: 'Full role management',
+      },
+
+      'project:create': {
+        id: 'project:create',
+        name: 'Create Projects',
+        description: 'Create new projects',
+      },
+      'project:read': {
+        id: 'project:read',
+        name: 'Read Projects',
+        description: 'View project information',
+      },
+      'project:update': {
+        id: 'project:update',
+        name: 'Update Projects',
+        description: 'Modify project information',
+      },
+      'project:delete': {
+        id: 'project:delete',
+        name: 'Delete Projects',
+        description: 'Remove projects',
+      },
+
       'task:create': { id: 'task:create', name: 'Create Tasks', description: 'Create new tasks' },
       'task:read': { id: 'task:read', name: 'Read Tasks', description: 'View task information' },
-      'task:update': { id: 'task:update', name: 'Update Tasks', description: 'Modify task information' },
+      'task:update': {
+        id: 'task:update',
+        name: 'Update Tasks',
+        description: 'Modify task information',
+      },
       'task:delete': { id: 'task:delete', name: 'Delete Tasks', description: 'Remove tasks' },
-      
+
       'code:read': { id: 'code:read', name: 'Read Code', description: 'View code files' },
       'code:write': { id: 'code:write', name: 'Write Code', description: 'Modify code files' },
-      'code:execute': { id: 'code:execute', name: 'Execute Code', description: 'Run code in sandbox' },
-      
-      'config:read': { id: 'config:read', name: 'Read Config', description: 'View system configuration' },
-      'config:write': { id: 'config:write', name: 'Write Config', description: 'Modify system configuration' },
-      'config:manage': { id: 'config:manage', name: 'Manage Config', description: 'Full configuration management' },
-      
+      'code:execute': {
+        id: 'code:execute',
+        name: 'Execute Code',
+        description: 'Run code in sandbox',
+      },
+
+      'config:read': {
+        id: 'config:read',
+        name: 'Read Config',
+        description: 'View system configuration',
+      },
+      'config:write': {
+        id: 'config:write',
+        name: 'Write Config',
+        description: 'Modify system configuration',
+      },
+      'config:manage': {
+        id: 'config:manage',
+        name: 'Manage Config',
+        description: 'Full configuration management',
+      },
+
       'audit:read': { id: 'audit:read', name: 'Read Audit', description: 'View audit logs' },
-      'audit:manage': { id: 'audit:manage', name: 'Manage Audit', description: 'Manage audit settings' },
-      
-      'docs:read': { id: 'docs:read', name: 'Read Documentation', description: 'View documentation' },
-      'docs:write': { id: 'docs:write', name: 'Write Documentation', description: 'Create/update documentation' },
-      
-      'ai:execute': { id: 'ai:execute', name: 'Execute AI', description: 'Run AI agents and commands' },
-      'ai:configure': { id: 'ai:configure', name: 'Configure AI', description: 'Configure AI settings' },
-      
+      'audit:manage': {
+        id: 'audit:manage',
+        name: 'Manage Audit',
+        description: 'Manage audit settings',
+      },
+
+      'docs:read': {
+        id: 'docs:read',
+        name: 'Read Documentation',
+        description: 'View documentation',
+      },
+      'docs:write': {
+        id: 'docs:write',
+        name: 'Write Documentation',
+        description: 'Create/update documentation',
+      },
+
+      'ai:execute': {
+        id: 'ai:execute',
+        name: 'Execute AI',
+        description: 'Run AI agents and commands',
+      },
+      'ai:configure': {
+        id: 'ai:configure',
+        name: 'Configure AI',
+        description: 'Configure AI settings',
+      },
+
       'mcp:access': { id: 'mcp:access', name: 'MCP Access', description: 'Access MCP resources' },
-      'mcp:manage': { id: 'mcp:manage', name: 'MCP Management', description: 'Manage MCP resources' }
+      'mcp:manage': {
+        id: 'mcp:manage',
+        name: 'MCP Management',
+        description: 'Manage MCP resources',
+      },
     };
 
     for (const [id, permission] of Object.entries(defaultPermissions)) {
@@ -187,10 +258,15 @@ export class EnterpriseFeatures {
   async loadEnterpriseData() {
     try {
       const enterpriseDir = path.join(process.cwd(), '.ultra-dex', 'enterprise');
-      
+
       // Load users
       const usersFile = path.join(enterpriseDir, 'users.json');
-      if (await fs.access(usersFile).then(() => true).catch(() => false)) {
+      if (
+        await fs
+          .access(usersFile)
+          .then(() => true)
+          .catch(() => false)
+      ) {
         const usersData = JSON.parse(await fs.readFile(usersFile, 'utf8'));
         for (const [id, user] of Object.entries(usersData)) {
           this.users.set(id, user);
@@ -199,7 +275,12 @@ export class EnterpriseFeatures {
 
       // Load custom roles
       const rolesFile = path.join(enterpriseDir, 'roles.json');
-      if (await fs.access(rolesFile).then(() => true).catch(() => false)) {
+      if (
+        await fs
+          .access(rolesFile)
+          .then(() => true)
+          .catch(() => false)
+      ) {
         const rolesData = JSON.parse(await fs.readFile(rolesFile, 'utf8'));
         for (const [id, role] of Object.entries(rolesData)) {
           this.roles.set(id, role);
@@ -208,7 +289,12 @@ export class EnterpriseFeatures {
 
       // Load teams
       const teamsFile = path.join(enterpriseDir, 'teams.json');
-      if (await fs.access(teamsFile).then(() => true).catch(() => false)) {
+      if (
+        await fs
+          .access(teamsFile)
+          .then(() => true)
+          .catch(() => false)
+      ) {
         const teamsData = JSON.parse(await fs.readFile(teamsFile, 'utf8'));
         for (const [id, team] of Object.entries(teamsData)) {
           this.teams.set(id, team);
@@ -227,27 +313,18 @@ export class EnterpriseFeatures {
   async saveEnterpriseData() {
     try {
       const enterpriseDir = path.join(process.cwd(), '.ultra-dex', 'enterprise');
-      
+
       // Save users
       const usersObj = Object.fromEntries(this.users);
-      await fs.writeFile(
-        path.join(enterpriseDir, 'users.json'),
-        JSON.stringify(usersObj, null, 2)
-      );
+      await fs.writeFile(path.join(enterpriseDir, 'users.json'), JSON.stringify(usersObj, null, 2));
 
       // Save roles
       const rolesObj = Object.fromEntries(this.roles);
-      await fs.writeFile(
-        path.join(enterpriseDir, 'roles.json'),
-        JSON.stringify(rolesObj, null, 2)
-      );
+      await fs.writeFile(path.join(enterpriseDir, 'roles.json'), JSON.stringify(rolesObj, null, 2));
 
       // Save teams
       const teamsObj = Object.fromEntries(this.teams);
-      await fs.writeFile(
-        path.join(enterpriseDir, 'teams.json'),
-        JSON.stringify(teamsObj, null, 2)
-      );
+      await fs.writeFile(path.join(enterpriseDir, 'teams.json'), JSON.stringify(teamsObj, null, 2));
 
       printInfo('💾 Enterprise data saved');
     } catch (error) {
@@ -266,13 +343,15 @@ export class EnterpriseFeatures {
         name: z.string().min(2),
         password: z.string().min(8),
         role: z.string().optional().default('member'),
-        teams: z.array(z.string()).optional().default([])
+        teams: z.array(z.string()).optional().default([]),
       });
 
       const validatedData = userSchema.parse(userData);
 
       // Check if user exists
-      const existingUser = Array.from(this.users.values()).find(u => u.email === validatedData.email);
+      const existingUser = Array.from(this.users.values()).find(
+        (u) => u.email === validatedData.email
+      );
       if (existingUser) {
         throw new Error(`User with email ${validatedData.email} already exists`);
       }
@@ -292,7 +371,7 @@ export class EnterpriseFeatures {
         createdAt: new Date().toISOString(),
         lastLogin: null,
         isActive: true,
-        permissions: this.getRolePermissions(validatedData.role)
+        permissions: this.getRolePermissions(validatedData.role),
       };
 
       this.users.set(user.id, user);
@@ -302,19 +381,19 @@ export class EnterpriseFeatures {
       await this.logAudit('user_create', {
         userId: user.id,
         userEmail: user.email,
-        actor: 'system'
+        actor: 'system',
       });
 
       printSuccess(`✅ User created: ${user.name} (${user.email})`);
-      
+
       return {
         success: true,
         user: { id: user.id, email: user.email, name: user.name, role: user.role },
-        message: `User ${user.name} created successfully`
+        message: `User ${user.name} created successfully`,
       };
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new Error(`Validation error: ${error.errors.map(e => e.message).join(', ')}`);
+        throw new Error(`Validation error: ${error.errors.map((e) => e.message).join(', ')}`);
       }
       throw error;
     }
@@ -326,7 +405,7 @@ export class EnterpriseFeatures {
   async authenticate(email, password) {
     try {
       // Find user by email
-      const user = Array.from(this.users.values()).find(u => u.email === email);
+      const user = Array.from(this.users.values()).find((u) => u.email === email);
       if (!user) {
         throw new Error('Invalid credentials');
       }
@@ -352,7 +431,7 @@ export class EnterpriseFeatures {
           userId: user.id,
           email: user.email,
           role: user.role,
-          permissions: user.permissions
+          permissions: user.permissions,
         },
         this.options.jwtSecret,
         { expiresIn: '24h' }
@@ -362,7 +441,7 @@ export class EnterpriseFeatures {
       await this.logAudit('user_login', {
         userId: user.id,
         userEmail: user.email,
-        success: true
+        success: true,
       });
 
       return {
@@ -373,16 +452,16 @@ export class EnterpriseFeatures {
           email: user.email,
           name: user.name,
           role: user.role,
-          permissions: user.permissions
+          permissions: user.permissions,
         },
-        message: 'Authentication successful'
+        message: 'Authentication successful',
       };
     } catch (error) {
       // Log failed attempt
       await this.logAudit('user_login', {
         userEmail: email,
         success: false,
-        error: error.message
+        error: error.message,
       });
 
       throw error;
@@ -399,7 +478,7 @@ export class EnterpriseFeatures {
         name: z.string().min(2),
         description: z.string().optional(),
         permissions: z.array(z.string()),
-        inherits: z.array(z.string()).optional().default([])
+        inherits: z.array(z.string()).optional().default([]),
       });
 
       const validatedData = roleSchema.parse(roleData);
@@ -429,7 +508,7 @@ export class EnterpriseFeatures {
         description: validatedData.description || '',
         permissions: validatedData.permissions,
         inherits: validatedData.inherits,
-        level: this.calculateRoleLevel(validatedData.permissions)
+        level: this.calculateRoleLevel(validatedData.permissions),
       };
 
       this.roles.set(role.id, role);
@@ -439,19 +518,19 @@ export class EnterpriseFeatures {
       await this.logAudit('role_create', {
         roleId: role.id,
         roleName: role.name,
-        actor: 'system'
+        actor: 'system',
       });
 
       printSuccess(`✅ Role created: ${role.name} (${role.id})`);
-      
+
       return {
         success: true,
         role,
-        message: `Role ${role.name} created successfully`
+        message: `Role ${role.name} created successfully`,
       };
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new Error(`Validation error: ${error.errors.map(e => e.message).join(', ')}`);
+        throw new Error(`Validation error: ${error.errors.map((e) => e.message).join(', ')}`);
       }
       throw error;
     }
@@ -466,7 +545,7 @@ export class EnterpriseFeatures {
         name: z.string().min(2),
         description: z.string().optional(),
         members: z.array(z.string()).optional().default([]),
-        permissions: z.array(z.string()).optional().default([])
+        permissions: z.array(z.string()).optional().default([]),
       });
 
       const validatedData = teamSchema.parse(teamData);
@@ -477,7 +556,7 @@ export class EnterpriseFeatures {
         description: validatedData.description || '',
         members: validatedData.members,
         permissions: validatedData.permissions,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       };
 
       this.teams.set(team.id, team);
@@ -487,19 +566,19 @@ export class EnterpriseFeatures {
       await this.logAudit('team_create', {
         teamId: team.id,
         teamName: team.name,
-        actor: 'system'
+        actor: 'system',
       });
 
       printSuccess(`✅ Team created: ${team.name} (${team.id})`);
-      
+
       return {
         success: true,
         team,
-        message: `Team ${team.name} created successfully`
+        message: `Team ${team.name} created successfully`,
       };
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new Error(`Validation error: ${error.errors.map(e => e.message).join(', ')}`);
+        throw new Error(`Validation error: ${error.errors.map((e) => e.message).join(', ')}`);
       }
       throw error;
     }
@@ -565,14 +644,14 @@ export class EnterpriseFeatures {
    */
   calculateRoleLevel(permissions) {
     if (permissions.includes('*:*')) return 100;
-    
+
     let level = 0;
     if (permissions.includes('user:manage')) level += 20;
     if (permissions.includes('role:manage')) level += 15;
     if (permissions.includes('project:delete')) level += 10;
     if (permissions.includes('config:manage')) level += 15;
     if (permissions.includes('audit:manage')) level += 10;
-    
+
     return Math.min(level, 100);
   }
 
@@ -585,7 +664,7 @@ export class EnterpriseFeatures {
       timestamp: new Date().toISOString(),
       action,
       details,
-      actor: details.actor || 'system'
+      actor: details.actor || 'system',
     };
 
     this.auditLog.push(auditEntry);
@@ -613,22 +692,21 @@ export class EnterpriseFeatures {
     let filtered = this.auditLog;
 
     if (filters.user) {
-      filtered = filtered.filter(entry => 
-        entry.details.userId === filters.user || 
-        entry.details.userEmail === filters.user
+      filtered = filtered.filter(
+        (entry) => entry.details.userId === filters.user || entry.details.userEmail === filters.user
       );
     }
 
     if (filters.action) {
-      filtered = filtered.filter(entry => entry.action === filters.action);
+      filtered = filtered.filter((entry) => entry.action === filters.action);
     }
 
     if (filters.after) {
-      filtered = filtered.filter(entry => new Date(entry.timestamp) > new Date(filters.after));
+      filtered = filtered.filter((entry) => new Date(entry.timestamp) > new Date(filters.after));
     }
 
     if (filters.before) {
-      filtered = filtered.filter(entry => new Date(entry.timestamp) < new Date(filters.before));
+      filtered = filtered.filter((entry) => new Date(entry.timestamp) < new Date(filters.before));
     }
 
     // Sort by timestamp (newest first)
@@ -655,7 +733,7 @@ export class EnterpriseFeatures {
       await this.logAudit('team_add_member', {
         userId,
         teamId,
-        actor: 'system'
+        actor: 'system',
       });
 
       printSuccess(`✅ User added to team: ${team.name}`);
@@ -680,7 +758,7 @@ export class EnterpriseFeatures {
       await this.logAudit('team_remove_member', {
         userId,
         teamId,
-        actor: 'system'
+        actor: 'system',
       });
 
       printSuccess(`✅ User removed from team: ${team.name}`);
@@ -701,16 +779,16 @@ export class EnterpriseFeatures {
       evidence: recordData.evidence,
       status: recordData.status || 'pending',
       reviewer: recordData.reviewer,
-      expiresAt: recordData.expiresAt
+      expiresAt: recordData.expiresAt,
     };
 
     this.complianceRecords.set(record.id, record);
 
     // Save to compliance directory
     const complianceFile = path.join(
-      process.cwd(), 
-      '.ultra-dex', 
-      'compliance', 
+      process.cwd(),
+      '.ultra-dex',
+      'compliance',
       `${record.id}.json`
     );
     await fs.writeFile(complianceFile, JSON.stringify(record, null, 2));
@@ -720,11 +798,11 @@ export class EnterpriseFeatures {
       recordId: record.id,
       type: record.type,
       standard: record.standard,
-      actor: recordData.reviewer
+      actor: recordData.reviewer,
     });
 
     printSuccess(`✅ Compliance record created: ${record.type} (${record.standard})`);
-    
+
     return { success: true, record };
   }
 
@@ -733,18 +811,16 @@ export class EnterpriseFeatures {
    */
   getComplianceStatus() {
     const records = Array.from(this.complianceRecords.values());
-    const active = records.filter(r => r.status === 'active');
-    const expired = records.filter(r => 
-      r.expiresAt && new Date(r.expiresAt) < new Date()
-    );
-    const pending = records.filter(r => r.status === 'pending');
+    const active = records.filter((r) => r.status === 'active');
+    const expired = records.filter((r) => r.expiresAt && new Date(r.expiresAt) < new Date());
+    const pending = records.filter((r) => r.status === 'pending');
 
     return {
       total: records.length,
       active: active.length,
       expired: expired.length,
       pending: pending.length,
-      complianceRate: records.length > 0 ? (active.length / records.length) * 100 : 0
+      complianceRate: records.length > 0 ? (active.length / records.length) * 100 : 0,
     };
   }
 
@@ -758,7 +834,7 @@ export class EnterpriseFeatures {
       clientId: z.string().optional(),
       clientSecret: z.string().optional(),
       redirectUri: z.string().url().optional(),
-      domain: z.string().optional()
+      domain: z.string().optional(),
     });
 
     return ssoSchema.parse(config);
@@ -770,20 +846,22 @@ export class EnterpriseFeatures {
   async setupSSO(config) {
     try {
       const validatedConfig = await this.validateSSOConfig(config);
-      
+
       // Save SSO configuration
       const ssoConfigPath = path.join(process.cwd(), '.ultra-dex', 'enterprise', 'sso.json');
       await fs.writeFile(ssoConfigPath, JSON.stringify(validatedConfig, null, 2));
 
       printSuccess(`✅ SSO configured: ${config.provider}`);
-      
+
       return {
         success: true,
-        message: `SSO ${config.provider} configured successfully`
+        message: `SSO ${config.provider} configured successfully`,
       };
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new Error(`SSO config validation error: ${error.errors.map(e => e.message).join(', ')}`);
+        throw new Error(
+          `SSO config validation error: ${error.errors.map((e) => e.message).join(', ')}`
+        );
       }
       throw error;
     }
@@ -799,7 +877,9 @@ export class EnterpriseFeatures {
       teams: this.teams.size,
       auditLogSize: this.auditLog.length,
       complianceRecords: this.complianceRecords.size,
-      activeCompliance: Array.from(this.complianceRecords.values()).filter(r => r.status === 'active').length
+      activeCompliance: Array.from(this.complianceRecords.values()).filter(
+        (r) => r.status === 'active'
+      ).length,
     };
   }
 
@@ -814,14 +894,14 @@ export class EnterpriseFeatures {
       permissions: Object.fromEntries(this.permissions),
       auditLog: this.auditLog.slice(-1000), // Last 1000 entries
       complianceRecords: Object.fromEntries(this.complianceRecords),
-      exportedAt: new Date().toISOString()
+      exportedAt: new Date().toISOString(),
     };
 
     const exportPath = path.join(process.cwd(), '.ultra-dex', 'enterprise', 'backup.json');
     await fs.writeFile(exportPath, JSON.stringify(exportData, null, 2));
 
     printSuccess(`✅ Enterprise data exported to: ${exportPath}`);
-    
+
     return {
       success: true,
       path: exportPath,
@@ -829,8 +909,8 @@ export class EnterpriseFeatures {
         users: exportData.users.length,
         roles: exportData.roles.length,
         teams: exportData.teams.length,
-        auditEntries: exportData.auditLog.length
-      }
+        auditEntries: exportData.auditLog.length,
+      },
     };
   }
 
@@ -872,15 +952,15 @@ export class EnterpriseFeatures {
       await this.saveEnterpriseData();
 
       printSuccess(`✅ Enterprise data imported from: ${backupPath}`);
-      
+
       return {
         success: true,
         message: 'Enterprise data imported successfully',
         records: {
           users: Object.keys(backupData.users).length,
           roles: Object.keys(backupData.roles).length,
-          teams: Object.keys(backupData.teams).length
-        }
+          teams: Object.keys(backupData.teams).length,
+        },
       };
     } catch (error) {
       throw new Error(`Import failed: ${error.message}`);
@@ -893,7 +973,7 @@ export class EnterpriseFeatures {
   async generateEnterpriseReport() {
     const stats = this.getEnterpriseStats();
     const compliance = this.getComplianceStatus();
-    
+
     const report = {
       timestamp: new Date().toISOString(),
       stats,
@@ -902,21 +982,21 @@ export class EnterpriseFeatures {
         passwordPolicy: 'min 8 chars, complexity enforced',
         auditLogging: 'enabled',
         rbac: 'active',
-        sso: this.options.enableSSO
+        sso: this.options.enableSSO,
       },
-      users: Array.from(this.users.values()).map(u => ({
+      users: Array.from(this.users.values()).map((u) => ({
         id: u.id,
         name: u.name,
         email: u.email,
         role: u.role,
-        lastLogin: u.lastLogin
+        lastLogin: u.lastLogin,
       })),
-      roles: Array.from(this.roles.values()).map(r => ({
+      roles: Array.from(this.roles.values()).map((r) => ({
         id: r.id,
         name: r.name,
         permissions: r.permissions.length,
-        level: r.level
-      }))
+        level: r.level,
+      })),
     };
 
     return report;
@@ -926,7 +1006,7 @@ export class EnterpriseFeatures {
    * Get user by email
    */
   getUserByEmail(email) {
-    return Array.from(this.users.values()).find(u => u.email === email);
+    return Array.from(this.users.values()).find((u) => u.email === email);
   }
 
   /**
@@ -953,14 +1033,14 @@ export class EnterpriseFeatures {
       userId,
       oldRole,
       newRole,
-      actor: 'system'
+      actor: 'system',
     });
 
     printSuccess(`✅ User role updated: ${user.name} (${oldRole} → ${newRole})`);
-    
+
     return {
       success: true,
-      message: `User role updated from ${oldRole} to ${newRole}`
+      message: `User role updated from ${oldRole} to ${newRole}`,
     };
   }
 
@@ -980,14 +1060,14 @@ export class EnterpriseFeatures {
     await this.logAudit('user_deactivate', {
       userId,
       userEmail: user.email,
-      actor: 'system'
+      actor: 'system',
     });
 
     printSuccess(`✅ User deactivated: ${user.name}`);
-    
+
     return {
       success: true,
-      message: `User ${user.name} deactivated`
+      message: `User ${user.name} deactivated`,
     };
   }
 
@@ -1007,14 +1087,14 @@ export class EnterpriseFeatures {
     await this.logAudit('user_activate', {
       userId,
       userEmail: user.email,
-      actor: 'system'
+      actor: 'system',
     });
 
     printSuccess(`✅ User activated: ${user.name}`);
-    
+
     return {
       success: true,
-      message: `User ${user.name} activated`
+      message: `User ${user.name} activated`,
     };
   }
 }

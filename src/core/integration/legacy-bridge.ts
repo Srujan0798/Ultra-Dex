@@ -4,8 +4,7 @@ class LegacyBridge {
   static instance;
   initialized = false;
   legacyCache = /* @__PURE__ */ new Map();
-  constructor() {
-  }
+  constructor() {}
   static getInstance() {
     if (!LegacyBridge.instance) {
       LegacyBridge.instance = new LegacyBridge();
@@ -13,9 +12,8 @@ class LegacyBridge {
     return LegacyBridge.instance;
   }
   async initialize() {
-    if (this.initialized)
-      return;
-    console.log("[LegacyBridge] Initializing...");
+    if (this.initialized) return;
+    console.log('[LegacyBridge] Initializing...');
     this.registerLegacyAdapters();
     this.initialized = true;
   }
@@ -24,26 +22,25 @@ class LegacyBridge {
       memory: DI_TOKENS.MemoryManager,
       logger: DI_TOKENS.Logger,
       config: DI_TOKENS.ConfigService,
-      telemetry: DI_TOKENS.TelemetryService
+      telemetry: DI_TOKENS.TelemetryService,
     };
     const token = tokenMap[name];
-    if (!token)
-      throw new Error(`[LegacyBridge] Unknown service: ${name}`);
+    if (!token) throw new Error(`[LegacyBridge] Unknown service: ${name}`);
     return container.resolve(token);
   }
   getLegacyMemoryManager() {
     return {
       getInstance: () => {
         const instance = container.resolve(DI_TOKENS.MemoryManager);
-        if (!instance["initialized"]) {
+        if (!instance['initialized']) {
           instance.initialize().catch(console.error);
         }
         return instance;
-      }
+      },
     };
   }
   registerLegacyAdapters() {
-    container.registerInstance(Symbol("LegacyMemoryManager"), this.getLegacyMemoryManager());
+    container.registerInstance(Symbol('LegacyMemoryManager'), this.getLegacyMemoryManager());
   }
   isDiamondState() {
     return this.initialized && container.isRegistered(DI_TOKENS.MemoryManager);
@@ -58,11 +55,11 @@ const CompatibilityLayer = {
     return legacyBridge.getLegacyMemoryManager();
   },
   get logger() {
-    return legacyBridge.getService("logger");
+    return legacyBridge.getService('logger');
   },
   get config() {
-    return legacyBridge.getService("config");
-  }
+    return legacyBridge.getService('config');
+  },
 };
 var legacy_bridge_default = LegacyBridge;
 export {
@@ -70,5 +67,5 @@ export {
   LegacyBridge,
   legacy_bridge_default as default,
   getDiamondState,
-  legacyBridge
+  legacyBridge,
 };

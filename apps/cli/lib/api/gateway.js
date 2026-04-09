@@ -3,7 +3,7 @@
 /**
  * @fileoverview Ultra-Dex Cloud API Gateway
  * @module api/gateway
- * @description Express server with REST endpoints for agent execution, 
+ * @description Express server with REST endpoints for agent execution,
  * planning, and real-time WebSocket communication.
  */
 
@@ -71,7 +71,7 @@ async function runAgent(providerId, agentName, task, extraContext) {
  * @example
  * const { server, app } = await startApiGateway({ port: 8080 });
  * console.log('Gateway running on port 8080');
- * 
+ *
  * @swagger
  * /health:
  *   get:
@@ -79,7 +79,7 @@ async function runAgent(providerId, agentName, task, extraContext) {
  *     responses:
  *       200:
  *         description: Server is healthy
- * 
+ *
  * /context:
  *   get:
  *     summary: Get project context files
@@ -88,7 +88,7 @@ async function runAgent(providerId, agentName, task, extraContext) {
  *     responses:
  *       200:
  *         description: Context files content
- * 
+ *
  * /agent/{name}/execute:
  *   post:
  *     summary: Execute an AI agent
@@ -118,7 +118,7 @@ async function runAgent(providerId, agentName, task, extraContext) {
  *         description: Missing required task
  *       500:
  *         description: Agent execution failed
- * 
+ *
  * /plan/generate:
  *   post:
  *     summary: Generate a step-by-step plan

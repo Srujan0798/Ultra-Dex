@@ -184,42 +184,42 @@ export async function startREPL(options = {}) {
     } else {
       // NLP Intent Routing Hook - Process natural language input
       try {
-        const { 
-          routeIntentWithContext, 
-          extractParams, 
-          getIntentConfidence, 
+        const {
+          routeIntentWithContext,
+          extractParams,
+          getIntentConfidence,
           needsClarification,
           getContextualSuggestions,
-          _conversationHistory 
+          _conversationHistory,
         } = await import('../nlp/router.js');
-        
+
         const intent = routeIntentWithContext(input);
-        
+
         if (intent) {
           const params = extractParams(intent, input);
           const { confidence, matchType, alternatives } = getIntentConfidence(input);
-          
+
           // Check if clarification is needed
           const clarification = needsClarification(input, 0.6);
-          
+
           if (clarification.needsClarification) {
             // Multi-turn clarification dialog
             console.log(chalk.yellow(`\n🤔 ${clarification.clarificationQuestion}`));
             console.log(chalk.gray('   (or type the command number to select)\n'));
           }
-          
+
           // High confidence: auto-suggest command execution
           if (confidence >= 0.8) {
             console.log(
-              chalk.green('✓ Detected intent:') + 
-              chalk.cyan(` ultra-dex ${intent}`) +
-              chalk.gray(` (confidence: ${(confidence * 100).toFixed(0)}%, match: ${matchType})`)
+              chalk.green('✓ Detected intent:') +
+                chalk.cyan(` ultra-dex ${intent}`) +
+                chalk.gray(` (confidence: ${(confidence * 100).toFixed(0)}%, match: ${matchType})`)
             );
-            
+
             if (Object.keys(params).length > 0) {
               console.log(chalk.gray(`  Parameters: ${JSON.stringify(params)}`));
             }
-            
+
             // Show contextual follow-up suggestions
             const followups = getContextualSuggestions();
             if (followups.length > 0) {
@@ -228,22 +228,24 @@ export async function startREPL(options = {}) {
                 console.log(chalk.gray(`    ${i + 1}. ${s.description} (/${s.intent})`));
               });
             }
-            
+
             console.log(chalk.gray(`\n  Run "ultra-dex ${intent}" to execute this command.\n`));
-          } 
+          }
           // Medium confidence: show suggestion
           else if (confidence >= 0.5) {
             console.log(
-              chalk.yellow('? Did you mean:') + 
-              chalk.cyan(` ultra-dex ${intent}`) +
-              chalk.gray(` (confidence: ${(confidence * 100).toFixed(0)}%)\n`)
+              chalk.yellow('? Did you mean:') +
+                chalk.cyan(` ultra-dex ${intent}`) +
+                chalk.gray(` (confidence: ${(confidence * 100).toFixed(0)}%)\n`)
             );
-            
+
             if (alternatives.length > 0) {
               console.log(chalk.gray('  Other suggestions:'));
               alternatives.forEach((alt, i) => {
                 console.log(
-                  chalk.gray(`    ${i + 1}. ultra-dex ${alt.intent} (${(alt.confidence * 100).toFixed(0)}%)`)
+                  chalk.gray(
+                    `    ${i + 1}. ultra-dex ${alt.intent} (${(alt.confidence * 100).toFixed(0)}%)`
+                  )
                 );
               });
               console.log();
@@ -252,10 +254,12 @@ export async function startREPL(options = {}) {
           // Low confidence: show help
           else {
             console.log(
-              chalk.gray('  No clear intent detected. Use /help for commands or try being more specific.\n')
+              chalk.gray(
+                '  No clear intent detected. Use /help for commands or try being more specific.\n'
+              )
             );
           }
-          
+
           replContext.context.lastResult = { intent, params, confidence };
         } else {
           // No intent detected - show contextual suggestions

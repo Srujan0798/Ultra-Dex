@@ -25,9 +25,6 @@ describe('nlp translation', () => {
   });
 
   test('preserves extracted flags in translated commands', () => {
-    assert.equal(
-      translateToCommand('Run tests with verbose output'),
-      'ultra-dex test --verbose'
-    );
+    assert.equal(translateToCommand('Run tests with verbose output'), 'ultra-dex test --verbose');
   });
 });

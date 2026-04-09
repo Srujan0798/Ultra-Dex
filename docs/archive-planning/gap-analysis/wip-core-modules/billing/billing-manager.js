@@ -17,7 +17,7 @@ class BillingManager extends EventEmitter {
       stripeApiKey: options.stripeApiKey || process.env.STRIPE_API_KEY,
       webhookSecret: options.webhookSecret || process.env.STRIPE_WEBHOOK_SECRET,
       billingPeriod: options.billingPeriod || 'monthly', // 'daily', 'weekly', 'monthly', 'yearly'
-      ...options
+      ...options,
     };
 
     this.stripe = this.options.stripeApiKey ? new Stripe(this.options.stripeApiKey) : null;
@@ -25,7 +25,7 @@ class BillingManager extends EventEmitter {
     this.customers = new Map();
     this.subscriptions = new Map();
     this.usageRecords = new Map();
-    
+
     this.initializePlans();
   }
 
@@ -42,14 +42,14 @@ class BillingManager extends EventEmitter {
         '100 requests/month',
         'Basic memory system',
         'Community support',
-        'Open source license'
+        'Open source license',
       ],
       limits: {
         agents: 1,
         requestsPerMonth: 100,
         memoryEntries: 1000,
-        concurrentAgents: 1
-      }
+        concurrentAgents: 1,
+      },
     });
 
     this.plans.set('pro', {
@@ -64,14 +64,14 @@ class BillingManager extends EventEmitter {
         'Unlimited requests',
         'Advanced memory system',
         'Priority support',
-        'Custom configurations'
+        'Custom configurations',
       ],
       limits: {
         agents: 10,
         requestsPerMonth: Infinity,
         memoryEntries: 10000,
-        concurrentAgents: 5
-      }
+        concurrentAgents: 5,
+      },
     });
 
     this.plans.set('team', {
@@ -88,15 +88,15 @@ class BillingManager extends EventEmitter {
         'Priority support',
         'Team management',
         'Usage analytics',
-        'Custom integrations'
+        'Custom integrations',
       ],
       limits: {
         agents: 50,
         requestsPerMonth: Infinity,
         memoryEntries: 100000,
         concurrentAgents: 20,
-        teamMembers: 10
-      }
+        teamMembers: 10,
+      },
     });
 
     this.plans.set('enterprise', {
@@ -118,7 +118,7 @@ class BillingManager extends EventEmitter {
         'Dedicated support',
         'SLA guarantees',
         'On-premise deployment',
-        'Custom integrations'
+        'Custom integrations',
       ],
       limits: {
         agents: Infinity,
@@ -126,8 +126,8 @@ class BillingManager extends EventEmitter {
         memoryEntries: Infinity,
         concurrentAgents: Infinity,
         teamMembers: Infinity,
-        customAgents: Infinity
-      }
+        customAgents: Infinity,
+      },
     });
   }
 
@@ -146,15 +146,15 @@ class BillingManager extends EventEmitter {
       name: customerData.name,
       metadata: {
         userId: customerData.userId,
-        organizationId: customerData.organizationId
-      }
+        organizationId: customerData.organizationId,
+      },
     });
 
     // Store customer locally
     this.customers.set(customer.id, {
       ...customerData,
       stripeCustomerId: customer.id,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     });
 
     this.emit('customer:created', { customerId: customer.id, customerData });
@@ -182,18 +182,22 @@ class BillingManager extends EventEmitter {
     // Create subscription in Stripe
     const subscription = await this.stripe.subscriptions.create({
       customer: customerId,
-      items: [{ price_data: {
-        currency: plan.currency,
-        product_data: {
-          name: plan.name,
-          description: plan.description
+      items: [
+        {
+          price_data: {
+            currency: plan.currency,
+            product_data: {
+              name: plan.name,
+              description: plan.description,
+            },
+            unit_amount: plan.price,
+            recurring: { interval: plan.interval },
+          },
         },
-        unit_amount: plan.price,
-        recurring: { interval: plan.interval }
-      }}],
+      ],
       payment_behavior: 'default_incomplete',
       expand: ['latest_invoice.payment_intent'],
-      ...options
+      ...options,
     });
 
     // Store subscription locally
@@ -203,7 +207,7 @@ class BillingManager extends EventEmitter {
       status: subscription.status,
       currentPeriodStart: new Date(subscription.current_period_start * 1000).toISOString(),
       currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     });
 
     this.emit('subscription:created', { subscriptionId: subscription.id, customerId, planId });
@@ -226,7 +230,7 @@ class BillingManager extends EventEmitter {
     const subscriptions = await this.stripe.subscriptions.list({
       customer: customerId,
       status: 'active',
-      limit: 1
+      limit: 1,
     });
 
     if (subscriptions.data.length === 0) {
@@ -235,7 +239,7 @@ class BillingManager extends EventEmitter {
 
     const subscription = subscriptions.data[0];
     const priceId = subscription.items.data[0].price.id;
-    
+
     // Find plan by price ID (in a real implementation, we'd map price IDs to plan IDs)
     for (const [planId, plan] of this.plans) {
       if (plan.stripePriceId === priceId) {
@@ -260,7 +264,7 @@ class BillingManager extends EventEmitter {
       usageType,
       quantity,
       timestamp: new Date().toISOString(),
-      metadata
+      metadata,
     };
 
     // Store usage record
@@ -275,20 +279,17 @@ class BillingManager extends EventEmitter {
         // Find subscription with usage-based billing
         const subscriptions = await this.stripe.subscriptions.list({
           customer: customerId,
-          status: 'active'
+          status: 'active',
         });
 
         for (const subscription of subscriptions.data) {
           for (const item of subscription.items.data) {
             if (item.price.recurring.usage_type === 'metered') {
-              await this.stripe.subscriptionItems.createUsageRecord(
-                item.id,
-                {
-                  quantity,
-                  timestamp: Math.floor(Date.now() / 1000),
-                  action: 'increment'
-                }
-              );
+              await this.stripe.subscriptionItems.createUsageRecord(item.id, {
+                quantity,
+                timestamp: Math.floor(Date.now() / 1000),
+                action: 'increment',
+              });
             }
           }
         }
@@ -314,9 +315,8 @@ class BillingManager extends EventEmitter {
     periodStart.setHours(0, 0, 0, 0);
 
     const records = this.usageRecords.get(customerId) || [];
-    const periodUsage = records.filter(record => 
-      record.usageType === usageType && 
-      new Date(record.timestamp) >= periodStart
+    const periodUsage = records.filter(
+      (record) => record.usageType === usageType && new Date(record.timestamp) >= periodStart
     );
 
     return periodUsage.reduce((sum, record) => sum + record.quantity, 0);
@@ -341,15 +341,16 @@ class BillingManager extends EventEmitter {
     if (limitType === 'requestsPerMonth') {
       const currentUsage = await this.getUsageInPeriod(customerId, 'api_request');
       const remaining = limit - currentUsage;
-      
+
       return {
         allowed: remaining >= requestedAmount,
         remaining,
         current: currentUsage,
         limit,
-        message: remaining >= requestedAmount 
-          ? 'Within limit' 
-          : `Exceeded limit: ${currentUsage}/${limit}`
+        message:
+          remaining >= requestedAmount
+            ? 'Within limit'
+            : `Exceeded limit: ${currentUsage}/${limit}`,
       };
     }
 
@@ -359,9 +360,8 @@ class BillingManager extends EventEmitter {
       remaining: limit - requestedAmount,
       current: requestedAmount,
       limit,
-      message: requestedAmount <= limit 
-        ? 'Within limit' 
-        : `Exceeded limit: ${requestedAmount}/${limit}`
+      message:
+        requestedAmount <= limit ? 'Within limit' : `Exceeded limit: ${requestedAmount}/${limit}`,
     };
   }
 
@@ -397,21 +397,21 @@ class BillingManager extends EventEmitter {
   async handleSubscriptionChange(subscription) {
     const customerId = subscription.customer;
     const planId = this.getPlanIdFromPrice(subscription.items.data[0].price.id);
-    
+
     this.subscriptions.set(subscription.id, {
       customerId,
       planId,
       status: subscription.status,
       currentPeriodStart: new Date(subscription.current_period_start * 1000).toISOString(),
       currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     });
 
-    this.emit('subscription:changed', { 
-      customerId, 
-      planId, 
+    this.emit('subscription:changed', {
+      customerId,
+      planId,
       status: subscription.status,
-      subscriptionId: subscription.id 
+      subscriptionId: subscription.id,
     });
   }
 
@@ -420,11 +420,11 @@ class BillingManager extends EventEmitter {
    * @param {object} invoice - Stripe invoice object
    */
   async handlePaymentSuccess(invoice) {
-    this.emit('payment:success', { 
+    this.emit('payment:success', {
       customerId: invoice.customer,
       invoiceId: invoice.id,
       amount: invoice.amount_paid,
-      currency: invoice.currency
+      currency: invoice.currency,
     });
   }
 
@@ -433,12 +433,12 @@ class BillingManager extends EventEmitter {
    * @param {object} invoice - Stripe invoice object
    */
   async handlePaymentFailure(invoice) {
-    this.emit('payment:failure', { 
+    this.emit('payment:failure', {
       customerId: invoice.customer,
       invoiceId: invoice.id,
       amount: invoice.amount_due,
       currency: invoice.currency,
-      reason: invoice.charge?.failure_message || 'Payment failed'
+      reason: invoice.charge?.failure_message || 'Payment failed',
     });
   }
 
@@ -458,7 +458,7 @@ class BillingManager extends EventEmitter {
    * @returns {Array<object>} Array of plan objects
    */
   getAvailablePlans() {
-    return Array.from(this.plans.values()).map(plan => ({
+    return Array.from(this.plans.values()).map((plan) => ({
       id: plan.id,
       name: plan.name,
       description: plan.description,
@@ -466,7 +466,7 @@ class BillingManager extends EventEmitter {
       currency: plan.currency,
       interval: plan.interval,
       features: plan.features,
-      limits: plan.limits
+      limits: plan.limits,
     }));
   }
 
@@ -480,16 +480,17 @@ class BillingManager extends EventEmitter {
     const timeSavedHours = usageData.hoursSaved || 0;
     const avgHourlyRate = usageData.avgHourlyRate || 100; // Default $100/hour
     const costOfUltraDex = usageData.monthlyCost || 0;
-    
+
     const valueGenerated = timeSavedHours * avgHourlyRate;
-    const roiPercentage = costOfUltraDex > 0 ? ((valueGenerated - costOfUltraDex) / costOfUltraDex) * 100 : Infinity;
-    
+    const roiPercentage =
+      costOfUltraDex > 0 ? ((valueGenerated - costOfUltraDex) / costOfUltraDex) * 100 : Infinity;
+
     return {
       timeSavedHours,
       valueGenerated,
       costOfUltraDex,
       roiPercentage,
-      paybackPeriodMonths: valueGenerated > 0 ? costOfUltraDex / (valueGenerated / 12) : Infinity
+      paybackPeriodMonths: valueGenerated > 0 ? costOfUltraDex / (valueGenerated / 12) : Infinity,
     };
   }
 
@@ -501,23 +502,24 @@ class BillingManager extends EventEmitter {
   async getDashboardData(customerId) {
     const plan = await this.getCurrentPlan(customerId);
     const usage = await this.getUsageInPeriod(customerId, 'api_request');
-    
+
     return {
       currentPlan: plan,
       usage: {
         requests: usage,
         limit: plan.limits.requestsPerMonth,
-        percentage: plan.limits.requestsPerMonth > 0 
-          ? Math.min(100, (usage / plan.limits.requestsPerMonth) * 100) 
-          : 0
+        percentage:
+          plan.limits.requestsPerMonth > 0
+            ? Math.min(100, (usage / plan.limits.requestsPerMonth) * 100)
+            : 0,
       },
       upcomingInvoice: await this.getUpcomingInvoice(customerId),
       paymentHistory: await this.getPaymentHistory(customerId),
       roi: this.calculateROI({
         hoursSaved: 20, // Example value
         avgHourlyRate: 150,
-        monthlyCost: plan.price / 100
-      })
+        monthlyCost: plan.price / 100,
+      }),
     };
   }
 
@@ -535,17 +537,17 @@ class BillingManager extends EventEmitter {
       const invoice = await this.stripe.invoices.retrieveUpcoming({
         customer: customerId,
       });
-      
+
       return {
         amount: invoice.amount_due,
         currency: invoice.currency,
         nextPaymentDue: new Date(invoice.period_end * 1000).toISOString(),
-        lines: invoice.lines.data.map(line => ({
+        lines: invoice.lines.data.map((line) => ({
           description: line.description,
           amount: line.amount,
           quantity: line.quantity,
-          price: line.price.unit_amount
-        }))
+          price: line.price.unit_amount,
+        })),
       };
     } catch (error) {
       return { error: error.message };
@@ -565,17 +567,20 @@ class BillingManager extends EventEmitter {
     try {
       const invoices = await this.stripe.invoices.list({
         customer: customerId,
-        limit: 10
+        limit: 10,
       });
-      
-      return invoices.data.map(invoice => ({
+
+      return invoices.data.map((invoice) => ({
         id: invoice.id,
         amount: invoice.amount_paid,
         currency: invoice.currency,
         status: invoice.status,
         periodStart: new Date(invoice.period_start * 1000).toISOString(),
         periodEnd: new Date(invoice.period_end * 1000).toISOString(),
-        paidAt: invoice.status === 'paid' ? new Date(invoice.status_transitions.paid_at * 1000).toISOString() : null
+        paidAt:
+          invoice.status === 'paid'
+            ? new Date(invoice.status_transitions.paid_at * 1000).toISOString()
+            : null,
       }));
     } catch (error) {
       return [];
@@ -592,7 +597,10 @@ class BillingManager extends EventEmitter {
       stripeConnected: !!this.stripe,
       customerCount: this.customers.size,
       subscriptionCount: this.subscriptions.size,
-      usageRecords: Array.from(this.usageRecords.values()).reduce((sum, records) => sum + records.length, 0),
+      usageRecords: Array.from(this.usageRecords.values()).reduce(
+        (sum, records) => sum + records.length,
+        0
+      ),
       timestamp: new Date().toISOString(),
     };
   }

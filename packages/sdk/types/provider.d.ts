@@ -1,8 +1,4 @@
-export {
-  BaseProvider,
-  ProviderError,
-  assertProviderContract,
-} from './index';
+export { BaseProvider, ProviderError, assertProviderContract } from './index';
 export type {
   ChatMessage,
   ChatOptions,

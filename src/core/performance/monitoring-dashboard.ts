@@ -3,31 +3,30 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import express from "express";
-import { createServer } from "http";
-import { Server } from "socket.io";
-import os from "os";
-import { logger } from '../utils/logging.js';
+import { singleton } from 'tsyringe';
+import express from 'express';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+import os from 'os';
+import { logger } from '../../utils/logging.js';
 import { advancedPerfOptimizer } from './advanced-optimizer.js';
 let PerformanceMonitoringDashboard = class {
   constructor(options = {}) {
     this.config = {
       port: options.port || 4002,
-      host: options.host || "localhost",
+      host: options.host || 'localhost',
       enableRealtimeUpdates: options.enableRealtimeUpdates !== false,
       updateInterval: options.updateInterval || 2e3,
       // 2 seconds
       retentionMinutes: options.retentionMinutes || 60,
       // 1 hour of data
       enableHistoricalData: options.enableHistoricalData !== false,
-      ...options
+      ...options,
     };
     this.app = express();
     this.server = null;
@@ -43,7 +42,7 @@ let PerformanceMonitoringDashboard = class {
       activeConnections: 0,
       requestsPerSecond: 0,
       avgResponseTime: 0,
-      errorRate: 0
+      errorRate: 0,
     };
     this.setupExpressApp();
   }
@@ -51,25 +50,25 @@ let PerformanceMonitoringDashboard = class {
    * Setup Express application
    */
   setupExpressApp() {
-    this.app.use(express.static(new URL("../../../../assets/dashboard", import.meta.url).pathname));
-    this.app.get("/api/metrics", (req, res) => {
+    this.app.use(express.static(new URL('../../../../assets/dashboard', import.meta.url).pathname));
+    this.app.get('/api/metrics', (req, res) => {
       res.json(this.getCurrentMetrics());
     });
-    this.app.get("/api/history", (req, res) => {
+    this.app.get('/api/history', (req, res) => {
       res.json(this.metricsHistory);
     });
-    this.app.get("/api/stats", (req, res) => {
+    this.app.get('/api/stats', (req, res) => {
       res.json(this.systemStats);
     });
-    this.app.get("/api/health", (req, res) => {
+    this.app.get('/api/health', (req, res) => {
       res.json({
-        status: "healthy",
-        timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+        status: 'healthy',
+        timestamp: /* @__PURE__ */ new Date().toISOString(),
         uptime: process.uptime(),
-        version: process.env.npm_package_version || "6.0.0"
+        version: process.env.npm_package_version || '6.0.0',
       });
     });
-    this.app.get("/", (req, res) => {
+    this.app.get('/', (req, res) => {
       res.send(this.getDashboardHTML());
     });
   }
@@ -80,24 +79,26 @@ let PerformanceMonitoringDashboard = class {
     this.server = createServer(this.app);
     this.io = new Server(this.server, {
       cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-      }
+        origin: '*',
+        methods: ['GET', 'POST'],
+      },
     });
     if (this.config.enableRealtimeUpdates) {
       this.startMetricsCollection();
     }
     this.server.listen(this.config.port, this.config.host, () => {
-      logger.info(`\u{1F4CA} Performance Dashboard started at http://${this.config.host}:${this.config.port}`);
+      logger.info(
+        `\u{1F4CA} Performance Dashboard started at http://${this.config.host}:${this.config.port}`
+      );
     });
-    this.io.on("connection", (socket) => {
+    this.io.on('connection', (socket) => {
       logger.info(`\u{1F50C} Dashboard client connected: ${socket.id}`);
-      socket.emit("metrics-update", this.getCurrentMetrics());
-      socket.on("disconnect", () => {
+      socket.emit('metrics-update', this.getCurrentMetrics());
+      socket.on('disconnect', () => {
         logger.info(`\u{1F50C} Dashboard client disconnected: ${socket.id}`);
       });
-      socket.on("request-metrics", () => {
-        socket.emit("metrics-update", this.getCurrentMetrics());
+      socket.on('request-metrics', () => {
+        socket.emit('metrics-update', this.getCurrentMetrics());
       });
     });
     return this;
@@ -123,25 +124,25 @@ let PerformanceMonitoringDashboard = class {
         disk: this.getDiskUsage(),
         network: this.getNetworkUsage(),
         load: os.loadavg(),
-        uptime: process.uptime()
+        uptime: process.uptime(),
       },
       process: {
         memory: process.memoryUsage(),
         cpu: process.cpuUsage(),
         pid: process.pid,
-        uptime: process.uptime()
+        uptime: process.uptime(),
       },
       ultraDex: {
         agents: this.getAgentMetrics(),
         aiProviders: this.getAIProviderMetrics(),
         memorySystem: this.getMemorySystemMetrics(),
-        performanceOptimizer: advancedPerfOptimizer.getAdvancedMetrics()
+        performanceOptimizer: advancedPerfOptimizer.getAdvancedMetrics(),
       },
       performance: {
         responseTime: this.getResponseTimeMetrics(),
         throughput: this.getThroughputMetrics(),
-        errorRate: this.getErrorRateMetrics()
-      }
+        errorRate: this.getErrorRateMetrics(),
+      },
     };
     this.metricsHistory.push(currentMetrics);
     if (this.metricsHistory.length > this.maxHistoryPoints) {
@@ -154,7 +155,8 @@ let PerformanceMonitoringDashboard = class {
    */
   getCPUUsage() {
     const cpus = os.cpus();
-    let totalIdle = 0, totalTick = 0;
+    let totalIdle = 0,
+      totalTick = 0;
     for (const cpu of cpus) {
       for (const type in cpu.times) {
         totalTick += cpu.times[type];
@@ -167,7 +169,7 @@ let PerformanceMonitoringDashboard = class {
       count: cpus.length,
       model: cpus[0]?.model,
       speed: cpus[0]?.speed,
-      usagePercent: 100 - avgIdle / avgTick * 100
+      usagePercent: 100 - (avgIdle / avgTick) * 100,
     };
   }
   /**
@@ -181,7 +183,7 @@ let PerformanceMonitoringDashboard = class {
       total: totalMemory,
       free: freeMemory,
       used: usedMemory,
-      usagePercent: usedMemory / totalMemory * 100
+      usagePercent: (usedMemory / totalMemory) * 100,
     };
   }
   /**
@@ -195,7 +197,7 @@ let PerformanceMonitoringDashboard = class {
       // 200GB free
       used: 300 * 1024 * 1024 * 1024,
       // 300GB used
-      usagePercent: 60
+      usagePercent: 60,
     };
   }
   /**
@@ -204,7 +206,7 @@ let PerformanceMonitoringDashboard = class {
   getNetworkUsage() {
     return {
       connections: this.getActiveConnections(),
-      bandwidth: this.getBandwidthUsage()
+      bandwidth: this.getBandwidthUsage(),
     };
   }
   /**
@@ -220,7 +222,7 @@ let PerformanceMonitoringDashboard = class {
     return {
       upload: Math.random() * 10,
       // 0-10 Mbps
-      download: Math.random() * 50
+      download: Math.random() * 50,
       // 0-50 Mbps
     };
   }
@@ -235,7 +237,7 @@ let PerformanceMonitoringDashboard = class {
       // Simulated active agents
       avgResponseTime: Math.random() * 500 + 100,
       // 100-600ms
-      totalExecutions: Math.floor(Math.random() * 1e4)
+      totalExecutions: Math.floor(Math.random() * 1e4),
       // Simulated execution count
     };
   }
@@ -244,11 +246,11 @@ let PerformanceMonitoringDashboard = class {
    */
   getAIProviderMetrics() {
     return {
-      activeProviders: ["openai", "anthropic", "google"],
+      activeProviders: ['openai', 'anthropic', 'google'],
       totalRequests: Math.floor(Math.random() * 5e3),
       avgResponseTime: Math.random() * 3e3 + 500,
       // 500-3500ms
-      errorRate: Math.random() * 0.05
+      errorRate: Math.random() * 0.05,
       // 0-5% error rate
     };
   }
@@ -265,7 +267,7 @@ let PerformanceMonitoringDashboard = class {
       // Items in cold memory
       cacheHitRate: Math.random() * 0.95 + 0.05,
       // 5-100% hit rate
-      totalMemories: Math.floor(Math.random() * 15e4)
+      totalMemories: Math.floor(Math.random() * 15e4),
     };
   }
   /**
@@ -281,7 +283,7 @@ let PerformanceMonitoringDashboard = class {
       // 200-2200ms
       min: Math.random() * 50,
       // 0-50ms
-      max: Math.random() * 3e3 + 500
+      max: Math.random() * 3e3 + 500,
       // 500-3500ms
     };
   }
@@ -294,7 +296,7 @@ let PerformanceMonitoringDashboard = class {
       // 10-110 RPS
       operationsPerSecond: Math.floor(Math.random() * 200) + 20,
       // 20-220 OPS
-      aiCallsPerMinute: Math.floor(Math.random() * 500) + 50
+      aiCallsPerMinute: Math.floor(Math.random() * 500) + 50,
       // 50-550 calls/min
     };
   }
@@ -306,7 +308,7 @@ let PerformanceMonitoringDashboard = class {
       rate: Math.random() * 0.03,
       // 0-3% error rate
       totalErrors: Math.floor(Math.random() * 100),
-      criticalErrors: Math.floor(Math.random() * 10)
+      criticalErrors: Math.floor(Math.random() * 10),
     };
   }
   /**
@@ -321,7 +323,7 @@ let PerformanceMonitoringDashboard = class {
       activeConnections: metrics.system.network.connections,
       requestsPerSecond: metrics.performance.throughput.requestsPerSecond,
       avgResponseTime: metrics.performance.responseTime.avg,
-      errorRate: metrics.performance.errorRate.rate
+      errorRate: metrics.performance.errorRate.rate,
     };
   }
   /**
@@ -329,7 +331,7 @@ let PerformanceMonitoringDashboard = class {
    */
   broadcastMetrics() {
     if (this.io) {
-      this.io.emit("metrics-update", this.getCurrentMetrics());
+      this.io.emit('metrics-update', this.getCurrentMetrics());
     }
   }
   /**
@@ -340,11 +342,12 @@ let PerformanceMonitoringDashboard = class {
       timestamp: Date.now(),
       system: this.systemStats,
       ultraDex: {
-        version: process.env.npm_package_version || "6.0.0",
+        version: process.env.npm_package_version || '6.0.0',
         uptime: process.uptime(),
-        pid: process.pid
+        pid: process.pid,
       },
-      metrics: this.metricsHistory.length > 0 ? this.metricsHistory[this.metricsHistory.length - 1] : null
+      metrics:
+        this.metricsHistory.length > 0 ? this.metricsHistory[this.metricsHistory.length - 1] : null,
     };
   }
   /**
@@ -837,16 +840,10 @@ let PerformanceMonitoringDashboard = class {
     if (this.server) {
       this.server.close();
     }
-    logger.info("\u{1F4CA} Performance Monitoring Dashboard stopped");
+    logger.info('\u{1F4CA} Performance Monitoring Dashboard stopped');
   }
 };
-PerformanceMonitoringDashboard = __decorateClass([
-  singleton()
-], PerformanceMonitoringDashboard);
+PerformanceMonitoringDashboard = __decorateClass([singleton()], PerformanceMonitoringDashboard);
 const perfDashboard = new PerformanceMonitoringDashboard();
 var monitoring_dashboard_default = perfDashboard;
-export {
-  PerformanceMonitoringDashboard,
-  monitoring_dashboard_default as default,
-  perfDashboard
-};
+export { PerformanceMonitoringDashboard, monitoring_dashboard_default as default, perfDashboard };

@@ -1,14 +1,14 @@
-const { EventEmitter } = require("events");
+const { EventEmitter } = require('events');
 class PolicyManager extends EventEmitter {
   constructor(options = {}) {
     super();
     this.policies = /* @__PURE__ */ new Map();
     this.violations = [];
     this.config = {
-      enforcementLevel: options.enforcementLevel || "warn",
+      enforcementLevel: options.enforcementLevel || 'warn',
       // 'warn', 'block', 'audit'
       maxViolations: options.maxViolations || 100,
-      retentionDays: options.retentionDays || 30
+      retentionDays: options.retentionDays || 30,
     };
   }
   /**
@@ -18,9 +18,9 @@ class PolicyManager extends EventEmitter {
     this.policies.set(policy.id, {
       ...policy,
       registeredAt: Date.now(),
-      active: true
+      active: true,
     });
-    this.emit("policy-registered", { policyId: policy.id });
+    this.emit('policy-registered', { policyId: policy.id });
   }
   /**
    * Evaluate if an action complies with policies
@@ -28,10 +28,9 @@ class PolicyManager extends EventEmitter {
   async evaluateAction(action, context = {}) {
     const violations = [];
     const evaluationId = `eval-${Date.now()}`;
-    this.emit("evaluation-started", { evaluationId, action, context });
+    this.emit('evaluation-started', { evaluationId, action, context });
     for (const [policyId, policy] of this.policies) {
-      if (!policy.active)
-        continue;
+      if (!policy.active) continue;
       try {
         const result = await this.evaluatePolicyRule(policy, action, context);
         if (!result.compliant) {
@@ -40,31 +39,31 @@ class PolicyManager extends EventEmitter {
             policyId,
             action,
             context,
-            severity: policy.severity || "medium",
+            severity: policy.severity || 'medium',
             message: result.message,
             timestamp: Date.now(),
-            evaluationId
+            evaluationId,
           };
           violations.push(violation);
           this.violations.push(violation);
-          this.emit("policy-violation", violation);
+          this.emit('policy-violation', violation);
         }
       } catch (error) {
-        this.emit("evaluation-error", { policyId, action, error });
+        this.emit('evaluation-error', { policyId, action, error });
       }
     }
     const decision = this.makeEnforcementDecision(violations);
-    this.emit("evaluation-completed", {
+    this.emit('evaluation-completed', {
       evaluationId,
       violations,
       decision,
-      allowed: decision.allowed
+      allowed: decision.allowed,
     });
     return {
       evaluationId,
       allowed: decision.allowed,
       violations,
-      decision
+      decision,
     };
   }
   /**
@@ -73,7 +72,7 @@ class PolicyManager extends EventEmitter {
   async evaluatePolicyRule(policy, action, context) {
     const { rules, conditions } = policy;
     if (conditions && !this.evaluateConditions(conditions, context)) {
-      return { compliant: true, message: "Policy conditions not met" };
+      return { compliant: true, message: 'Policy conditions not met' };
     }
     for (const rule of rules || []) {
       const ruleResult = this.evaluateRule(rule, action, context);
@@ -99,13 +98,13 @@ class PolicyManager extends EventEmitter {
    */
   evaluateRule(rule, action, context) {
     switch (rule.type) {
-      case "resource-limit":
+      case 'resource-limit':
         return this.evaluateResourceLimit(rule, action, context);
-      case "time-restriction":
+      case 'time-restriction':
         return this.evaluateTimeRestriction(rule, action, context);
-      case "permission-check":
+      case 'permission-check':
         return this.evaluatePermissionCheck(rule, action, context);
-      case "rate-limit":
+      case 'rate-limit':
         return this.evaluateRateLimit(rule, action, context);
       default:
         return { compliant: true, message: `Unknown rule type: ${rule.type}` };
@@ -120,7 +119,7 @@ class PolicyManager extends EventEmitter {
     if (currentUsage >= limit) {
       return {
         compliant: false,
-        message: `Resource ${resource} usage (${currentUsage}) exceeds limit (${limit})`
+        message: `Resource ${resource} usage (${currentUsage}) exceeds limit (${limit})`,
       };
     }
     return { compliant: true };
@@ -130,11 +129,11 @@ class PolicyManager extends EventEmitter {
    */
   evaluateTimeRestriction(rule, action, context) {
     const { allowedHours } = rule;
-    const currentHour = (/* @__PURE__ */ new Date()).getHours();
+    const currentHour = /* @__PURE__ */ new Date().getHours();
     if (!allowedHours.includes(currentHour)) {
       return {
         compliant: false,
-        message: `Action not allowed at hour ${currentHour}`
+        message: `Action not allowed at hour ${currentHour}`,
       };
     }
     return { compliant: true };
@@ -149,7 +148,7 @@ class PolicyManager extends EventEmitter {
       if (!userPermissions.includes(permission)) {
         return {
           compliant: false,
-          message: `Missing required permission: ${permission}`
+          message: `Missing required permission: ${permission}`,
         };
       }
     }
@@ -160,14 +159,14 @@ class PolicyManager extends EventEmitter {
    */
   evaluateRateLimit(rule, action, context) {
     const { maxActions, timeWindow } = rule;
-    const userId = context.userId || "anonymous";
+    const userId = context.userId || 'anonymous';
     const recentActions = this.violations.filter(
       (v) => v.context?.userId === userId && Date.now() - v.timestamp < timeWindow * 1e3
     ).length;
     if (recentActions >= maxActions) {
       return {
         compliant: false,
-        message: `Rate limit exceeded: ${recentActions}/${maxActions} in ${timeWindow}s`
+        message: `Rate limit exceeded: ${recentActions}/${maxActions} in ${timeWindow}s`,
       };
     }
     return { compliant: true };
@@ -177,28 +176,31 @@ class PolicyManager extends EventEmitter {
    */
   makeEnforcementDecision(violations) {
     if (violations.length === 0) {
-      return { allowed: true, reason: "No policy violations" };
+      return { allowed: true, reason: 'No policy violations' };
     }
-    const highSeverityViolations = violations.filter((v) => v.severity === "high");
-    const mediumSeverityViolations = violations.filter((v) => v.severity === "medium");
+    const highSeverityViolations = violations.filter((v) => v.severity === 'high');
+    const mediumSeverityViolations = violations.filter((v) => v.severity === 'medium');
     switch (this.config.enforcementLevel) {
-      case "block":
+      case 'block':
         return {
           allowed: violations.length === 0,
-          reason: violations.length > 0 ? "Policy violations detected" : "No violations"
+          reason: violations.length > 0 ? 'Policy violations detected' : 'No violations',
         };
-      case "warn":
+      case 'warn':
         return {
           allowed: highSeverityViolations.length === 0,
-          reason: highSeverityViolations.length > 0 ? "High severity violations detected" : "Low/medium severity violations - allowing with warning"
+          reason:
+            highSeverityViolations.length > 0
+              ? 'High severity violations detected'
+              : 'Low/medium severity violations - allowing with warning',
         };
-      case "audit":
+      case 'audit':
         return {
           allowed: true,
-          reason: "Audit mode - logging violations but allowing action"
+          reason: 'Audit mode - logging violations but allowing action',
         };
       default:
-        return { allowed: false, reason: "Unknown enforcement level" };
+        return { allowed: false, reason: 'Unknown enforcement level' };
     }
   }
   /**
@@ -219,7 +221,7 @@ class PolicyManager extends EventEmitter {
       violationsByPolicy: byPolicy,
       violationsBySeverity: bySeverity,
       activePolicies: this.policies.size,
-      enforcementLevel: this.config.enforcementLevel
+      enforcementLevel: this.config.enforcementLevel,
     };
   }
   /**
@@ -231,7 +233,7 @@ class PolicyManager extends EventEmitter {
     this.violations = this.violations.filter((v) => v.timestamp > cutoff);
     const cleaned = originalCount - this.violations.length;
     if (cleaned > 0) {
-      this.emit("violations-cleaned", { cleaned, remaining: this.violations.length });
+      this.emit('violations-cleaned', { cleaned, remaining: this.violations.length });
     }
   }
 }

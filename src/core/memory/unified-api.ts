@@ -1,5 +1,5 @@
-import { EventEmitter } from "events";
-import * as path from "path";
+import { EventEmitter } from 'events';
+import * as path from 'path';
 class UnifiedMemory extends EventEmitter {
   config;
   stores;
@@ -11,12 +11,12 @@ class UnifiedMemory extends EventEmitter {
   constructor(config = {}) {
     super();
     this.config = {
-      sqlite: config.sqlite || { database: "./data/memory.db" },
-      chroma: config.chroma || { url: "http://localhost:8000" },
-      neo4j: config.neo4j || { uri: "bolt://localhost:7687", user: "neo4j", password: "" },
+      sqlite: config.sqlite || { database: './data/memory.db' },
+      chroma: config.chroma || { url: 'http://localhost:8000' },
+      neo4j: config.neo4j || { uri: 'bolt://localhost:7687', user: 'neo4j', password: '' },
       cache: config.cache || { ttl: 3e5, maxSize: 1e3 },
       compression: config.compression !== false,
-      ...config
+      ...config,
     };
     this.stores = {};
     this.cache = /* @__PURE__ */ new Map();
@@ -24,7 +24,7 @@ class UnifiedMemory extends EventEmitter {
       stores: 0,
       retrieves: 0,
       errors: 0,
-      latency: []
+      latency: [],
     };
     this.initialized = false;
     this.sqliteDriver = null;
@@ -41,44 +41,40 @@ class UnifiedMemory extends EventEmitter {
       run(sql, params, callback) {
         let cb = callback;
         let p = params;
-        if (typeof p === "function") {
+        if (typeof p === 'function') {
           cb = p;
           p = [];
         }
-        if (cb)
-          setTimeout(() => cb(null), 0);
+        if (cb) setTimeout(() => cb(null), 0);
         return this;
       }
       all(sql, params, callback) {
         let cb = callback;
         let p = params;
-        if (typeof p === "function") {
+        if (typeof p === 'function') {
           cb = p;
           p = [];
         }
-        if (cb)
-          setTimeout(() => cb(null, []), 0);
+        if (cb) setTimeout(() => cb(null, []), 0);
         return this;
       }
       get(sql, params, callback) {
         let cb = callback;
         let p = params;
-        if (typeof p === "function") {
+        if (typeof p === 'function') {
           cb = p;
           p = [];
         }
-        if (cb)
-          setTimeout(() => cb(null, null), 0);
+        if (cb) setTimeout(() => cb(null, null), 0);
         return this;
       }
       close(callback) {
-        if (callback)
-          setTimeout(() => callback(null), 0);
+        if (callback) setTimeout(() => callback(null), 0);
         return this;
       }
     };
     this.sqliteDriver = {
-      Database: MockDatabaseClass
+      Database: MockDatabaseClass,
     };
     return this.sqliteDriver;
   }
@@ -90,11 +86,11 @@ class UnifiedMemory extends EventEmitter {
       await this._initNeo4j();
       this._startCacheCleanup();
       this.initialized = true;
-      this.emit("initialized", { duration: Date.now() - startTime });
+      this.emit('initialized', { duration: Date.now() - startTime });
       return true;
     } catch (error) {
       this.metrics.errors++;
-      this.emit("error", error);
+      this.emit('error', error);
       throw new Error(`Memory initialization failed: ${error.message}`);
     }
   }
@@ -102,42 +98,42 @@ class UnifiedMemory extends EventEmitter {
     this._ensureInitialized();
     const startTime = Date.now();
     const {
-      strategy = "hybrid",
+      strategy = 'hybrid',
       ttl = null,
-      priority = "normal",
+      priority = 'normal',
       tags = [],
       sessionId = null,
-      compress = this.config.compression
+      compress = this.config.compression,
     } = options;
     const id = this._generateId();
-    const timestamp = (/* @__PURE__ */ new Date()).toISOString();
+    const timestamp = /* @__PURE__ */ new Date().toISOString();
     try {
       const results = {};
-      if (["sql", "hybrid"].includes(strategy) && context.text) {
+      if (['sql', 'hybrid'].includes(strategy) && context.text) {
         results.sqlite = await this._storeInSQLite(id, context, { priority, sessionId, tags });
       }
-      if (["vector", "hybrid"].includes(strategy) && (context.embedding || context.text)) {
+      if (['vector', 'hybrid'].includes(strategy) && (context.embedding || context.text)) {
         results.chroma = await this._storeInChroma(id, context, { priority, sessionId, tags });
       }
-      if (["graph", "hybrid"].includes(strategy) && context.entities) {
+      if (['graph', 'hybrid'].includes(strategy) && context.entities) {
         results.neo4j = await this._storeInNeo4j(id, context, { priority, sessionId, tags });
       }
-      if (priority === "high" || priority === "critical") {
+      if (priority === 'high' || priority === 'critical') {
         this._updateCache(id, context, ttl);
       }
       this.metrics.stores++;
       this.metrics.latency.push(Date.now() - startTime);
-      this.emit("stored", { id, strategy, duration: Date.now() - startTime });
+      this.emit('stored', { id, strategy, duration: Date.now() - startTime });
       return {
         id,
         timestamp,
         strategy,
         storedIn: Object.keys(results),
-        latency: Date.now() - startTime
+        latency: Date.now() - startTime,
       };
     } catch (error) {
       this.metrics.errors++;
-      this.emit("error", { operation: "store", error });
+      this.emit('error', { operation: 'store', error });
       throw error;
     }
   }
@@ -145,46 +141,46 @@ class UnifiedMemory extends EventEmitter {
     this._ensureInitialized();
     const startTime = Date.now();
     const {
-      strategy = "hybrid",
+      strategy = 'hybrid',
       limit = 10,
       threshold = 0.7,
       sessionId = null,
       timeRange = null,
       tags = [],
-      includeMetadata = true
+      includeMetadata = true,
     } = options;
     try {
       const results = {
         items: [],
         sources: {},
-        combined: []
+        combined: [],
       };
       const cached = this._checkCache(query);
-      if (cached && strategy !== "graph") {
+      if (cached && strategy !== 'graph') {
         results.cached = true;
         results.items = cached;
         return results;
       }
-      if (["sql", "hybrid"].includes(strategy) && typeof query === "string") {
+      if (['sql', 'hybrid'].includes(strategy) && typeof query === 'string') {
         results.sources.sqlite = await this._querySQLite(query, {
           limit,
           sessionId,
           timeRange,
-          tags
+          tags,
         });
       }
-      if (["vector", "hybrid"].includes(strategy)) {
+      if (['vector', 'hybrid'].includes(strategy)) {
         const embedding = await this._getEmbedding(query);
         results.sources.chroma = await this._queryChroma(embedding, {
           limit,
           threshold,
-          sessionId
+          sessionId,
         });
       }
-      if (["graph", "hybrid"].includes(strategy) && typeof query === "object" && query.entity) {
+      if (['graph', 'hybrid'].includes(strategy) && typeof query === 'object' && query.entity) {
         results.sources.neo4j = await this._queryNeo4j(query.entity, {
           limit,
-          depth: query.depth || 2
+          depth: query.depth || 2,
         });
       }
       results.combined = this._mergeResults(results.sources, { limit, strategy });
@@ -193,49 +189,42 @@ class UnifiedMemory extends EventEmitter {
       results.latency = Date.now() - startTime;
       this.metrics.retrieves++;
       this.metrics.latency.push(Date.now() - startTime);
-      this.emit("retrieved", {
+      this.emit('retrieved', {
         query,
         resultCount: results.total,
-        duration: Date.now() - startTime
+        duration: Date.now() - startTime,
       });
       return results;
     } catch (error) {
       this.metrics.errors++;
-      this.emit("error", { operation: "retrieve", error });
+      this.emit('error', { operation: 'retrieve', error });
       throw error;
     }
   }
   async queryGraph(entity, options = {}) {
     this._ensureInitialized();
-    const {
-      depth = 2,
-      relationshipTypes = [],
-      direction = "both"
-    } = options;
+    const { depth = 2, relationshipTypes = [], direction = 'both' } = options;
     try {
       return await this._queryNeo4j(entity, { depth, relationshipTypes, direction });
     } catch (error) {
-      this.emit("error", { operation: "queryGraph", error });
+      this.emit('error', { operation: 'queryGraph', error });
       throw error;
     }
   }
   async update(id, updates) {
     this._ensureInitialized();
     try {
-      const timestamp = (/* @__PURE__ */ new Date()).toISOString();
+      const timestamp = /* @__PURE__ */ new Date().toISOString();
       this.cache.delete(id);
       const promises = [];
-      if (this.stores.sqlite)
-        promises.push(this._updateSQLite(id, updates));
-      if (this.stores.chroma)
-        promises.push(this._updateChroma(id, updates));
-      if (this.stores.neo4j)
-        promises.push(this._updateNeo4j(id, updates));
+      if (this.stores.sqlite) promises.push(this._updateSQLite(id, updates));
+      if (this.stores.chroma) promises.push(this._updateChroma(id, updates));
+      if (this.stores.neo4j) promises.push(this._updateNeo4j(id, updates));
       await Promise.all(promises);
-      this.emit("updated", { id, timestamp });
+      this.emit('updated', { id, timestamp });
       return { id, updated: true, timestamp };
     } catch (error) {
-      this.emit("error", { operation: "update", error });
+      this.emit('error', { operation: 'update', error });
       throw error;
     }
   }
@@ -244,42 +233,39 @@ class UnifiedMemory extends EventEmitter {
     try {
       this.cache.delete(id);
       const promises = [];
-      if (this.stores.sqlite)
-        promises.push(this._deleteFromSQLite(id));
-      if (this.stores.chroma)
-        promises.push(this._deleteFromChroma(id));
-      if (this.stores.neo4j)
-        promises.push(this._deleteFromNeo4j(id));
+      if (this.stores.sqlite) promises.push(this._deleteFromSQLite(id));
+      if (this.stores.chroma) promises.push(this._deleteFromChroma(id));
+      if (this.stores.neo4j) promises.push(this._deleteFromNeo4j(id));
       await Promise.all(promises);
-      this.emit("deleted", { id });
+      this.emit('deleted', { id });
       return { id, deleted: true };
     } catch (error) {
-      this.emit("error", { operation: "delete", error });
+      this.emit('error', { operation: 'delete', error });
       throw error;
     }
   }
   getStats() {
-    const avgLatency = this.metrics.latency.length > 0 ? this.metrics.latency.reduce((a, b) => a + b, 0) / this.metrics.latency.length : 0;
+    const avgLatency =
+      this.metrics.latency.length > 0
+        ? this.metrics.latency.reduce((a, b) => a + b, 0) / this.metrics.latency.length
+        : 0;
     return {
       stores: this.metrics.stores,
       retrieves: this.metrics.retrieves,
       errors: this.metrics.errors,
       avgLatency: Math.round(avgLatency),
       cacheSize: this.cache.size,
-      initialized: this.initialized
+      initialized: this.initialized,
     };
   }
   async compress(options = {}) {
-    const {
-      olderThan = 7 * 24 * 60 * 60 * 1e3,
-      priority = "low"
-    } = options;
+    const { olderThan = 7 * 24 * 60 * 60 * 1e3, priority = 'low' } = options;
     try {
       const archived = await this._archiveOldContext(olderThan, priority);
-      this.emit("compressed", { archived: archived.length });
+      this.emit('compressed', { archived: archived.length });
       return { compressed: true, archived: archived.length };
     } catch (error) {
-      this.emit("error", { operation: "compress", error });
+      this.emit('error', { operation: 'compress', error });
       throw error;
     }
   }
@@ -292,10 +278,8 @@ class UnifiedMemory extends EventEmitter {
       if (this.stores.sqlite) {
         await new Promise((resolve, reject) => {
           this.stores.sqlite.close((err) => {
-            if (err)
-              reject(err);
-            else
-              resolve();
+            if (err) reject(err);
+            else resolve();
           });
         });
       }
@@ -306,19 +290,19 @@ class UnifiedMemory extends EventEmitter {
         await this.stores.neo4j.driver.close();
       }
       this.initialized = false;
-      this.emit("closed");
+      this.emit('closed');
     } catch (error) {
-      this.emit("error", { operation: "close", error });
+      this.emit('error', { operation: 'close', error });
       throw error;
     }
   }
   _ensureInitialized() {
     if (!this.initialized) {
-      throw new Error("Memory not initialized. Call initialize() first.");
+      throw new Error('Memory not initialized. Call initialize() first.');
     }
   }
   async _initSQLite() {
-    const dbPath = path.resolve(this.config.sqlite.database || "./data/memory.db");
+    const dbPath = path.resolve(this.config.sqlite.database || './data/memory.db');
     const sqlite = await this._loadSQLiteDriver();
     return new Promise((resolve, reject) => {
       this.stores.sqlite = new sqlite.Database(dbPath, async (err) => {
@@ -340,19 +324,17 @@ class UnifiedMemory extends EventEmitter {
                   access_count INTEGER DEFAULT 0,
                   last_accessed DATETIME
                 )`,
-                (e) => e ? rej(e) : res()
+                (e) => (e ? rej(e) : res())
               );
             });
             await new Promise((res, rej) => {
-              db.run(
-                `CREATE INDEX IF NOT EXISTS idx_session ON context(session_id)`,
-                (e) => e ? rej(e) : res()
+              db.run(`CREATE INDEX IF NOT EXISTS idx_session ON context(session_id)`, (e) =>
+                e ? rej(e) : res()
               );
             });
             await new Promise((res, rej) => {
-              db.run(
-                `CREATE INDEX IF NOT EXISTS idx_priority ON context(priority)`,
-                (e) => e ? rej(e) : res()
+              db.run(`CREATE INDEX IF NOT EXISTS idx_priority ON context(priority)`, (e) =>
+                e ? rej(e) : res()
               );
             });
             resolve();
@@ -366,13 +348,13 @@ class UnifiedMemory extends EventEmitter {
   async _initChroma() {
     this.stores.chroma = {
       client: null,
-      collection: null
+      collection: null,
     };
   }
   async _initNeo4j() {
     this.stores.neo4j = {
       driver: null,
-      session: null
+      session: null,
     };
   }
   async _storeInSQLite(id, context, options) {
@@ -384,19 +366,17 @@ class UnifiedMemory extends EventEmitter {
          VALUES (?, ?, ?, ?, ?)`,
         [id, sessionId, JSON.stringify(context), priority, JSON.stringify(tags)],
         (err) => {
-          if (err)
-            reject(err);
-          else
-            resolve({ id, store: "sqlite" });
+          if (err) reject(err);
+          else resolve({ id, store: 'sqlite' });
         }
       );
     });
   }
   async _storeInChroma(_id, _context, _options) {
-    return { id: _id, store: "chroma", status: "placeholder" };
+    return { id: _id, store: 'chroma', status: 'placeholder' };
   }
   async _storeInNeo4j(_id, _context, _options) {
-    return { id: _id, store: "neo4j", status: "placeholder" };
+    return { id: _id, store: 'neo4j', status: 'placeholder' };
   }
   async _querySQLite(query, options) {
     return new Promise((resolve, reject) => {
@@ -411,8 +391,7 @@ class UnifiedMemory extends EventEmitter {
       sql += ` ORDER BY access_count DESC, created_at DESC LIMIT ?`;
       params.push(limit);
       db.all(sql, params, (err, rows) => {
-        if (err)
-          reject(err);
+        if (err) reject(err);
         else {
           const typedRows = rows || [];
           typedRows.forEach((row) => {
@@ -426,9 +405,9 @@ class UnifiedMemory extends EventEmitter {
               id: row.id,
               content: JSON.parse(row.content),
               priority: row.priority,
-              tags: JSON.parse(row.tags || "[]"),
+              tags: JSON.parse(row.tags || '[]'),
               createdAt: row.created_at,
-              source: "sqlite"
+              source: 'sqlite',
             }))
           );
         }
@@ -475,7 +454,7 @@ class UnifiedMemory extends EventEmitter {
         this.cache.delete(id);
         continue;
       }
-      if (typeof query === "string" && entry.context.text?.includes(query)) {
+      if (typeof query === 'string' && entry.context.text?.includes(query)) {
         return [entry.context];
       }
     }
@@ -501,33 +480,25 @@ class UnifiedMemory extends EventEmitter {
         `UPDATE context SET content = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
         [JSON.stringify(updates), id],
         (err) => {
-          if (err)
-            reject(err);
-          else
-            resolve();
+          if (err) reject(err);
+          else resolve();
         }
       );
     });
   }
-  async _updateChroma(_id, _updates) {
-  }
-  async _updateNeo4j(_id, _updates) {
-  }
+  async _updateChroma(_id, _updates) {}
+  async _updateNeo4j(_id, _updates) {}
   async _deleteFromSQLite(id) {
     return new Promise((resolve, reject) => {
       const db = this.stores.sqlite;
       db.run(`DELETE FROM context WHERE id = ?`, [id], (err) => {
-        if (err)
-          reject(err);
-        else
-          resolve();
+        if (err) reject(err);
+        else resolve();
       });
     });
   }
-  async _deleteFromChroma(_id) {
-  }
-  async _deleteFromNeo4j(_id) {
-  }
+  async _deleteFromChroma(_id) {}
+  async _deleteFromNeo4j(_id) {}
   async _archiveOldContext(olderThan, priority) {
     const cutoff = new Date(Date.now() - olderThan).toISOString();
     const db = this.stores.sqlite;
@@ -539,17 +510,12 @@ class UnifiedMemory extends EventEmitter {
          OR (last_accessed IS NULL AND created_at < ?)`,
         [priority, cutoff, cutoff],
         (err, rows) => {
-          if (err)
-            reject(err);
-          else
-            resolve(rows || []);
+          if (err) reject(err);
+          else resolve(rows || []);
         }
       );
     });
   }
 }
 var unified_api_default = UnifiedMemory;
-export {
-  UnifiedMemory,
-  unified_api_default as default
-};
+export { UnifiedMemory, unified_api_default as default };

@@ -58,7 +58,7 @@
 | **Backend**  | [Node.js / Python / Go / etc]  | [Why you chose this] |
 | **Database** | [PostgreSQL / MongoDB / MySQL] | [Why you chose this] |
 | **Cache**    | [Redis / Memcached / etc]      | [Why you chose this] |
-| **Hosting**  | [Vercel / AWS / Render / etc] | [Why you chose this] |
+| **Hosting**  | [Vercel / AWS / Render / etc]  | [Why you chose this] |
 
 ### Advanced Stack
 
@@ -165,10 +165,10 @@ NEXT_PUBLIC_APP_URL=[your-frontend-url]
 
 ### Deployment Status
 
-| Service  | Platform         | Status  | URL |
-| -------- | ---------------- | ------- | --- |
+| Service  | Platform         | Status     | URL |
+| -------- | ---------------- | ---------- | --- |
 | Frontend | [Vercel/Netlify] | ⏳ Pending | -   |
-| Backend  | [Render/Render] | ⏳ Pending | -   |
+| Backend  | [Render/Render]  | ⏳ Pending | -   |
 | Database | [Provider]       | ⏳ Pending | -   |
 | Cache    | [Provider]       | ⏳ Pending | -   |
 
@@ -474,11 +474,11 @@ npm run deploy:production
 
 ### Core Team
 
-| Role        | Name            | Responsibilities              |
-| ----------- | --------------- | ----------------------------- |
-| Founder/CEO | [Your name]     | Vision, strategy, fundraising |
-| Developer   | [Name or "You"] | Full-stack development        |
-| Designer    | [Name or Unassigned]   | UI/UX design                  |
+| Role        | Name                 | Responsibilities              |
+| ----------- | -------------------- | ----------------------------- |
+| Founder/CEO | [Your name]          | Vision, strategy, fundraising |
+| Developer   | [Name or "You"]      | Full-stack development        |
+| Designer    | [Name or Unassigned] | UI/UX design                  |
 
 ### External Resources
 

@@ -5,9 +5,11 @@ This document defines the universal interface that all AI providers in Ultra-Dex
 ## Required Methods
 
 ### `chat(messages, opts)`
+
 Asynchronously sends a chat message to the AI provider and returns a response.
 
 **Parameters:**
+
 - `messages` (Array): Array of message objects with `role` and `content` properties
 - `opts` (Object): Options object with the following possible properties:
   - `model` (string): Model identifier to use
@@ -18,6 +20,7 @@ Asynchronously sends a chat message to the AI provider and returns a response.
   - `timeoutMs` (number): Request timeout in milliseconds
 
 **Returns:**
+
 ```javascript
 {
   content: string,           // The AI response content
@@ -32,9 +35,11 @@ Asynchronously sends a chat message to the AI provider and returns a response.
 ```
 
 ### `stream(messages, opts)`
+
 Asynchronously streams a chat response from the AI provider, returning an async iterable.
 
 **Parameters:**
+
 - `messages` (Array): Array of message objects with `role` and `content` properties
 - `opts` (Object): Options object with the same properties as `chat()`
 
@@ -42,9 +47,11 @@ Asynchronously streams a chat response from the AI provider, returning an async 
 An async iterable that yields token chunks as they become available.
 
 ### `embed(text, opts)`
+
 Asynchronously generates embeddings for the provided text.
 
 **Parameters:**
+
 - `text` (string): Text to embed
 - `opts` (Object): Options object with the following possible properties:
   - `model` (string): Embedding model identifier
@@ -53,6 +60,7 @@ Asynchronously generates embeddings for the provided text.
   - `signal` (AbortSignal): Abort signal for cancellation
 
 **Returns:**
+
 ```javascript
 {
   embedding: number[],       // Array of embedding values
@@ -68,9 +76,11 @@ Asynchronously generates embeddings for the provided text.
 ## Optional Methods
 
 ### `complete(prompt, opts)`
+
 Asynchronously completes a text prompt (non-chat format).
 
 **Parameters:**
+
 - `prompt` (string): Text prompt to complete
 - `opts` (Object): Options object with the same properties as `chat()`
 
@@ -78,9 +88,11 @@ Asynchronously completes a text prompt (non-chat format).
 Same format as `chat()` method.
 
 ### `vision(image, prompt, opts)`
+
 Asynchronously processes an image with a text prompt (if supported).
 
 **Parameters:**
+
 - `image` (string|Buffer): Image data or URL
 - `prompt` (string): Text prompt describing the image task
 - `opts` (Object): Options object with the same properties as `chat()`
@@ -89,9 +101,11 @@ Asynchronously processes an image with a text prompt (if supported).
 Same format as `chat()` method.
 
 ### `code(prompt, opts)`
+
 Asynchronously generates code based on the prompt (if supported).
 
 **Parameters:**
+
 - `prompt` (string): Code generation prompt
 - `opts` (Object): Options object with the same properties as `chat()`
 
@@ -99,9 +113,11 @@ Asynchronously generates code based on the prompt (if supported).
 Same format as `chat()` method.
 
 ### `reasoning(prompt, opts)`
+
 Asynchronously performs complex reasoning tasks (if supported).
 
 **Parameters:**
+
 - `prompt` (string): Reasoning task prompt
 - `opts` (Object): Options object with the same properties as `chat()`
 
@@ -109,13 +125,16 @@ Asynchronously performs complex reasoning tasks (if supported).
 Same format as `chat()` method.
 
 ### `functionCalling(functions, opts)`
+
 Asynchronously calls functions based on the input (if supported).
 
 **Parameters:**
+
 - `functions` (Array): Array of function definitions
 - `opts` (Object): Options object with the same properties as `chat()`
 
 **Returns:**
+
 ```javascript
 {
   content: string,           // Natural language response
@@ -135,15 +154,15 @@ Each provider accepts a configuration object with the following properties:
   // Authentication
   apiKey: string,                    // API key for the provider
   baseUrl?: string,                  // Base URL for API requests
-  
+
   // Model selection
   defaultModel: string,              // Default model to use
   embeddingModel?: string,           // Default embedding model
-  
+
   // Connection settings
   timeoutMs?: number,                // Request timeout in milliseconds
   extraHeaders?: Object,             // Additional headers to send with requests
-  
+
   // Provider-specific options
   [providerSpecificOption: string]: any
 }
@@ -174,6 +193,7 @@ Providers must throw standardized errors with the following structure:
 ```
 
 Common error codes:
+
 - `AUTH_ERROR`: Authentication failure
 - `RATE_LIMIT_EXCEEDED`: Rate limit reached
 - `INVALID_REQUEST`: Malformed request
@@ -184,6 +204,7 @@ Common error codes:
 ## Streaming Protocol
 
 Streaming implementations must:
+
 - Yield token chunks as they become available
 - Handle connection interruptions gracefully
 - Support cancellation via AbortSignal
@@ -192,6 +213,7 @@ Streaming implementations must:
 ## Rate Limiting
 
 Providers must implement rate limiting respecting the provider's documented limits:
+
 - Track request counts and timing
 - Implement exponential backoff for retries
 - Respect burst limits and sustained limits
@@ -200,6 +222,7 @@ Providers must implement rate limiting respecting the provider's documented limi
 ## Retry Strategy
 
 Providers should implement intelligent retry logic:
+
 - Exponential backoff with jitter
 - Respect retry-after headers
 - Differentiate between retryable and non-retryable errors

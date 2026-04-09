@@ -11,7 +11,7 @@ export const validateAPIVersion = (req, res, next) => {
   if (!version) {
     return res.status(400).json({
       error: 'API version required',
-      code: 'VERSION_REQUIRED'
+      code: 'VERSION_REQUIRED',
     });
   }
 
@@ -21,7 +21,7 @@ export const validateAPIVersion = (req, res, next) => {
     return res.status(400).json({
       error: `Unsupported API version: ${version}`,
       code: 'VERSION_UNSUPPORTED',
-      supported: supportedVersions
+      supported: supportedVersions,
     });
   }
 
@@ -45,7 +45,7 @@ export const validateInput = (schema) => {
           errors.push({
             field,
             message: `${field} is required`,
-            code: 'FIELD_REQUIRED'
+            code: 'FIELD_REQUIRED',
           });
         }
 
@@ -54,25 +54,25 @@ export const validateInput = (schema) => {
             errors.push({
               field,
               message: `${field} must be a string`,
-              code: 'INVALID_TYPE'
+              code: 'INVALID_TYPE',
             });
           } else if (rules.type === 'number' && typeof value !== 'number') {
             errors.push({
               field,
               message: `${field} must be a number`,
-              code: 'INVALID_TYPE'
+              code: 'INVALID_TYPE',
             });
           } else if (rules.type === 'object' && typeof value !== 'object') {
             errors.push({
               field,
               message: `${field} must be an object`,
-              code: 'INVALID_TYPE'
+              code: 'INVALID_TYPE',
             });
           } else if (rules.type === 'array' && !Array.isArray(value)) {
             errors.push({
               field,
               message: `${field} must be an array`,
-              code: 'INVALID_TYPE'
+              code: 'INVALID_TYPE',
             });
           }
         }
@@ -83,7 +83,7 @@ export const validateInput = (schema) => {
       return res.status(400).json({
         error: 'Validation failed',
         code: 'VALIDATION_ERROR',
-        details: errors
+        details: errors,
       });
     }
 

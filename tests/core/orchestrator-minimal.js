@@ -13,7 +13,11 @@ class TaskGraph {
 export class AgentOrchestrator extends EventEmitter {
   constructor(options = {}) {
     super();
-    this.memory = options.memory || { init: async () => {}, search: async () => [], add: async () => {} };
+    this.memory = options.memory || {
+      init: async () => {},
+      search: async () => [],
+      add: async () => {},
+    };
     this.ai = options.ai || null;
     this.selfHealing = options.selfHealing || null;
     this.autopsy = options.autopsy || null;
@@ -32,15 +36,15 @@ export class AgentOrchestrator extends EventEmitter {
 
     this.stateMachine = { initialize: async () => {} };
     this.commBus = { initialize: async () => {} };
-    this.registry = { 
-        initialize: async () => {},
-        registerAgent: async () => {},
-        findAgentsByCapabilities: () => [],
-        getAgentPrompt: async () => 'Mock prompt'
+    this.registry = {
+      initialize: async () => {},
+      registerAgent: async () => {},
+      findAgentsByCapabilities: () => [],
+      getAgentPrompt: async () => 'Mock prompt',
     };
     this.governance = {
-        gate: async () => ({ allowed: true }),
-        audit: { record: async () => {} }
+      gate: async () => ({ allowed: true }),
+      audit: { record: async () => {} },
     };
     this.activeSessions = new Map();
     this.coordinationGraph = new Map();
@@ -66,15 +70,15 @@ export class AgentOrchestrator extends EventEmitter {
 
   async initializeMcpServer() {
     if (typeof this.mcpServerFactory === 'function') {
-        const server = await this.mcpServerFactory();
-        this.mcpServer = this.normalizeMcpServer(server);
+      const server = await this.mcpServerFactory();
+      this.mcpServer = this.normalizeMcpServer(server);
     }
   }
 
   async executeNexus(objective, options = {}) {
     this.tasks.prune();
     if (typeof this.nexusExecutor === 'function') {
-        return await this.nexusExecutor(objective, options, this);
+      return await this.nexusExecutor(objective, options, this);
     }
     return { status: 'completed' };
   }
@@ -212,12 +216,10 @@ export class AgentOrchestrator extends EventEmitter {
       // Governance check FIRST (before loading AI or gathering context)
       const governanceResult = await this.governance.gate(context);
       if (!governanceResult.allowed) {
-        throw new Error(
-          `Task execution blocked by governance policy: ${governanceResult.reason}`
-        );
+        throw new Error(`Task execution blocked by governance policy: ${governanceResult.reason}`);
       }
 
-      const ai = await this.getAiLayer ? await this.getAiLayer() : this.ai;
+      const ai = (await this.getAiLayer) ? await this.getAiLayer() : this.ai;
 
       // 1. Determine Agent & Gather Context
       const memoryContext = await this.memory.search(normalizedTask);

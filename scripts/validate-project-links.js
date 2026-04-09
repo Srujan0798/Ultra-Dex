@@ -3,7 +3,7 @@
 /**
  * Ultra-Dex Project Link & Dependency Validator
  * Validates all links, references, imports, and dependencies across the entire project
- * 
+ *
  * Usage: node scripts/validate-project-links.js
  */
 
@@ -26,19 +26,27 @@ let validationErrors = [];
 async function readProjectFiles(dir) {
   const files = [];
   const dirents = await fs.readdir(dir, { withFileTypes: true });
-  
+
   for (const dirent of dirents) {
     const fullPath = path.join(dir, dirent.name);
-    
+
     if (dirent.isDirectory()) {
-      if (dirent.name !== 'node_modules' && dirent.name !== '.git' && !dirent.name.startsWith('.')) {
-        files.push(...await readProjectFiles(fullPath));
+      if (
+        dirent.name !== 'node_modules' &&
+        dirent.name !== '.git' &&
+        !dirent.name.startsWith('.')
+      ) {
+        files.push(...(await readProjectFiles(fullPath)));
       }
-    } else if (path.extname(dirent.name) === '.js' || path.extname(dirent.name) === '.ts' || path.extname(dirent.name) === '.md') {
+    } else if (
+      path.extname(dirent.name) === '.js' ||
+      path.extname(dirent.name) === '.ts' ||
+      path.extname(dirent.name) === '.md'
+    ) {
       files.push(fullPath);
     }
   }
-  
+
   return files;
 }
 
@@ -52,7 +60,7 @@ function extractMarkdownLinks(content) {
     links.push({
       text: match[1],
       url: match[2],
-      position: match.index
+      position: match.index,
     });
   }
 
@@ -64,15 +72,15 @@ function extractImportStatements(content) {
   const importRegex = /import\s+[\s\S]*?from\s+['"`]([^'"`]+)['"`]|import\s+['"`]([^'"`]+)['"`]/g;
   const imports = [];
   let match;
-  
+
   while ((match = importRegex.exec(content)) !== null) {
     const importPath = match[1] || match[2];
     imports.push({
       path: importPath,
-      position: match.index
+      position: match.index,
     });
   }
-  
+
   return imports;
 }
 
@@ -81,14 +89,14 @@ function extractRequireStatements(content) {
   const requireRegex = /require\s*\(\s*['"`]([^'"`]+)['"`]\s*\)/g;
   const requires = [];
   let match;
-  
+
   while ((match = requireRegex.exec(content)) !== null) {
     requires.push({
       path: match[1],
-      position: match.index
+      position: match.index,
     });
   }
-  
+
   return requires;
 }
 
@@ -118,19 +126,24 @@ async function validateMarkdownLink(basePath, linkUrl) {
     // Handle anchor links separately (e.g., ./file.md#section)
     const [urlPath, anchor] = linkUrl.split('#');
     const targetPath = resolveRelativePath(basePath, urlPath);
-    
+
     try {
       await fs.access(targetPath);
-      
+
       // If there's an anchor, we could optionally check if the anchor exists in the file
       if (anchor) {
         const content = await fs.readFile(targetPath, 'utf8');
         // Simple check for anchor presence in markdown
-        if (!content.includes(anchor) && !content.includes(`#${anchor}`) && !content.includes(`id="${anchor}"`) && !content.includes(`name="${anchor}"`)) {
+        if (
+          !content.includes(anchor) &&
+          !content.includes(`#${anchor}`) &&
+          !content.includes(`id="${anchor}"`) &&
+          !content.includes(`name="${anchor}"`)
+        ) {
           return { valid: false, error: `Anchor '#${anchor}' not found in file: ${targetPath}` };
         }
       }
-      
+
       return { valid: true, error: null };
     } catch (error) {
       return { valid: false, error: `File not found: ${targetPath}` };
@@ -138,7 +151,7 @@ async function validateMarkdownLink(basePath, linkUrl) {
   } else {
     // Relative path without explicit ./ or ../
     const targetPath = resolveRelativePath(basePath, linkUrl);
-    
+
     try {
       await fs.access(targetPath);
       return { valid: true, error: null };
@@ -151,7 +164,7 @@ async function validateMarkdownLink(basePath, linkUrl) {
 async function validateImportStatement(basePath, importPath) {
   // Resolve the import path relative to the base file
   let targetPath;
-  
+
   if (importPath.startsWith('./') || importPath.startsWith('../')) {
     targetPath = path.resolve(path.dirname(basePath), importPath);
   } else if (importPath.startsWith('/')) {
@@ -160,7 +173,7 @@ async function validateImportStatement(basePath, importPath) {
     // For node_modules imports, we'll just check if they're well-formed
     return { valid: true, error: null };
   }
-  
+
   // Check if the file exists
   try {
     await fs.access(targetPath);
@@ -173,10 +186,10 @@ async function validateImportStatement(basePath, importPath) {
 async function validateFile(filePath) {
   try {
     const content = await fs.readFile(filePath, 'utf8');
-    
+
     let fileBrokenLinks = 0;
     let fileMissingImports = 0;
-    
+
     if (path.extname(filePath) === '.md') {
       // Validate markdown links
       const links = extractMarkdownLinks(content);
@@ -194,7 +207,7 @@ async function validateFile(filePath) {
             link: link.url,
             text: link.text,
             error: result.error,
-            position: link.position
+            position: link.position,
           });
         }
       }
@@ -216,7 +229,7 @@ async function validateFile(filePath) {
             type: 'missing-import',
             import: imp.path,
             error: result.error,
-            position: imp.position
+            position: imp.position,
           });
         }
       }
@@ -232,16 +245,18 @@ async function validateFile(filePath) {
             type: 'missing-require',
             require: req.path,
             error: result.error,
-            position: req.position
+            position: req.position,
           });
         }
       }
     }
-    
+
     totalFiles++;
-    
+
     if (fileBrokenLinks > 0 || fileMissingImports > 0) {
-      console.log(`❌ ${path.relative(rootDir, filePath)} (${fileBrokenLinks} broken links, ${fileMissingImports} missing imports)`);
+      console.log(
+        `❌ ${path.relative(rootDir, filePath)} (${fileBrokenLinks} broken links, ${fileMissingImports} missing imports)`
+      );
     } else {
       console.log(`✅ ${path.relative(rootDir, filePath)}`);
     }
@@ -249,7 +264,7 @@ async function validateFile(filePath) {
     validationErrors.push({
       file: filePath,
       type: 'read-error',
-      error: `Could not read file: ${error.message}`
+      error: `Could not read file: ${error.message}`,
     });
     console.log(`⚠️  ${path.relative(rootDir, filePath)} (read error)`);
   }
@@ -257,16 +272,16 @@ async function validateFile(filePath) {
 
 async function validateProjectLinks() {
   console.log('🔍 Ultra-Dex Project Link & Dependency Validation Started...\n');
-  
+
   try {
     const projectFiles = await readProjectFiles(rootDir);
     console.log(`📋 Found ${projectFiles.length} project files to validate\n`);
-    
+
     // Process files sequentially to ensure proper analysis
     for (const file of projectFiles) {
       await validateFile(file);
     }
-    
+
     console.log('\n📊 VALIDATION SUMMARY');
     console.log('====================');
     console.log(`Total Files Analyzed: ${totalFiles}`);
@@ -275,13 +290,17 @@ async function validateProjectLinks() {
     console.log(`Missing Imports: ${missingImports}`);
     console.log(`Invalid References: ${invalidReferences}`);
     console.log(`Total Errors: ${validationErrors.length}`);
-    
+
     if (brokenLinks === 0 && missingImports === 0 && invalidReferences === 0) {
-      console.log('\n✅ All validations passed! Project links and dependencies are in excellent condition.');
+      console.log(
+        '\n✅ All validations passed! Project links and dependencies are in excellent condition.'
+      );
       process.exit(0);
     } else {
-      console.log(`\n⚠️  Found ${brokenLinks + missingImports + invalidReferences} issues to review.`);
-      
+      console.log(
+        `\n⚠️  Found ${brokenLinks + missingImports + invalidReferences} issues to review.`
+      );
+
       // Show first 10 errors as examples
       if (validationErrors.length > 0) {
         console.log('\n📋 Sample Issues:');
@@ -290,7 +309,7 @@ async function validateProjectLinks() {
           console.log(`  • ${error.type}: ${error.file} - ${error.error}`);
         }
       }
-      
+
       process.exit(1);
     }
   } catch (error) {
@@ -304,4 +323,13 @@ if (process.argv[1] === __filename) {
   validateProjectLinks();
 }
 
-export { readProjectFiles, extractMarkdownLinks, extractImportStatements, extractRequireStatements, validateMarkdownLink, validateImportStatement, validateFile, validateProjectLinks };
+export {
+  readProjectFiles,
+  extractMarkdownLinks,
+  extractImportStatements,
+  extractRequireStatements,
+  validateMarkdownLink,
+  validateImportStatement,
+  validateFile,
+  validateProjectLinks,
+};

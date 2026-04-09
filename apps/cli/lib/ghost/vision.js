@@ -7,61 +7,64 @@ import { screenSystem } from './screen.js';
 
 let jimp;
 try {
-    jimp = (await import('jimp')).default;
+  jimp = (await import('jimp')).default;
 } catch (_e) {
-    jimp = { read: async () => ({ scale: () => { }, getBufferAsync: async () => Buffer.from('') }), MIME_PNG: 'image/png' };
+  jimp = {
+    read: async () => ({ scale: () => {}, getBufferAsync: async () => Buffer.from('') }),
+    MIME_PNG: 'image/png',
+  };
 }
 
 export class VisionSystem {
-    constructor() {
-        this.displays = [];
+  constructor() {
+    this.displays = [];
+  }
+
+  /**
+   * Capture full screen screenshot
+   * @returns {Promise<Buffer>} - Image buffer (PNG)
+   */
+  async captureParams() {
+    try {
+      return await screenSystem.capture({ format: 'png' });
+    } catch (error) {
+      throw new Error(`Failed to capture screen: ${error.message}`);
+    }
+  }
+
+  /**
+   * Capture and optimize for VLM (resize, compress)
+   * @param {number} scale - Scale factor (0-1), default 1.0 (no resize)
+   * @returns {Promise<string>} - Base64 encoded image string
+   */
+  async captureForVLM(scale = 1.0) {
+    const buffer = await this.captureParams();
+
+    // If scaling is needed, use Jimp
+    if (scale < 1.0) {
+      const image = await jimp.read(buffer);
+      await image.scale(scale);
+      // Get buffer back
+      const resizedBuffer = await image.getBufferAsync(jimp.MIME_PNG);
+      return resizedBuffer.toString('base64');
     }
 
-    /**
-     * Capture full screen screenshot
-     * @returns {Promise<Buffer>} - Image buffer (PNG)
-     */
-    async captureParams() {
-        try {
-            return await screenSystem.capture({ format: 'png' });
-        } catch (error) {
-            throw new Error(`Failed to capture screen: ${error.message}`);
-        }
+    return buffer.toString('base64');
+  }
+
+  /**
+   * List scaling factor recommendation based on resolution
+   * High res screens might need downscaling for API cost/latency
+   */
+  async listDisplays() {
+    try {
+      const displays = await screenSystem.listDisplays();
+      this.displays = displays;
+      return displays;
+    } catch (_e) {
+      return [{ id: 'primary', name: 'Primary Display' }];
     }
-
-    /**
-     * Capture and optimize for VLM (resize, compress)
-     * @param {number} scale - Scale factor (0-1), default 1.0 (no resize)
-     * @returns {Promise<string>} - Base64 encoded image string
-     */
-    async captureForVLM(scale = 1.0) {
-        const buffer = await this.captureParams();
-
-        // If scaling is needed, use Jimp
-        if (scale < 1.0) {
-            const image = await jimp.read(buffer);
-            await image.scale(scale);
-            // Get buffer back
-            const resizedBuffer = await image.getBufferAsync(jimp.MIME_PNG);
-            return resizedBuffer.toString('base64');
-        }
-
-        return buffer.toString('base64');
-    }
-
-    /**
-     * List scaling factor recommendation based on resolution
-     * High res screens might need downscaling for API cost/latency
-     */
-    async listDisplays() {
-        try {
-            const displays = await screenSystem.listDisplays();
-            this.displays = displays;
-            return displays;
-        } catch (_e) {
-            return [{ id: 'primary', name: 'Primary Display' }];
-        }
-    }
+  }
 }
 
 export const visionSystem = new VisionSystem();

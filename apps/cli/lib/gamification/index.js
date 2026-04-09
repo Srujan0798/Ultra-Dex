@@ -12,7 +12,7 @@ const gamificationProgram = program
   .option('-r, --reward <reward>', 'Reward to grant')
   .action(async (options) => {
     console.log('Gamification command executed with options:', options);
-    
+
     // Placeholder implementation
     if (options.action === 'points') {
       console.log('Awarding points...');
@@ -29,7 +29,7 @@ const gamificationProgram = program
       // In a real implementation, this would fetch and display leaderboard data
       console.log('Leaderboard displayed successfully');
     }
-    
+
     console.log('Gamification operation completed successfully');
   });
 

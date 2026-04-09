@@ -29,16 +29,17 @@ opencode web
 
 Run `opencode models` to see available models. The fully free open-weight models are:
 
-| Model ID | Context | Best Use |
-|---|---|---|
-| `opencode/minimax-m2.5-free` | 128K | Best free general-purpose — heavy architecture tasks |
-| `opencode/nemotron-3-super-free` | 1M | 1 million token context — full-repo analysis for free |
-| `opencode/mimo-v2-pro-free` | 64K | Balanced code quality |
-| `opencode/mimo-v2-omni-free` | 64K | Multimodal — reads images/screenshots |
-| `opencode/gpt-5-nano` | 32K | Fastest — simple surgical edits |
-| `opencode/big-pickle` | 32K | Creative problem solving |
+| Model ID                         | Context | Best Use                                              |
+| -------------------------------- | ------- | ----------------------------------------------------- |
+| `opencode/minimax-m2.5-free`     | 128K    | Best free general-purpose — heavy architecture tasks  |
+| `opencode/nemotron-3-super-free` | 1M      | 1 million token context — full-repo analysis for free |
+| `opencode/mimo-v2-pro-free`      | 64K     | Balanced code quality                                 |
+| `opencode/mimo-v2-omni-free`     | 64K     | Multimodal — reads images/screenshots                 |
+| `opencode/gpt-5-nano`            | 32K     | Fastest — simple surgical edits                       |
+| `opencode/big-pickle`            | 32K     | Creative problem solving                              |
 
 Switch models at runtime:
+
 ```bash
 opencode run -m opencode/nemotron-3-super-free -p "Analyze the full codebase"
 ```
@@ -90,7 +91,7 @@ Configure in `opencode.jsonc` at your project root (or `~/.opencode/config.json`
 }
 ```
 
->**Power Use:** With `sqlite-reader` active, OpenCode queries the live database and writes correct, schema-matched models without you pasting anything. Avoid leaving unused MCP servers active to prevent token overflow.
+> **Power Use:** With `sqlite-reader` active, OpenCode queries the live database and writes correct, schema-matched models without you pasting anything. Avoid leaving unused MCP servers active to prevent token overflow.
 
 ---
 
@@ -106,6 +107,7 @@ opencode acp
 **Supported Editors:** Zed, JetBrains, Neovim (via avante/codecompanion).
 
 **Config for Zed (`settings.json`):**
+
 ```json
 {
   "agent_servers": {
@@ -124,6 +126,7 @@ opencode acp
 Plugin location:(`.opencode/plugins/` project-level or `~/.config/opencode/plugins/` global)
 
 Create a custom plugin in `.opencode/plugins/my-plugin.ts`:
+
 ```typescript
 export default function myPlugin(ctx) {
   return {
@@ -135,7 +138,7 @@ export default function myPlugin(ctx) {
     beforeRequest: async ({ prompt }) => {
       const log = await ctx.shell`git log --oneline -10`.text();
       return { ...prompt, system: prompt.system + `\nRecent history:\n${log}` };
-    }
+    },
   };
 }
 ```
@@ -144,10 +147,10 @@ export default function myPlugin(ctx) {
 
 ## 7. Ultra-Dex Swarm Role & Dispatch
 
-* **Role:** Precision Engineer
-* **Best For:** Critical architecture edits, safe refactoring, and single file manipulations relying heavily on zero-cost free models.
-* **Windows:** 1-2 Terminal Tabs.
-* **$0 Strategy:** Aggressive use of `nemotron-3-super-free` 1M context for free repo scanning.
+- **Role:** Precision Engineer
+- **Best For:** Critical architecture edits, safe refactoring, and single file manipulations relying heavily on zero-cost free models.
+- **Windows:** 1-2 Terminal Tabs.
+- **$0 Strategy:** Aggressive use of `nemotron-3-super-free` 1M context for free repo scanning.
 
 ### Dispatch Templates
 
@@ -165,4 +168,3 @@ opencode run -m opencode/nemotron-3-super-free \
 opencode run -m opencode/mimo-v2-omni-free \
              -p "Read dashboard.png and build the React component."
 ```
-

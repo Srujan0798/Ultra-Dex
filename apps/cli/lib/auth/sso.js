@@ -23,7 +23,7 @@ export class EnterpriseSSO {
       provider: userInfo.provider,
       roles: this.mapRoles(userInfo),
       permissions: this.mapPermissions(userInfo),
-      enterpriseId: userInfo.enterpriseId
+      enterpriseId: userInfo.enterpriseId,
     };
 
     // Store user in Ultra-Dex user system
@@ -34,10 +34,10 @@ export class EnterpriseSSO {
   mapRoles(userInfo) {
     // Map enterprise roles to Ultra-Dex roles
     const roleMapping = {
-      'Administrator': ['admin', 'cto', 'security'],
-      'Developer': ['backend', 'frontend', 'database'],
-      'Manager': ['planner', 'reviewer'],
-      'Guest': ['read-only']
+      Administrator: ['admin', 'cto', 'security'],
+      Developer: ['backend', 'frontend', 'database'],
+      Manager: ['planner', 'reviewer'],
+      Guest: ['read-only'],
     };
 
     const enterpriseRoles = userInfo.roles || userInfo.groups || [];
@@ -61,7 +61,7 @@ export class EnterpriseSSO {
     // Store user in Ultra-Dex system
     const usersDir = '.ultra-dex/users';
     await fs.mkdir(usersDir, { recursive: true });
-    
+
     const userFile = `${usersDir}/${user.id}.json`;
     await fs.writeFile(userFile, JSON.stringify(user, null, 2));
   }
@@ -72,12 +72,12 @@ export class EnterpriseSSO {
         userId: user.id,
         email: user.email,
         roles: user.roles,
-        enterpriseId: user.enterpriseId
+        enterpriseId: user.enterpriseId,
       },
       this.jwtSecret,
-      { 
+      {
         expiresIn: '24h',
-        audience: this.audience
+        audience: this.audience,
       }
     );
   }
@@ -93,13 +93,13 @@ export class EnterpriseSSO {
 
   async authenticateRequest(req, res, next) {
     const token = req.headers.authorization?.replace('Bearer ', '');
-    
+
     if (!token) {
       return res.status(401).json({ error: 'Authentication required' });
     }
 
     const result = await this.validateToken(token);
-    
+
     if (!result.valid) {
       return res.status(401).json({ error: 'Invalid token' });
     }

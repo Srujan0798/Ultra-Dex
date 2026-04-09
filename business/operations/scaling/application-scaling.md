@@ -3,6 +3,7 @@
 ## Current Application Architecture
 
 ### Service Overview
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        SERVICES                                 │
@@ -16,6 +17,7 @@
 ```
 
 ### Current Performance Metrics
+
 ```
 Requests per Second: 1,248 (peak: 2,100)
 Average Response Time: 89ms (p95: 187ms, p99: 312ms)
@@ -31,7 +33,9 @@ CPU Usage: 45% average
 ### Phase 1: Containerization & Orchestration (Week 7)
 
 #### 1. Docker Configuration
+
 **Main Application Container:**
+
 ```dockerfile
 # Dockerfile for main application
 FROM node:18-alpine AS base
@@ -59,6 +63,7 @@ CMD ["node", "dist/server.js"]
 ```
 
 **Multi-stage Build Optimization:**
+
 ```dockerfile
 # Optimize for production
 FROM node:18-alpine AS production
@@ -81,7 +86,9 @@ CMD ["npm", "start"]
 ```
 
 #### 2. Kubernetes Deployment
+
 **Application Deployment:**
+
 ```yaml
 # k8s/deployment.yaml
 apiVersion: apps/v1
@@ -105,40 +112,40 @@ spec:
         app: ultra-dex-api
     spec:
       containers:
-      - name: api
-        image: ultradex/api:latest
-        ports:
-        - containerPort: 3000
-        env:
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: database-secret
-              key: url
-        - name: REDIS_URL
-          valueFrom:
-            secretKeyRef:
-              name: redis-secret
-              key: url
-        resources:
-          requests:
-            memory: "512Mi"
-            cpu: "250m"
-          limits:
-            memory: "1Gi"
-            cpu: "500m"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 3000
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /ready
-            port: 3000
-          initialDelaySeconds: 5
-          periodSeconds: 5
+        - name: api
+          image: ultradex/api:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: database-secret
+                  key: url
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secret
+                  key: url
+          resources:
+            requests:
+              memory: '512Mi'
+              cpu: '250m'
+            limits:
+              memory: '1Gi'
+              cpu: '500m'
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
 ---
 apiVersion: v1
 kind: Service
@@ -156,6 +163,7 @@ spec:
 ```
 
 **Horizontal Pod Autoscaler:**
+
 ```yaml
 # k8s/hpa.yaml
 apiVersion: autoscaling/v2
@@ -171,37 +179,39 @@ spec:
   minReplicas: 3
   maxReplicas: 20
   metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 70
-  - type: Resource
-    resource:
-      name: memory
-      target:
-        type: Utilization
-        averageUtilization: 80
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
   behavior:
     scaleDown:
       stabilizationWindowSeconds: 300
       policies:
-      - type: Percent
-        value: 10
-        periodSeconds: 60
+        - type: Percent
+          value: 10
+          periodSeconds: 60
     scaleUp:
       stabilizationWindowSeconds: 60
       policies:
-      - type: Percent
-        value: 50
-        periodSeconds: 60
+        - type: Percent
+          value: 50
+          periodSeconds: 60
 ```
 
 ### Phase 2: Load Balancing & Traffic Management (Week 7)
 
 #### 1. Ingress Configuration
+
 **NGINX Ingress Controller:**
+
 ```yaml
 # k8s/ingress.yaml
 apiVersion: networking.k8s.io/v1
@@ -210,43 +220,44 @@ metadata:
   name: ultra-dex-ingress
   namespace: ultra-dex
   annotations:
-    nginx.ingress.kubernetes.io/rate-limit: "100"
-    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
-    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
-    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
-    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/rate-limit: '100'
+    nginx.ingress.kubernetes.io/rate-limit-window: '1m'
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: '60'
+    nginx.ingress.kubernetes.io/proxy-send-timeout: '60'
+    nginx.ingress.kubernetes.io/proxy-read-timeout: '60'
     cert-manager.io/cluster-issuer: letsencrypt-prod
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: 'true'
 spec:
   tls:
-  - hosts:
-    - api.ultra-dex.ai
-    - dashboard.ultra-dex.ai
-    secretName: ultra-dex-tls
+    - hosts:
+        - api.ultra-dex.ai
+        - dashboard.ultra-dex.ai
+      secretName: ultra-dex-tls
   rules:
-  - host: api.ultra-dex.ai
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: ultra-dex-api-service
-            port:
-              number: 80
-  - host: dashboard.ultra-dex.ai
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: ultra-dex-dashboard-service
-            port:
-              number: 80
+    - host: api.ultra-dex.ai
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ultra-dex-api-service
+                port:
+                  number: 80
+    - host: dashboard.ultra-dex.ai
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ultra-dex-dashboard-service
+                port:
+                  number: 80
 ```
 
 #### 2. Service Mesh (Istio) Configuration
+
 ```yaml
 # k8s/gateway.yaml
 apiVersion: networking.istio.io/v1alpha3
@@ -258,15 +269,15 @@ spec:
   selector:
     istio: ingressgateway
   servers:
-  - port:
-      number: 443
-      name: https
-      protocol: HTTPS
-    tls:
-      mode: SIMPLE
-      credentialName: ultra-dex-cert
-    hosts:
-    - "*.ultra-dex.ai"
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: ultra-dex-cert
+      hosts:
+        - '*.ultra-dex.ai'
 ---
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
@@ -275,32 +286,34 @@ metadata:
   namespace: ultra-dex
 spec:
   hosts:
-  - "*.ultra-dex.ai"
+    - '*.ultra-dex.ai'
   gateways:
-  - ultra-dex-gateway
+    - ultra-dex-gateway
   http:
-  - match:
-    - uri:
-        prefix: /api
-    route:
-    - destination:
-        host: ultra-dex-api-service
-        port:
-          number: 80
-  - match:
-    - uri:
-        prefix: /
-    route:
-    - destination:
-        host: ultra-dex-dashboard-service
-        port:
-          number: 80
+    - match:
+        - uri:
+            prefix: /api
+      route:
+        - destination:
+            host: ultra-dex-api-service
+            port:
+              number: 80
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: ultra-dex-dashboard-service
+            port:
+              number: 80
 ```
 
 ### Phase 3: Caching Layer Implementation (Week 8)
 
 #### 1. Redis Configuration
+
 **Redis Cluster Setup:**
+
 ```yaml
 # k8s/redis-cluster.yaml
 apiVersion: apps/v1
@@ -310,7 +323,7 @@ metadata:
   namespace: ultra-dex
 spec:
   serviceName: redis-cluster
-  replicas: 6  # 3 master + 3 slave
+  replicas: 6 # 3 master + 3 slave
   selector:
     matchLabels:
       app: redis-cluster
@@ -320,36 +333,36 @@ spec:
         app: redis-cluster
     spec:
       containers:
-      - name: redis
-        image: redis:7-alpine
-        ports:
-        - containerPort: 6379
-        command:
-        - sh
-        - -c
-        - |
-          redis-server --appendonly yes --cluster-enabled yes \
-          --cluster-config-file nodes.conf --port 6379 \
-          --cluster-node-timeout 5000 --appendfilename appendonly.aof \
-          --appendfsync always
-        volumeMounts:
-        - name: redis-data
-          mountPath: /data
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+          command:
+            - sh
+            - -c
+            - |
+              redis-server --appendonly yes --cluster-enabled yes \
+              --cluster-config-file nodes.conf --port 6379 \
+              --cluster-node-timeout 5000 --appendfilename appendonly.aof \
+              --appendfsync always
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+          resources:
+            requests:
+              memory: '1Gi'
+              cpu: '250m'
+            limits:
+              memory: '2Gi'
+              cpu: '500m'
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+      spec:
+        accessModes: ['ReadWriteOnce']
         resources:
           requests:
-            memory: "1Gi"
-            cpu: "250m"
-          limits:
-            memory: "2Gi"
-            cpu: "500m"
-  volumeClaimTemplates:
-  - metadata:
-      name: redis-data
-    spec:
-      accessModes: ["ReadWriteOnce"]
-      resources:
-        requests:
-          storage: 10Gi
+            storage: 10Gi
 ---
 apiVersion: v1
 kind: Service
@@ -361,13 +374,15 @@ spec:
   selector:
     app: redis-cluster
   ports:
-  - name: redis
-    port: 6379
-    targetPort: 6379
+    - name: redis
+      port: 6379
+      targetPort: 6379
 ```
 
 #### 2. Application-Level Caching
+
 **Caching Strategy Implementation:**
+
 ```javascript
 // src/utils/cache.js
 import { createClient } from 'redis';
@@ -381,14 +396,14 @@ class CacheManager {
         reconnectStrategy: (retries) => {
           if (retries > 10) return new Error('Redis connection failed');
           return Math.min(retries * 100, 3000);
-        }
-      }
+        },
+      },
     });
-    
+
     this.client.on('error', (err) => {
       console.error('Redis Client Error:', err);
     });
-    
+
     this.connect();
   }
 
@@ -407,11 +422,12 @@ class CacheManager {
     }
   }
 
-  async set(key, value, ttl = 3600) { // Default 1 hour
+  async set(key, value, ttl = 3600) {
+    // Default 1 hour
     try {
       await this.client.set(key, JSON.stringify(value), {
         EX: ttl,
-        NX: false // Override if exists
+        NX: false, // Override if exists
       });
     } catch (error) {
       console.error('Cache set error:', error);
@@ -432,7 +448,8 @@ class CacheManager {
     return await this.get(key);
   }
 
-  async setAgent(agentId, agentData, ttl = 1800) { // 30 minutes
+  async setAgent(agentId, agentData, ttl = 1800) {
+    // 30 minutes
     const key = `agent:${agentId}`;
     await this.set(key, agentData, ttl);
   }
@@ -442,7 +459,8 @@ class CacheManager {
     return await this.get(key);
   }
 
-  async setMemoryEntry(memoryId, memoryData, ttl = 7200) { // 2 hours
+  async setMemoryEntry(memoryId, memoryData, ttl = 7200) {
+    // 2 hours
     const key = `memory:${memoryId}`;
     await this.set(key, memoryData, ttl);
   }
@@ -452,7 +470,8 @@ class CacheManager {
     return await this.get(key);
   }
 
-  async setExecutionResult(executionId, result, ttl = 3600) { // 1 hour
+  async setExecutionResult(executionId, result, ttl = 3600) {
+    // 1 hour
     const key = `execution:${executionId}`;
     await this.set(key, result, ttl);
   }
@@ -482,7 +501,9 @@ export default CacheManager;
 ```
 
 #### 3. CDN Configuration
+
 **CloudFlare CDN Setup:**
+
 ```javascript
 // src/middleware/cdn.js
 export const cdnMiddleware = (req, res, next) => {
@@ -491,17 +512,17 @@ export const cdnMiddleware = (req, res, next) => {
     res.setHeader('Cache-Control', 'public, max-age=31536000'); // 1 year
     res.setHeader('CDN-Cache-Control', 'max-age=31536000');
   }
-  
+
   // Set cache headers for API responses that can be cached
   if (req.method === 'GET' && req.url.startsWith('/api/cacheable/')) {
     res.setHeader('Cache-Control', 'public, max-age=300'); // 5 minutes
   }
-  
+
   // Set security headers
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-XSS-Protection', '1; mode=block');
-  
+
   next();
 };
 ```
@@ -509,7 +530,9 @@ export const cdnMiddleware = (req, res, next) => {
 ### Phase 4: Performance Optimization (Week 8)
 
 #### 1. Code-Level Optimizations
+
 **Database Query Optimization:**
+
 ```javascript
 // src/services/agentService.js
 import { PrismaClient } from '@prisma/client';
@@ -537,10 +560,10 @@ export class AgentService {
             id: true,
             status: true,
             createdAt: true,
-            durationMs: true
-          }
-        }
-      }
+            durationMs: true,
+          },
+        },
+      },
     });
 
     if (agent) {
@@ -573,9 +596,9 @@ export class AgentService {
         include: {
           executions: {
             take: 3,
-            orderBy: { createdAt: 'desc' }
-          }
-        }
+            orderBy: { createdAt: 'desc' },
+          },
+        },
       });
 
       // Add to cache and results
@@ -594,8 +617,8 @@ export class AgentService {
       data: {
         ...agentData,
         createdAt: new Date(),
-        updatedAt: new Date()
-      }
+        updatedAt: new Date(),
+      },
     });
 
     // Cache the new agent
@@ -607,7 +630,9 @@ export class AgentService {
 ```
 
 #### 2. Memory Management
+
 **Memory Optimization:**
+
 ```javascript
 // src/utils/memoryOptimizer.js
 export class MemoryOptimizer {
@@ -634,14 +659,16 @@ export class MemoryOptimizer {
   checkMemoryUsage() {
     const usage = process.memoryUsage();
     const heapUsed = usage.heapUsed;
-    
+
     if (heapUsed > this.maxHeapUsed) {
       this.maxHeapUsed = heapUsed;
     }
 
     // Log memory usage periodically
     if (process.env.NODE_ENV === 'production') {
-      console.log(`Memory Usage - RSS: ${Math.round(usage.rss / 1024 / 1024)}MB, Heap: ${Math.round(heapUsed / 1024 / 1024)}MB`);
+      console.log(
+        `Memory Usage - RSS: ${Math.round(usage.rss / 1024 / 1024)}MB, Heap: ${Math.round(heapUsed / 1024 / 1024)}MB`
+      );
     }
   }
 
@@ -658,9 +685,12 @@ export class MemoryOptimizer {
     setTimeout(() => {
       const currentUsage = process.memoryUsage().heapUsed;
       const growth = currentUsage - initialUsage;
-      
-      if (growth > 100 * 1024 * 1024) { // 100MB growth
-        console.warn(`Potential memory leak detected: ${Math.round(growth / 1024 / 1024)}MB growth`);
+
+      if (growth > 100 * 1024 * 1024) {
+        // 100MB growth
+        console.warn(
+          `Potential memory leak detected: ${Math.round(growth / 1024 / 1024)}MB growth`
+        );
       }
     }, 60000); // Check after 1 minute
   }
@@ -672,7 +702,9 @@ export const memoryOptimizer = new MemoryOptimizer();
 ## Monitoring & Observability
 
 ### 1. Application Performance Monitoring
+
 **APM Configuration:**
+
 ```javascript
 // src/utils/apm.js
 import tracer from 'dd-trace';
@@ -684,7 +716,7 @@ tracer.init({
   version: process.env.npm_package_version,
   logInjection: true,
   runtimeMetrics: true,
-  trackAsyncScope: true
+  trackAsyncScope: true,
 });
 
 // Custom metrics
@@ -692,21 +724,23 @@ export const apm = {
   incrementCounter: (name, tags = {}) => {
     tracer.dogstatsd.increment(name, 1, tags);
   },
-  
+
   histogram: (name, value, tags = {}) => {
     tracer.dogstatsd.histogram(name, value, tags);
   },
-  
+
   timing: (name, fn, tags = {}) => {
     return tracer.trace(name, { tags }, fn);
-  }
+  },
 };
 
 export default tracer;
 ```
 
 ### 2. Health Checks
+
 **Health Check Endpoints:**
+
 ```javascript
 // src/health.js
 import { PrismaClient } from '@prisma/client';
@@ -716,19 +750,19 @@ const prisma = new PrismaClient();
 
 export const healthCheck = async (req, res) => {
   const startTime = Date.now();
-  
+
   try {
     // Check database connectivity
     await prisma.$queryRaw`SELECT 1`;
-    
+
     // Check cache connectivity
     await cacheManager.client.ping();
-    
+
     // Check external services if any
     // await externalService.healthCheck();
-    
+
     const responseTime = Date.now() - startTime;
-    
+
     res.status(200).json({
       status: 'healthy',
       responseTime: `${responseTime}ms`,
@@ -736,14 +770,14 @@ export const healthCheck = async (req, res) => {
       services: {
         database: 'healthy',
         cache: 'healthy',
-        external: 'healthy'
-      }
+        external: 'healthy',
+      },
     });
   } catch (error) {
     res.status(503).json({
       status: 'unhealthy',
       error: error.message,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 };
@@ -751,7 +785,7 @@ export const healthCheck = async (req, res) => {
 export const readyCheck = async (req, res) => {
   // Check if the application is ready to serve traffic
   // This could include checking for required services, configurations, etc.
-  
+
   // For now, just check basic connectivity
   try {
     await prisma.$queryRaw`SELECT 1`;
@@ -765,6 +799,7 @@ export const readyCheck = async (req, res) => {
 ## Implementation Timeline
 
 ### Week 7 Tasks:
+
 - [ ] Containerize applications (Days 1-2)
 - [ ] Set up Kubernetes cluster (Days 2-3)
 - [ ] Deploy base services (Days 3-4)
@@ -773,6 +808,7 @@ export const readyCheck = async (req, res) => {
 - [ ] Performance baseline testing (Day 7)
 
 ### Week 8 Tasks:
+
 - [ ] Deploy Redis cluster (Days 1-2)
 - [ ] Implement caching layer (Days 2-3)
 - [ ] Code optimizations (Days 3-4)
@@ -783,12 +819,14 @@ export const readyCheck = async (req, res) => {
 ## Expected Outcomes
 
 ### Performance Improvements:
+
 - **Response Time**: Maintain <200ms for 95% of requests
 - **Throughput**: Handle 2,000+ requests per second
 - **Concurrency**: Support 10,000+ concurrent users
 - **Availability**: Achieve 99.95%+ uptime
 
 ### Scalability Targets:
+
 - **Auto-scaling**: Scale from 3 to 50 pods based on demand
 - **Resource Efficiency**: 40% improvement in resource utilization
 - **Fault Tolerance**: Graceful degradation under load
@@ -797,12 +835,14 @@ export const readyCheck = async (req, res) => {
 ## Success Metrics
 
 ### Technical Metrics:
+
 - **Response Time**: p95 < 200ms, p99 < 500ms
 - **Throughput**: 2,000+ RPS sustained
 - **Error Rate**: <0.1%
 - **Resource Utilization**: <80% CPU, <85% memory
 
 ### Business Metrics:
+
 - **User Experience**: Improved dashboard load times
 - **System Reliability**: Reduced downtime and incidents
 - **Cost Efficiency**: Optimized resource usage

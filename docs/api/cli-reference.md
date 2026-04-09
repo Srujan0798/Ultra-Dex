@@ -12,6 +12,7 @@ ultra-dex <command> [options]
 ```
 
 Common global flags:
+
 - `--help` show command help
 - `--json` output machine‑readable JSON (where supported)
 - `--verbose` show debug logging
@@ -22,10 +23,12 @@ Common global flags:
 ## Configuration
 
 Config files:
+
 - Project: `.ultra-dex/config.json`
 - User: `~/.ultra-dex/config.json`
 
 Environment variables (common):
+
 - `OPENAI_API_KEY`
 - `ANTHROPIC_API_KEY`
 - `GOOGLE_API_KEY`
@@ -34,6 +37,7 @@ Environment variables (common):
 - `ULTRA_DEX_MODEL`
 
 Useful commands:
+
 - `ultra-dex config` (inspect or set config values)
 - `ultra-dex setup` (interactive wizard)
 
@@ -42,6 +46,7 @@ Useful commands:
 ## Core Workflows
 
 ### Project Bootstrapping
+
 ```bash
 ultra-dex init
 ultra-dex scaffold --from-plan
@@ -50,6 +55,7 @@ ultra-dex template generate saaskit
 ```
 
 ### Planning & Alignment
+
 ```bash
 ultra-dex plan "Build a task manager"
 ultra-dex check --p0-only --strict
@@ -57,6 +63,7 @@ ultra-dex verify --full
 ```
 
 ### Execution & Swarm
+
 ```bash
 ultra-dex run task.md
 ultra-dex swarm start task.md --parallel 4
@@ -64,6 +71,7 @@ ultra-dex auto-implement "Add billing"
 ```
 
 ### Review & Quality
+
 ```bash
 ultra-dex review
 ultra-dex diff --drift
@@ -72,6 +80,7 @@ ultra-dex production-ready
 ```
 
 ### DevOps & Deploy
+
 ```bash
 ultra-dex docker init
 ultra-dex k8s init
@@ -84,29 +93,37 @@ ultra-dex cloud deploy
 ## Command Catalog (Grouped)
 
 ### Project + Planning
+
 `init`, `plan`, `generate`, `scaffold`, `scaffold-plan`, `scaffold-plan-new`, `scaffold-enhanced`,  
 `check`, `check-enhanced`, `check-enhanced-v2`, `verify`, `quality`, `quality-enhanced`, `diff`, `export`
 
 ### Execution + Automation
+
 `run`, `exec`, `swarm`, `swarm-advanced`, `auto-implement`, `ralph`, `batch`, `pipeline`, `workflow`, `workflows`
 
 ### Context + Memory
+
 `memory`, `rag`, `graph`, `search`, `vector-search`, `brain`, `state`, `sync`, `sync-pm`, `watch`, `context`
 
 ### Agents + Teams
+
 `agents`, `agent-gen`, `team`, `session`, `background-agent`, `bot`, `compare`, `governance`
 
 ### Integrations
+
 `integrate`, `github`, `jira`, `notion`, `trello`, `marketplace`, `plugin`, `plugin-scan`
 
 ### DevOps + Ops
+
 `deploy`, `cloud`, `docker`, `k8s`, `env`, `monitor`, `monitoring`, `dr-check`, `risk`, `audit`,  
 `security`, `privacy`, `gate`, `production-ready`, `benchmark`
 
 ### UI + Dashboard
+
 `dashboard`, `dashboard-websocket-client`, `browse`, `browser`, `browser-auto`, `playground`, `help`, `banner`
 
 ### Config + Tooling
+
 `config`, `setup`, `install-completion`, `telemetry`, `status`, `version-check`, `upgrade`, `clean`, `test`
 
 ---
@@ -258,11 +275,13 @@ workspace
 ## Troubleshooting
 
 If a command fails:
+
 - Run `ultra-dex doctor` to check environment health.
 - Use `--verbose` for stack traces.
 - Verify provider API keys are set and valid.
 
 For detailed options, always run:
+
 ```bash
 ultra-dex <command> --help
 ```

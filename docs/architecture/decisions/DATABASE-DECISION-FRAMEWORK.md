@@ -405,7 +405,7 @@ const prisma = new PrismaClient();
 | ---------------- | ----------- | ------------------------------------ |
 | **Neon Scale**   | $19/mo      | 10 GB storage, branch deploys        |
 | **Supabase Pro** | $25/mo      | 8 GB storage + auth + edge functions |
-| **Render**      | ~$5-20/mo   | Pay for usage, simple pricing        |
+| **Render**       | ~$5-20/mo   | Pay for usage, simple pricing        |
 | **AWS RDS**      | $15-100+/mo | Enterprise features                  |
 
 ---

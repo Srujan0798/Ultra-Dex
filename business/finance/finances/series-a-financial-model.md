@@ -3,8 +3,9 @@
 ## Executive Summary
 
 ### Key Financial Projections (3-Year Outlook)
+
 - **Year 1 Revenue**: $1.2M ARR
-- **Year 2 Revenue**: $8.4M ARR  
+- **Year 2 Revenue**: $8.4M ARR
 - **Year 3 Revenue**: $32M ARR
 - **Series A Target**: $2M at $10M valuation
 - **Series B Target**: $15M at $75M valuation (Year 2)
@@ -12,6 +13,7 @@
 ## Revenue Model
 
 ### Pricing Tiers
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                          PRICING TIERS                          │
@@ -63,6 +65,7 @@
 ```
 
 ### Customer Acquisition Model
+
 ```
 Customer Acquisition Funnel:
 1. Website Visitors: 12,450/month
@@ -77,6 +80,7 @@ Customer Acquisition Funnel:
 ## Financial Projections (3-Year Model)
 
 ### Year 1 Projection
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        YEAR 1 PROJECTION                        │
@@ -109,6 +113,7 @@ Customer Acquisition Funnel:
 ```
 
 ### Year 2 Projection
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        YEAR 2 PROJECTION                        │
@@ -141,6 +146,7 @@ Customer Acquisition Funnel:
 ```
 
 ### Year 3 Projection
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        YEAR 3 PROJECTION                        │
@@ -176,10 +182,11 @@ Customer Acquisition Funnel:
 ## Unit Economics
 
 ### Customer Acquisition Cost (CAC)
+
 ```
 CAC Calculation:
 • Marketing Spend: $120,000/year
-• Sales Team Cost: $200,000/year  
+• Sales Team Cost: $200,000/year
 • Total CAC Investment: $320,000/year
 • New Customers Acquired: 408/year
 • CAC = $320,000 ÷ 408 = $784
@@ -192,6 +199,7 @@ CAC Payback Period:
 ```
 
 ### Customer Lifetime Value (LTV)
+
 ```
 LTV Calculation:
 • Average Customer Lifespan: 4.2 years
@@ -205,6 +213,7 @@ LTV/CAC Ratio:
 ```
 
 ### Monthly Recurring Revenue (MRR) Growth
+
 ```
 MRR Growth Trajectory:
 • Month 1: $15,000
@@ -217,7 +226,7 @@ MRR Growth Trajectory:
 
 Growth Rate Analysis:
 • First Year: 350% annual growth
-• Second Year: 350% annual growth  
+• Second Year: 350% annual growth
 • Third Year: 320% annual growth
 • Average: 340% annual growth
 ```
@@ -225,6 +234,7 @@ Growth Rate Analysis:
 ## Series A Investment Requirements
 
 ### Use of Funds ($2,000,000)
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        USE OF FUNDS                             │
@@ -256,6 +266,7 @@ Growth Rate Analysis:
 ## Financial Assumptions
 
 ### Key Assumptions
+
 ```
 Revenue Assumptions:
 • Customer acquisition rate: 34 new customers/month by Month 12
@@ -280,6 +291,7 @@ Market Assumptions:
 ## Risk Analysis
 
 ### Financial Risks
+
 ```
 High Risk Scenarios:
 • Slower customer acquisition (50% slower): Revenue reduced by 40%
@@ -297,6 +309,7 @@ Mitigation Strategies:
 ## Series A Terms
 
 ### Proposed Terms
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        SERIES A TERMS                           │
@@ -329,6 +342,7 @@ Mitigation Strategies:
 ## Milestones & Metrics
 
 ### Series A Milestones
+
 ```
 6-Month Milestones:
 • MRR: $50,000 (220% growth from current $21,500)
@@ -348,6 +362,7 @@ Mitigation Strategies:
 ## Exit Strategy
 
 ### Potential Exit Scenarios
+
 ```
 Acquisition Targets (Year 3-5):
 • Strategic acquirers: Microsoft, Google, AWS, Salesforce

@@ -15,7 +15,6 @@ import chalk from 'chalk';
 import ora from '../utils/ora.js';
 import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
 
-
 // Integration configurations
 const INTEGRATIONS = {
   stripe: {

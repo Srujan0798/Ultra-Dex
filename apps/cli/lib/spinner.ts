@@ -15,7 +15,7 @@ export function createSpinner(text = 'Processing...', options = {}): Ora {
     text: ` ${text}`,
     spinner: 'dots',
     color: 'magenta',
-    ...options
+    ...options,
   });
 }
 
@@ -57,7 +57,10 @@ export function showError(text: string): void {
  * @param {Function} promiseFn - Async function to execute
  * @returns {Promise<any>} Result of the promise
  */
-export async function withLoading(text: string, promiseFn: (spinner: Ora) => Promise<unknown>): Promise<unknown> {
+export async function withLoading(
+  text: string,
+  promiseFn: (spinner: Ora) => Promise<unknown>
+): Promise<unknown> {
   const spinner = createSpinner(text).start();
 
   try {
@@ -75,7 +78,10 @@ export async function withLoading(text: string, promiseFn: (spinner: Ora) => Pro
  * @param {string} title - Overall task title
  * @param {Array<{name: string, fn: Function}>} tasks - List of tasks to run
  */
-export async function runTaskSuite(title: string, tasks: Array<{ name: string, fn: () => unknown }>): Promise<void> {
+export async function runTaskSuite(
+  title: string,
+  tasks: Array<{ name: string; fn: () => unknown }>
+): Promise<void> {
   console.log(`\n${colors.brand(title)}`);
 
   for (let i = 0; i < tasks.length; i++) {

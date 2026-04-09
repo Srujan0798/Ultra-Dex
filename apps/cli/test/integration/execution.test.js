@@ -1,4 +1,3 @@
-
 import { test, describe, after, before } from 'node:test';
 import assert from 'node:assert';
 import fs from 'fs/promises';
@@ -10,7 +9,7 @@ describe('Tool Execution Integration Tests', () => {
 
   before(async () => {
     // Create a binary file
-    const buffer = Buffer.from([0xFF, 0xFE, 0x00, 0x00]);
+    const buffer = Buffer.from([0xff, 0xfe, 0x00, 0x00]);
     await fs.writeFile(binaryFile, buffer);
   });
 
@@ -20,25 +19,28 @@ describe('Tool Execution Integration Tests', () => {
 
   test('should handle large output by truncating', async () => {
     // Generate > 1MB output
-    const largeOutputCmd = "node -e 'console.log(\"a\".repeat(1024 * 1024 + 100))'";
+    const largeOutputCmd = 'node -e \'console.log("a".repeat(1024 * 1024 + 100))\'';
     const result = await executeTool({
       function: {
         name: 'run_shell',
-        arguments: JSON.stringify({ command: largeOutputCmd })
-      }
+        arguments: JSON.stringify({ command: largeOutputCmd }),
+      },
     });
 
     assert.strictEqual(result.success, false, 'Should fail due to truncation');
     assert.match(result.error, /truncated/, 'Error should mention truncation');
-    assert.ok(result.stdout.includes('...[Output Truncated]'), 'Output should contain truncation marker');
+    assert.ok(
+      result.stdout.includes('...[Output Truncated]'),
+      'Output should contain truncation marker'
+    );
   });
 
   test('should handle binary file reading by erroring', async () => {
     const result = await executeTool({
       function: {
         name: 'read_file',
-        arguments: JSON.stringify({ filePath: binaryFile })
-      }
+        arguments: JSON.stringify({ filePath: binaryFile }),
+      },
     });
 
     assert.strictEqual(result.success, false, 'Should fail to read binary file');
@@ -51,8 +53,8 @@ describe('Tool Execution Integration Tests', () => {
     const result = await executeTool({
       function: {
         name: 'run_shell',
-        arguments: JSON.stringify({ command: sleepCmd })
-      }
+        arguments: JSON.stringify({ command: sleepCmd }),
+      },
     });
 
     assert.strictEqual(result.success, true, 'Should succeed within timeout');

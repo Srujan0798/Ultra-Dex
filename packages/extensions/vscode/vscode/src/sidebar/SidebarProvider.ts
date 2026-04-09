@@ -39,9 +39,7 @@ export class SidebarProvider implements vscode.TreeDataProvider<AgentTreeItem> {
   }
 
   getChildren(): Thenable<AgentTreeItem[]> {
-    return Promise.resolve(
-      AGENTS.map((agent) => new AgentTreeItem(agent.label, agent.icon))
-    );
+    return Promise.resolve(AGENTS.map((agent) => new AgentTreeItem(agent.label, agent.icon)));
   }
 }
 

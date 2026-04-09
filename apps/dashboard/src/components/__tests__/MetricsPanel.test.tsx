@@ -13,11 +13,7 @@ vi.mock('../Chart', () => ({
 describe('MetricsPanel', () => {
   it('renders key performance gauges and health summary', () => {
     render(
-      <MetricsPanel
-        agents={sampleAgents}
-        costSeries={sampleCostSeries}
-        metrics={sampleMetrics}
-      />
+      <MetricsPanel agents={sampleAgents} costSeries={sampleCostSeries} metrics={sampleMetrics} />
     );
 
     expect(screen.getByText('Performance Metrics')).toBeInTheDocument();

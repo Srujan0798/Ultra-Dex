@@ -11,12 +11,14 @@ Ultra-Dex Enterprise is designed for Fortune 500 companies with comprehensive se
 Ultra-Dex provides multiple layers of authentication and authorization:
 
 #### Single Sign-On (SSO)
+
 - **SAML 2.0 Support**: Enterprise SSO with SAML 2.0 integration
 - **OIDC Support**: OpenID Connect for modern identity providers
 - **Multi-Factor Authentication**: TOTP and hardware token support
 - **Role-Based Access Control**: Hierarchical role system with inheritance
 
 #### Implementation
+
 ```javascript
 // SSO Configuration
 import { enterpriseAuth } from '../src/core/auth/sso.js';
@@ -26,14 +28,14 @@ const ssoConfig = {
     entryPoint: process.env.SAML_ENTRY_POINT,
     issuer: process.env.SAML_ISSUER,
     cert: process.env.SAML_CERT,
-    callbackUrl: process.env.SAML_CALLBACK_URL
+    callbackUrl: process.env.SAML_CALLBACK_URL,
   },
   oidc: {
     issuerUrl: process.env.OIDC_ISSUER_URL,
     clientId: process.env.OIDC_CLIENT_ID,
     clientSecret: process.env.OIDC_CLIENT_SECRET,
-    redirectUri: process.env.OIDC_REDIRECT_URI
-  }
+    redirectUri: process.env.OIDC_REDIRECT_URI,
+  },
 };
 
 const auth = new EnterpriseAuth({ ssoConfig });
@@ -42,11 +44,13 @@ const auth = new EnterpriseAuth({ ssoConfig });
 ### Data Protection
 
 #### Encryption at Rest
+
 - **AES-256-GCM**: Industry-standard encryption for stored data
 - **Key Rotation**: Automatic key rotation with configurable intervals
 - **Hardware Security Modules**: Support for HSM-backed key management
 
 #### Encryption in Transit
+
 - **TLS 1.3**: Modern encryption for all communications
 - **Perfect Forward Secrecy**: Unique session keys for each connection
 - **Certificate Pinning**: Protection against man-in-the-middle attacks
@@ -54,6 +58,7 @@ const auth = new EnterpriseAuth({ ssoConfig });
 ### Compliance Framework
 
 #### SOC 2 Type II Controls
+
 Ultra-Dex implements comprehensive SOC 2 controls:
 
 - **Security**: Access controls, network monitoring, vulnerability management
@@ -63,6 +68,7 @@ Ultra-Dex implements comprehensive SOC 2 controls:
 - **Privacy**: Data collection policies, user rights, data retention
 
 #### GDPR Compliance
+
 - **Data Minimization**: Only necessary data is collected and processed
 - **Purpose Limitation**: Data used only for specified purposes
 - **Storage Limitation**: Automatic data deletion based on retention policies
@@ -72,6 +78,7 @@ Ultra-Dex implements comprehensive SOC 2 controls:
 - **Individual Rights**: Access, rectification, erasure, portability
 
 #### HIPAA Controls (Where Applicable)
+
 - **Administrative Safeguards**: Security management, workforce training
 - **Physical Safeguards**: Facility access, workstation security
 - **Technical Safeguards**: Access control, audit controls, transmission security
@@ -79,18 +86,21 @@ Ultra-Dex implements comprehensive SOC 2 controls:
 ## Enterprise Features
 
 ### Multi-Tenancy
+
 - **Complete Isolation**: Separate data, configuration, and execution environments
 - **Resource Quotas**: Per-organization resource limits and controls
 - **Billing Separation**: Independent billing and usage tracking per organization
 - **Admin Controls**: Organization-level administration and governance
 
 ### Advanced Governance
+
 - **Immutable Audit Logs**: Tamper-evident logging with cryptographic signatures
 - **Approval Workflows**: Multi-step approval processes for sensitive operations
 - **Policy Enforcement**: Configurable policies for code, data, and operations
 - **Compliance Reporting**: Automated compliance reports and attestations
 
 ### Performance & Scaling
+
 - **Horizontal Scaling**: Support for multiple nodes and load balancing
 - **Caching Layer**: Intelligent caching with Redis and memory tiers
 - **Connection Pooling**: Optimized resource utilization
@@ -99,6 +109,7 @@ Ultra-Dex implements comprehensive SOC 2 controls:
 ## Configuration
 
 ### Environment Variables
+
 ```bash
 # Security Configuration
 JWT_SECRET=your-super-secret-jwt-key-change-in-production
@@ -123,6 +134,7 @@ ENABLE_AUDIT_LOGGING=true
 ```
 
 ### Enterprise Configuration File
+
 ```json
 {
   "security": {
@@ -177,17 +189,20 @@ ENABLE_AUDIT_LOGGING=true
 ## API Security
 
 ### Rate Limiting
+
 - **Per-IP Limits**: Configurable request limits per IP address
 - **Per-User Limits**: Individual user request quotas
 - **Per-Organization Limits**: Organization-level rate limiting
 - **Burst Handling**: Temporary burst allowance with sliding windows
 
 ### Request Signing
+
 - **HMAC Authentication**: Secure request authentication with shared secrets
 - **Timestamp Validation**: Protection against replay attacks
 - **Nonce Usage**: Unique request identifiers to prevent duplication
 
 ### Network Security
+
 - **IP Whitelisting**: Restrict access to approved IP addresses
 - **Firewall Integration**: Compatible with enterprise firewalls
 - **VPN Support**: Secure access through corporate VPNs
@@ -196,12 +211,14 @@ ENABLE_AUDIT_LOGGING=true
 ## Monitoring & Observability
 
 ### Security Monitoring
+
 - **Real-time Alerts**: Immediate notification of security events
 - **Anomaly Detection**: Automated detection of unusual patterns
 - **Threat Intelligence**: Integration with threat feeds and indicators
 - **Incident Response**: Automated response to security incidents
 
 ### Compliance Monitoring
+
 - **Continuous Monitoring**: 24/7 compliance status checking
 - **Automated Reporting**: Regular compliance reports and attestations
 - **Policy Violations**: Detection and reporting of policy violations
@@ -210,18 +227,21 @@ ENABLE_AUDIT_LOGGING=true
 ## Deployment Options
 
 ### On-Premises
+
 - **Air-gapped Deployment**: Fully isolated from public networks
 - **Custom Infrastructure**: Deploy on your own hardware
 - **Data Residency**: Complete control over data location
 - **Integration**: Connect to existing enterprise systems
 
 ### Private Cloud
+
 - **Dedicated Resources**: Isolated cloud resources
 - **Custom Networking**: Enterprise networking configurations
 - **Enhanced Security**: Additional security controls
 - **Compliance**: Enhanced compliance features
 
 ### Hybrid Cloud
+
 - **Flexible Deployment**: Mix of on-premises and cloud resources
 - **Data Sovereignty**: Control data location and movement
 - **Scalability**: Burst to cloud resources when needed
@@ -230,6 +250,7 @@ ENABLE_AUDIT_LOGGING=true
 ## Best Practices
 
 ### Security Best Practices
+
 1. **Use Strong Authentication**: Enable SSO and MFA for all users
 2. **Implement Least Privilege**: Grant minimum required permissions
 3. **Enable Audit Logging**: Log all security-relevant events
@@ -239,6 +260,7 @@ ENABLE_AUDIT_LOGGING=true
 7. **Incident Response**: Have procedures for security incidents
 
 ### Compliance Best Practices
+
 1. **Data Classification**: Classify data according to sensitivity
 2. **Access Controls**: Implement strict access controls
 3. **Retention Policies**: Implement data retention and deletion policies
@@ -248,6 +270,7 @@ ENABLE_AUDIT_LOGGING=true
 7. **Monitoring**: Continuously monitor compliance status
 
 ### Performance Best Practices
+
 1. **Caching Strategy**: Implement appropriate caching for your use case
 2. **Resource Allocation**: Allocate sufficient resources for your workload
 3. **Monitoring**: Monitor performance metrics regularly
@@ -259,12 +282,14 @@ ENABLE_AUDIT_LOGGING=true
 ## Support & Maintenance
 
 ### Enterprise Support
+
 - **24/7 Support**: Around-the-clock enterprise support
 - **Dedicated Engineers**: Assigned support engineers
 - **SLA Guarantees**: Service level agreement guarantees
 - **On-site Support**: Available for critical deployments
 
 ### Maintenance
+
 - **Regular Updates**: Frequent security and feature updates
 - **Patch Management**: Automated security patching
 - **Backup & Recovery**: Regular backups and recovery testing

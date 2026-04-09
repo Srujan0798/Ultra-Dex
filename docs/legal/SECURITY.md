@@ -2,10 +2,10 @@
 
 ## Supported Versions
 
-| Version | Supported |
-| --- | --- |
-| `main` branch | Yes |
-| Latest release | Yes |
+| Version        | Supported   |
+| -------------- | ----------- |
+| `main` branch  | Yes         |
+| Latest release | Yes         |
 | Older releases | Best effort |
 
 ## Reporting a Vulnerability

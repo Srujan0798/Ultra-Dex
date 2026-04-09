@@ -19,17 +19,17 @@ export async function createTable(
 ): Promise<string> {
   const { default: Table } = await import('cli-table3');
   const table = new Table({
-    head: headers.map(h => chalk.bold.blue(h)),
+    head: headers.map((h) => chalk.bold.blue(h)),
     colWidths: options.colWidths || headers.map(() => 20),
     style: {
       head: ['bold', 'blue'],
       border: ['gray'],
-      compact: options.compact || false
+      compact: options.compact || false,
     },
-    ...options
+    ...options,
   });
 
-  rows.forEach(row => {
+  rows.forEach((row) => {
     table.push(row);
   });
 
@@ -46,16 +46,21 @@ export function createSummaryCard(
   title: string,
   items: Array<{ key: string; value: string }>
 ): string {
-  const maxLength = Math.max(...items.map(item => item.key.length));
-  const paddedItems = items.map(item => ({
+  const maxLength = Math.max(...items.map((item) => item.key.length));
+  const paddedItems = items.map((item) => ({
     key: item.key.padEnd(maxLength),
-    value: item.value
+    value: item.value,
   }));
 
   let output = `\n${chalk.bold.blue('┌─')} ${chalk.bold.white(title)} ${chalk.bold.blue('─┐')}\n`;
 
-  paddedItems.forEach(item => {
-    output += chalk.blue('│ ') + chalk.bold(item.key) + chalk.gray(' : ') + chalk.white(item.value) + chalk.blue(' │\n');
+  paddedItems.forEach((item) => {
+    output +=
+      chalk.blue('│ ') +
+      chalk.bold(item.key) +
+      chalk.gray(' : ') +
+      chalk.white(item.value) +
+      chalk.blue(' │\n');
   });
 
   output += chalk.blue('└' + '─'.repeat(title.length + 4 + maxLength) + '┘\n');
@@ -145,8 +150,8 @@ export function createProgressBar(
   const filledLength = Math.round((current / total) * width);
   const emptyLength = width - filledLength;
 
-  const progressBar = chalk.green(filledChar.repeat(filledLength)) +
-    chalk.gray(emptyChar.repeat(emptyLength));
+  const progressBar =
+    chalk.green(filledChar.repeat(filledLength)) + chalk.gray(emptyChar.repeat(emptyLength));
 
   const progressText = chalk.bold(`${current}/${total} (${percentage}%)`);
 
@@ -341,17 +346,21 @@ export function formatDuration(ms: number): string {
  */
 export function createBox(content: string, title: string = ''): string {
   const lines = content.split('\n');
-  const maxWidth = Math.max(...lines.map(line => line.length), title.length);
+  const maxWidth = Math.max(...lines.map((line) => line.length), title.length);
 
   let output = '';
 
   if (title) {
-    output += chalk.blue('┌─ ') + chalk.bold(title) + chalk.blue(' ' + '─'.repeat(maxWidth - title.length)) + '┐\n';
+    output +=
+      chalk.blue('┌─ ') +
+      chalk.bold(title) +
+      chalk.blue(' ' + '─'.repeat(maxWidth - title.length)) +
+      '┐\n';
   } else {
     output += chalk.blue('┌' + '─'.repeat(maxWidth + 2) + '┐\n');
   }
 
-  lines.forEach(line => {
+  lines.forEach((line) => {
     output += chalk.blue('│ ') + line.padEnd(maxWidth) + chalk.blue(' │\n');
   });
 
@@ -374,5 +383,5 @@ export default {
   formatTimestamp,
   formatBytes,
   formatDuration,
-  createBox
+  createBox,
 };

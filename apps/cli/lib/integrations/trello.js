@@ -25,11 +25,11 @@ export class TrelloClient {
     try {
       const response = await retryWithBackoff(() =>
         fetch(`${TRELLO_API}/boards?name=${encodeURIComponent(name)}&${this.auth}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-          body: JSON.stringify(prefs)
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(prefs),
         })
       );
 
@@ -49,12 +49,15 @@ export class TrelloClient {
   async createList(boardId, name) {
     try {
       const response = await retryWithBackoff(() =>
-        fetch(`${TRELLO_API}/lists?idBoard=${boardId}&name=${encodeURIComponent(name)}&${this.auth}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-        })
+        fetch(
+          `${TRELLO_API}/lists?idBoard=${boardId}&name=${encodeURIComponent(name)}&${this.auth}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        )
       );
 
       if (!response.ok) {
@@ -73,7 +76,7 @@ export class TrelloClient {
   async createCard(listId, name, desc = '', options = {}) {
     try {
       let url = `${TRELLO_API}/cards?idList=${listId}&name=${encodeURIComponent(name)}&desc=${encodeURIComponent(desc)}&${this.auth}`;
-      
+
       // Add optional parameters
       if (options.due) url += `&due=${options.due}`;
       if (options.pos) url += `&pos=${options.pos}`;
@@ -82,10 +85,10 @@ export class TrelloClient {
 
       const response = await retryWithBackoff(() =>
         fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
         })
       );
 
@@ -106,16 +109,21 @@ export class TrelloClient {
     try {
       // Create the checklist first
       const checklistResponse = await retryWithBackoff(() =>
-        fetch(`${TRELLO_API}/checklists?idCard=${cardId}&name=${encodeURIComponent(name)}&${this.auth}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-        })
+        fetch(
+          `${TRELLO_API}/checklists?idCard=${cardId}&name=${encodeURIComponent(name)}&${this.auth}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        )
       );
 
       if (!checklistResponse.ok) {
-        throw new Error(`Failed to create checklist: ${checklistResponse.status} ${checklistResponse.statusText}`);
+        throw new Error(
+          `Failed to create checklist: ${checklistResponse.status} ${checklistResponse.statusText}`
+        );
       }
 
       const checklist = await checklistResponse.json();
@@ -123,12 +131,15 @@ export class TrelloClient {
       // Add items to the checklist
       for (const item of items) {
         const itemResponse = await retryWithBackoff(() =>
-          fetch(`${TRELLO_API}/checklists/${checklist.id}/checkItems?name=${encodeURIComponent(item)}&${this.auth}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-          })
+          fetch(
+            `${TRELLO_API}/checklists/${checklist.id}/checkItems?name=${encodeURIComponent(item)}&${this.auth}`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+            }
+          )
         );
 
         if (!itemResponse.ok) {
@@ -149,7 +160,7 @@ export class TrelloClient {
       const response = await retryWithBackoff(() =>
         fetch(`${TRELLO_API}/boards/${boardId}?${this.auth}`)
       );
-      
+
       if (!response.ok) {
         throw new Error(`Failed to get board: ${response.status} ${response.statusText}`);
       }
@@ -166,7 +177,7 @@ export class TrelloClient {
       const response = await retryWithBackoff(() =>
         fetch(`${TRELLO_API}/boards/${boardId}/lists?${this.auth}`)
       );
-      
+
       if (!response.ok) {
         throw new Error(`Failed to get board lists: ${response.status} ${response.statusText}`);
       }
@@ -183,7 +194,7 @@ export class TrelloClient {
       const response = await retryWithBackoff(() =>
         fetch(`${TRELLO_API}/boards/${boardId}/cards?${this.auth}`)
       );
-      
+
       if (!response.ok) {
         throw new Error(`Failed to get board cards: ${response.status} ${response.statusText}`);
       }
@@ -200,13 +211,13 @@ export class TrelloClient {
       const queryString = Object.entries(updates)
         .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
         .join('&');
-      
+
       const response = await retryWithBackoff(() =>
         fetch(`${TRELLO_API}/cards/${cardId}?${this.auth}&${queryString}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
         })
       );
 
@@ -227,10 +238,10 @@ export class TrelloClient {
     try {
       const response = await retryWithBackoff(() =>
         fetch(`${TRELLO_API}/cards/${cardId}?idList=${listId}&${this.auth}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
         })
       );
 
@@ -251,10 +262,10 @@ export class TrelloClient {
     try {
       const response = await retryWithBackoff(() =>
         fetch(`${TRELLO_API}/cards/${cardId}?closed=true&${this.auth}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
         })
       );
 
@@ -272,12 +283,15 @@ export class TrelloClient {
 
   async addLabelToCard(cardId, labelColor) {
     try {
-      const response = await fetch(`${TRELLO_API}/cards/${cardId}/labels?color=${labelColor}&${this.auth}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
+      const response = await fetch(
+        `${TRELLO_API}/cards/${cardId}/labels?color=${labelColor}&${this.auth}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
         }
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to add label: ${response.status} ${response.statusText}`);
@@ -294,7 +308,7 @@ export class TrelloClient {
   async getCardsInList(listId) {
     try {
       const response = await fetch(`${TRELLO_API}/lists/${listId}/cards?${this.auth}`);
-      
+
       if (!response.ok) {
         throw new Error(`Failed to get cards in list: ${response.status} ${response.statusText}`);
       }
@@ -312,14 +326,16 @@ export class TrelloClient {
  */
 export async function syncPlanToTrello(client, boardId, planData) {
   printInfo('🔄 Syncing plan to Trello board...');
-  
+
   // Get the "To Do" list (usually the first list)
   const lists = await client.getBoardLists(boardId);
-  const todoList = lists.find(list => 
-    list.name.toLowerCase().includes('todo') || 
-    list.name.toLowerCase().includes('backlog') ||
-    list.name.toLowerCase().includes('to do')
-  ) || lists[0]; // fallback to first list
+  const todoList =
+    lists.find(
+      (list) =>
+        list.name.toLowerCase().includes('todo') ||
+        list.name.toLowerCase().includes('backlog') ||
+        list.name.toLowerCase().includes('to do')
+    ) || lists[0]; // fallback to first list
 
   if (!todoList) {
     throw new Error('No lists found in Trello board');
@@ -330,12 +346,9 @@ export async function syncPlanToTrello(client, boardId, planData) {
   for (const section of planData.sections) {
     try {
       // Create a card for each section
-      const card = await client.createCard(
-        todoList.id,
-        section.name,
-        section.description || '',
-        { labels: [section.priority?.toLowerCase() || 'green'] }
-      );
+      const card = await client.createCard(todoList.id, section.name, section.description || '', {
+        labels: [section.priority?.toLowerCase() || 'green'],
+      });
 
       // Add checklist with subsections if they exist
       if (section.tasks && Array.isArray(section.tasks) && section.tasks.length > 0) {
@@ -362,17 +375,19 @@ export async function validateTrelloConfig(config) {
   }
 
   const client = new TrelloClient(config.apiKey, config.token);
-  
+
   try {
     // Test by fetching the member associated with the token
     const response = await fetch(`${TRELLO_API}/members/me?${client.auth}`);
-    
+
     if (!response.ok) {
       throw new Error(`Trello connection test failed: ${response.status} ${response.statusText}`);
     }
 
     const userInfo = await response.json();
-    printSuccess(`✅ Trello connection validated for user: ${userInfo.fullName || userInfo.username}`);
+    printSuccess(
+      `✅ Trello connection validated for user: ${userInfo.fullName || userInfo.username}`
+    );
     return true;
   } catch (error) {
     printError(`❌ Trello connection failed: ${error.message}`);
@@ -383,5 +398,5 @@ export async function validateTrelloConfig(config) {
 export default {
   TrelloClient,
   syncPlanToTrello,
-  validateTrelloConfig
+  validateTrelloConfig,
 };

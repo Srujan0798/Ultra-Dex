@@ -6,12 +6,12 @@
 
 ## Overview
 
-| Metric        | Value                        |
-| ------------- | ---------------------------- |
-| **Project**   | [Name]                       |
-| **Type**      | [SaaS / Internal Tool / API] |
-| **Team Size** | [# developers]               |
-| **Duration**  | [X weeks/months]             |
+| Metric        | Value                          |
+| ------------- | ------------------------------ |
+| **Project**   | [Name]                         |
+| **Type**      | [SaaS / Internal Tool / API]   |
+| **Team Size** | [# developers]                 |
+| **Duration**  | [X weeks/months]               |
 | **Status**    | [Shipped / Beta / In Progress] |
 
 ---
@@ -45,13 +45,13 @@
 
 ### Implementation Phase
 
-| Agent | For What | Outcome |
-| ----- | -------- | ------- |
-| `@CTO` |         |         |
-| `@Database` |    |         |
-| `@Backend` |     |         |
-| `@Frontend` |    |         |
-| `@Security` |    |         |
+| Agent       | For What | Outcome |
+| ----------- | -------- | ------- |
+| `@CTO`      |          |         |
+| `@Database` |          |         |
+| `@Backend`  |          |         |
+| `@Frontend` |          |         |
+| `@Security` |          |         |
 
 ### Quality Phase
 
@@ -66,8 +66,8 @@
 ### Time Savings
 
 | Without Ultra-Dex (estimate) | With Ultra-Dex | Saved |
-| ----------------------------- | -------------- | ----- |
-| [X weeks]                     | [Y weeks]      | [Z%]  |
+| ---------------------------- | -------------- | ----- |
+| [X weeks]                    | [Y weeks]      | [Z%]  |
 
 ### Quality Metrics
 
@@ -98,6 +98,7 @@
 ## Key Learnings
 
 > "[Quote about using Ultra-Dex]"
+>
 > - [Name], [Role]
 
 ### Recommendations for Others

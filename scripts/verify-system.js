@@ -28,9 +28,19 @@ function check(condition, description) {
 
 async function verifyMonorepoLayout() {
   console.log(chalk.cyan('\n📁 Monorepo Layout\n'));
-  const dirs = ['apps/cli', 'apps/dashboard', 'apps/cloud', 'src/core', 'packages/sdk', '.ultra-dex'];
+  const dirs = [
+    'apps/cli',
+    'apps/dashboard',
+    'apps/cloud',
+    'src/core',
+    'packages/sdk',
+    '.ultra-dex',
+  ];
   for (const dir of dirs) {
-    const exists = await fs.access(path.join(process.cwd(), dir)).then(() => true).catch(() => false);
+    const exists = await fs
+      .access(path.join(process.cwd(), dir))
+      .then(() => true)
+      .catch(() => false);
     check(exists, `Directory: ${dir}`);
   }
 }
@@ -104,11 +114,11 @@ async function runVerification() {
 
     if (results.failed === 0) {
       console.log(
-        chalk.green('\n🎉 All systems verified. Ultra-Dex v6.0.0 Meta-Layer is operational.'),
+        chalk.green('\n🎉 All systems verified. Ultra-Dex v6.0.0 Meta-Layer is operational.')
       );
     } else {
       console.log(
-        chalk.red('\n❌ Some systems failed verification. Inspect logs before declaring READY.'),
+        chalk.red('\n❌ Some systems failed verification. Inspect logs before declaring READY.')
       );
     }
 

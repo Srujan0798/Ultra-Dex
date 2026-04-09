@@ -23,9 +23,10 @@ function createWindow() {
   });
 
   // Points to our React 19 Dashboard
-  const startUrl = process.env.NODE_ENV === 'development' 
-    ? 'http://localhost:5173' 
-    : `file://${path.join(__dirname, '../dashboard/dist/index.html')}`;
+  const startUrl =
+    process.env.NODE_ENV === 'development'
+      ? 'http://localhost:5173'
+      : `file://${path.join(__dirname, '../dashboard/dist/index.html')}`;
 
   mainWindow.loadURL(startUrl);
   return mainWindow;
@@ -33,7 +34,7 @@ function createWindow() {
 
 app.whenReady().then(() => {
   createWindow();
-  
+
   ipcMain.handle('ultra-dex:get-status', async () => {
     return { status: 'ONLINE', version: '6.0.0', tier: 'PRO' };
   });

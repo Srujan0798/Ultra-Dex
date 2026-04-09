@@ -3,14 +3,13 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { EventEmitter } from "events";
+import { singleton } from 'tsyringe';
+import { EventEmitter } from 'events';
 let StreamTransform = class {
   constructor({ name, transform, filter = null, errorHandler = null }) {
     this.name = name;
@@ -42,13 +41,11 @@ let StreamTransform = class {
   getStats() {
     return {
       ...this.stats,
-      avgMs: this.stats.processed > 0 ? Math.round(this.stats.totalMs / this.stats.processed) : 0
+      avgMs: this.stats.processed > 0 ? Math.round(this.stats.totalMs / this.stats.processed) : 0,
     };
   }
 };
-StreamTransform = __decorateClass([
-  singleton()
-], StreamTransform);
+StreamTransform = __decorateClass([singleton()], StreamTransform);
 let StreamBuffer = class {
   constructor({ maxSize = 100, flushIntervalMs = 5e3, onFlush }) {
     this.maxSize = maxSize;
@@ -71,8 +68,7 @@ let StreamBuffer = class {
       clearTimeout(this.timer);
       this.timer = null;
     }
-    if (this.buffer.length === 0)
-      return;
+    if (this.buffer.length === 0) return;
     const batch = [...this.buffer];
     this.buffer = [];
     this.flushCount++;
@@ -85,20 +81,17 @@ let StreamBuffer = class {
     return {
       bufferSize: this.buffer.length,
       maxSize: this.maxSize,
-      flushCount: this.flushCount
+      flushCount: this.flushCount,
     };
   }
   destroy() {
-    if (this.timer)
-      clearTimeout(this.timer);
+    if (this.timer) clearTimeout(this.timer);
     this.buffer = [];
   }
 };
-StreamBuffer = __decorateClass([
-  singleton()
-], StreamBuffer);
+StreamBuffer = __decorateClass([singleton()], StreamBuffer);
 let StreamPipeline = class extends EventEmitter {
-  constructor({ name = "default", backpressureLimit = 1e3, deadLetterQueue = true } = {}) {
+  constructor({ name = 'default', backpressureLimit = 1e3, deadLetterQueue = true } = {}) {
     super();
     this.name = name;
     this.transforms = [];
@@ -129,7 +122,7 @@ let StreamPipeline = class extends EventEmitter {
    */
   start() {
     this.running = true;
-    this.emit("pipeline:start", { name: this.name });
+    this.emit('pipeline:start', { name: this.name });
   }
   /**
    * Stop the pipeline and flush all buffers
@@ -139,7 +132,7 @@ let StreamPipeline = class extends EventEmitter {
     for (const [name, buffer] of this.buffers) {
       await buffer.flush();
     }
-    this.emit("pipeline:stop", { name: this.name, stats: this.getStats() });
+    this.emit('pipeline:stop', { name: this.name, stats: this.getStats() });
   }
   /**
    * Ingest an event into the pipeline
@@ -151,11 +144,11 @@ let StreamPipeline = class extends EventEmitter {
     }
     if (this.stats.ingested - this.stats.output > this.backpressureLimit) {
       this.stats.dropped++;
-      this.emit("pipeline:backpressure", { queued: this.stats.ingested - this.stats.output });
+      this.emit('pipeline:backpressure', { queued: this.stats.ingested - this.stats.output });
       return null;
     }
     this.stats.ingested++;
-    this.emit("event:ingested", { event });
+    this.emit('event:ingested', { event });
     let current = { ...event, _pipelineTimestamp: Date.now() };
     for (const transform of this.transforms) {
       try {
@@ -171,15 +164,15 @@ let StreamPipeline = class extends EventEmitter {
             event: current,
             error: error.message,
             transform: transform.name,
-            timestamp: Date.now()
+            timestamp: Date.now(),
           });
         }
-        this.emit("event:error", { event: current, error, transform: transform.name });
+        this.emit('event:error', { event: current, error, transform: transform.name });
         return null;
       }
     }
     this.stats.output++;
-    this.emit("event:output", { event: current });
+    this.emit('event:output', { event: current });
     return current;
   }
   /**
@@ -189,8 +182,7 @@ let StreamPipeline = class extends EventEmitter {
     const results = [];
     for (const event of events) {
       const result = await this.ingest(event);
-      if (result)
-        results.push(result);
+      if (result) results.push(result);
     }
     return results;
   }
@@ -204,23 +196,21 @@ let StreamPipeline = class extends EventEmitter {
       pipeline: { ...this.stats },
       deadLetterQueue: this.deadLetterQueue ? this.deadLetterQueue.length : 0,
       transforms: this.transforms.map((t) => ({ name: t.name, ...t.getStats() })),
-      buffers: Object.fromEntries([...this.buffers].map(([k, v]) => [k, v.getStats()]))
+      buffers: Object.fromEntries([...this.buffers].map(([k, v]) => [k, v.getStats()])),
     };
   }
   /**
    * Get dead letter queue entries
    */
   getDeadLetters(limit = 50) {
-    if (!this.deadLetterQueue)
-      return [];
+    if (!this.deadLetterQueue) return [];
     return this.deadLetterQueue.slice(-limit);
   }
   /**
    * Replay dead letter queue entries
    */
   async replayDeadLetters(count = 10) {
-    if (!this.deadLetterQueue || this.deadLetterQueue.length === 0)
-      return [];
+    if (!this.deadLetterQueue || this.deadLetterQueue.length === 0) return [];
     const toReplay = this.deadLetterQueue.splice(0, count);
     const results = [];
     for (const entry of toReplay) {
@@ -236,13 +226,6 @@ let StreamPipeline = class extends EventEmitter {
     }
   }
 };
-StreamPipeline = __decorateClass([
-  singleton()
-], StreamPipeline);
+StreamPipeline = __decorateClass([singleton()], StreamPipeline);
 var pipeline_default = StreamPipeline;
-export {
-  StreamBuffer,
-  StreamPipeline,
-  StreamTransform,
-  pipeline_default as default
-};
+export { StreamBuffer, StreamPipeline, StreamTransform, pipeline_default as default };

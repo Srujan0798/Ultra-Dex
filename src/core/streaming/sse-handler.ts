@@ -3,15 +3,14 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
 var __decorateParam = (index, decorator) => (target, key) => decorator(target, key, index);
-import { EventEmitter } from "events";
-import { singleton, inject } from "tsyringe";
+import { EventEmitter } from 'events';
+import { singleton, inject } from 'tsyringe';
 import { DI_TOKENS } from '../di/tokens.js';
 let SSEHandler = class extends EventEmitter {
   constructor(logger, config) {
@@ -26,7 +25,7 @@ let SSEHandler = class extends EventEmitter {
     totalConnections: 0,
     activeSessions: 0,
     messagesSent: 0,
-    bytesSent: 0
+    bytesSent: 0,
   };
   heartbeatInterval = null;
   /**
@@ -36,19 +35,19 @@ let SSEHandler = class extends EventEmitter {
     return (req, res, next) => {
       const request = req;
       const response = res;
-      const sessionId = request.query?.sessionId || this.extractSessionId(request.url || "");
+      const sessionId = request.query?.sessionId || this.extractSessionId(request.url || '');
       const userId = request.query?.userId;
       if (!sessionId) {
-        response.writeHead(400, { "Content-Type": "application/json" });
-        response.write(JSON.stringify({ error: "sessionId required" }));
+        response.writeHead(400, { 'Content-Type': 'application/json' });
+        response.write(JSON.stringify({ error: 'sessionId required' }));
         response.end();
         return;
       }
       response.writeHead(200, {
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
-        "Connection": "keep-alive",
-        "X-Accel-Buffering": "no"
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive',
+        'X-Accel-Buffering': 'no',
         // Disable nginx buffering
       });
       const clientId = this.generateClientId();
@@ -64,33 +63,33 @@ let SSEHandler = class extends EventEmitter {
             response.write(data);
             this.stats.bytesSent += Buffer.byteLength(data);
           } catch (error) {
-            this.logger.error("SSE write error", error);
+            this.logger.error('SSE write error', error);
             this.removeClient(clientId);
           }
         },
         close: () => {
           response.end();
-        }
+        },
       };
       this.clients.set(clientId, client);
       this.addSessionClient(sessionId, clientId);
       this.stats.totalConnections++;
       this.stats.activeSessions = this.sessionClients.size;
-      this.logger.info("SSE client connected", { clientId, sessionId, userId });
+      this.logger.info('SSE client connected', { clientId, sessionId, userId });
       this.sendToClient(clientId, {
-        event: "connected",
+        event: 'connected',
         data: {
           clientId,
           sessionId,
-          timestamp: Date.now()
-        }
+          timestamp: Date.now(),
+        },
       });
-      response.on("close", () => {
+      response.on('close', () => {
         this.removeClient(clientId);
       });
       const keepAlive = setInterval(() => {
         if (this.clients.has(clientId)) {
-          this.sendToClient(clientId, { event: "ping", data: { timestamp: Date.now() } });
+          this.sendToClient(clientId, { event: 'ping', data: { timestamp: Date.now() } });
         } else {
           clearInterval(keepAlive);
         }
@@ -104,7 +103,7 @@ let SSEHandler = class extends EventEmitter {
     const sseEvent = {
       id: this.generateEventId(),
       event: event.type,
-      data: event
+      data: event,
     };
     const message = this.formatEvent(sseEvent);
     const sessionClientIds = this.sessionClients.get(event.sessionId);
@@ -119,13 +118,13 @@ let SSEHandler = class extends EventEmitter {
       });
     }
     this.clients.forEach((client) => {
-      if (client.subscriptions.has("*")) {
+      if (client.subscriptions.has('*')) {
         client.write(message);
         client.lastActivity = Date.now();
         this.stats.messagesSent++;
       }
     });
-    this.emit("broadcast", event);
+    this.emit('broadcast', event);
   }
   /**
    * Send event to specific client
@@ -173,8 +172,8 @@ let SSEHandler = class extends EventEmitter {
     client.subscriptions.add(sessionId);
     this.addSessionClient(sessionId, clientId);
     this.sendToClient(clientId, {
-      event: "subscribed",
-      data: { sessionId }
+      event: 'subscribed',
+      data: { sessionId },
     });
     return true;
   }
@@ -189,8 +188,8 @@ let SSEHandler = class extends EventEmitter {
     client.subscriptions.delete(sessionId);
     this.removeSessionClient(sessionId, clientId);
     this.sendToClient(clientId, {
-      event: "unsubscribed",
-      data: { sessionId }
+      event: 'unsubscribed',
+      data: { sessionId },
     });
     return true;
   }
@@ -216,17 +215,17 @@ let SSEHandler = class extends EventEmitter {
     }
     this.clients.forEach((client) => {
       this.sendToClient(client.id, {
-        event: "shutdown",
-        data: { message: "Server shutting down" }
+        event: 'shutdown',
+        data: { message: 'Server shutting down' },
       });
       client.close();
     });
     this.clients.clear();
     this.sessionClients.clear();
-    this.logger.info("SSEHandler shutdown complete");
+    this.logger.info('SSEHandler shutdown complete');
   }
   formatEvent(event) {
-    let message = "";
+    let message = '';
     if (event.id) {
       message += `id: ${event.id}
 `;
@@ -239,7 +238,7 @@ let SSEHandler = class extends EventEmitter {
       message += `retry: ${event.retry}
 `;
     }
-    const data = typeof event.data === "string" ? event.data : JSON.stringify(event.data);
+    const data = typeof event.data === 'string' ? event.data : JSON.stringify(event.data);
     message += `data: ${data}
 
 `;
@@ -271,20 +270,20 @@ let SSEHandler = class extends EventEmitter {
       this.removeSessionClient(sessionId, clientId);
     });
     this.clients.delete(clientId);
-    this.logger.info("SSE client disconnected", { clientId, sessionId: client.sessionId });
+    this.logger.info('SSE client disconnected', { clientId, sessionId: client.sessionId });
   }
   startHeartbeat() {
-    const interval = this.config.get("sse.heartbeatInterval", 3e4);
+    const interval = this.config.get('sse.heartbeatInterval', 3e4);
     this.heartbeatInterval = setInterval(() => {
       this.cleanupStaleClients();
     }, interval);
   }
   cleanupStaleClients() {
     const now = Date.now();
-    const timeout = this.config.get("sse.clientTimeout", 12e4);
+    const timeout = this.config.get('sse.clientTimeout', 12e4);
     this.clients.forEach((client) => {
       if (now - client.lastActivity > timeout) {
-        this.logger.warn("Removing stale SSE client", { clientId: client.id });
+        this.logger.warn('Removing stale SSE client', { clientId: client.id });
         this.removeClient(client.id);
         client.close();
       }
@@ -301,11 +300,12 @@ let SSEHandler = class extends EventEmitter {
     return match ? decodeURIComponent(match[1]) : null;
   }
 };
-SSEHandler = __decorateClass([
-  singleton(),
-  __decorateParam(0, inject(DI_TOKENS.Logger)),
-  __decorateParam(1, inject(DI_TOKENS.ConfigService))
-], SSEHandler);
-export {
+SSEHandler = __decorateClass(
+  [
+    singleton(),
+    __decorateParam(0, inject(DI_TOKENS.Logger)),
+    __decorateParam(1, inject(DI_TOKENS.ConfigService)),
+  ],
   SSEHandler
-};
+);
+export { SSEHandler };

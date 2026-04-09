@@ -13,7 +13,7 @@ function createMockResponse() {
     json(payload) {
       this.body = payload;
       return this;
-    }
+    },
   };
 }
 
@@ -42,7 +42,7 @@ describe('HealthService', () => {
       name: 'memory-initialized',
       check: async () => {
         throw new Error('not initialized');
-      }
+      },
     });
 
     const readiness = await service.readiness();
@@ -57,7 +57,7 @@ describe('HealthService', () => {
       name: 'redis-connected',
       check: async () => {
         throw new Error('redis unavailable');
-      }
+      },
     });
     service.addDeepCheck({ name: 'audit-db-writable', check: async () => true });
     service.addDeepCheck({ name: 'provider-reachable', check: async () => true });

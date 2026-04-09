@@ -3,14 +3,13 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { EventEmitter } from "events";
+import { singleton } from 'tsyringe';
+import { EventEmitter } from 'events';
 import { SwarmEngine } from './swarm-engine.js';
 import { Executor } from './executor.js';
 import { Planner } from './planner.js';
@@ -26,28 +25,28 @@ let MetaOrchestrator = class extends EventEmitter {
     this.config = {
       enableAutoOrchestration: options.enableAutoOrchestration !== false,
       orchestrationInterval: options.orchestrationInterval || 5e3,
-      ...options
+      ...options,
     };
-    this.state = "idle";
+    this.state = 'idle';
     this.orchestrationTimer = null;
   }
   /**
    * Initialize meta orchestrator
    */
   async initialize() {
-    this.state = "initializing";
-    this.emit("meta-orchestrator.initializing");
+    this.state = 'initializing';
+    this.emit('meta-orchestrator.initializing');
     await Promise.all([
       this.swarmEngine.initialize(),
       this.executor.initialize(),
       this.planner.initialize(),
-      this.scheduler.initialize()
+      this.scheduler.initialize(),
     ]);
-    this.state = "ready";
+    this.state = 'ready';
     if (this.config.enableAutoOrchestration) {
       this.startAutoOrchestration();
     }
-    this.emit("meta-orchestrator.ready");
+    this.emit('meta-orchestrator.ready');
     return this;
   }
   /**
@@ -58,31 +57,31 @@ let MetaOrchestrator = class extends EventEmitter {
     const workflow = {
       id: workflowId,
       definition: workflowDefinition,
-      status: "created",
+      status: 'created',
       startedAt: Date.now(),
       steps: [],
-      results: []
+      results: [],
     };
     this.workflows.set(workflowId, workflow);
-    this.emit("workflow.created", { workflowId, definition: workflowDefinition });
+    this.emit('workflow.created', { workflowId, definition: workflowDefinition });
     try {
       const plan = await this.planner.createPlan(workflowDefinition, {
-        strategy: options.planningStrategy || "hierarchical"
+        strategy: options.planningStrategy || 'hierarchical',
       });
       workflow.plan = plan;
-      workflow.status = "planned";
-      this.emit("workflow.planned", { workflowId, plan });
+      workflow.status = 'planned';
+      this.emit('workflow.planned', { workflowId, plan });
       const result = await this.executePlan(workflowId, plan, options);
-      workflow.status = "completed";
+      workflow.status = 'completed';
       workflow.result = result;
       workflow.completedAt = Date.now();
-      this.emit("workflow.completed", { workflowId, result });
+      this.emit('workflow.completed', { workflowId, result });
       return result;
     } catch (error) {
-      workflow.status = "failed";
+      workflow.status = 'failed';
       workflow.error = error;
       workflow.failedAt = Date.now();
-      this.emit("workflow.failed", { workflowId, error });
+      this.emit('workflow.failed', { workflowId, error });
       throw error;
     }
   }
@@ -96,7 +95,7 @@ let MetaOrchestrator = class extends EventEmitter {
       workflowId,
       results,
       executedAt: Date.now(),
-      duration: Date.now() - workflow.startedAt
+      duration: Date.now() - workflow.startedAt,
     };
   }
   /**
@@ -112,7 +111,7 @@ let MetaOrchestrator = class extends EventEmitter {
         results.push(...groupResults);
       }
     } else if (plan.subtasks && plan.subtasks.length > 0) {
-      if (options.strategy === "parallel") {
+      if (options.strategy === 'parallel') {
         const parallelResults = await Promise.all(
           plan.subtasks.map((subtask) => this.executeTaskHierarchy(subtask, options, depth + 1))
         );
@@ -133,7 +132,7 @@ let MetaOrchestrator = class extends EventEmitter {
    * Execute individual task
    */
   async executeTask(task, options = {}) {
-    if (task.strategy === "swarm") {
+    if (task.strategy === 'swarm') {
       return await this.executeInSwarm(task, options);
     } else if (task.schedule) {
       return await this.scheduleTask(task, options);
@@ -146,23 +145,14 @@ let MetaOrchestrator = class extends EventEmitter {
    */
   async executeInSwarm(task, options = {}) {
     const swarmId = task.swarmId || this.generateId();
-    return await this.swarmEngine.executeInSwarm(
-      swarmId,
-      task,
-      options
-    );
+    return await this.swarmEngine.executeInSwarm(swarmId, task, options);
   }
   /**
    * Schedule a task
    */
   async scheduleTask(task, options = {}) {
     const taskId = this.generateId();
-    return this.scheduler.scheduleRecurring(
-      taskId,
-      task,
-      task.schedule,
-      options
-    );
+    return this.scheduler.scheduleRecurring(taskId, task, task.schedule, options);
   }
   /**
    * Start auto orchestration
@@ -180,13 +170,13 @@ let MetaOrchestrator = class extends EventEmitter {
    */
   async performAutoOrchestration() {
     for (const [workflowId, workflow] of this.workflows) {
-      if (workflow.status === "completed" || workflow.status === "failed") {
+      if (workflow.status === 'completed' || workflow.status === 'failed') {
         if (Date.now() - (workflow.completedAt || workflow.failedAt) > 36e5) {
           this.workflows.delete(workflowId);
         }
       }
     }
-    this.emit("orchestration.cycle-complete", { workflowCount: this.workflows.size });
+    this.emit('orchestration.cycle-complete', { workflowCount: this.workflows.size });
   }
   /**
    * Get orchestrator status
@@ -200,7 +190,7 @@ let MetaOrchestrator = class extends EventEmitter {
       scheduler: this.scheduler.state,
       activeWorkflows: this.workflows.size,
       executorStats: this.executor.getStats(),
-      registryStats: this.getRegistryStats()
+      registryStats: this.getRegistryStats(),
     };
   }
   /**
@@ -210,7 +200,7 @@ let MetaOrchestrator = class extends EventEmitter {
     return {
       swarms: Array.from(this.swarmEngine.swarms.keys()).length,
       scheduledTasks: this.scheduler.scheduledTasks.size,
-      plans: this.planner.plans.size
+      plans: this.planner.plans.size,
     };
   }
   /**
@@ -226,22 +216,17 @@ let MetaOrchestrator = class extends EventEmitter {
     if (this.orchestrationTimer) {
       clearInterval(this.orchestrationTimer);
     }
-    this.emit("meta-orchestrator.shutting-down");
+    this.emit('meta-orchestrator.shutting-down');
     await Promise.all([
       this.swarmEngine.shutdown(),
       this.executor.shutdown(),
       this.planner.shutdown(),
-      this.scheduler.shutdown()
+      this.scheduler.shutdown(),
     ]);
-    this.state = "shutdown";
-    this.emit("meta-orchestrator.shutdown");
+    this.state = 'shutdown';
+    this.emit('meta-orchestrator.shutdown');
   }
 };
-MetaOrchestrator = __decorateClass([
-  singleton()
-], MetaOrchestrator);
+MetaOrchestrator = __decorateClass([singleton()], MetaOrchestrator);
 var meta_orchestrator_default = MetaOrchestrator;
-export {
-  MetaOrchestrator,
-  meta_orchestrator_default as default
-};
+export { MetaOrchestrator, meta_orchestrator_default as default };

@@ -3,41 +3,52 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
+import { singleton } from 'tsyringe';
 const DEFAULT_TIMEOUT_MS = 45e3;
 let ProviderError = class extends Error {
   constructor(provider, message, options = {}) {
     super(`[${provider}] ${message}`);
-    this.name = "ProviderError";
+    this.name = 'ProviderError';
     this.provider = provider;
-    this.code = options.code || "PROVIDER_ERROR";
+    this.code = options.code || 'PROVIDER_ERROR';
     this.status = options.status;
     this.retryable = options.retryable ?? false;
     this.cause = options.cause;
   }
 };
-ProviderError = __decorateClass([
-  singleton()
-], ProviderError);
+ProviderError = __decorateClass([singleton()], ProviderError);
 function normalizeUsage(usage = {}) {
-  const inputTokens = usage.prompt_tokens ?? usage.input_tokens ?? usage.promptTokenCount ?? usage.prompt_tokens_total ?? usage.tokens?.input_tokens ?? usage.token_count?.input_tokens ?? 0;
-  const outputTokens = usage.completion_tokens ?? usage.output_tokens ?? usage.candidatesTokenCount ?? usage.completion_tokens_total ?? usage.tokens?.output_tokens ?? usage.token_count?.output_tokens ?? 0;
+  const inputTokens =
+    usage.prompt_tokens ??
+    usage.input_tokens ??
+    usage.promptTokenCount ??
+    usage.prompt_tokens_total ??
+    usage.tokens?.input_tokens ??
+    usage.token_count?.input_tokens ??
+    0;
+  const outputTokens =
+    usage.completion_tokens ??
+    usage.output_tokens ??
+    usage.candidatesTokenCount ??
+    usage.completion_tokens_total ??
+    usage.tokens?.output_tokens ??
+    usage.token_count?.output_tokens ??
+    0;
   const totalTokens = usage.total_tokens ?? inputTokens + outputTokens;
   return {
     inputTokens,
     outputTokens,
-    totalTokens
+    totalTokens,
   };
 }
 function deterministicEmbedding(text, dimensions = 256) {
   const embedding = new Array(dimensions).fill(0);
-  const bytes = new TextEncoder().encode(text || "");
+  const bytes = new TextEncoder().encode(text || '');
   for (let i = 0; i < bytes.length; i++) {
     const index = i % dimensions;
     embedding[index] += (bytes[i] - 128) / 128;
@@ -50,40 +61,39 @@ function deterministicEmbedding(text, dimensions = 256) {
 }
 function normalizeMessages(messages = []) {
   return messages.map((message) => ({
-    role: message.role || "user",
-    content: typeof message.content === "string" ? message.content : JSON.stringify(message.content)
+    role: message.role || 'user',
+    content:
+      typeof message.content === 'string' ? message.content : JSON.stringify(message.content),
   }));
 }
 function withTimeoutSignal(signal, timeoutMs = DEFAULT_TIMEOUT_MS) {
   if (signal) {
-    return { signal, cleanup: () => {
-    } };
+    return { signal, cleanup: () => {} };
   }
-  if (typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function") {
+  if (typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function') {
     return {
       signal: AbortSignal.timeout(timeoutMs),
-      cleanup: () => {
-      }
+      cleanup: () => {},
     };
   }
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(new Error("Request timeout")), timeoutMs);
+  const timeoutId = setTimeout(() => controller.abort(new Error('Request timeout')), timeoutMs);
   return {
     signal: controller.signal,
-    cleanup: () => clearTimeout(timeoutId)
+    cleanup: () => clearTimeout(timeoutId),
   };
 }
 async function postJson(provider, url, { headers = {}, body = {}, signal, timeoutMs } = {}) {
   const request = withTimeoutSignal(signal, timeoutMs);
   try {
     const response = await fetch(url, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "content-type": "application/json",
-        ...headers
+        'content-type': 'application/json',
+        ...headers,
       },
       body: JSON.stringify(body),
-      signal: request.signal
+      signal: request.signal,
     });
     const text = await response.text();
     let payload = null;
@@ -93,11 +103,12 @@ async function postJson(provider, url, { headers = {}, body = {}, signal, timeou
       payload = { raw: text };
     }
     if (!response.ok) {
-      const message = payload?.error?.message || payload?.message || payload?.raw || `HTTP ${response.status}`;
+      const message =
+        payload?.error?.message || payload?.message || payload?.raw || `HTTP ${response.status}`;
       throw new ProviderError(provider, message, {
-        code: "HTTP_ERROR",
+        code: 'HTTP_ERROR',
         status: response.status,
-        retryable: response.status >= 500
+        retryable: response.status >= 500,
       });
     }
     return payload;
@@ -106,9 +117,9 @@ async function postJson(provider, url, { headers = {}, body = {}, signal, timeou
       throw error;
     }
     throw new ProviderError(provider, error.message || String(error), {
-      code: "NETWORK_ERROR",
+      code: 'NETWORK_ERROR',
       retryable: true,
-      cause: error
+      cause: error,
     });
   } finally {
     request.cleanup();
@@ -119,88 +130,100 @@ async function* streamSse(provider, url, { headers = {}, body = {}, signal, time
   let response;
   try {
     response = await fetch(url, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "content-type": "application/json",
-        ...headers
+        'content-type': 'application/json',
+        ...headers,
       },
       body: JSON.stringify(body),
-      signal: request.signal
+      signal: request.signal,
     });
   } catch (error) {
     request.cleanup();
     throw new ProviderError(provider, error.message || String(error), {
-      code: "NETWORK_ERROR",
+      code: 'NETWORK_ERROR',
       retryable: true,
-      cause: error
+      cause: error,
     });
   }
   if (!response.ok) {
     const text = await response.text();
     request.cleanup();
     throw new ProviderError(provider, text || `HTTP ${response.status}`, {
-      code: "HTTP_ERROR",
+      code: 'HTTP_ERROR',
       status: response.status,
-      retryable: response.status >= 500
+      retryable: response.status >= 500,
     });
   }
   if (!response.body) {
     request.cleanup();
-    throw new ProviderError(provider, "Streaming response has no body", {
-      code: "INVALID_RESPONSE"
+    throw new ProviderError(provider, 'Streaming response has no body', {
+      code: 'INVALID_RESPONSE',
     });
   }
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
-  let buffer = "";
+  let buffer = '';
   try {
     while (true) {
       const { value, done } = await reader.read();
-      if (done)
-        break;
+      if (done) break;
       buffer += decoder.decode(value, { stream: true });
-      const frames = buffer.split("\n\n");
-      buffer = frames.pop() || "";
+      const frames = buffer.split('\n\n');
+      buffer = frames.pop() || '';
       for (const frame of frames) {
-        const lines = frame.split("\n").map((line) => line.trim()).filter(Boolean);
+        const lines = frame
+          .split('\n')
+          .map((line) => line.trim())
+          .filter(Boolean);
         for (const line of lines) {
-          if (!line.startsWith("data:"))
-            continue;
+          if (!line.startsWith('data:')) continue;
           const data = line.slice(5).trim();
-          if (!data)
-            continue;
-          if (data === "[DONE]") {
-            yield { type: "done", content: "" };
+          if (!data) continue;
+          if (data === '[DONE]') {
+            yield { type: 'done', content: '' };
             return;
           }
           let payload;
           try {
             payload = JSON.parse(data);
           } catch {
-            yield { type: "text", content: data, raw: data };
+            yield { type: 'text', content: data, raw: data };
             continue;
           }
-          const deltaText = payload?.choices?.[0]?.delta?.content ?? payload?.choices?.[0]?.message?.content ?? payload?.delta?.text ?? payload?.text ?? payload?.candidates?.[0]?.content?.parts?.map((part) => part.text).filter(Boolean).join("") ?? "";
-          const toolCall = payload?.choices?.[0]?.delta?.tool_calls?.[0] || payload?.choices?.[0]?.message?.tool_calls?.[0] || payload?.tool_call;
+          const deltaText =
+            payload?.choices?.[0]?.delta?.content ??
+            payload?.choices?.[0]?.message?.content ??
+            payload?.delta?.text ??
+            payload?.text ??
+            payload?.candidates?.[0]?.content?.parts
+              ?.map((part) => part.text)
+              .filter(Boolean)
+              .join('') ??
+            '';
+          const toolCall =
+            payload?.choices?.[0]?.delta?.tool_calls?.[0] ||
+            payload?.choices?.[0]?.message?.tool_calls?.[0] ||
+            payload?.tool_call;
           if (toolCall) {
-            yield { type: "tool_call", content: toolCall, raw: payload };
+            yield { type: 'tool_call', content: toolCall, raw: payload };
           }
           if (deltaText) {
-            yield { type: "text", content: deltaText, raw: payload };
+            yield { type: 'text', content: deltaText, raw: payload };
           }
         }
       }
     }
     if (buffer.trim()) {
-      yield { type: "text", content: buffer.trim(), raw: buffer.trim() };
+      yield { type: 'text', content: buffer.trim(), raw: buffer.trim() };
     }
-    yield { type: "done", content: "" };
+    yield { type: 'done', content: '' };
   } finally {
     request.cleanup();
   }
 }
 function joinUrl(baseUrl, path) {
-  return `${baseUrl.replace(/\/+$/, "")}${path.startsWith("/") ? path : `/${path}`}`;
+  return `${baseUrl.replace(/\/+$/, '')}${path.startsWith('/') ? path : `/${path}`}`;
 }
 export {
   ProviderError,
@@ -209,5 +232,5 @@ export {
   normalizeMessages,
   normalizeUsage,
   postJson,
-  streamSse
+  streamSse,
 };

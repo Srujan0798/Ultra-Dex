@@ -3,30 +3,30 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import fs from "fs/promises";
-import path from "path";
+import { singleton } from 'tsyringe';
+import fs from 'fs/promises';
+import path from 'path';
 function toQueryString(filters = {}) {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries(filters)) {
-    if (value !== void 0 && value !== null && value !== "") {
+    if (value !== void 0 && value !== null && value !== '') {
       params.set(key, String(value));
     }
   }
   const query = params.toString();
-  return query ? `?${query}` : "";
+  return query ? `?${query}` : '';
 }
 let MarketplaceAPI = class {
   constructor(config = {}) {
-    this.registryUrl = config.registryUrl || "https://registry.ultra-dex.ai";
+    this.registryUrl = config.registryUrl || 'https://registry.ultra-dex.ai';
     this.fetchImpl = config.fetchImpl || globalThis.fetch;
-    this.cachePath = config.cachePath || path.join(process.cwd(), ".ultra-dex", "mcp-marketplace-cache.json");
+    this.cachePath =
+      config.cachePath || path.join(process.cwd(), '.ultra-dex', 'mcp-marketplace-cache.json');
   }
   async ensureCacheDir() {
     await fs.mkdir(path.dirname(this.cachePath), { recursive: true });
@@ -34,10 +34,10 @@ let MarketplaceAPI = class {
   async loadCache() {
     await this.ensureCacheDir();
     try {
-      const raw = await fs.readFile(this.cachePath, "utf8");
+      const raw = await fs.readFile(this.cachePath, 'utf8');
       return JSON.parse(raw);
     } catch (error) {
-      if (error.code === "ENOENT") {
+      if (error.code === 'ENOENT') {
         return { search: {}, plugins: {}, updatedAt: null };
       }
       throw error;
@@ -50,7 +50,7 @@ let MarketplaceAPI = class {
       JSON.stringify(
         {
           ...cache,
-          updatedAt: (/* @__PURE__ */ new Date()).toISOString()
+          updatedAt: /* @__PURE__ */ new Date().toISOString(),
         },
         null,
         2
@@ -58,8 +58,8 @@ let MarketplaceAPI = class {
     );
   }
   async request(endpoint, options = {}) {
-    if (typeof this.fetchImpl !== "function") {
-      throw new Error("Marketplace fetch implementation is unavailable");
+    if (typeof this.fetchImpl !== 'function') {
+      throw new Error('Marketplace fetch implementation is unavailable');
     }
     const response = await this.fetchImpl(`${this.registryUrl}${endpoint}`, options);
     if (!response.ok) {
@@ -100,7 +100,7 @@ let MarketplaceAPI = class {
       throw error;
     }
   }
-  async download(pluginId, version = "latest") {
+  async download(pluginId, version = 'latest') {
     const response = await this.request(
       `/plugins/${encodeURIComponent(pluginId)}/download${toQueryString({ version })}`
     );
@@ -109,22 +109,17 @@ let MarketplaceAPI = class {
   }
   async publish(pluginPackage, authToken) {
     const body = Buffer.isBuffer(pluginPackage) ? pluginPackage : await fs.readFile(pluginPackage);
-    const response = await this.request("/plugins/publish", {
-      method: "POST",
+    const response = await this.request('/plugins/publish', {
+      method: 'POST',
       headers: {
-        authorization: authToken ? `Bearer ${authToken}` : "",
-        "content-type": "application/octet-stream"
+        authorization: authToken ? `Bearer ${authToken}` : '',
+        'content-type': 'application/octet-stream',
       },
-      body
+      body,
     });
     return await response.json();
   }
 };
-MarketplaceAPI = __decorateClass([
-  singleton()
-], MarketplaceAPI);
+MarketplaceAPI = __decorateClass([singleton()], MarketplaceAPI);
 var marketplace_api_default = MarketplaceAPI;
-export {
-  MarketplaceAPI,
-  marketplace_api_default as default
-};
+export { MarketplaceAPI, marketplace_api_default as default };

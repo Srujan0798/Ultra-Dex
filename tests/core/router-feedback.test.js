@@ -11,7 +11,7 @@ import { TaskRouter } from '../../src/core/orchestration/task-router.js';
 
 test('SemanticRouter - recordOutcome tracks execution stats', () => {
   const router = new SemanticRouter({ backend: 'hashed' });
-  
+
   router.recordOutcome('task-1', 'agent-backend', {
     latencyMs: 1500,
     tokensUsed: 500,
@@ -28,20 +28,20 @@ test('SemanticRouter - recordOutcome tracks execution stats', () => {
 
 test('SemanticRouter - multiple outcomes aggregate correctly', () => {
   const router = new SemanticRouter({ backend: 'hashed' });
-  
+
   // Record 3 successes
   router.recordOutcome('task-1', 'agent-backend', {
     latencyMs: 1000,
     tokensUsed: 300,
     success: true,
   });
-  
+
   router.recordOutcome('task-2', 'agent-backend', {
     latencyMs: 1500,
     tokensUsed: 500,
     success: true,
   });
-  
+
   router.recordOutcome('task-3', 'agent-backend', {
     latencyMs: 2000,
     tokensUsed: 700,
@@ -56,11 +56,11 @@ test('SemanticRouter - multiple outcomes aggregate correctly', () => {
 });
 
 test('SemanticRouter - adjustProfiles boosts high-performing agents', () => {
-  const router = new SemanticRouter({ 
+  const router = new SemanticRouter({
     backend: 'hashed',
     adjustmentInterval: 5,
   });
-  
+
   // Record 10 successes for agent-A
   for (let i = 0; i < 10; i++) {
     router.recordOutcome(`task-${i}`, 'agent-A', {
@@ -76,11 +76,11 @@ test('SemanticRouter - adjustProfiles boosts high-performing agents', () => {
 });
 
 test('SemanticRouter - adjustProfiles penalizes low-performing agents', () => {
-  const router = new SemanticRouter({ 
+  const router = new SemanticRouter({
     backend: 'hashed',
     adjustmentInterval: 5,
   });
-  
+
   // Record 10 failures for agent-B
   for (let i = 0; i < 10; i++) {
     router.recordOutcome(`task-${i}`, 'agent-B', {
@@ -96,7 +96,7 @@ test('SemanticRouter - adjustProfiles penalizes low-performing agents', () => {
 
 test('SemanticRouter - clearFeedback resets all data', () => {
   const router = new SemanticRouter({ backend: 'hashed' });
-  
+
   router.recordOutcome('task-1', 'agent-backend', {
     latencyMs: 1000,
     tokensUsed: 500,
@@ -113,11 +113,11 @@ test('SemanticRouter - clearFeedback resets all data', () => {
 });
 
 test('HybridRouter - feedback adjustment affects ranking', () => {
-  const router = new HybridRouter({ 
+  const router = new HybridRouter({
     backend: 'hashed',
     adjustmentInterval: 5,
   });
-  
+
   // Train on profiles
   router.retrainSync([
     { agentId: 'agent-A', capabilities: ['api', 'backend', 'database'], examples: [] },
@@ -148,21 +148,21 @@ test('HybridRouter - feedback adjustment affects ranking', () => {
 
   // Route again after feedback
   const after = router.routeSync('build an API endpoint');
-  
+
   // agent-A should get a boost, agent-B should be penalized
   const statsA = router.getRouterStats()['agent-A'];
   const statsB = router.getRouterStats()['agent-B'];
-  
+
   assert.ok(statsA.adjustmentFactor > 1.0, `agent-A should be boosted`);
   assert.ok(statsB.adjustmentFactor < 1.0, `agent-B should be penalized`);
 });
 
 test('TaskRouter - recordOutcome propagates to hybrid router', () => {
-  const router = new TaskRouter({ 
+  const router = new TaskRouter({
     similarityThreshold: 0.3,
     embeddingBackend: 'hashed',
   });
-  
+
   router.registerAgent('agent-backend', ['api', 'backend', 'server']);
   router.registerAgent('agent-frontend', ['ui', 'react', 'component']);
   router.fit();
@@ -182,7 +182,7 @@ test('TaskRouter - recordOutcome propagates to hybrid router', () => {
 
 test('TaskRouter - getRouterStats returns correct aggregates', () => {
   const router = new TaskRouter({ embeddingBackend: 'hashed' });
-  
+
   router.registerAgent('agent-A', ['capability-a']);
   router.registerAgent('agent-B', ['capability-b']);
   router.fit();
@@ -196,7 +196,7 @@ test('TaskRouter - getRouterStats returns correct aggregates', () => {
   router.recordOutcome('t4', 'agent-B', { latencyMs: 500, tokensUsed: 100, success: true });
 
   const stats = router.getRouterStats();
-  
+
   // agent-A stats
   assert.strictEqual(stats['agent-A'].totalTasks, 3);
   assert.ok(Math.abs(stats['agent-A'].successRate - 0.6667) < 0.01);
@@ -211,11 +211,11 @@ test('TaskRouter - getRouterStats returns correct aggregates', () => {
 });
 
 test('SemanticRouter - feedback adjustment clamped between 0.5 and 1.5', () => {
-  const router = new SemanticRouter({ 
+  const router = new SemanticRouter({
     backend: 'hashed',
     adjustmentInterval: 5,
   });
-  
+
   // Extreme success case - should be clamped to 1.5
   for (let i = 0; i < 20; i++) {
     router.recordOutcome(`task-${i}`, 'agent-perfect', {
@@ -236,17 +236,17 @@ test('SemanticRouter - feedback adjustment clamped between 0.5 and 1.5', () => {
 
   const perfectAdjustment = router.getFeedbackAdjustment('agent-perfect');
   const terribleAdjustment = router.getFeedbackAdjustment('agent-terrible');
-  
+
   assert.ok(perfectAdjustment <= 1.5, `Perfect adjustment ${perfectAdjustment} should be ≤1.5`);
   assert.ok(terribleAdjustment >= 0.5, `Terrible adjustment ${terribleAdjustment} should be ≥0.5`);
 });
 
 test('SemanticRouter - minimum 5 tasks required before adjustment', () => {
-  const router = new SemanticRouter({ 
+  const router = new SemanticRouter({
     backend: 'hashed',
     adjustmentInterval: 2,
   });
-  
+
   // Record only 4 outcomes
   for (let i = 0; i < 4; i++) {
     router.recordOutcome(`task-${i}`, 'agent-new', {
@@ -262,11 +262,11 @@ test('SemanticRouter - minimum 5 tasks required before adjustment', () => {
 });
 
 test('SemanticRouter - outcomes limited to last 100 per agent', () => {
-  const router = new SemanticRouter({ 
+  const router = new SemanticRouter({
     backend: 'hashed',
     adjustmentInterval: 50,
   });
-  
+
   // Record 150 outcomes
   for (let i = 0; i < 150; i++) {
     router.recordOutcome(`task-${i}`, 'agent-busy', {
@@ -278,7 +278,7 @@ test('SemanticRouter - outcomes limited to last 100 per agent', () => {
 
   const stats = router.getRouterStats();
   assert.strictEqual(stats['agent-busy'].totalTasks, 150);
-  
+
   // Internal outcomes array should be capped at 100
   // (we can't directly test this without accessing private state,
   // but we can verify stats still work correctly)

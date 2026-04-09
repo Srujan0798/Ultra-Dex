@@ -1,28 +1,27 @@
-import chalk from "chalk";
-import figures from "figures";
-import { logger } from './logging.js';
+import chalk from 'chalk';
+import figures from 'figures';
+import { logger } from '../../utils/logging.js';
 const icons = {
-  success: chalk.hex("#22c55e")(figures.tick),
-  error: chalk.hex("#ef4444")(figures.cross),
-  warning: chalk.hex("#f59e0b")(figures.warning),
-  info: chalk.hex("#6366f1")(figures.info),
-  pending: chalk.hex("#6b7280")(figures.circle),
-  running: chalk.hex("#d946ef")(figures.play),
-  pointer: chalk.hex("#8b5cf6")(figures.pointer),
-  bullet: chalk.dim(figures.bullet)
+  success: chalk.hex('#22c55e')(figures.tick),
+  error: chalk.hex('#ef4444')(figures.cross),
+  warning: chalk.hex('#f59e0b')(figures.warning),
+  info: chalk.hex('#6366f1')(figures.info),
+  pending: chalk.hex('#6b7280')(figures.circle),
+  running: chalk.hex('#d946ef')(figures.play),
+  pointer: chalk.hex('#8b5cf6')(figures.pointer),
+  bullet: chalk.dim(figures.bullet),
 };
-function showInfinityStatus() {
-}
+function showInfinityStatus() {}
 function statusLine(icon, text) {
   logger.log(`  ${icon} ${text}`);
 }
 function header(text) {
-  logger.log("");
-  logger.log(chalk.bold.hex("#8b5cf6")(`  ${text}`));
-  logger.log(chalk.dim("  " + "\u2500".repeat(50)));
+  logger.log('');
+  logger.log(chalk.bold.hex('#8b5cf6')(`  ${text}`));
+  logger.log(chalk.dim('  ' + '\u2500'.repeat(50)));
 }
 function separator() {
-  logger.log("");
+  logger.log('');
 }
 const STATUS_ICONS = {
   success: figures.tick,
@@ -108,101 +107,102 @@ const STATUS_ICONS = {
   subscriptThree: figures.subscriptThree,
   blank: figures.space,
   space: figures.space,
-  dotSmall: figures.dotSmall
+  dotSmall: figures.dotSmall,
 };
 const STATUS_COLORS = {
-  success: "green",
-  error: "red",
-  warning: "yellow",
-  info: "blue",
-  loading: "cyan",
-  neutral: "white",
-  muted: "gray"
+  success: 'green',
+  error: 'red',
+  warning: 'yellow',
+  info: 'blue',
+  loading: 'cyan',
+  neutral: 'white',
+  muted: 'gray',
 };
-function getStatusIcon(type = "info") {
+function getStatusIcon(type = 'info') {
   return STATUS_ICONS[type] || STATUS_ICONS.info;
 }
-function getStatusColor(type = "info") {
-  return STATUS_COLORS[type] || "white";
+function getStatusColor(type = 'info') {
+  return STATUS_COLORS[type] || 'white';
 }
-function colorize(text, type = "info") {
+function colorize(text, type = 'info') {
   const color = getStatusColor(type);
   return chalk[color](text);
 }
-function formatStatus(message, type = "info") {
+function formatStatus(message, type = 'info') {
   const icon = getStatusIcon(type);
   const color = getStatusColor(type);
   return chalk[color](`${icon} ${message}`);
 }
 function formatSuccess(message) {
-  return formatStatus(message, "success");
+  return formatStatus(message, 'success');
 }
 function formatError(message) {
-  return formatStatus(message, "error");
+  return formatStatus(message, 'error');
 }
 function formatWarning(message) {
-  return formatStatus(message, "warning");
+  return formatStatus(message, 'warning');
 }
 function formatInfo(message) {
-  return formatStatus(message, "info");
+  return formatStatus(message, 'info');
 }
 function formatLoading(message) {
-  return formatStatus(message, "loading");
+  return formatStatus(message, 'loading');
 }
-function formatProgress(current, total, message = "") {
-  const percentage = Math.round(current / total * 100);
-  const filled = Math.floor(current / total * 20);
+function formatProgress(current, total, message = '') {
+  const percentage = Math.round((current / total) * 100);
+  const filled = Math.floor((current / total) * 20);
   const empty = 20 - filled;
-  const progressBar = chalk.green("\u2588".repeat(filled)) + chalk.gray("\u2591".repeat(empty));
+  const progressBar = chalk.green('\u2588'.repeat(filled)) + chalk.gray('\u2591'.repeat(empty));
   const progressText = chalk.dim(`[${current}/${total}] ${percentage}%`);
   return `${progressBar} ${progressText} ${message}`;
 }
-function formatBadge(text, type = "info", options = {}) {
+function formatBadge(text, type = 'info', options = {}) {
   const { uppercase = false } = options;
   const displayText = uppercase ? text.toUpperCase() : text;
   const color = getStatusColor(type);
   return chalk[color].bold(` ${displayText} `);
 }
-function formatStatusCard(title, message, type = "info") {
+function formatStatusCard(title, message, type = 'info') {
   const icon = getStatusIcon(type);
   const color = getStatusColor(type);
-  const card = [
-    chalk[color].bold(`${icon} ${title}`),
-    chalk[color](message),
-    ""
-  ].join("\n");
+  const card = [chalk[color].bold(`${icon} ${title}`), chalk[color](message), ''].join('\n');
   return card;
 }
-function formatStatusRow(icon, label, value, type = "info") {
+function formatStatusRow(icon, label, value, type = 'info') {
   const statusColor = getStatusColor(type);
   return `${chalk[statusColor](icon)} ${label.padEnd(20)} ${chalk.dim(value)}`;
 }
 function formatStatusSummary(items) {
-  let output = "";
+  let output = '';
   items.forEach((item) => {
-    const itemType = item.type || "info";
+    const itemType = item.type || 'info';
     const icon = getStatusIcon(itemType);
     const color = getStatusColor(itemType);
-    output += `${chalk[color](icon)} ${item.label}: ${chalk.bold[itemType || "white"](item.value)}
+    output += `${chalk[color](icon)} ${item.label}: ${chalk.bold[itemType || 'white'](item.value)}
 `;
   });
   return output;
 }
 function formatTimeline(events) {
-  let output = "";
+  let output = '';
   events.forEach((event, index) => {
     const icon = index === events.length - 1 ? figures.pointer : figures.pointerSmall;
-    const type = event.type || "info";
+    const type = event.type || 'info';
     const color = getStatusColor(type);
-    output += `${chalk[color](icon)} ${event.timestamp || ""} ${event.message}
+    output += `${chalk[color](icon)} ${event.timestamp || ''} ${event.message}
 `;
   });
   return output;
 }
 function formatMeter(current, max, options = {}) {
-  const { width = 20, filledChar = "\u2588", emptyChar = "\u2591", showPercentage = true } = options;
-  const percentage = max > 0 ? Math.round(current / max * 100) : 0;
-  const filled = Math.floor(current / max * width);
+  const {
+    width = 20,
+    filledChar = '\u2588',
+    emptyChar = '\u2591',
+    showPercentage = true,
+  } = options;
+  const percentage = max > 0 ? Math.round((current / max) * 100) : 0;
+  const filled = Math.floor((current / max) * width);
   const empty = width - filled;
   const bar = chalk.green(filledChar.repeat(filled)) + chalk.gray(emptyChar.repeat(empty));
   const display = showPercentage ? `${bar} ${percentage}%` : bar;
@@ -214,7 +214,7 @@ function formatMultiStatus(statuses) {
     const color = getStatusColor(status.type);
     return chalk[color](`${icon} ${status.label}`);
   });
-  return statusStrings.join("  ");
+  return statusStrings.join('  ');
 }
 var status_default = {
   icons,
@@ -238,14 +238,13 @@ var status_default = {
   formatStatusSummary,
   formatTimeline,
   formatMeter,
-  formatMultiStatus
+  formatMultiStatus,
 };
-function _handleModuleError(error, context = "status") {
+function _handleModuleError(error, context = 'status') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     logger.error(`[${context}] Error: ${message}`);
-  } catch {
-  }
+  } catch {}
 }
 export {
   colorize,
@@ -270,5 +269,5 @@ export {
   icons,
   separator,
   showInfinityStatus,
-  statusLine
+  statusLine,
 };

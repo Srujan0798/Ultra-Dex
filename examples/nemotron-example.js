@@ -1,6 +1,6 @@
 /**
  * Nemotron Example - Using NVIDIA's API
- * 
+ *
  * Usage: node examples/nemotron-example.js
  */
 
@@ -33,7 +33,7 @@ async function chatWithNemotron(prompt) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${API_KEY}`,
+      Authorization: `Bearer ${API_KEY}`,
     },
     body: JSON.stringify({
       model: MODEL,
@@ -54,10 +54,10 @@ async function chatWithNemotron(prompt) {
 // Run example
 async function main() {
   console.log('🚀 Nemotron Example\n');
-  
+
   const prompt = 'Explain quantum computing in simple terms';
   console.log(`Prompt: ${prompt}\n`);
-  
+
   try {
     const response = await chatWithNemotron(prompt);
     console.log('Response:', response);

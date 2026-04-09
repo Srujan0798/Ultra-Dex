@@ -1,6 +1,7 @@
 # 🤖 Agent Swarm Orchestration - Enhanced Implementation
 
 ## Prompt Metadata
+
 - **ID:** AGENT_SWARM_ORCHESTRATION_ENHANCED
 - **Category:** Orchestration
 - **Priority:** P0
@@ -13,9 +14,11 @@
   - cli/lib/agents/executor.js (enhance)
 
 ## Problem Statement
+
 The current agent swarm system needs enhancement to support complex multi-agent workflows, task dependencies, resource management, and real-time monitoring for production environments.
 
 ## Success Criteria
+
 - [ ] Multi-agent workflows execute reliably
 - [ ] Task dependencies handled correctly
 - [ ] Resource management prevents overload
@@ -28,6 +31,7 @@ The current agent swarm system needs enhancement to support complex multi-agent 
 ## Technical Specification
 
 ### Architecture
+
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Meta-        │    │   Coordinator   │    │   Agent Pool    │
@@ -43,6 +47,7 @@ The current agent swarm system needs enhancement to support complex multi-agent 
 ### Implementation Details
 
 #### Enhanced Swarm Engine Features
+
 - Task dependency management
 - Resource allocation and limits
 - Real-time status tracking
@@ -53,6 +58,7 @@ The current agent swarm system needs enhancement to support complex multi-agent 
 #### Files to Create/Modify
 
 **cli/lib/agents/swarm-engine.js:**
+
 - Enhanced swarm execution engine
 - Task scheduling and prioritization
 - Resource management
@@ -72,9 +78,9 @@ export class SwarmEngine extends EventEmitter {
       maxConcurrency: config.maxConcurrency || 5,
       retryAttempts: config.retryAttempts || 3,
       timeout: config.timeout || 300000, // 5 minutes
-      ...config
+      ...config,
     };
-    
+
     this.taskQueue = new TaskQueue();
     this.resourceManager = new ResourceManager(this.config.maxConcurrency);
     this.taskGraph = new TaskGraph();
@@ -84,7 +90,7 @@ export class SwarmEngine extends EventEmitter {
       completed: 0,
       failed: 0,
       running: 0,
-      queued: 0
+      queued: 0,
     };
   }
 
@@ -95,14 +101,14 @@ export class SwarmEngine extends EventEmitter {
   async executeSwarm(tasks, options = {}) {
     // Build task dependency graph
     this.taskGraph.build(tasks);
-    
+
     // Add tasks to queue respecting dependencies
     for (const task of tasks) {
       this.taskQueue.add(task);
     }
 
     this.stats.queued = tasks.length;
-    
+
     // Start processing tasks
     const promises = [];
     for (let i = 0; i < Math.min(this.config.maxConcurrency, tasks.length); i++) {
@@ -114,14 +120,14 @@ export class SwarmEngine extends EventEmitter {
       return {
         success: true,
         stats: this.stats,
-        results: Array.from(this.runningTasks.values())
+        results: Array.from(this.runningTasks.values()),
       };
     } catch (error) {
       this.emit('error', error);
       return {
         success: false,
         error: error.message,
-        stats: this.stats
+        stats: this.stats,
       };
     }
   }
@@ -129,30 +135,30 @@ export class SwarmEngine extends EventEmitter {
   async processQueue() {
     while (this.stats.queued > 0 || this.stats.running > 0) {
       const readyTasks = this.taskQueue.getReadyTasks();
-      
+
       for (const task of readyTasks) {
         if (this.resourceManager.canAllocate(task.resources)) {
           this.resourceManager.allocate(task.resources);
           this.stats.running++;
           this.stats.queued--;
-          
+
           this.executeTask(task)
-            .then(result => this.handleTaskCompletion(task, result))
-            .catch(error => this.handleTaskError(task, error));
+            .then((result) => this.handleTaskCompletion(task, result))
+            .catch((error) => this.handleTaskError(task, error));
         }
       }
-      
+
       // Wait before next iteration
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
   }
 
   async executeTask(task) {
     const taskId = task.id;
     this.runningTasks.set(taskId, { task, status: 'running', startTime: Date.now() });
-    
+
     this.emit('task:start', { taskId, task });
-    
+
     try {
       const agent = this.agents.get(task.agentId);
       if (!agent) {
@@ -163,7 +169,7 @@ export class SwarmEngine extends EventEmitter {
         timeout: this.config.timeout,
         onProgress: (progress) => {
           this.emit('task:progress', { taskId, progress });
-        }
+        },
       });
 
       return { success: true, result };
@@ -175,7 +181,7 @@ export class SwarmEngine extends EventEmitter {
   handleTaskCompletion(task, result) {
     const taskId = task.id;
     const taskInfo = this.runningTasks.get(taskId);
-    
+
     if (result.success) {
       this.stats.completed++;
       this.taskGraph.markCompleted(taskId);
@@ -183,7 +189,7 @@ export class SwarmEngine extends EventEmitter {
     } else {
       this.stats.failed++;
       this.emit('task:failed', { taskId, error: result.error });
-      
+
       // Handle retries
       if (task.retries < this.config.retryAttempts) {
         task.retries++;
@@ -201,7 +207,7 @@ export class SwarmEngine extends EventEmitter {
     // Free up resources
     this.resourceManager.release(task.resources);
     this.stats.running--;
-    
+
     // Mark task as processed
     this.runningTasks.delete(taskId);
   }
@@ -215,13 +221,14 @@ export class SwarmEngine extends EventEmitter {
       stats: this.stats,
       queueSize: this.taskQueue.size,
       runningTasks: Array.from(this.runningTasks.keys()),
-      agents: Array.from(this.agents.keys())
+      agents: Array.from(this.agents.keys()),
     };
   }
 }
 ```
 
 **cli/lib/agents/meta-orchestrator.js:**
+
 - Enhanced meta-orchestration logic
 - Agent selection and routing
 - Workflow optimization
@@ -238,12 +245,14 @@ const TaskSchema = z.object({
   priority: z.number().min(1).max(5),
   complexity: z.number().min(1).max(10),
   dependencies: z.array(z.string()).optional(),
-  resources: z.object({
-    cpu: z.number().optional(),
-    memory: z.number().optional(),
-    duration: z.number().optional()
-  }).optional(),
-  payload: z.record(z.any())
+  resources: z
+    .object({
+      cpu: z.number().optional(),
+      memory: z.number().optional(),
+      duration: z.number().optional(),
+    })
+    .optional(),
+  payload: z.record(z.any()),
 });
 
 export class MetaOrchestrator {
@@ -260,19 +269,19 @@ export class MetaOrchestrator {
   async orchestrate(workflowDefinition) {
     // Validate workflow
     const validatedWorkflow = this.validateWorkflow(workflowDefinition);
-    
+
     // Optimize workflow
     const optimizedTasks = this.workflowOptimizer.optimize(validatedWorkflow.tasks);
-    
+
     // Assign agents to tasks
     const assignedTasks = await this.assignAgents(optimizedTasks);
-    
+
     // Execute swarm
     return await this.swarmEngine.executeSwarm(assignedTasks);
   }
 
   validateWorkflow(workflow) {
-    const validatedTasks = workflow.tasks.map(task => {
+    const validatedTasks = workflow.tasks.map((task) => {
       try {
         return TaskSchema.parse(task);
       } catch (error) {
@@ -282,7 +291,7 @@ export class MetaOrchestrator {
 
     return {
       ...workflow,
-      tasks: validatedTasks
+      tasks: validatedTasks,
     };
   }
 
@@ -298,7 +307,7 @@ export class MetaOrchestrator {
       assignedTasks.push({
         ...task,
         agentId: suitableAgent,
-        retries: 0
+        retries: 0,
       });
     }
 
@@ -335,7 +344,8 @@ export class MetaOrchestrator {
 
     // Consider agent availability and load
     const currentLoad = this.getCurrentAgentLoad(capabilities.id);
-    if (currentLoad < 0.7) { // Less than 70% loaded
+    if (currentLoad < 0.7) {
+      // Less than 70% loaded
       score += 20;
     }
 
@@ -345,9 +355,10 @@ export class MetaOrchestrator {
   getCurrentAgentLoad(agentId) {
     // Calculate current load based on running tasks
     const runningTasks = this.swarmEngine.runningTasks;
-    const agentTasks = Array.from(runningTasks.values())
-      .filter(task => task.task.agentId === agentId);
-    
+    const agentTasks = Array.from(runningTasks.values()).filter(
+      (task) => task.task.agentId === agentId
+    );
+
     return agentTasks.length / this.swarmEngine.config.maxConcurrency;
   }
 }
@@ -360,12 +371,12 @@ class WorkflowOptimizer {
       if (b.priority !== a.priority) {
         return b.priority - a.priority;
       }
-      
+
       // Independent tasks first
       if ((a.dependencies?.length || 0) !== (b.dependencies?.length || 0)) {
         return (a.dependencies?.length || 0) - (b.dependencies?.length || 0);
       }
-      
+
       return 0;
     });
 
@@ -375,6 +386,7 @@ class WorkflowOptimizer {
 ```
 
 **cli/lib/agents/coordinator.js:**
+
 - Task coordination and communication
 - Inter-agent messaging
 - State synchronization
@@ -399,13 +411,13 @@ export class Coordinator extends EventEmitter {
 
   async sendMessage(fromAgent, toAgent, message) {
     const messageId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const envelope = {
       id: messageId,
       from: fromAgent,
       to: toAgent,
       message: message,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     // Store message
@@ -431,7 +443,7 @@ export class Coordinator extends EventEmitter {
       this.barriers.set(barrierId, {
         agents: new Set(),
         resolved: false,
-        participants: new Set()
+        participants: new Set(),
       });
     }
 
@@ -445,7 +457,7 @@ export class Coordinator extends EventEmitter {
 
       const checkBarrier = () => {
         barrier.agents.add(agentId);
-        
+
         if (barrier.agents.size === barrier.participants.size && !barrier.resolved) {
           barrier.resolved = true;
           clearTimeout(timeoutId);
@@ -462,7 +474,7 @@ export class Coordinator extends EventEmitter {
     this.agentStates.set(agentId, {
       ...prevState,
       ...state,
-      lastUpdate: Date.now()
+      lastUpdate: Date.now(),
     });
 
     this.emit('agent:state:update', { agentId, state, prevState });
@@ -483,6 +495,7 @@ export class Coordinator extends EventEmitter {
 ```
 
 **cli/lib/agents/executor.js:**
+
 - Enhanced task execution with monitoring
 - Resource tracking
 - Performance metrics
@@ -499,7 +512,7 @@ export class AgentExecutor {
       timeout: options.timeout || 300000, // 5 minutes
       retryAttempts: options.retryAttempts || 3,
       onProgress: options.onProgress || (() => {}),
-      ...options
+      ...options,
     };
     this.isExecuting = false;
     this.currentTask = null;
@@ -519,7 +532,7 @@ export class AgentExecutor {
       const metrics = {
         startTime,
         agentId: this.agentId,
-        payloadSize: JSON.stringify(payload).length
+        payloadSize: JSON.stringify(payload).length,
       };
 
       // Execute the task
@@ -533,7 +546,7 @@ export class AgentExecutor {
       // Emit completion event
       this.emitProgress('completed', {
         ...metrics,
-        result
+        result,
       });
 
       return result;
@@ -551,19 +564,19 @@ export class AgentExecutor {
         if (attempt > 0) {
           // Wait before retry with exponential backoff
           const delay = Math.pow(2, attempt) * 1000;
-          await new Promise(resolve => setTimeout(resolve, delay));
-          
+          await new Promise((resolve) => setTimeout(resolve, delay));
+
           this.emitProgress('retry', { attempt, maxAttempts: this.options.retryAttempts });
         }
 
         return await this.executeTask(payload, context);
       } catch (error) {
         lastError = error;
-        
+
         this.emitProgress('error', {
           attempt,
           maxAttempts: this.options.retryAttempts,
-          error: error.message
+          error: error.message,
         });
 
         if (attempt === this.options.retryAttempts) {
@@ -579,18 +592,18 @@ export class AgentExecutor {
   async executeTask(payload, context) {
     // This is where the actual agent work happens
     // Could be calling an AI API, executing code, etc.
-    
+
     this.emitProgress('started', { payload, context });
 
     // Simulate progress updates
     const steps = payload.steps || 10;
     for (let i = 1; i <= steps; i++) {
-      await new Promise(resolve => setTimeout(resolve, 100)); // Simulate work
-      
+      await new Promise((resolve) => setTimeout(resolve, 100)); // Simulate work
+
       this.emitProgress('progress', {
         step: i,
         total: steps,
-        percentage: Math.round((i / steps) * 100)
+        percentage: Math.round((i / steps) * 100),
       });
     }
 
@@ -600,8 +613,8 @@ export class AgentExecutor {
       data: `Task completed by agent ${this.agentId}`,
       metadata: {
         agent: this.agentId,
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     };
   }
 
@@ -610,7 +623,7 @@ export class AgentExecutor {
       type,
       agentId: this.agentId,
       timestamp: Date.now(),
-      ...data
+      ...data,
     };
 
     if (this.options.onProgress) {
@@ -623,19 +636,21 @@ export class AgentExecutor {
       agentId: this.agentId,
       isExecuting: this.isExecuting,
       currentTask: this.currentTask,
-      options: this.options
+      options: this.options,
     };
   }
 }
 ```
 
 #### Configuration Requirements
+
 - Add swarm configuration options
 - Enable/disable swarm features
 - Configure concurrency and resource limits
 - Set up monitoring and logging
 
 ## Security Considerations
+
 - [x] Input validation for all task payloads
 - [x] Resource limits to prevent abuse
 - [x] Authentication for inter-agent communication
@@ -643,6 +658,7 @@ export class AgentExecutor {
 - [x] Secure communication channels
 
 ## Performance Requirements
+
 - [x] Support for 100+ concurrent tasks
 - [x] Sub-1-second task startup time
 - [x] Efficient resource utilization
@@ -650,6 +666,7 @@ export class AgentExecutor {
 - [x] Horizontal scalability
 
 ## Testing Strategy
+
 - [x] Unit tests for each component
 - [x] Integration tests for end-to-end workflows
 - [x] Performance tests for throughput
@@ -658,6 +675,7 @@ export class AgentExecutor {
 - [x] Security tests for injection attacks
 
 ## Quality Gates
+
 - [x] All unit tests pass
 - [x] Integration tests pass
 - [x] Performance benchmarks met
@@ -666,11 +684,13 @@ export class AgentExecutor {
 - [x] Documentation updated
 
 ## Rollback Plan
+
 1. Revert to previous swarm implementation
 2. Disable enhanced features via config
 3. Roll back to basic swarm if needed
 
 ## Acceptance Criteria
+
 - [x] Swarm engine executes tasks reliably
 - [x] Task dependencies are respected
 - [x] Resource management prevents overload
@@ -680,6 +700,7 @@ export class AgentExecutor {
 - [x] Security requirements satisfied
 
 ## Implementation Notes
+
 - Use circuit breaker pattern for resilience
 - Implement distributed tracing for debugging
 - Add metrics collection for monitoring

@@ -157,7 +157,10 @@ test('Performance: Concurrency handling', async (t) => {
  */
 function handleError(error) {
   try {
-    console.error('[performance-benchmarks.test]', error instanceof Error ? error.message : String(error));
+    console.error(
+      '[performance-benchmarks.test]',
+      error instanceof Error ? error.message : String(error)
+    );
   } catch (_) {
     // Fail silently
   }

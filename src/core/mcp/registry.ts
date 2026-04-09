@@ -3,32 +3,37 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import fs from "fs/promises";
-import path from "path";
+import { singleton } from 'tsyringe';
+import fs from 'fs/promises';
+import path from 'path';
 import { PluginManager } from '../infrastructure/plugin-manager.js';
 function pluginIdFromPackageJson(packageJson) {
-  return packageJson.ultraDex?.id || packageJson.manifest?.id || packageJson.name?.replace(/^@ultra-dex\/plugin-/, "");
+  return (
+    packageJson.ultraDex?.id ||
+    packageJson.manifest?.id ||
+    packageJson.name?.replace(/^@ultra-dex\/plugin-/, '')
+  );
 }
 let MCPRegistry = class {
   constructor(config = {}) {
     this.config = {
-      dataDir: config.dataDir || path.join(process.cwd(), ".ultra-dex", "mcp"),
-      registryFile: config.registryFile || path.join(process.cwd(), ".ultra-dex", "mcp", "registry.json"),
+      dataDir: config.dataDir || path.join(process.cwd(), '.ultra-dex', 'mcp'),
+      registryFile:
+        config.registryFile || path.join(process.cwd(), '.ultra-dex', 'mcp', 'registry.json'),
       pluginManagerOptions: config.pluginManagerOptions || {},
       pluginManager: config.pluginManager || null,
-      ...config
+      ...config,
     };
-    this.pluginManager = this.config.pluginManager || new PluginManager(this.config.pluginManagerOptions);
+    this.pluginManager =
+      this.config.pluginManager || new PluginManager(this.config.pluginManagerOptions);
     this.store = {
       published: {},
-      installed: {}
+      installed: {},
     };
     this.initialized = false;
   }
@@ -43,10 +48,10 @@ let MCPRegistry = class {
   }
   async loadStore() {
     try {
-      const raw = await fs.readFile(this.config.registryFile, "utf8");
+      const raw = await fs.readFile(this.config.registryFile, 'utf8');
       this.store = JSON.parse(raw);
     } catch (error) {
-      if (error.code !== "ENOENT") {
+      if (error.code !== 'ENOENT') {
         throw error;
       }
     }
@@ -57,41 +62,46 @@ let MCPRegistry = class {
   }
   async publish(pluginPackagePath) {
     await this.initialize();
-    const packageJsonPath = path.join(pluginPackagePath, "package.json");
-    const indexPath = path.join(pluginPackagePath, "index.js");
+    const packageJsonPath = path.join(pluginPackagePath, 'package.json');
+    const indexPath = path.join(pluginPackagePath, 'index.js');
     await fs.access(packageJsonPath);
     await fs.access(indexPath);
-    const packageJson = JSON.parse(await fs.readFile(packageJsonPath, "utf8"));
+    const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf8'));
     const pluginId = pluginIdFromPackageJson(packageJson);
     if (!pluginId) {
-      throw new Error("Plugin package is missing a resolvable plugin id");
+      throw new Error('Plugin package is missing a resolvable plugin id');
     }
     const manifest = {
       id: pluginId,
       name: packageJson.name,
       version: packageJson.version,
-      description: packageJson.description || "",
-      author: packageJson.author || "",
+      description: packageJson.description || '',
+      author: packageJson.author || '',
       localPath: pluginPackagePath,
-      publishedAt: (/* @__PURE__ */ new Date()).toISOString(),
-      manifest: packageJson.ultraDex || packageJson.manifest || {}
+      publishedAt: /* @__PURE__ */ new Date().toISOString(),
+      manifest: packageJson.ultraDex || packageJson.manifest || {},
     };
     if (!this.store.published[pluginId]) {
       this.store.published[pluginId] = [];
     }
-    this.store.published[pluginId] = this.store.published[pluginId].filter((entry) => entry.version !== manifest.version).concat(manifest).sort((left, right) => left.version.localeCompare(right.version));
+    this.store.published[pluginId] = this.store.published[pluginId]
+      .filter((entry) => entry.version !== manifest.version)
+      .concat(manifest)
+      .sort((left, right) => left.version.localeCompare(right.version));
     await this.saveStore();
     return manifest;
   }
   async discover(filter = {}) {
     await this.initialize();
-    const query = String(filter.query || "").toLowerCase();
+    const query = String(filter.query || '').toLowerCase();
     const published = Object.values(this.store.published).flat();
     return published.filter((entry) => {
       if (!query) {
         return true;
       }
-      return [entry.id, entry.name, entry.description, entry.author].filter(Boolean).some((value) => String(value).toLowerCase().includes(query));
+      return [entry.id, entry.name, entry.description, entry.author]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(query));
     });
   }
   getPublishedRecord(pluginId, version = null) {
@@ -99,7 +109,7 @@ let MCPRegistry = class {
     if (entries.length === 0) {
       return null;
     }
-    if (!version || version === "latest") {
+    if (!version || version === 'latest') {
       return entries[entries.length - 1];
     }
     return entries.find((entry) => entry.version === version) || null;
@@ -121,7 +131,7 @@ let MCPRegistry = class {
     }
     return plugin;
   }
-  async install(pluginId, version = "latest") {
+  async install(pluginId, version = 'latest') {
     await this.initialize();
     const plugin = await this.ensurePluginKnown(pluginId, version);
     if (!plugin) {
@@ -129,8 +139,8 @@ let MCPRegistry = class {
     }
     const installed = await this.pluginManager.install(pluginId);
     this.store.installed[pluginId] = {
-      version: version === "latest" ? installed.version : version,
-      installedAt: (/* @__PURE__ */ new Date()).toISOString()
+      version: version === 'latest' ? installed.version : version,
+      installedAt: /* @__PURE__ */ new Date().toISOString(),
     };
     await this.saveStore();
     return installed;
@@ -154,7 +164,7 @@ let MCPRegistry = class {
     return this.pluginManager.list().map((plugin) => ({
       ...plugin,
       installed: Boolean(this.store.installed[plugin.id]),
-      installedAt: this.store.installed[plugin.id]?.installedAt || null
+      installedAt: this.store.installed[plugin.id]?.installedAt || null,
     }));
   }
   getPlugin(pluginId) {
@@ -164,15 +174,10 @@ let MCPRegistry = class {
     return {
       published: Object.keys(this.store.published).length,
       installed: Object.keys(this.store.installed).length,
-      pluginManager: this.pluginManager.getStats()
+      pluginManager: this.pluginManager.getStats(),
     };
   }
 };
-MCPRegistry = __decorateClass([
-  singleton()
-], MCPRegistry);
+MCPRegistry = __decorateClass([singleton()], MCPRegistry);
 var registry_default = MCPRegistry;
-export {
-  MCPRegistry,
-  registry_default as default
-};
+export { MCPRegistry, registry_default as default };

@@ -1,11 +1,6 @@
 import { ITask } from './ITask.js';
 
-export type PlanStepStatus = 
-  | 'pending'
-  | 'in-progress'
-  | 'completed'
-  | 'failed'
-  | 'skipped';
+export type PlanStepStatus = 'pending' | 'in-progress' | 'completed' | 'failed' | 'skipped';
 
 export interface IPlanStep {
   id: string;

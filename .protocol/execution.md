@@ -13,11 +13,11 @@ Before any action, ask:
 
 ## What Users GET (The Destination)
 
-| User | Before | After |
-|------|--------|-------|
-| Solo Dev | Struggling with APIs | Shipping products |
-| Enterprise | Risky experiments | Confident deployment |
-| Indie Hacker | Limited options | Unlimited power |
+| User         | Before               | After                |
+| ------------ | -------------------- | -------------------- |
+| Solo Dev     | Struggling with APIs | Shipping products    |
+| Enterprise   | Risky experiments    | Confident deployment |
+| Indie Hacker | Limited options      | Unlimited power      |
 
 We exist to deliver these transformations. Nothing else matters.
 
@@ -48,11 +48,11 @@ If blocked → fix the blocker → verify → done.
 
 ## Orchestration vs Execution
 
-| | Orchestration | Execution |
-|---|---------------|-----------|
-| Focus | What to do | How to deliver |
+|          | Orchestration               | Execution         |
+| -------- | --------------------------- | ----------------- |
+| Focus    | What to do                  | How to deliver    |
 | Question | "Which tool for this task?" | "Can users ship?" |
-| Output | Assignments | Results |
+| Output   | Assignments                 | Results           |
 
 ## The Oath
 
@@ -67,4 +67,4 @@ Just outcomes.
 
 ---
 
-*Execution is about delivering outcomes, not following process.*
+_Execution is about delivering outcomes, not following process._

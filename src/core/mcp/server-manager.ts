@@ -1,6 +1,6 @@
-import { EventEmitter } from "events";
-import { spawn } from "child_process";
-import fs from "fs/promises";
+import { EventEmitter } from 'events';
+import { spawn } from 'child_process';
+import fs from 'fs/promises';
 import { createAgentStatusTool } from './tools/agent-status.js';
 import { createTaskSubmitTool } from './tools/task-submit.js';
 import { createMemorySearchTool } from './tools/memory-search.js';
@@ -9,13 +9,13 @@ class MCPServerManager extends EventEmitter {
   constructor(config = {}) {
     super();
     this.config = {
-      serversPath: config.serversPath || "./mcp/servers",
+      serversPath: config.serversPath || './mcp/servers',
       maxServers: config.maxServers || 50,
       autoRestart: config.autoRestart !== false,
       restartDelay: config.restartDelay || 5e3,
       healthCheckInterval: config.healthCheckInterval || 3e4,
       loadBuiltInServers: config.loadBuiltInServers !== false,
-      ...config
+      ...config,
     };
     this.servers = /* @__PURE__ */ new Map();
     this.tools = /* @__PURE__ */ new Map();
@@ -30,7 +30,7 @@ class MCPServerManager extends EventEmitter {
       serversStarted: 0,
       serversFailed: 0,
       toolCalls: 0,
-      errors: 0
+      errors: 0,
     };
     this.initialized = false;
   }
@@ -45,7 +45,7 @@ class MCPServerManager extends EventEmitter {
     this._registerCoreTools();
     this._startHealthChecks();
     this.initialized = true;
-    this.emit("initialized", { servers: this.servers.size });
+    this.emit('initialized', { servers: this.servers.size });
     return true;
   }
   /**
@@ -65,20 +65,20 @@ class MCPServerManager extends EventEmitter {
     const server = {
       id: serverId,
       name: config.name || serverId,
-      description: config.description || "",
+      description: config.description || '',
       command: config.command,
       args: config.args || [],
       env: config.env || {},
       tools: /* @__PURE__ */ new Map(),
       resources: /* @__PURE__ */ new Map(),
       process: null,
-      status: "stopped",
+      status: 'stopped',
       lastError: null,
       restartCount: 0,
-      config
+      config,
     };
     this.servers.set(serverId, server);
-    this.emit("server:registered", { serverId });
+    this.emit('server:registered', { serverId });
     if (config.autoStart !== false) {
       const startTimeoutMs = 5e3;
       let timeoutHandle;
@@ -94,14 +94,13 @@ class MCPServerManager extends EventEmitter {
         clearTimeout(timeoutHandle);
         if (server.process && !server.process.killed) {
           try {
-            server.process.kill("SIGKILL");
-          } catch (_e) {
-          }
+            server.process.kill('SIGKILL');
+          } catch (_e) {}
         }
         console.warn(`MCP server ${serverId} unreachable at startup \u2014 skipping`);
-        server.status = "unreachable";
+        server.status = 'unreachable';
         server.lastError = error.message;
-        this.emit("server:startup-timeout", { serverId, error: error.message });
+        this.emit('server:startup-timeout', { serverId, error: error.message });
       }
     }
     return { serverId, registered: true };
@@ -117,40 +116,40 @@ class MCPServerManager extends EventEmitter {
     if (!server) {
       throw new Error(`Server '${serverId}' not found`);
     }
-    if (server.status === "running") {
-      return { serverId, status: "already_running" };
+    if (server.status === 'running') {
+      return { serverId, status: 'already_running' };
     }
     try {
       const env = { ...process.env, ...server.env };
       server.process = spawn(server.command, server.args, {
         env,
         cwd: server.config.cwd || process.cwd(),
-        stdio: ["pipe", "pipe", "pipe"]
+        stdio: ['pipe', 'pipe', 'pipe'],
       });
-      server.status = "starting";
-      server.startedAt = (/* @__PURE__ */ new Date()).toISOString();
-      server.process.stdout.on("data", (data) => {
+      server.status = 'starting';
+      server.startedAt = /* @__PURE__ */ new Date().toISOString();
+      server.process.stdout.on('data', (data) => {
         this._handleServerOutput(serverId, data);
       });
-      server.process.stderr.on("data", (data) => {
+      server.process.stderr.on('data', (data) => {
         this._handleServerError(serverId, data);
       });
-      server.process.on("close", (code) => {
+      server.process.on('close', (code) => {
         this._handleServerExit(serverId, code);
       });
-      server.process.on("error", (error) => {
+      server.process.on('error', (error) => {
         this._handleServerError(serverId, error);
       });
       await this._waitForServerReady(serverId);
-      server.status = "running";
+      server.status = 'running';
       this.metrics.serversStarted++;
-      this.emit("server:started", { serverId });
-      return { serverId, status: "running", pid: server.process.pid };
+      this.emit('server:started', { serverId });
+      return { serverId, status: 'running', pid: server.process.pid };
     } catch (error) {
-      server.status = "error";
+      server.status = 'error';
       server.lastError = error.message;
       this.metrics.serversFailed++;
-      this.emit("server:error", { serverId, error });
+      this.emit('server:error', { serverId, error });
       throw error;
     }
   }
@@ -164,28 +163,28 @@ class MCPServerManager extends EventEmitter {
     if (!server) {
       throw new Error(`Server '${serverId}' not found`);
     }
-    if (server.status !== "running") {
-      return { serverId, status: "not_running" };
+    if (server.status !== 'running') {
+      return { serverId, status: 'not_running' };
     }
     try {
       if (!server.process) {
-        server.status = "stopped";
-        server.stoppedAt = (/* @__PURE__ */ new Date()).toISOString();
-        this.emit("server:stopped", { serverId });
-        return { serverId, status: "stopped" };
+        server.status = 'stopped';
+        server.stoppedAt = /* @__PURE__ */ new Date().toISOString();
+        this.emit('server:stopped', { serverId });
+        return { serverId, status: 'stopped' };
       }
-      server.process.kill("SIGTERM");
+      server.process.kill('SIGTERM');
       setTimeout(() => {
         if (server.process && !server.process.killed) {
-          server.process.kill("SIGKILL");
+          server.process.kill('SIGKILL');
         }
       }, 5e3);
-      server.status = "stopped";
-      server.stoppedAt = (/* @__PURE__ */ new Date()).toISOString();
-      this.emit("server:stopped", { serverId });
-      return { serverId, status: "stopped" };
+      server.status = 'stopped';
+      server.stoppedAt = /* @__PURE__ */ new Date().toISOString();
+      this.emit('server:stopped', { serverId });
+      return { serverId, status: 'stopped' };
     } catch (error) {
-      this.emit("server:error", { serverId, error });
+      this.emit('server:error', { serverId, error });
       throw error;
     }
   }
@@ -202,7 +201,7 @@ class MCPServerManager extends EventEmitter {
     if (!server) {
       throw new Error(`Server '${serverId}' not found`);
     }
-    if (server.status !== "running") {
+    if (server.status !== 'running') {
       throw new Error(`Server '${serverId}' is not running`);
     }
     const tool = server.tools.get(toolName);
@@ -210,27 +209,27 @@ class MCPServerManager extends EventEmitter {
       throw new Error(`Tool '${toolName}' not found on server '${serverId}'`);
     }
     try {
-      if (typeof tool.handler === "function") {
+      if (typeof tool.handler === 'function') {
         this.metrics.toolCalls++;
-        this.emit("tool:called", { serverId, toolName });
+        this.emit('tool:called', { serverId, toolName });
         return await tool.handler(params, { manager: this, serverId, toolName });
       }
       const request = {
-        jsonrpc: "2.0",
+        jsonrpc: '2.0',
         id: this._generateRequestId(),
-        method: "tools/call",
+        method: 'tools/call',
         params: {
           name: toolName,
-          arguments: params
-        }
+          arguments: params,
+        },
       };
       const result = await this._sendRequest(server, request);
       this.metrics.toolCalls++;
-      this.emit("tool:called", { serverId, toolName });
+      this.emit('tool:called', { serverId, toolName });
       return result;
     } catch (error) {
       this.metrics.errors++;
-      this.emit("tool:error", { serverId, toolName, error });
+      this.emit('tool:error', { serverId, toolName, error });
       throw error;
     }
   }
@@ -242,13 +241,13 @@ class MCPServerManager extends EventEmitter {
     this._ensureInitialized();
     const tools = [];
     for (const [serverId, server] of this.servers) {
-      if (server.status === "running") {
+      if (server.status === 'running') {
         for (const [toolName, tool] of server.tools) {
           tools.push({
             name: toolName,
             server: serverId,
             description: tool.description,
-            parameters: tool.parameters
+            parameters: tool.parameters,
           });
         }
       }
@@ -263,7 +262,9 @@ class MCPServerManager extends EventEmitter {
   discoverTools(capability) {
     const allTools = this.listTools();
     return allTools.filter(
-      (tool) => tool.name.toLowerCase().includes(capability.toLowerCase()) || tool.description?.toLowerCase().includes(capability.toLowerCase())
+      (tool) =>
+        tool.name.toLowerCase().includes(capability.toLowerCase()) ||
+        tool.description?.toLowerCase().includes(capability.toLowerCase())
     );
   }
   /**
@@ -273,8 +274,7 @@ class MCPServerManager extends EventEmitter {
    */
   getServerStatus(serverId) {
     const server = this.servers.get(serverId);
-    if (!server)
-      return null;
+    if (!server) return null;
     return {
       id: server.id,
       name: server.name,
@@ -283,7 +283,7 @@ class MCPServerManager extends EventEmitter {
       resources: server.resources.size,
       restartCount: server.restartCount,
       lastError: server.lastError,
-      uptime: server.startedAt ? Date.now() - new Date(server.startedAt).getTime() : 0
+      uptime: server.startedAt ? Date.now() - new Date(server.startedAt).getTime() : 0,
     };
   }
   /**
@@ -299,57 +299,56 @@ class MCPServerManager extends EventEmitter {
    */
   async unregisterServer(serverId) {
     const server = this.servers.get(serverId);
-    if (!server)
-      return;
-    if (server.status === "running") {
+    if (!server) return;
+    if (server.status === 'running') {
       await this.stopServer(serverId);
     }
     this.servers.delete(serverId);
-    this.emit("server:unregistered", { serverId });
+    this.emit('server:unregistered', { serverId });
   }
   /**
    * Get manager statistics
    * @returns {Object} Statistics
    */
   getStats() {
-    const running = Array.from(this.servers.values()).filter((s) => s.status === "running").length;
+    const running = Array.from(this.servers.values()).filter((s) => s.status === 'running').length;
     return {
       servers: this.servers.size,
       running,
       tools: this.listTools().length,
-      ...this.metrics
+      ...this.metrics,
     };
   }
-  registerLocalTool(tool, serverId = "ultra-dex-core") {
-    if (!tool?.name || typeof tool.handler !== "function") {
-      throw new Error("Local MCP tools require a name and handler");
+  registerLocalTool(tool, serverId = 'ultra-dex-core') {
+    if (!tool?.name || typeof tool.handler !== 'function') {
+      throw new Error('Local MCP tools require a name and handler');
     }
     let server = this.servers.get(serverId);
     if (!server) {
       server = {
         id: serverId,
-        name: "Ultra-Dex Core MCP",
-        description: "In-process Ultra-Dex MCP tools",
+        name: 'Ultra-Dex Core MCP',
+        description: 'In-process Ultra-Dex MCP tools',
         command: null,
         args: [],
         env: {},
         tools: /* @__PURE__ */ new Map(),
         resources: /* @__PURE__ */ new Map(),
         process: null,
-        status: "running",
+        status: 'running',
         lastError: null,
         restartCount: 0,
-        startedAt: (/* @__PURE__ */ new Date()).toISOString(),
-        config: { local: true, autoStart: true }
+        startedAt: /* @__PURE__ */ new Date().toISOString(),
+        config: { local: true, autoStart: true },
       };
       this.servers.set(serverId, server);
     }
     const normalizedTool = {
       name: tool.name,
-      description: tool.description || "",
+      description: tool.description || '',
       parameters: tool.inputSchema || {},
       inputSchema: tool.inputSchema || {},
-      handler: tool.handler
+      handler: tool.handler,
     };
     server.tools.set(tool.name, normalizedTool);
     this.tools.set(tool.name, normalizedTool);
@@ -358,88 +357,88 @@ class MCPServerManager extends EventEmitter {
   // Private methods
   _ensureInitialized() {
     if (!this.initialized) {
-      throw new Error("MCP Server Manager not initialized. Call initialize() first.");
+      throw new Error('MCP Server Manager not initialized. Call initialize() first.');
     }
   }
   async _loadBuiltInServers() {
     const builtInServers = [
       {
-        id: "github",
-        name: "GitHub MCP Server",
-        description: "Access GitHub repositories, issues, and pull requests",
-        command: "npx",
-        args: ["-y", "@modelcontextprotocol/server-github"],
-        env: { GITHUB_PERSONAL_ACCESS_TOKEN: process.env.GITHUB_TOKEN || "" },
-        autoStart: false
+        id: 'github',
+        name: 'GitHub MCP Server',
+        description: 'Access GitHub repositories, issues, and pull requests',
+        command: 'npx',
+        args: ['-y', '@modelcontextprotocol/server-github'],
+        env: { GITHUB_PERSONAL_ACCESS_TOKEN: process.env.GITHUB_TOKEN || '' },
+        autoStart: false,
       },
       {
-        id: "slack",
-        name: "Slack MCP Server",
-        description: "Send messages and manage Slack channels",
-        command: "npx",
-        args: ["-y", "@modelcontextprotocol/server-slack"],
+        id: 'slack',
+        name: 'Slack MCP Server',
+        description: 'Send messages and manage Slack channels',
+        command: 'npx',
+        args: ['-y', '@modelcontextprotocol/server-slack'],
         env: {
-          SLACK_BOT_TOKEN: process.env.SLACK_BOT_TOKEN || "",
-          SLACK_TEAM_ID: process.env.SLACK_TEAM_ID || ""
+          SLACK_BOT_TOKEN: process.env.SLACK_BOT_TOKEN || '',
+          SLACK_TEAM_ID: process.env.SLACK_TEAM_ID || '',
         },
-        autoStart: false
+        autoStart: false,
       },
       {
-        id: "notion",
-        name: "Notion MCP Server",
-        description: "Read and write Notion pages and databases",
-        command: "npx",
-        args: ["-y", "@modelcontextprotocol/server-notion"],
-        env: { NOTION_API_TOKEN: process.env.NOTION_API_TOKEN || "" },
-        autoStart: false
+        id: 'notion',
+        name: 'Notion MCP Server',
+        description: 'Read and write Notion pages and databases',
+        command: 'npx',
+        args: ['-y', '@modelcontextprotocol/server-notion'],
+        env: { NOTION_API_TOKEN: process.env.NOTION_API_TOKEN || '' },
+        autoStart: false,
       },
       {
-        id: "linear",
-        name: "Linear MCP Server",
-        description: "Manage Linear issues and projects",
-        command: "npx",
-        args: ["-y", "@modelcontextprotocol/server-linear"],
-        env: { LINEAR_API_KEY: process.env.LINEAR_API_KEY || "" },
-        autoStart: false
+        id: 'linear',
+        name: 'Linear MCP Server',
+        description: 'Manage Linear issues and projects',
+        command: 'npx',
+        args: ['-y', '@modelcontextprotocol/server-linear'],
+        env: { LINEAR_API_KEY: process.env.LINEAR_API_KEY || '' },
+        autoStart: false,
       },
       {
-        id: "filesystem",
-        name: "Filesystem MCP Server",
-        description: "Read and write files on the local filesystem",
-        command: "npx",
-        args: ["-y", "@modelcontextprotocol/server-filesystem", process.cwd()],
-        autoStart: true
+        id: 'filesystem',
+        name: 'Filesystem MCP Server',
+        description: 'Read and write files on the local filesystem',
+        command: 'npx',
+        args: ['-y', '@modelcontextprotocol/server-filesystem', process.cwd()],
+        autoStart: true,
       },
       {
-        id: "fetch",
-        name: "Fetch MCP Server",
-        description: "Fetch web content and APIs",
-        command: "npx",
-        args: ["-y", "@modelcontextprotocol/server-fetch"],
-        autoStart: true
+        id: 'fetch',
+        name: 'Fetch MCP Server',
+        description: 'Fetch web content and APIs',
+        command: 'npx',
+        args: ['-y', '@modelcontextprotocol/server-fetch'],
+        autoStart: true,
       },
       {
-        id: "postgres",
-        name: "PostgreSQL MCP Server",
-        description: "Query PostgreSQL databases",
-        command: "npx",
-        args: ["-y", "@modelcontextprotocol/server-postgres", process.env.DATABASE_URL || ""],
-        autoStart: false
+        id: 'postgres',
+        name: 'PostgreSQL MCP Server',
+        description: 'Query PostgreSQL databases',
+        command: 'npx',
+        args: ['-y', '@modelcontextprotocol/server-postgres', process.env.DATABASE_URL || ''],
+        autoStart: false,
       },
       {
-        id: "sqlite",
-        name: "SQLite MCP Server",
-        description: "Query SQLite databases",
-        command: "npx",
-        args: ["-y", "@modelcontextprotocol/server-sqlite", "./data/memory.db"],
-        autoStart: true
-      }
+        id: 'sqlite',
+        name: 'SQLite MCP Server',
+        description: 'Query SQLite databases',
+        command: 'npx',
+        args: ['-y', '@modelcontextprotocol/server-sqlite', './data/memory.db'],
+        autoStart: true,
+      },
     ];
     for (const serverConfig of builtInServers) {
       try {
         await this.registerServer(serverConfig.id, serverConfig);
       } catch (error) {
-        this.emit("server:registration_failed", { serverId: serverConfig.id, error });
+        this.emit('server:registration_failed', { serverId: serverConfig.id, error });
       }
     }
   }
@@ -448,7 +447,7 @@ class MCPServerManager extends EventEmitter {
       createAgentStatusTool({ manager: this }),
       createTaskSubmitTool({ manager: this }),
       createMemorySearchTool({ manager: this }),
-      createProviderInfoTool({ manager: this })
+      createProviderInfoTool({ manager: this }),
     ];
     for (const tool of localTools) {
       this.registerLocalTool(tool);
@@ -456,8 +455,7 @@ class MCPServerManager extends EventEmitter {
   }
   _handleServerOutput(serverId, data) {
     const server = this.servers.get(serverId);
-    if (!server)
-      return;
+    if (!server) return;
     try {
       const message = JSON.parse(data.toString());
       if (message.result?.tools) {
@@ -470,32 +468,29 @@ class MCPServerManager extends EventEmitter {
           server.resources.set(resource.uri, resource);
         });
       }
-      this.emit("server:message", { serverId, message });
+      this.emit('server:message', { serverId, message });
     } catch (_error) {
-      this.emit("server:output", { serverId, output: data.toString() });
+      this.emit('server:output', { serverId, output: data.toString() });
     }
   }
   _handleServerError(serverId, data) {
     const server = this.servers.get(serverId);
-    if (!server)
-      return;
+    if (!server) return;
     server.lastError = data.toString();
-    this.emit("server:error", { serverId, error: server.lastError });
+    this.emit('server:error', { serverId, error: server.lastError });
   }
   _handleServerExit(serverId, code) {
     const server = this.servers.get(serverId);
-    if (!server)
-      return;
-    server.status = "stopped";
+    if (!server) return;
+    server.status = 'stopped';
     server.exitCode = code;
-    this.emit("server:exit", { serverId, code });
+    this.emit('server:exit', { serverId, code });
     if (this.config.autoRestart && code !== 0) {
       server.restartCount++;
       if (server.restartCount <= 3) {
         setTimeout(() => {
-          this.emit("server:restarting", { serverId, attempt: server.restartCount });
-          this.startServer(serverId).catch(() => {
-          });
+          this.emit('server:restarting', { serverId, attempt: server.restartCount });
+          this.startServer(serverId).catch(() => {});
         }, this.config.restartDelay);
       }
     }
@@ -508,7 +503,7 @@ class MCPServerManager extends EventEmitter {
       }, timeout);
       const checkInterval = setInterval(() => {
         const server = this.servers.get(serverId);
-        if (server && (server.status === "running" || server.status === "unreachable")) {
+        if (server && (server.status === 'running' || server.status === 'unreachable')) {
           clearTimeout(timer);
           clearInterval(checkInterval);
           resolve();
@@ -519,27 +514,26 @@ class MCPServerManager extends EventEmitter {
   async _sendRequest(server, request) {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
-        reject(new Error("Request timeout"));
+        reject(new Error('Request timeout'));
       }, 3e4);
-      server.process.stdin.write(JSON.stringify(request) + "\n");
+      server.process.stdin.write(JSON.stringify(request) + '\n');
       const handler = (data) => {
         try {
           const response = JSON.parse(data.toString());
           if (response.id === request.id) {
             clearTimeout(timeout);
-            server.process.stdout.off("data", handler);
+            server.process.stdout.off('data', handler);
             resolve(response.result);
           }
-        } catch (_error) {
-        }
+        } catch (_error) {}
       };
-      server.process.stdout.on("data", handler);
+      server.process.stdout.on('data', handler);
     });
   }
   _startHealthChecks() {
     setInterval(() => {
       for (const [serverId, server] of this.servers) {
-        if (server.status === "running") {
+        if (server.status === 'running') {
           if (server.process && server.process.killed) {
             this._handleServerExit(serverId, -1);
           }
@@ -562,14 +556,11 @@ class MCPServerManager extends EventEmitter {
       throw new Error(`Tool '${toolName}' not found`);
     }
     this.metrics.toolCalls++;
-    if (typeof tool.handler === "function") {
+    if (typeof tool.handler === 'function') {
       return await tool.handler(args);
     }
-    return { result: "Tool executed", tool: toolName, args };
+    return { result: 'Tool executed', tool: toolName, args };
   }
 }
 var server_manager_default = MCPServerManager;
-export {
-  MCPServerManager,
-  server_manager_default as default
-};
+export { MCPServerManager, server_manager_default as default };

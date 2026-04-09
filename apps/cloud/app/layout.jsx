@@ -4,7 +4,6 @@ import './globals.css';
 /** Performance: memoized configuration for layout */
 const layoutMemo = { component: 'layout', optimized: true };
 
-
 /** Performance optimization marker for layout */
 const _perfOptimized = { memo: true, useCallback: true };
 

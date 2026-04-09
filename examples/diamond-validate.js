@@ -18,7 +18,7 @@ console.log('╚═════════════════════�
 function countFiles(dir, extension) {
   try {
     const files = readdirSync(dir, { recursive: true });
-    return files.filter(f => f.endsWith(extension)).length;
+    return files.filter((f) => f.endsWith(extension)).length;
   } catch {
     return 0;
   }
@@ -102,11 +102,16 @@ console.log('║                    AGENT PROFILES                              
 console.log('╚════════════════════════════════════════════════════════════════╝');
 
 try {
-  const profilesContent = readFileSync(join(rootDir, 'src/core/routing/agent-profiles.ts'), 'utf-8');
+  const profilesContent = readFileSync(
+    join(rootDir, 'src/core/routing/agent-profiles.ts'),
+    'utf-8'
+  );
   const agentMatches = profilesContent.match(/agentId: ['"]([^'"]+)['"]/g);
   if (agentMatches) {
-    const uniqueAgents = [...new Set(agentMatches.map(m => m.match(/agentId: ['"]([^'"]+)['"]/)?.[1]))];
-    uniqueAgents.forEach(agent => {
+    const uniqueAgents = [
+      ...new Set(agentMatches.map((m) => m.match(/agentId: ['"]([^'"]+)['"]/)?.[1])),
+    ];
+    uniqueAgents.forEach((agent) => {
       console.log(`  • ${agent}`);
     });
   }
@@ -124,7 +129,7 @@ try {
   if (tokenMatches) {
     console.log(`Total DI Tokens: ${tokenMatches.length}`);
     console.log('\nKey Tokens:');
-    tokenMatches.slice(0, 10).forEach(token => {
+    tokenMatches.slice(0, 10).forEach((token) => {
       const name = token.match(/(\w+):/)?.[1];
       if (name) console.log(`  • ${name}`);
     });

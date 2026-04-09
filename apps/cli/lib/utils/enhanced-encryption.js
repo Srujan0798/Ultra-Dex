@@ -69,7 +69,7 @@ export class EnhancedEncryption {
         this.keys.set(name, {
           key: Buffer.from(keyData.key, 'hex'),
           createdAt: keyData.createdAt,
-          algorithm: keyData.algorithm || 'aes-256-gcm'
+          algorithm: keyData.algorithm || 'aes-256-gcm',
         });
       }
     } catch (error) {
@@ -89,7 +89,7 @@ export class EnhancedEncryption {
         keysData[name] = {
           key: keyData.key.toString('hex'),
           createdAt: keyData.createdAt,
-          algorithm: keyData.algorithm
+          algorithm: keyData.algorithm,
         };
       }
 
@@ -109,7 +109,7 @@ export class EnhancedEncryption {
     this.keys.set(name, {
       key,
       createdAt: new Date().toISOString(),
-      algorithm
+      algorithm,
     });
 
     await this.saveKeys();
@@ -209,7 +209,7 @@ export class EnhancedEncryption {
       user: ['email', 'phone', 'ssn', 'creditCard', 'bankAccount'],
       medical: ['diagnosis', 'medications', 'treatment', 'phi'],
       financial: ['accountNumber', 'routingNumber', 'balance', 'transactions'],
-      personal: ['name', 'address', 'dob', 'idNumber']
+      personal: ['name', 'address', 'dob', 'idNumber'],
     };
 
     const fields = sensitiveFields[dataType] || [];
@@ -224,7 +224,7 @@ export class EnhancedEncryption {
       user: ['email', 'phone', 'ssn', 'creditCard', 'bankAccount'],
       medical: ['diagnosis', 'medications', 'treatment', 'phi'],
       financial: ['accountNumber', 'routingNumber', 'balance', 'transactions'],
-      personal: ['name', 'address', 'dob', 'idNumber']
+      personal: ['name', 'address', 'dob', 'idNumber'],
     };
 
     const fields = sensitiveFields[dataType] || [];
@@ -296,7 +296,7 @@ export class EnhancedEncryption {
       masterKey: !!this.masterKey,
       keysCount: this.keys.size,
       keyNames: Array.from(this.keys.keys()),
-      algorithms: Array.from(new Set(Array.from(this.keys.values()).map(k => k.algorithm)))
+      algorithms: Array.from(new Set(Array.from(this.keys.values()).map((k) => k.algorithm))),
     };
   }
 }

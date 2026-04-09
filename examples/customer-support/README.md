@@ -20,12 +20,14 @@ This example demonstrates how to create an AI-powered customer support system us
 ## Setup
 
 1. **Install Dependencies**:
+
    ```bash
    # This example uses the UltraDex library
    ```
 
 2. **Environment Variables**:
    Create a `.env` file with the following:
+
    ```env
    ULTRA_DEX_API_KEY=your_ultra_dex_api_key
    ULTRA_DEX_ENDPOINT=https://api.ultra-dex.ai
@@ -54,23 +56,19 @@ The customer support agent can be integrated into various channels:
 const supportAgent = new CustomerSupportAgent({
   ultraDex: {
     apiKey: process.env.ULTRA_DEX_API_KEY,
-    endpoint: process.env.ULTRA_DEX_ENDPOINT || 'https://api.ultra-dex.ai'
+    endpoint: process.env.ULTRA_DEX_ENDPOINT || 'https://api.ultra-dex.ai',
   },
   knowledgeBase: [
     // Your knowledge base entries
-  ]
+  ],
 });
 
 // Process a customer query
-const result = await supportAgent.processQuery(
-  'customer-id',
-  'Customer query text',
-  { 
-    customerType: 'premium', 
-    lastLogin: '2023-01-15T10:30:00Z',
-    language: 'en'
-  }
-);
+const result = await supportAgent.processQuery('customer-id', 'Customer query text', {
+  customerType: 'premium',
+  lastLogin: '2023-01-15T10:30:00Z',
+  language: 'en',
+});
 ```
 
 ## Knowledge Base Management

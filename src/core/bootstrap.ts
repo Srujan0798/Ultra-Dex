@@ -1,4 +1,9 @@
-import { container, registerAlias, registerSingleton, resolveFromContainer } from './di/container.js';
+import {
+  container,
+  registerAlias,
+  registerSingleton,
+  resolveFromContainer,
+} from './di/container.js';
 import { DI_TOKENS } from './di/tokens.js';
 import { MemoryManager } from './memory/manager.js';
 import { UnifiedRegistry } from './agents/unified-registry.js';
@@ -8,7 +13,7 @@ import { RedisCache } from './cache/redis-cache.js';
 
 let SystemMonitor: any;
 try {
-  const module: any = await import("../monitoring/SystemMonitor.js");
+  const module: any = await import('../monitoring/SystemMonitor.js');
   SystemMonitor = module.SystemMonitor || module.default;
 } catch {
   // Optional dependency
@@ -19,17 +24,18 @@ let shutdownCallbacks: Array<() => Promise<void>> = [];
 
 async function bootstrap(options: any = {}) {
   if (bootstrapped) {
-    console.warn("[Bootstrap] Already bootstrapped, skipping...");
+    console.warn('[Bootstrap] Already bootstrapped, skipping...');
     return;
   }
 
-  console.log("[Bootstrap] Initializing DI container...");
+  console.log('[Bootstrap] Initializing DI container...');
 
   // 0. Redis Cache
   registerSingleton(DI_TOKENS.RedisCache, () => {
     const redisCache = new RedisCache();
     const cleanup = async () => {
-      if (typeof (redisCache as any).disconnect === 'function') await (redisCache as any).disconnect();
+      if (typeof (redisCache as any).disconnect === 'function')
+        await (redisCache as any).disconnect();
       if (typeof (redisCache as any).shutdown === 'function') await (redisCache as any).shutdown();
     };
     shutdownCallbacks.push(cleanup);
@@ -39,12 +45,13 @@ async function bootstrap(options: any = {}) {
   // 1. Memory Manager
   registerSingleton(DI_TOKENS.memoryManager, () => {
     const memoryManager = new MemoryManager({
-      persistent: process.env.NODE_ENV !== "test",
-      maxSize: 10000
+      persistent: process.env.NODE_ENV !== 'test',
+      maxSize: 10000,
     });
     const cleanup = async () => {
       if (typeof (memoryManager as any).close === 'function') await (memoryManager as any).close();
-      if (typeof (memoryManager as any).shutdown === 'function') await (memoryManager as any).shutdown();
+      if (typeof (memoryManager as any).shutdown === 'function')
+        await (memoryManager as any).shutdown();
     };
     shutdownCallbacks.push(cleanup);
     return memoryManager;
@@ -53,12 +60,13 @@ async function bootstrap(options: any = {}) {
   // 2. AI Meta Layer
   registerSingleton(DI_TOKENS.aiMetaLayer, () => {
     const aiMetaLayer = new AIMetaLayer({
-      defaultProvider: process.env.ULTRA_DEX_DEFAULT_PROVIDER || "openai",
-      enableCaching: process.env.NODE_ENV !== "test"
+      defaultProvider: process.env.ULTRA_DEX_DEFAULT_PROVIDER || 'openai',
+      enableCaching: process.env.NODE_ENV !== 'test',
     });
     const cleanup = async () => {
       if (typeof (aiMetaLayer as any).cleanup === 'function') await (aiMetaLayer as any).cleanup();
-      if (typeof (aiMetaLayer as any).shutdown === 'function') await (aiMetaLayer as any).shutdown();
+      if (typeof (aiMetaLayer as any).shutdown === 'function')
+        await (aiMetaLayer as any).shutdown();
     };
     shutdownCallbacks.push(cleanup);
     return aiMetaLayer;
@@ -69,8 +77,8 @@ async function bootstrap(options: any = {}) {
     const registry = resolveFromContainer(UnifiedRegistry);
     registry.config = {
       ...registry.config,
-      autoDiscover: process.env.ULTRA_DEX_AUTO_DISCOVER !== "false",
-      enablePersistence: process.env.NODE_ENV !== "test"
+      autoDiscover: process.env.ULTRA_DEX_AUTO_DISCOVER !== 'false',
+      enablePersistence: process.env.NODE_ENV !== 'test',
     };
     const cleanup = async () => {
       if (typeof (registry as any).shutdown === 'function') await (registry as any).shutdown();
@@ -84,8 +92,8 @@ async function bootstrap(options: any = {}) {
   // 4. Telemetry / Analytics
   registerSingleton(DI_TOKENS.telemetryService, () => {
     const analytics = new EnterpriseAnalytics({
-      enabled: !options.skipAnalytics && process.env.ULTRA_DEX_ANALYTICS !== "false",
-      flushInterval: options.analyticsInterval || 30000
+      enabled: !options.skipAnalytics && process.env.ULTRA_DEX_ANALYTICS !== 'false',
+      flushInterval: options.analyticsInterval || 30000,
     });
     const cleanup = async () => {
       if (typeof (analytics as any).flush === 'function') await (analytics as any).flush();
@@ -101,8 +109,8 @@ async function bootstrap(options: any = {}) {
     try {
       registerSingleton(DI_TOKENS.systemMonitor, () => {
         const monitor = new SystemMonitor({
-          enabled: !options.skipMonitor && process.env.ULTRA_DEX_MONITORING !== "false",
-          interval: options.monitorInterval || 60000
+          enabled: !options.skipMonitor && process.env.ULTRA_DEX_MONITORING !== 'false',
+          interval: options.monitorInterval || 60000,
         });
         const cleanup = async () => {
           if (typeof (monitor as any).stop === 'function') await (monitor as any).stop();
@@ -112,7 +120,10 @@ async function bootstrap(options: any = {}) {
         return monitor;
       });
     } catch (error: any) {
-      console.warn("[Bootstrap] SystemMonitor registration failed:", error?.message || String(error));
+      console.warn(
+        '[Bootstrap] SystemMonitor registration failed:',
+        error?.message || String(error)
+      );
     }
   }
 
@@ -146,10 +157,10 @@ async function bootstrap(options: any = {}) {
       else if (typeof monitor.init === 'function') await monitor.init();
     }
 
-    console.log("[\u2705 Bootstrap] DI container initialized successfully");
+    console.log('[\u2705 Bootstrap] DI container initialized successfully');
     bootstrapped = true;
   } catch (error: any) {
-    console.error("[\u274C Bootstrap] Initialization failed:", error);
+    console.error('[\u274C Bootstrap] Initialization failed:', error);
     bootstrapped = false;
     await shutdown(); // Try to clean up whatever was started
     throw new Error(`Bootstrap failed: ${error?.message || String(error)}`);
@@ -157,26 +168,26 @@ async function bootstrap(options: any = {}) {
 }
 
 async function shutdown() {
-  console.log("[Bootstrap] Shutting down services...");
-  
-  // Create a copy of callbacks and clear the global array immediately 
+  console.log('[Bootstrap] Shutting down services...');
+
+  // Create a copy of callbacks and clear the global array immediately
   // to prevent re-entry issues
   const callbacks = [...shutdownCallbacks].reverse();
   shutdownCallbacks = [];
-  
+
   for (const callback of callbacks) {
     try {
       await callback();
     } catch (error) {
       // Don't log full error in tests to keep output clean unless it's critical
       if (process.env.NODE_ENV !== 'test') {
-        console.error("[Bootstrap] Shutdown callback error:", error);
+        console.error('[Bootstrap] Shutdown callback error:', error);
       }
     }
   }
 
   bootstrapped = false;
-  console.log("[Bootstrap] \u2705 Shutdown complete");
+  console.log('[Bootstrap] \u2705 Shutdown complete');
 }
 
 function isBootstrapped() {
@@ -184,41 +195,39 @@ function isBootstrapped() {
 }
 
 function resetForTesting() {
-  const isTest = process.env.NODE_ENV === "test" || 
-                 process.env.VITEST === "true" || 
-                 process.env.JEST_WORKER_ID !== undefined ||
-                 process.execArgv.includes('--test') ||
-                 process.env.npm_lifecycle_event?.includes('test');
+  const isTest =
+    process.env.NODE_ENV === 'test' ||
+    process.env.VITEST === 'true' ||
+    process.env.JEST_WORKER_ID !== undefined ||
+    process.execArgv.includes('--test') ||
+    process.env.npm_lifecycle_event?.includes('test');
 
   if (!isTest) {
-    console.warn("[Bootstrap] resetForTesting() called outside of standard test environment. Proceeding anyway.");
+    console.warn(
+      '[Bootstrap] resetForTesting() called outside of standard test environment. Proceeding anyway.'
+    );
   }
-  
+
   // Ensure everything is shut down first
   if (bootstrapped || shutdownCallbacks.length > 0) {
     bootstrapped = true; // Force shutdown logic to run
     // We can't await here since it's sync, but we can clear the array
-    shutdownCallbacks = []; 
+    shutdownCallbacks = [];
   }
-  
+
   bootstrapped = false;
-  
+
   // Clear the DI container as well
   if (typeof (container as any).reset === 'function') {
     (container as any).reset();
   }
 }
 
-export {
-  bootstrap,
-  shutdown,
-  isBootstrapped,
-  resetForTesting
-};
+export { bootstrap, shutdown, isBootstrapped, resetForTesting };
 
 export default {
   bootstrap,
   shutdown,
   isBootstrapped,
-  resetForTesting
+  resetForTesting,
 };

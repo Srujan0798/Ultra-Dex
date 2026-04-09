@@ -23,19 +23,19 @@ export class WebIDE {
     // Serve static files
     this.app.use(express.static(path.join(process.cwd(), 'cli/assets/ide')));
     this.app.use('/api', this.createAPIRoutes());
-    
+
     this.server = this.app.listen(this.port, () => {
       console.log(`Web IDE running on http://localhost:${this.port}`);
     });
-    
+
     this.wss = new WebSocketServer({ server: this.server });
-    
+
     this.setupSocketHandlers();
   }
 
   createAPIRoutes() {
     const router = express.Router();
-    
+
     // File operations
     router.get('/files', async (req, res) => {
       try {
@@ -72,40 +72,40 @@ export class WebIDE {
   async getProjectFiles(dir = this.projectDir) {
     const files = [];
     const entries = await fs.readdir(dir, { withFileTypes: true });
-    
+
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
       const relPath = path.relative(this.projectDir, fullPath);
-      
+
       if (entry.isDirectory()) {
         if (!['node_modules', '.git', 'dist', 'build'].includes(entry.name)) {
-          files.push(...await this.getProjectFiles(fullPath));
+          files.push(...(await this.getProjectFiles(fullPath)));
         }
       } else {
         files.push({
           path: relPath,
           name: entry.name,
-          size: (await fs.stat(fullPath)).size
+          size: (await fs.stat(fullPath)).size,
         });
       }
     }
-    
+
     return files;
   }
 
   setupSocketHandlers() {
     this.wss.on('connection', (ws) => {
       console.log('IDE client connected');
-      
+
       ws.on('message', async (message) => {
         try {
           const data = JSON.parse(message);
-          
+
           if (data.type === 'file-change') {
             try {
               await fs.writeFile(path.join(this.projectDir, data.path), data.content);
               // Broadcast
-              this.wss.clients.forEach(client => {
+              this.wss.clients.forEach((client) => {
                 if (client !== ws && client.readyState === 1) {
                   client.send(JSON.stringify({ type: 'file-updated', ...data }));
                 }
@@ -118,13 +118,15 @@ export class WebIDE {
               const { exec } = await import('child_process');
               const { promisify } = await import('util');
               const execAsync = promisify(exec);
-              
+
               const result = await execAsync(data.command, { cwd: this.projectDir });
-              ws.send(JSON.stringify({
-                type: 'command-result',
-                stdout: result.stdout,
-                stderr: result.stderr
-              }));
+              ws.send(
+                JSON.stringify({
+                  type: 'command-result',
+                  stdout: result.stdout,
+                  stderr: result.stderr,
+                })
+              );
             } catch (error) {
               ws.send(JSON.stringify({ type: 'command-error', error: error.message }));
             }

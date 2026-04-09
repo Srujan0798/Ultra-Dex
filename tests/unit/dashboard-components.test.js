@@ -12,12 +12,12 @@ describe('Dashboard Components', () => {
         name: 'Test Agent',
         status: 'running',
         lastExecution: new Date().toISOString(),
-        successRate: 0.95
+        successRate: 0.95,
       };
 
       // Mock Vue component mount
       const wrapper = mountComponent(AgentCard, { props: { agent } });
-      
+
       expect(wrapper.text()).toContain('Test Agent');
       expect(wrapper.classes()).toContain('status-running');
     });
@@ -28,11 +28,11 @@ describe('Dashboard Components', () => {
         name: 'Test Agent',
         status: 'idle',
         lastExecution: new Date().toISOString(),
-        successRate: 0.85
+        successRate: 0.85,
       };
 
       const wrapper = mountComponent(AgentCard, { props: { agent } });
-      
+
       // Check for status indicator
       const statusIndicator = wrapper.querySelector('.status-indicator');
       expect(statusIndicator).toBeTruthy();
@@ -44,11 +44,11 @@ describe('Dashboard Components', () => {
     it('renders logs with syntax highlighting', async () => {
       const logs = [
         { timestamp: new Date().toISOString(), level: 'info', message: 'Agent started' },
-        { timestamp: new Date().toISOString(), level: 'error', message: 'Connection failed' }
+        { timestamp: new Date().toISOString(), level: 'error', message: 'Connection failed' },
       ];
 
       const wrapper = mountComponent(LogViewer, { props: { logs } });
-      
+
       expect(wrapper.findAll('.log-entry')).toHaveLength(2);
       expect(wrapper.text()).toContain('Agent started');
       expect(wrapper.text()).toContain('Connection failed');
@@ -58,16 +58,16 @@ describe('Dashboard Components', () => {
       const logs = [
         { timestamp: new Date().toISOString(), level: 'info', message: 'Info message' },
         { timestamp: new Date().toISOString(), level: 'error', message: 'Error message' },
-        { timestamp: new Date().toISOString(), level: 'warn', message: 'Warning message' }
+        { timestamp: new Date().toISOString(), level: 'warn', message: 'Warning message' },
       ];
 
-      const wrapper = mountComponent(LogViewer, { 
-        props: { 
+      const wrapper = mountComponent(LogViewer, {
+        props: {
           logs,
-          filterLevel: 'error'
-        } 
+          filterLevel: 'error',
+        },
       });
-      
+
       // Should only show error logs
       const displayedLogs = wrapper.findAll('.log-entry');
       expect(displayedLogs).toHaveLength(1);
@@ -83,12 +83,12 @@ describe('Dashboard Components', () => {
         activeAgents: 12,
         providerHealth: {
           openai: 'healthy',
-          anthropic: 'degraded'
-        }
+          anthropic: 'degraded',
+        },
       };
 
       const wrapper = mountComponent(MetricsPanel, { props: { metrics } });
-      
+
       expect(wrapper.text()).toContain('150ms');
       expect(wrapper.text()).toContain('65%');
       expect(wrapper.text()).toContain('12 agents');
@@ -99,21 +99,21 @@ describe('Dashboard Components', () => {
         latency: 100,
         memoryUsage: 50,
         activeAgents: 5,
-        providerHealth: { openai: 'healthy' }
+        providerHealth: { openai: 'healthy' },
       };
 
       const updatedMetrics = {
         latency: 200,
         memoryUsage: 75,
         activeAgents: 8,
-        providerHealth: { openai: 'degraded' }
+        providerHealth: { openai: 'degraded' },
       };
 
       const wrapper = mountComponent(MetricsPanel, { props: { metrics: initialMetrics } });
-      
+
       // Simulate metrics update
       await wrapper.setProps({ metrics: updatedMetrics });
-      
+
       expect(wrapper.text()).toContain('200ms');
       expect(wrapper.text()).toContain('75%');
       expect(wrapper.text()).toContain('8 agents');
@@ -125,7 +125,10 @@ describe('Dashboard Components', () => {
 function mountComponent(Component, options = {}) {
   // This is a simplified mock - in real tests you'd use a proper testing library
   return {
-    text: () => options.props?.agent?.name || options.props?.metrics?.activeAgents?.toString() || 'Mock component',
+    text: () =>
+      options.props?.agent?.name ||
+      options.props?.metrics?.activeAgents?.toString() ||
+      'Mock component',
     classes: () => ['status-running', 'status-indle'],
     findAll: (selector) => {
       if (selector === '.log-entry') {
@@ -142,6 +145,6 @@ function mountComponent(Component, options = {}) {
     setProps: async (newProps) => {
       // Simulate prop update
       return Promise.resolve();
-    }
+    },
   };
 }

@@ -15,20 +15,20 @@ export const PricingTable: React.FC = () => {
 
   useEffect(() => {
     fetch('/api/billing/pricing')
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         setTiers(data);
         setLoading(false);
       });
-    
+
     // Get current user tier
     const token = localStorage.getItem('session_token');
     if (token) {
       fetch('/api/user/profile', {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       })
-        .then(res => res.json())
-        .then(data => setCurrentTier(data.tier));
+        .then((res) => res.json())
+        .then((data) => setCurrentTier(data.tier));
     }
   }, []);
 
@@ -38,11 +38,11 @@ export const PricingTable: React.FC = () => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ tierId })
+      body: JSON.stringify({ tierId }),
     });
-    
+
     if (res.ok) {
       alert('Subscription updated!');
       window.location.reload();
@@ -55,11 +55,12 @@ export const PricingTable: React.FC = () => {
     <div className="pricing-table">
       <h2>Choose Your Plan</h2>
       <div className="tiers">
-        {tiers.map(tier => (
+        {tiers.map((tier) => (
           <div key={tier.id} className={`tier ${tier.id === currentTier ? 'current' : ''}`}>
             <h3>{tier.name}</h3>
             <div className="price">
-              ${tier.price / 100}<span>/month</span>
+              ${tier.price / 100}
+              <span>/month</span>
             </div>
             <p>{tier.description}</p>
             <ul>

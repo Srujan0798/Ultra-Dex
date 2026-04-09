@@ -25,7 +25,7 @@ describe('GitHub Integration', () => {
     const rateLimitHeaders = {
       'X-RateLimit-Limit': '5000',
       'X-RateLimit-Remaining': '4999',
-      'X-RateLimit-Reset': '1234567890'
+      'X-RateLimit-Reset': '1234567890',
     };
 
     assert.ok(rateLimitHeaders['X-RateLimit-Limit']);
@@ -36,7 +36,7 @@ describe('GitHub Integration', () => {
       name: 'ultra-dex',
       owner: { login: 'owner' },
       default_branch: 'main',
-      private: false
+      private: false,
     };
 
     assert.ok(repoData.name);
@@ -48,7 +48,7 @@ describe('Jira Integration', () => {
   test('should require Jira credentials', () => {
     const requiredVars = ['JIRA_URL', 'JIRA_EMAIL', 'JIRA_API_TOKEN'];
 
-    requiredVars.forEach(envVar => {
+    requiredVars.forEach((envVar) => {
       assert.ok(typeof envVar === 'string');
     });
   });
@@ -66,8 +66,8 @@ describe('Jira Integration', () => {
         project: { key: 'PROJ' },
         summary: 'Test issue',
         description: 'Description',
-        issuetype: { name: 'Task' }
-      }
+        issuetype: { name: 'Task' },
+      },
     };
 
     assert.ok(issuePayload.fields.project);
@@ -79,8 +79,8 @@ describe('Jira Integration', () => {
       webhookEvent: 'jira:issue_updated',
       issue: {
         key: 'PROJ-123',
-        fields: { status: { name: 'Done' } }
-      }
+        fields: { status: { name: 'Done' } },
+      },
     };
 
     assert.ok(webhookEvent.webhookEvent.startsWith('jira:'));
@@ -96,7 +96,7 @@ describe('Notion Integration', () => {
 
   test('should format Notion API version header', () => {
     const headers = {
-      'Notion-Version': '2022-06-28'
+      'Notion-Version': '2022-06-28',
     };
 
     assert.ok(headers['Notion-Version']);
@@ -107,8 +107,8 @@ describe('Notion Integration', () => {
       database_id: 'abc123',
       filter: {
         property: 'Status',
-        select: { equals: 'In Progress' }
-      }
+        select: { equals: 'In Progress' },
+      },
     };
 
     assert.ok(queryPayload.database_id);
@@ -120,9 +120,9 @@ describe('Notion Integration', () => {
       parent: { database_id: 'abc123' },
       properties: {
         Name: {
-          title: [{ text: { content: 'Page Title' } }]
-        }
-      }
+          title: [{ text: { content: 'Page Title' } }],
+        },
+      },
     };
 
     assert.ok(pageContent.properties.Name);
@@ -143,9 +143,9 @@ describe('Slack Integration', () => {
       blocks: [
         {
           type: 'section',
-          text: { type: 'mrkdwn', text: '*Bold text*' }
-        }
-      ]
+          text: { type: 'mrkdwn', text: '*Bold text*' },
+        },
+      ],
     };
 
     assert.ok(message.channel);
@@ -157,7 +157,7 @@ describe('Slack Integration', () => {
       command: '/ultra-dex',
       text: 'check',
       user_id: 'U1234567',
-      channel_id: 'C1234567'
+      channel_id: 'C1234567',
     };
 
     assert.ok(slashCommand.command.startsWith('/'));
@@ -167,7 +167,7 @@ describe('Slack Integration', () => {
     const payload = {
       type: 'block_actions',
       actions: [{ action_id: 'button_click' }],
-      user: { id: 'U1234567' }
+      user: { id: 'U1234567' },
     };
 
     assert.strictEqual(payload.type, 'block_actions');
@@ -189,9 +189,9 @@ describe('Discord Integration', () => {
         {
           title: 'Status Update',
           description: 'Build completed',
-          color: 0x00ff00
-        }
-      ]
+          color: 0x00ff00,
+        },
+      ],
     };
 
     assert.ok(message.channel_id);
@@ -201,10 +201,8 @@ describe('Discord Integration', () => {
   test('should handle slash commands', () => {
     const slashCommand = {
       name: 'ultradex',
-      options: [
-        { name: 'command', value: 'check' }
-      ],
-      guild_id: '1234567890'
+      options: [{ name: 'command', value: 'check' }],
+      guild_id: '1234567890',
     };
 
     assert.strictEqual(slashCommand.name, 'ultradex');
@@ -223,7 +221,7 @@ describe('Stripe Integration', () => {
       amount: 1000, // $10.00
       currency: 'usd',
       payment_method_types: ['card'],
-      metadata: { product: 'ultra-dex-pro' }
+      metadata: { product: 'ultra-dex-pro' },
     };
 
     assert.strictEqual(paymentIntent.currency, 'usd');
@@ -237,9 +235,9 @@ describe('Stripe Integration', () => {
         object: {
           id: 'pi_123',
           amount: 1000,
-          status: 'succeeded'
-        }
-      }
+          status: 'succeeded',
+        },
+      },
     };
 
     assert.ok(webhookEvent.type.includes('payment_intent'));
@@ -264,12 +262,10 @@ describe('Vercel Integration', () => {
   test('should create deployment', () => {
     const deployment = {
       name: 'ultra-dex',
-      files: [
-        { file: 'index.html', data: '<html>...</html>' }
-      ],
+      files: [{ file: 'index.html', data: '<html>...</html>' }],
       projectSettings: {
-        framework: 'nextjs'
-      }
+        framework: 'nextjs',
+      },
     };
 
     assert.ok(deployment.name);
@@ -281,7 +277,7 @@ describe('Vercel Integration', () => {
       id: 'dpl_123',
       url: 'ultra-dex-abc123.vercel.app',
       state: 'READY',
-      readyState: 'READY'
+      readyState: 'READY',
     };
 
     assert.strictEqual(status.state, 'READY');
@@ -292,7 +288,7 @@ describe('Supabase Integration', () => {
   test('should require Supabase credentials', () => {
     const requiredVars = ['SUPABASE_URL', 'SUPABASE_KEY'];
 
-    requiredVars.forEach(envVar => {
+    requiredVars.forEach((envVar) => {
       assert.ok(typeof envVar === 'string');
     });
   });
@@ -301,7 +297,7 @@ describe('Supabase Integration', () => {
     const query = {
       table: 'users',
       select: ['id', 'email', 'created_at'],
-      filters: { status: 'active' }
+      filters: { status: 'active' },
     };
 
     assert.ok(query.table);
@@ -312,7 +308,7 @@ describe('Supabase Integration', () => {
     const subscription = {
       channel: 'public:users',
       event: '*',
-      filter: 'id=eq.123'
+      filter: 'id=eq.123',
     };
 
     assert.ok(subscription.channel);
@@ -331,7 +327,7 @@ describe('Linear Integration', () => {
       teamId: 'team_123',
       title: 'Bug report',
       description: 'Details...',
-      priority: 2
+      priority: 2,
     };
 
     assert.ok(issue.teamId);
@@ -358,7 +354,7 @@ describe('Trello Integration', () => {
   test('should require Trello credentials', () => {
     const requiredVars = ['TRELLO_KEY', 'TRELLO_TOKEN'];
 
-    requiredVars.forEach(envVar => {
+    requiredVars.forEach((envVar) => {
       assert.ok(typeof envVar === 'string');
     });
   });
@@ -367,7 +363,7 @@ describe('Trello Integration', () => {
     const card = {
       idList: 'list_123',
       name: 'Task name',
-      desc: 'Task description'
+      desc: 'Task description',
     };
 
     assert.ok(card.idList);
@@ -377,7 +373,7 @@ describe('Trello Integration', () => {
   test('should move card between lists', () => {
     const moveAction = {
       cardId: 'card_123',
-      targetListId: 'list_456'
+      targetListId: 'list_456',
     };
 
     assert.ok(moveAction.cardId);
@@ -398,8 +394,8 @@ describe('Segment Integration', () => {
       event: 'Command Executed',
       properties: {
         command: 'check',
-        duration: 1.5
-      }
+        duration: 1.5,
+      },
     };
 
     assert.ok(event.event);
@@ -411,8 +407,8 @@ describe('Segment Integration', () => {
       userId: 'user_123',
       traits: {
         name: 'John Doe',
-        email: 'john@example.com'
-      }
+        email: 'john@example.com',
+      },
     };
 
     assert.ok(identify.userId);
@@ -424,7 +420,7 @@ describe('Integration - Error Handling', () => {
   test('should handle network errors', () => {
     const networkError = {
       code: 'ECONNREFUSED',
-      message: 'Connection refused'
+      message: 'Connection refused',
     };
 
     assert.strictEqual(networkError.code, 'ECONNREFUSED');
@@ -433,7 +429,7 @@ describe('Integration - Error Handling', () => {
   test('should handle authentication errors', () => {
     const authError = {
       status: 401,
-      message: 'Invalid credentials'
+      message: 'Invalid credentials',
     };
 
     assert.strictEqual(authError.status, 401);
@@ -443,7 +439,7 @@ describe('Integration - Error Handling', () => {
     const rateLimitError = {
       status: 429,
       message: 'Too many requests',
-      retryAfter: 60
+      retryAfter: 60,
     };
 
     assert.strictEqual(rateLimitError.status, 429);
@@ -452,7 +448,7 @@ describe('Integration - Error Handling', () => {
   test('should handle timeouts', () => {
     const timeoutError = {
       code: 'ETIMEDOUT',
-      message: 'Request timeout'
+      message: 'Request timeout',
     };
 
     assert.strictEqual(timeoutError.code, 'ETIMEDOUT');

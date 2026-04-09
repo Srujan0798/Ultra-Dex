@@ -16,7 +16,7 @@ router.post('/:provider', async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Provider name is required',
-        code: 'PROVIDER_REQUIRED'
+        code: 'PROVIDER_REQUIRED',
       });
     }
 
@@ -24,7 +24,7 @@ router.post('/:provider', async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Webhook payload is required',
-        code: 'PAYLOAD_REQUIRED'
+        code: 'PAYLOAD_REQUIRED',
       });
     }
 
@@ -46,19 +46,19 @@ router.post('/:provider', async (req, res) => {
         return res.status(400).json({
           success: false,
           error: `Unsupported provider: ${provider}`,
-          code: 'UNSUPPORTED_WEBHOOK_PROVIDER'
+          code: 'UNSUPPORTED_WEBHOOK_PROVIDER',
         });
     }
 
     res.json({
       success: true,
-      message: 'Webhook processed successfully'
+      message: 'Webhook processed successfully',
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message,
-      code: 'PROCESS_WEBHOOK_FAILED'
+      code: 'PROCESS_WEBHOOK_FAILED',
     });
   }
 });
@@ -77,7 +77,7 @@ router.post('/ai/:provider', async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Provider name is required',
-        code: 'PROVIDER_REQUIRED'
+        code: 'PROVIDER_REQUIRED',
       });
     }
 
@@ -85,7 +85,7 @@ router.post('/ai/:provider', async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Webhook payload is required',
-        code: 'PAYLOAD_REQUIRED'
+        code: 'PAYLOAD_REQUIRED',
       });
     }
 
@@ -104,19 +104,19 @@ router.post('/ai/:provider', async (req, res) => {
         return res.status(400).json({
           success: true,
           error: `Unsupported AI provider: ${provider}`,
-          code: 'UNSUPPORTED_AI_WEBHOOK_PROVIDER'
+          code: 'UNSUPPORTED_AI_WEBHOOK_PROVIDER',
         });
     }
 
     res.json({
       success: true,
-      message: 'AI webhook processed successfully'
+      message: 'AI webhook processed successfully',
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message,
-      code: 'PROCESS_AI_WEBHOOK_FAILED'
+      code: 'PROCESS_AI_WEBHOOK_FAILED',
     });
   }
 });

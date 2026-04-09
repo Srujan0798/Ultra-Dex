@@ -301,15 +301,19 @@ class HybridRAG {
     await this.indexProject();
 
     this.indexed = true;
-    await logger.event('hybrid-rag.initialized', {
-      filesIndexed: this.vectorSearch.documents.size,
-      projectRoot: this.projectRoot,
-    }, {
-      level: 'info',
-      message: 'Hybrid RAG system initialized',
-      console: false,
-      source: 'hybrid-rag',
-    });
+    await logger.event(
+      'hybrid-rag.initialized',
+      {
+        filesIndexed: this.vectorSearch.documents.size,
+        projectRoot: this.projectRoot,
+      },
+      {
+        level: 'info',
+        message: 'Hybrid RAG system initialized',
+        console: false,
+        source: 'hybrid-rag',
+      }
+    );
   }
 
   async indexProject() {
@@ -356,7 +360,14 @@ class HybridRAG {
     return combinedResults.slice(0, topK);
   }
 
-  combineSearchResults(vectorResults, graphResults, keywordResults, vectorWeight, graphWeight, keywordWeight) {
+  combineSearchResults(
+    vectorResults,
+    graphResults,
+    keywordResults,
+    vectorWeight,
+    graphWeight,
+    keywordWeight
+  ) {
     const allResults = new Map();
 
     // Process vector results
@@ -538,15 +549,19 @@ class HybridRAG {
     await this.indexProject();
     this.indexed = true;
 
-    await logger.event('hybrid-rag.index_updated', {
-      filesIndexed: this.vectorSearch.documents.size,
-      timestamp: new Date().toISOString(),
-    }, {
-      level: 'info',
-      message: 'Project index updated',
-      console: false,
-      source: 'hybrid-rag',
-    });
+    await logger.event(
+      'hybrid-rag.index_updated',
+      {
+        filesIndexed: this.vectorSearch.documents.size,
+        timestamp: new Date().toISOString(),
+      },
+      {
+        level: 'info',
+        message: 'Project index updated',
+        console: false,
+        source: 'hybrid-rag',
+      }
+    );
   }
 }
 

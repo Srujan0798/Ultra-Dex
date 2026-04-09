@@ -16,7 +16,7 @@ router.get('/search', async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Search query is required',
-        code: 'QUERY_REQUIRED'
+        code: 'QUERY_REQUIRED',
       });
     }
 
@@ -27,7 +27,7 @@ router.get('/search', async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Limit must be between 1 and 100',
-        code: 'INVALID_LIMIT'
+        code: 'INVALID_LIMIT',
       });
     }
 
@@ -35,7 +35,7 @@ router.get('/search', async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Offset must be non-negative',
-        code: 'INVALID_OFFSET'
+        code: 'INVALID_OFFSET',
       });
     }
 
@@ -43,19 +43,19 @@ router.get('/search', async (req, res) => {
       query: query.trim(),
       type: type || undefined,
       limit: parsedLimit,
-      offset: parsedOffset
+      offset: parsedOffset,
     });
 
     res.json({
       success: true,
       data: results,
-      count: results.length
+      count: results.length,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message,
-      code: 'SEARCH_MEMORY_FAILED'
+      code: 'SEARCH_MEMORY_FAILED',
     });
   }
 });
@@ -73,7 +73,7 @@ router.post('/store', async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Content is required',
-        code: 'CONTENT_REQUIRED'
+        code: 'CONTENT_REQUIRED',
       });
     }
 
@@ -81,7 +81,7 @@ router.post('/store', async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Type must be a string',
-        code: 'INVALID_TYPE'
+        code: 'INVALID_TYPE',
       });
     }
 
@@ -89,25 +89,25 @@ router.post('/store', async (req, res) => {
       return res.status(400).json({
         success: false,
         error: 'Metadata must be an object',
-        code: 'INVALID_METADATA'
+        code: 'INVALID_METADATA',
       });
     }
 
     const entry = await ppmManager.store({
       content: content.trim(),
       type: type || 'observation',
-      metadata: metadata || {}
+      metadata: metadata || {},
     });
 
     res.status(201).json({
       success: true,
-      data: entry
+      data: entry,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message,
-      code: 'STORE_MEMORY_FAILED'
+      code: 'STORE_MEMORY_FAILED',
     });
   }
 });
@@ -121,13 +121,13 @@ router.get('/stats', async (req, res) => {
     const stats = ppmManager.getStats();
     res.json({
       success: true,
-      data: stats
+      data: stats,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message,
-      code: 'GET_MEMORY_STATS_FAILED'
+      code: 'GET_MEMORY_STATS_FAILED',
     });
   }
 });

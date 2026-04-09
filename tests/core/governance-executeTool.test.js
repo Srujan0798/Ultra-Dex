@@ -5,7 +5,10 @@
 
 import { describe, it, beforeEach, mock } from 'node:test';
 import assert from 'node:assert';
-import { GovernanceManager, GovernanceDeniedException } from '../../src/core/governance/governance-manager.js';
+import {
+  GovernanceManager,
+  GovernanceDeniedException,
+} from '../../src/core/governance/governance-manager.js';
 
 describe('Governance Integration - executeTool', () => {
   let governance;

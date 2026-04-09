@@ -13,7 +13,10 @@ export const Chat = memo(function Chat() {
     setInput('');
     // Mock response
     setTimeout(() => {
-      setMessages(prev => [...prev, { role: 'agent', content: 'Acknowledged. Processing your request...' }]);
+      setMessages((prev) => [
+        ...prev,
+        { role: 'agent', content: 'Acknowledged. Processing your request...' },
+      ]);
     }, 1000);
   };
 
@@ -23,7 +26,9 @@ export const Chat = memo(function Chat() {
       <div style={{ flex: 1, overflowY: 'auto', marginBottom: '16px' }}>
         {messages.map((msg, i) => (
           <div key={i} style={{ marginBottom: '8px', fontSize: '14px' }}>
-            <span style={{ fontWeight: 'bold', color: msg.role === 'agent' ? '#a855f7' : '#94a3b8' }}>
+            <span
+              style={{ fontWeight: 'bold', color: msg.role === 'agent' ? '#a855f7' : '#94a3b8' }}
+            >
               {msg.role === 'agent' ? 'Agent: ' : msg.role === 'user' ? 'You: ' : ''}
             </span>
             <span>{msg.content}</span>
@@ -37,9 +42,26 @@ export const Chat = memo(function Chat() {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
           placeholder="Ask anything..."
-          style={{ flex: 1, background: '#1e293b', border: '1px solid #334155', color: '#fff', padding: '8px', borderRadius: '4px' }}
+          style={{
+            flex: 1,
+            background: '#1e293b',
+            border: '1px solid #334155',
+            color: '#fff',
+            padding: '8px',
+            borderRadius: '4px',
+          }}
         />
-        <button onClick={sendMessage} style={{ background: '#a855f7', border: 'none', color: '#fff', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer' }}>
+        <button
+          onClick={sendMessage}
+          style={{
+            background: '#a855f7',
+            border: 'none',
+            color: '#fff',
+            padding: '8px 12px',
+            borderRadius: '4px',
+            cursor: 'pointer',
+          }}
+        >
           Send
         </button>
       </div>

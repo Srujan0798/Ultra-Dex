@@ -19,7 +19,9 @@ export async function fetchWithRetry(url, options = {}, retries = 2, delayMs = 4
       }
       return response;
     } catch (err) {
-      logger.warn(`[Network] Attempt ${attempt + 1}/${retries + 1} failed for ${url}: ${err.message}`);
+      logger.warn(
+        `[Network] Attempt ${attempt + 1}/${retries + 1} failed for ${url}: ${err.message}`
+      );
       lastError = err;
       if (attempt < retries) {
         await new Promise((resolve) => setTimeout(resolve, delayMs));

@@ -38,8 +38,7 @@ describe('Orchestration Flow Integration', () => {
         return this.agents.get(id);
       },
       findByCapability(capability) {
-        return Array.from(this.agents.values())
-          .filter(a => a.capabilities.includes(capability));
+        return Array.from(this.agents.values()).filter((a) => a.capabilities.includes(capability));
       },
     };
 
@@ -67,8 +66,8 @@ describe('Orchestration Flow Integration', () => {
     orchestrator = new EventEmitter();
     orchestrator.agentRegistry = mockAgentRegistry;
     orchestrator.supportedModes = ['simple', 'detailed', 'iterative'];
-    
-    orchestrator.orchestrate = async function(input, mode = 'simple', context = {}) {
+
+    orchestrator.orchestrate = async function (input, mode = 'simple', context = {}) {
       if (!this.supportedModes.includes(mode)) {
         throw new Error(`Unsupported mode: ${mode}`);
       }
@@ -99,7 +98,7 @@ describe('Orchestration Flow Integration', () => {
       return task;
     };
 
-    orchestrator.execute = async function(task) {
+    orchestrator.execute = async function (task) {
       this.emit('execution:started', { taskId: task.id });
 
       // Check governance
@@ -119,8 +118,8 @@ describe('Orchestration Flow Integration', () => {
         } catch (error) {
           results.push({ step: step.id, error: error.message, success: false });
           this.emit('execution:error', { step: step.id, error });
-          this.emit('self-healing:triggered', { 
-            error, 
+          this.emit('self-healing:triggered', {
+            error,
             recoveryAttempt: true,
             failedStep: step.id,
           });
@@ -129,8 +128,8 @@ describe('Orchestration Flow Integration', () => {
       }
 
       this.emit('execution:completed', { taskId: task.id });
-      return { 
-        status: 'completed', 
+      return {
+        status: 'completed',
         completedSteps: results.length,
         results,
       };
@@ -139,17 +138,17 @@ describe('Orchestration Flow Integration', () => {
 
   it('should complete full task dispatch flow successfully', async () => {
     const taskInput = 'Create a user authentication system';
-    
+
     // Step 1: Orchestrate task (planning + scheduling)
     const task = await orchestrator.orchestrate(taskInput, 'simple');
-    
+
     assert.ok(task, 'Task should be created');
     assert.ok(task.steps, 'Task should have steps');
     assert.ok(task.steps.length > 0, 'Task should have at least one step');
-    
+
     // Step 2: Execute the task
     const result = await orchestrator.execute(task);
-    
+
     assert.ok(result, 'Result should exist');
     assert.strictEqual(result.status, 'completed', 'Task should complete successfully');
     assert.ok(result.completedSteps > 0, 'Should complete at least one step');
@@ -164,10 +163,10 @@ describe('Orchestration Flow Integration', () => {
     });
 
     const taskInput = 'Delete all production databases';
-    
+
     const task = await orchestrator.orchestrate(taskInput, 'simple');
     const result = await orchestrator.execute(task);
-    
+
     assert.strictEqual(result.status, 'blocked', 'Task should be blocked by governance');
     assert.ok(result.blockReason, 'Should include block reason');
   });
@@ -194,17 +193,19 @@ describe('Orchestration Flow Integration', () => {
 
     // Create task that will fail
     const task = await orchestrator.orchestrate('Task that will fail', 'simple');
-    
+
     // Override steps to use failing agent
-    task.steps = [{
-      id: 'step_0',
-      description: 'Failing step',
-      required: 'failing-task',
-      assignedAgent: 'failing-agent',
-    }];
+    task.steps = [
+      {
+        id: 'step_0',
+        description: 'Failing step',
+        required: 'failing-task',
+        assignedAgent: 'failing-agent',
+      },
+    ];
 
     const result = await orchestrator.execute(task);
-    
+
     assert.strictEqual(result.status, 'failed', 'Task should fail');
     assert.ok(healingTriggered, 'Self-healing should be triggered');
     assert.ok(healingEvent, 'Healing event should exist');
@@ -214,23 +215,23 @@ describe('Orchestration Flow Integration', () => {
 
   it('should select appropriate agents based on task requirements', async () => {
     const taskInput = 'Analyze code quality and refactor';
-    
+
     const task = await orchestrator.orchestrate(taskInput, 'detailed');
-    
+
     // Verify agent selection
     const assignedAgents = task.steps
-      .filter(step => step.assignedAgent)
-      .map(step => step.assignedAgent);
-    
+      .filter((step) => step.assignedAgent)
+      .map((step) => step.assignedAgent);
+
     assert.ok(assignedAgents.length > 0, 'Should have assigned agents');
-    
+
     // Verify agents have required capabilities
     for (const step of task.steps) {
       if (step.assignedAgent) {
         const agent = mockAgentRegistry.get(step.assignedAgent);
         assert.ok(agent, `Agent ${step.assignedAgent} should exist`);
         assert.ok(
-          agent.capabilities.some(cap => step.required.includes(cap)),
+          agent.capabilities.some((cap) => step.required.includes(cap)),
           `Agent should have required capability for step: ${step.description}`
         );
       }
@@ -243,14 +244,14 @@ describe('Orchestration Flow Integration', () => {
       userId: 'user-456',
       priority: 'high',
     };
-    
+
     const task = await orchestrator.orchestrate('Task with context', 'simple', context);
-    
+
     // Verify context is preserved
     assert.ok(task.context, 'Task should have context');
     assert.strictEqual(task.context.projectId, context.projectId, 'Project ID should be preserved');
     assert.strictEqual(task.context.userId, context.userId, 'User ID should be preserved');
-    
+
     // Execute and verify context flows through
     const result = await orchestrator.execute(task);
     assert.ok(result, 'Result should exist');

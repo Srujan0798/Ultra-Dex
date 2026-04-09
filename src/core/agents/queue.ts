@@ -3,14 +3,13 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { EventEmitter } from "events";
+import { singleton } from 'tsyringe';
+import { EventEmitter } from 'events';
 let Queue = class extends EventEmitter {
   constructor(options = {}) {
     super();
@@ -19,14 +18,14 @@ let Queue = class extends EventEmitter {
       maxQueueSize: options.maxQueueSize || 1e4,
       minPriority: options.minPriority || 0,
       maxPriority: options.maxPriority || 10,
-      ...options
+      ...options,
     };
-    this.state = "idle";
+    this.state = 'idle';
     this.stats = {
       itemsEnqueued: 0,
       itemsDequeued: 0,
       averageQueueTime: 0,
-      queueTimes: []
+      queueTimes: [],
     };
     this.initializeQueues();
   }
@@ -46,13 +45,13 @@ let Queue = class extends EventEmitter {
       throw new Error(`Invalid priority ${priority}`);
     }
     if (this.getTotalSize() >= this.config.maxQueueSize) {
-      throw new Error("Queue is full");
+      throw new Error('Queue is full');
     }
     item.enqueuedAt = Date.now();
     item.priority = priority;
     this.queues.get(priority).push(item);
     this.stats.itemsEnqueued++;
-    this.emit("item.enqueued", { item, priority, queueSize: this.getTotalSize() });
+    this.emit('item.enqueued', { item, priority, queueSize: this.getTotalSize() });
     return item;
   }
   /**
@@ -68,9 +67,10 @@ let Queue = class extends EventEmitter {
         if (this.stats.queueTimes.length > 1e3) {
           this.stats.queueTimes.shift();
         }
-        this.stats.averageQueueTime = this.stats.queueTimes.reduce((a, b) => a + b, 0) / this.stats.queueTimes.length;
+        this.stats.averageQueueTime =
+          this.stats.queueTimes.reduce((a, b) => a + b, 0) / this.stats.queueTimes.length;
         this.stats.itemsDequeued++;
-        this.emit("item.dequeued", { item, queueTime, queueSize: this.getTotalSize() });
+        this.emit('item.dequeued', { item, queueTime, queueSize: this.getTotalSize() });
         return item;
       }
     }
@@ -112,11 +112,10 @@ let Queue = class extends EventEmitter {
    */
   clearPriority(priority) {
     const queue = this.queues.get(priority);
-    if (!queue)
-      return;
+    if (!queue) return;
     const count = queue.length;
     queue.length = 0;
-    this.emit("queue.cleared", { priority, itemsCleared: count });
+    this.emit('queue.cleared', { priority, itemsCleared: count });
   }
   /**
    * Clear all queues
@@ -125,7 +124,7 @@ let Queue = class extends EventEmitter {
     for (const queue of this.queues.values()) {
       queue.length = 0;
     }
-    this.emit("queues.cleared");
+    this.emit('queues.cleared');
   }
   /**
    * Is queue empty
@@ -153,7 +152,7 @@ let Queue = class extends EventEmitter {
         const [item] = queue.splice(index, 1);
         item.priority = newPriority;
         this.queues.get(newPriority).push(item);
-        this.emit("item.priority-updated", { itemId, oldPriority: i, newPriority });
+        this.emit('item.priority-updated', { itemId, oldPriority: i, newPriority });
         return true;
       }
     }
@@ -165,8 +164,7 @@ let Queue = class extends EventEmitter {
   findItem(predicate) {
     for (const queue of this.queues.values()) {
       const item = queue.find(predicate);
-      if (item)
-        return item;
+      if (item) return item;
     }
     return null;
   }
@@ -199,7 +197,7 @@ let Queue = class extends EventEmitter {
       totalSize: this.getTotalSize(),
       sizeByPriority: Object.fromEntries(
         Array.from(this.queues.entries()).map(([priority, queue]) => [priority, queue.length])
-      )
+      ),
     };
   }
   /**
@@ -209,8 +207,7 @@ let Queue = class extends EventEmitter {
     const items = [];
     for (let i = 0; i < count; i++) {
       const item = this.dequeue();
-      if (!item)
-        break;
+      if (!item) break;
       items.push(item);
     }
     return items;
@@ -230,11 +227,6 @@ let Queue = class extends EventEmitter {
     return results;
   }
 };
-Queue = __decorateClass([
-  singleton()
-], Queue);
+Queue = __decorateClass([singleton()], Queue);
 var queue_default = Queue;
-export {
-  Queue,
-  queue_default as default
-};
+export { Queue, queue_default as default };

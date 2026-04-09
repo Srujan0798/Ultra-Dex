@@ -13,6 +13,7 @@ Complete SaaS template built with SvelteKit, featuring authentication, payments,
 The SvelteKit SaaS Template is a comprehensive starter kit that includes all essential features for a production SaaS application. Built with SvelteKit for optimal performance and developer experience, this template follows industry best practices and includes enterprise-grade security and scalability features.
 
 ### Core Features
+
 - **Authentication:** Lucia or Clerk with social login integration
 - **Payments:** Stripe integration for subscriptions and one-time purchases
 - **Database:** Prisma ORM with PostgreSQL or MySQL
@@ -23,6 +24,7 @@ The SvelteKit SaaS Template is a comprehensive starter kit that includes all ess
 - **Performance:** Optimized for Core Web Vitals with Svelte's efficiency
 
 ### Architecture Highlights
+
 - **SvelteKit Framework:** Blazing fast full-stack Svelte framework
 - **TypeScript:** Full type safety throughout
 - **Tailwind CSS:** Utility-first styling with SvelteKit integration
@@ -68,6 +70,7 @@ The SvelteKit SaaS Template is a comprehensive starter kit that includes all ess
 ## 🚀 QUICK START
 
 ### Generate Project
+
 ```bash
 # Using Ultra-Dex CLI
 ultra-dex template generate sveltekit-saas my-saas-app
@@ -77,6 +80,7 @@ npx ultra-dex generate "Create a SaaS with SvelteKit template" --template svelte
 ```
 
 ### Manual Setup
+
 ```bash
 # Clone the template
 npx ultra-dex template clone sveltekit-saas my-saas-app
@@ -105,6 +109,7 @@ pnpm run dev  # or npm run dev or yarn dev
 ## 🔧 ENVIRONMENT VARIABLES
 
 ### Required Variables
+
 ```env
 # Database
 DATABASE_URL="postgresql://username:password@localhost:5432/my_saas_db"
@@ -132,6 +137,7 @@ GITHUB_CLIENT_SECRET="your-github-client-secret"
 ```
 
 ### Optional Variables
+
 ```env
 # Email (if using custom SMTP)
 SMTP_HOST="smtp.gmail.com"
@@ -244,6 +250,7 @@ my-sveltekit-saas/
 ## 🧩 CORE COMPONENTS
 
 ### 1. Authentication System
+
 - **Social Login:** Discord, Google, GitHub integration using SvelteKit OAuth
 - **Email/Password:** Traditional authentication with Lucia
 - **Session Management:** Secure session handling with cookies
@@ -251,6 +258,7 @@ my-sveltekit-saas/
 - **Multi-Factor Auth:** Optional 2FA support with TOTP
 
 ### 2. Billing & Payments
+
 - **Subscription Management:** Stripe integration for recurring payments
 - **Pricing Tiers:** Multiple pricing plans with feature matrices
 - **Usage Tracking:** Track usage for metered billing
@@ -258,6 +266,7 @@ my-sveltekit-saas/
 - **Tax Calculation:** Automatic tax calculation based on location
 
 ### 3. Database Layer
+
 - **Prisma ORM:** Type-safe database access with SvelteKit integration
 - **PostgreSQL/MySQL:** Robust database with advanced features
 - **Migrations:** Automated schema migrations
@@ -265,6 +274,7 @@ my-sveltekit-saas/
 - **Relationships:** Properly defined entity relationships
 
 ### 4. File Management
+
 - **Direct Uploads:** Client-side uploads directly to S3 for efficiency
 - **S3 Integration:** Scalable file storage with SvelteKit actions
 - **Image Optimization:** Automatic image optimization and transformations
@@ -272,6 +282,7 @@ my-sveltekit-saas/
 - **CDN Support:** Content delivery network integration
 
 ### 5. Admin Dashboard
+
 - **User Management:** Manage users and permissions
 - **Analytics:** Business metrics and KPIs with real-time updates
 - **Billing Dashboard:** Subscription and payment management
@@ -283,6 +294,7 @@ my-sveltekit-saas/
 ## 🛡️ SECURITY FEATURES
 
 ### Authentication Security
+
 - **Secure Sessions:** Lucia with secure cookie management
 - **Password Hashing:** Argon2 for password security
 - **Rate Limiting:** Prevent brute force attacks with SvelteKit hooks
@@ -290,6 +302,7 @@ my-sveltekit-saas/
 - **XSS Prevention:** Automatic XSS protection through Svelte
 
 ### Data Security
+
 - **Encryption at Rest:** Database encryption
 - **Encryption in Transit:** HTTPS/TLS for all communications
 - **Input Validation:** Zod schemas for all inputs
@@ -297,6 +310,7 @@ my-sveltekit-saas/
 - **Access Controls:** SvelteKit route guards and middleware
 
 ### Payment Security
+
 - **PCI DSS Compliance:** Stripe handles payment processing
 - **Secure Webhooks:** Verify webhook signatures
 - **Tokenization:** No sensitive data stored locally
@@ -308,6 +322,7 @@ my-sveltekit-saas/
 ## 📊 PERFORMANCE OPTIMIZATIONS
 
 ### Client-Side Optimizations
+
 - **Bundle Optimization:** Svelte's tiny bundles and tree-shaking
 - **Image Optimization:** Native SvelteKit image optimization
 - **Progressive Enhancement:** Graceful degradation
@@ -315,6 +330,7 @@ my-sveltekit-saas/
 - **Caching:** Intelligent caching strategies
 
 ### Server-Side Optimizations
+
 - **Database Indexing:** Optimized database queries
 - **Caching Layer:** Redis for frequently accessed data
 - **CDN Integration:** Static asset delivery
@@ -322,6 +338,7 @@ my-sveltekit-saas/
 - **Connection Pooling:** Optimized database connections
 
 ### SvelteKit-Specific Optimizations
+
 - **Server-Side Rendering:** Fast initial loads with SSR
 - **Hydration:** Efficient client-side hydration
 - **Code Splitting:** Route-based code splitting
@@ -333,18 +350,21 @@ my-sveltekit-saas/
 ## 🚢 DEPLOYMENT
 
 ### Vercel Deployment
+
 ```bash
 # Deploy to Vercel
 npm run deploy
 ```
 
 ### Render Deployment
+
 ```bash
 # Deploy to Render
 npx ultra-dex deploy --platform render
 ```
 
 ### Docker Deployment
+
 ```dockerfile
 FROM node:18-alpine AS builder
 WORKDIR /app
@@ -365,6 +385,7 @@ CMD ["dumb-init", "node", "build/index.js"]
 ```
 
 ### Environment Setup for Production
+
 1. **Database:** Set up PostgreSQL/MySQL database
 2. **Environment Variables:** Configure all required variables
 3. **Domains:** Set up custom domains
@@ -376,21 +397,25 @@ CMD ["dumb-init", "node", "build/index.js"]
 ## 🧪 TESTING STRATEGY
 
 ### Unit Tests
+
 - **Vitest:** Fast test runner optimized for SvelteKit
 - **Testing Library:** Svelte testing utilities
 - **Mock Services:** Mock external services for testing
 
 ### Integration Tests
+
 - **Playwright:** End-to-end browser testing
 - **Supabase Testing:** Database integration tests
 - **Stripe Testing:** Payment flow testing with test keys
 
 ### Performance Tests
+
 - **Lighthouse CI:** Automated performance auditing
 - **Load Testing:** Simulate concurrent users
 - **Database Performance:** Query optimization testing
 
 ### Security Tests
+
 - **Dependency Scanning:** Automated vulnerability detection
 - **Penetration Testing:** Regular security assessments
 - **Compliance Testing:** Regulatory compliance verification
@@ -400,22 +425,26 @@ CMD ["dumb-init", "node", "build/index.js"]
 ## 🔌 INTEGRATIONS
 
 ### Payment Processing
+
 - **Stripe:** Subscriptions and one-time payments
 - **PayPal:** Alternative payment method
 - **Crypto:** Future cryptocurrency payment support
 
 ### Email Services
+
 - **Resend:** Transactional email delivery
 - **SendGrid:** Alternative email provider
 - **Custom SMTP:** Bring your own email service
 
 ### File Storage
+
 - **Uploadthing:** Easy file uploads with SvelteKit integration
 - **AWS S3:** Scalable object storage
 - **Cloudflare R2:** Cost-effective storage
 - **Custom S3:** Compatible storage providers
 
 ### Analytics & Monitoring
+
 - **Plausible:** Privacy-friendly analytics
 - **Sentry:** Error tracking and monitoring
 - **LogRocket:** Session replay and user analytics
@@ -426,18 +455,21 @@ CMD ["dumb-init", "node", "build/index.js"]
 ## 📋 CUSTOMIZATION GUIDE
 
 ### Changing Branding
+
 1. **Update Logo:** Replace logo in `static/images/logo.svg`
 2. **Update Colors:** Modify Tailwind config in `tailwind.config.cjs`
 3. **Update Favicon:** Replace favicon in `static/favicon.ico`
 4. **Update Metadata:** Modify SEO metadata in `src/app.html`
 
 ### Modifying Pricing Plans
+
 1. **Update Stripe Dashboard:** Configure plans in Stripe
 2. **Update Frontend:** Modify pricing components in `src/routes/pricing/+page.svelte`
 3. **Update Backend:** Update billing logic in `src/lib/server/billing/plans.ts`
 4. **Test Changes:** Verify all payment flows work correctly
 
 ### Adding New Features
+
 1. **Database Schema:** Update Prisma schema
 2. **API Routes:** Create new SvelteKit endpoints
 3. **UI Components:** Build new Svelte components
@@ -449,6 +481,7 @@ CMD ["dumb-init", "node", "build/index.js"]
 ## 🔄 UPDATES & MAINTENANCE
 
 ### Keeping Dependencies Updated
+
 ```bash
 # Check for outdated dependencies
 pnpm outdated  # or npm outdated
@@ -461,12 +494,15 @@ pnpm audit     # or npm audit
 ```
 
 ### Template Versioning
+
 - **Major Updates:** Breaking changes to template structure
 - **Minor Updates:** New features and improvements
 - **Patch Updates:** Bug fixes and security patches
 
 ### Migration Guide
+
 When updating to a new template version:
+
 1. **Backup Current Code:** Create a backup of your current implementation
 2. **Review Changes:** Check the changelog for breaking changes
 3. **Update Dependencies:** Update package dependencies
@@ -478,16 +514,19 @@ When updating to a new template version:
 ## 🚀 ADVANCED FEATURES
 
 ### Real-time Updates
+
 - **WebSocket Integration:** Real-time dashboard updates
 - **Server-Sent Events:** Live notifications and updates
 - **Push Notifications:** Browser and mobile notifications
 
 ### AI Integration
+
 - **OpenAI Integration:** AI-powered features and assistants
 - **Anthropic Integration:** Claude-powered content generation
 - **Custom AI Models:** Integration with self-hosted models
 
 ### Multi-tenancy
+
 - **Tenant Isolation:** Row-level security for multi-tenancy
 - **Resource Allocation:** Per-tenant resource limits
 - **Billing Separation:** Independent billing per tenant
@@ -497,17 +536,20 @@ When updating to a new template version:
 ## 📞 SUPPORT & RESOURCES
 
 ### Documentation
+
 - [SvelteKit Documentation](https://kit.svelte.dev/docs)
 - [Prisma Documentation](https://prisma.io/docs)
 - [Stripe Documentation](https://stripe.com/docs)
 - [Ultra-Dex Documentation](../../README.md)
 
 ### Community
+
 - [SvelteKit Discord](https://discord.gg/svelte)
 - [Ultra-Dex Discord](https://discord.gg/ultra-dex)
 - [GitHub Issues](https://github.com/Srujan0798/Ultra-Dex/issues)
 
 ### Professional Support
+
 - **Enterprise Support:** Available for production deployments
 - **Consulting Services:** Custom implementation and integration
 - **Training:** Team training and onboarding
@@ -517,6 +559,7 @@ When updating to a new template version:
 ## 🏆 BEST PRACTICES
 
 ### Development Best Practices
+
 - **Type Safety:** Use TypeScript extensively with SvelteKit
 - **Component Reusability:** Build reusable Svelte components
 - **Security First:** Implement security from the start
@@ -524,6 +567,7 @@ When updating to a new template version:
 - **Testing:** Maintain high test coverage
 
 ### Deployment Best Practices
+
 - **Environment Variables:** Never commit secrets to version control
 - **Database Migrations:** Test migrations in staging first
 - **Monitoring:** Set up comprehensive monitoring
@@ -535,6 +579,7 @@ When updating to a new template version:
 ## 🚀 NEXT STEPS
 
 ### After Setup
+
 1. **Customize Branding:** Update logos, colors, and copy
 2. **Configure Payments:** Set up Stripe with your business details
 3. **Add Features:** Implement your specific business logic
@@ -542,6 +587,7 @@ When updating to a new template version:
 5. **Deploy:** Launch to production
 
 ### Advanced Customizations
+
 - **Multi-Tenancy:** Add support for multiple tenants
 - **Advanced Analytics:** Implement custom analytics
 - **AI Integration:** Add AI-powered features

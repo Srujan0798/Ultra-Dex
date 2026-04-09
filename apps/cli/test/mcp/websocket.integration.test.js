@@ -77,7 +77,10 @@ describe('MCP WebSocket integration', () => {
  */
 function handleError(error) {
   try {
-    console.error('[websocket.integration.test]', error instanceof Error ? error.message : String(error));
+    console.error(
+      '[websocket.integration.test]',
+      error instanceof Error ? error.message : String(error)
+    );
   } catch (_) {
     // Fail silently
   }

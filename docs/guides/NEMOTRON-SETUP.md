@@ -77,7 +77,7 @@ const client = createNemotronClient(process.env.NVIDIA_API_KEY);
 const response = await chatWithNemotron({
   client,
   messages: [{ role: 'user', content: 'Hello, how are you?' }],
-  enableThinking: true,  // Enable reasoning traces
+  enableThinking: true, // Enable reasoning traces
   maxTokens: 4096,
 });
 
@@ -112,11 +112,11 @@ await chatWithNemotron({
 
 ## CLI Options
 
-| Option | Alias | Description |
-|--------|-------|-------------|
-| `--stream` | `-s` | Stream response in real-time |
-| `--no-thinking` | - | Disable reasoning mode (faster) |
-| `--help` | `-h` | Show help message |
+| Option          | Alias | Description                     |
+| --------------- | ----- | ------------------------------- |
+| `--stream`      | `-s`  | Stream response in real-time    |
+| `--no-thinking` | -     | Disable reasoning mode (faster) |
+| `--help`        | `-h`  | Show help message               |
 
 ## API Limits (Free Tier)
 
@@ -130,6 +130,7 @@ await chatWithNemotron({
 ### "NVIDIA_API_KEY not found"
 
 Make sure you have `.env.local` file with your API key:
+
 ```bash
 NVIDIA_API_KEY=nvapi-xxxxx...
 ```
@@ -137,6 +138,7 @@ NVIDIA_API_KEY=nvapi-xxxxx...
 ### Rate limit errors
 
 The free tier has usage limits. Wait a few minutes and retry, or consider:
+
 - Using `--no-thinking` for simpler queries (uses fewer tokens)
 - Using `lowEffort: true` in programmatic usage
 
@@ -156,6 +158,7 @@ vllm serve nvidia/NVIDIA-Nemotron-3-Super-120B-A12B-BF16 \
 ```
 
 Then update the client baseURL:
+
 ```javascript
 const client = new OpenAI({
   baseURL: 'http://localhost:8000/v1',

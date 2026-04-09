@@ -16,9 +16,9 @@ services:
     container_name: ultra-dex
     restart: unless-stopped
     ports:
-      - "3000:3000"
-      - "3001:3001"
-      - "8080:8080"
+      - '3000:3000'
+      - '3001:3001'
+      - '8080:8080'
     volumes:
       - ultra-dex-data:/app/.ultra-dex
       - ultra-dex-logs:/app/logs
@@ -31,7 +31,7 @@ services:
     profiles:
       - prod
     healthcheck:
-      test: ["CMD", "node", "bin/ultra-dex.js", "--version"]
+      test: ['CMD', 'node', 'bin/ultra-dex.js', '--version']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -48,9 +48,9 @@ services:
     container_name: ultra-dex-dev
     restart: unless-stopped
     ports:
-      - "3000:3000"
-      - "3001:3001"
-      - "8080:8080"
+      - '3000:3000'
+      - '3001:3001'
+      - '8080:8080'
     volumes:
       - .:/app
       - /app/node_modules
@@ -61,7 +61,7 @@ services:
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
       - NVIDIA_API_KEY=${NVIDIA_API_KEY}
-    command: ["node", "apps/cli/bin/ultra-dex.js", "serve"]
+    command: ['node', 'apps/cli/bin/ultra-dex.js', 'serve']
     profiles:
       - dev
 
@@ -77,7 +77,7 @@ services:
     container_name: ultra-dex-dashboard
     restart: unless-stopped
     ports:
-      - "3002:3000"
+      - '3002:3000'
     environment:
       - NODE_ENV=production
       - API_URL=http://ultra-dex:3001
@@ -98,7 +98,7 @@ services:
     container_name: ultra-dex-docs
     restart: unless-stopped
     ports:
-      - "3003:3000"
+      - '3003:3000'
     profiles:
       - dev
 

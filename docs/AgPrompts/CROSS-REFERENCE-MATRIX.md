@@ -8,9 +8,9 @@
 ## 📊 Overview
 
 | Category | Count |
-|----------|-------|
-| legacy | 46 |
-| phases | 16 |
+| -------- | ----- |
+| legacy   | 46    |
+| phases   | 16    |
 
 ---
 
@@ -579,4 +579,3 @@
   - PHASE-10-PROMPTS: Phase 10 - SaaS Templates & Decision Frameworks
 
 ---
-

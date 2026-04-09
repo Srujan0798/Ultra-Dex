@@ -1,73 +1,179 @@
 {
   "cycle": 6,
-  "title": "COMPLETE ALL REMAINING WORK — Zero Gaps, Ship v3.1.0",
-  "initiated": "2026-04-08",
-  "source": "Live codebase audit. Cycle 5 (Better Stack + Clerk + Stripe integrations) COMPLETE. 56 tests still failing (esbuild platform mismatch). 14 files missing. Auth routes unprotected. Usage metering absent. No PostHog/Sentry. No billing/landing/onboarding UI.",
-  "thesis": "One esbuild rebuild unblocks 56 tests. Then: auth middleware, usage metering, PostHog/Sentry, dashboard pages, CLI login, docs. After this: v3.1.0 shipped with zero gaps.",
+  "title": "CYCLE 6 ETERNAL — COMPLETE PRE-V2.0, SHIP V3.1.0",
+  "initiated": "2026-04-09",
+  "source": "Codebase deep audit (review.md) + NOTION/pre v2.0.md (19 phases) + Cycles 1-5 state. Cycle 5 (Better Stack + Clerk + Stripe) COMPLETE. 55 tests failing (esbuild). 24 stubs. 14 missing files. 5 blockers. Architecture violation.",
+  "thesis": "One esbuild rebuild unblocks 55 tests. Then: fix CLI, RBAC, architecture. Clean 24 stubs. Create 14 missing files. Prove both MOCK_AI and real provider execution. Ship v3.1.0. Plan v2.0+.",
+  "total_windows": 35,
+  "total_phases": 22,
   "phases": {
     "P0": {
-      "label": "ESBUILD FIX — npm rebuild esbuild → 56 test failures → 0",
-      "windows": ["SELF"],
+      "label": "PLATFORM FIX — npm rebuild esbuild → 55 failures → 0",
+      "windows": ["W0-OWNER"],
       "status": "ready",
-      "note": "5 minutes. @esbuild/darwin-arm64 installed but linux-arm64 needed. ONE command."
+      "note": "BLOCKS EVERYTHING. Owner runs: npm rebuild esbuild && npm rebuild"
     },
     "P1": {
-      "label": "AUTH MIDDLEWARE — Route protection + 401/403 enforcement",
+      "label": "CLI FIX — registry.js import → --help works",
       "windows": ["W1"],
-      "status": "ready"
+      "status": "blocked-by-P0",
+      "depends": ["P0"]
     },
     "P2": {
-      "label": "USAGE METERING + WEBHOOK HANDLER — Limits + Stripe events",
+      "label": "RBAC FIX — default role viewer → admin for local",
       "windows": ["W2"],
-      "status": "ready"
+      "status": "blocked-by-P0",
+      "depends": ["P0"]
     },
     "P3": {
-      "label": "ANALYTICS — PostHog + Sentry integration",
+      "label": "ARCHITECTURE FIX — core→CLI import → move GovernanceEngine",
       "windows": ["W3"],
-      "status": "queued"
+      "status": "blocked-by-P0",
+      "depends": ["P0"]
     },
     "P4": {
-      "label": "MONITORING — /metrics endpoint",
+      "label": "MOCK EXECUTION PROOF — MOCK_AI=true runs end-to-end",
       "windows": ["W4"],
-      "status": "queued"
+      "status": "blocked-by-P1-P3",
+      "depends": ["P1", "P2", "P3"]
     },
     "P5": {
-      "label": "DASHBOARD — Billing.tsx + Landing.tsx + Onboarding.tsx",
-      "windows": ["W5", "W6", "W7"],
-      "status": "queued"
+      "label": "AUTH MIDDLEWARE — requireAuth + requireAdmin + enforceUsageLimit",
+      "windows": ["W5"],
+      "status": "queued",
+      "depends": ["P4"]
     },
     "P6": {
-      "label": "CLI + DOCS — login.ts + BILLING.md + setup-stripe.sh + FUNDING.yml",
-      "windows": ["W8"],
-      "status": "queued"
+      "label": "USAGE METERING + WEBHOOK — limits + Stripe event handler",
+      "windows": ["W6", "W7"],
+      "status": "queued",
+      "depends": ["P4"]
     },
     "P7": {
-      "label": "SEAL — Version 3.1.0 + CHANGELOG + full verification + tag + push",
-      "windows": ["W9"],
-      "status": "queued"
+      "label": "ANALYTICS — PostHog + Sentry integration",
+      "windows": ["W8", "W9"],
+      "status": "queued",
+      "depends": ["P4"]
+    },
+    "P8": {
+      "label": "MONITORING — /metrics endpoint with Prometheus format",
+      "windows": ["W10"],
+      "status": "queued",
+      "depends": ["P4"]
+    },
+    "P9": {
+      "label": "STUB CLEANUP — 24 files: implement, fix, or remove",
+      "windows": ["W11", "W12", "W13", "W14"],
+      "status": "queued",
+      "depends": ["P4"]
+    },
+    "P10": {
+      "label": "FAKE FEATURE REMOVAL — --stream, --cache, SEARCH_CODE audit",
+      "windows": ["W15"],
+      "status": "queued",
+      "depends": ["P4"]
+    },
+    "P11": {
+      "label": "LOGGING MIGRATION — Better Stack in all target files",
+      "windows": ["W16"],
+      "status": "queued",
+      "depends": ["P4"]
+    },
+    "P12": {
+      "label": "DASHBOARD PAGES — Billing + Landing + Onboarding",
+      "windows": ["W17", "W18", "W19"],
+      "status": "queued",
+      "depends": ["P9"]
+    },
+    "P13": {
+      "label": "CLI + DOCS — login.ts + BILLING.md + setup-stripe.sh + FUNDING.yml",
+      "windows": ["W20", "W21", "W22", "W23"],
+      "status": "queued",
+      "depends": ["P9"]
+    },
+    "P14": {
+      "label": "EXECUTION TRACE — run_id, steps[], timing verification",
+      "windows": ["W24"],
+      "status": "queued",
+      "depends": ["P4"]
+    },
+    "P15": {
+      "label": "FULL TEST SUITE GREEN — 0 failures + new module tests",
+      "windows": ["W25", "W26"],
+      "status": "queued",
+      "depends": ["P5", "P6", "P7", "P8", "P9", "P10", "P11", "P12", "P13", "P14"]
+    },
+    "P16": {
+      "label": "REAL PROVIDER TEST — NVIDIA API key required",
+      "windows": ["W27"],
+      "status": "queued",
+      "depends": ["P15"],
+      "note": "OWNER: export NVIDIA_API_KEY before running"
+    },
+    "P17": {
+      "label": "DASHBOARD BUILD FIX — rolldown binding + new pages",
+      "windows": ["W28"],
+      "status": "queued",
+      "depends": ["P12"]
+    },
+    "P18": {
+      "label": "FULL BUILD VERIFICATION — typecheck + lint + build + test + audit",
+      "windows": ["W29"],
+      "status": "queued",
+      "depends": ["P15", "P17"]
+    },
+    "P19": {
+      "label": "ARCHITECTURE ENFORCEMENT — final scan, zero violations",
+      "windows": ["W30"],
+      "status": "queued",
+      "depends": ["P18"]
+    },
+    "P20": {
+      "label": "VERSION BUMP — 3.1.0 + CHANGELOG + git tag",
+      "windows": ["W31"],
+      "status": "queued",
+      "depends": ["P19"]
+    },
+    "P21": {
+      "label": "FINAL VALIDATION — every completion criteria checked",
+      "windows": ["W32"],
+      "status": "queued",
+      "depends": ["P20"]
+    },
+    "P22": {
+      "label": "V2.0+ PLANNING — spec + roadmap + competitive analysis",
+      "windows": ["W33", "W34", "W35"],
+      "status": "queued",
+      "depends": ["P21"]
     }
   },
   "manual_actions_required": [
-    "OWNER: npm rebuild esbuild (or delegate to any agent — Phase 0)",
+    "OWNER P0: npm rebuild esbuild && npm rebuild",
+    "OWNER P16: export NVIDIA_API_KEY=nvapi-xxx before W27",
     "OWNER: Create PostHog account → POSTHOG_API_KEY + POSTHOG_HOST",
     "OWNER: Create Sentry project → SENTRY_DSN",
-    "OWNER: Configure Stripe webhook URL in Stripe Dashboard"
+    "OWNER: Configure Stripe webhook URL in Stripe Dashboard",
+    "OWNER POST-P21: git push origin main && git push origin v3.1.0"
   ],
-  "gate": "npm test → 0 failures. All 14 new files exist. Auth middleware wired. Usage metering active. PostHog + Sentry integrated. Dashboard pages render. Version 3.1.0.",
+  "gate": "ALL 23 completion criteria pass. Zero test failures. Zero build errors. Zero architecture violations. Both execution paths proven. Version 3.1.0 tagged.",
   "completion_criteria": [
     "npm rebuild esbuild → tests unblocked",
+    "node apps/cli/bin/ultra-dex.js --help → works",
+    "MOCK_AI=true node apps/cli/bin/ultra-dex.js run planner -t 'hello' → works",
+    "grep -r 'apps/cli' src/core/ → returns nothing",
     "npm run test:unit → 0 failures",
     "npm run test:integration → 0 failures",
     "npm run test:cli → 0 failures",
     "npx tsc --noEmit → 0 errors",
-    "npm run lint → 0 errors",
-    "npm run build → exits 0",
-    "src/core/auth/middleware.ts exists + wired to routes",
-    "src/core/billing/usage-meter.ts exists + enforcing limits",
-    "src/core/billing/webhook-handler.ts exists + handling events",
-    "src/core/analytics/posthog-client.ts exists + tracking events",
-    "src/core/analytics/sentry-client.ts exists + catching errors",
-    "src/core/system/monitoring.ts exists + /metrics endpoint live",
+    "npm run lint → 0 errors, 0 warnings",
+    "npm run build → exits 0 (core + cli + dashboard)",
+    "npm audit → 0 high/critical",
+    "src/core/auth/middleware.ts exists + wired",
+    "src/core/billing/usage-meter.ts exists",
+    "src/core/billing/webhook-handler.ts exists",
+    "src/core/analytics/posthog-client.ts exists",
+    "src/core/analytics/sentry-client.ts exists",
+    "src/core/system/monitoring.ts exists + /metrics live",
     "apps/dashboard/src/pages/Billing.tsx exists",
     "apps/dashboard/src/pages/Landing.tsx exists",
     "apps/dashboard/src/pages/Onboarding.tsx exists",
@@ -75,8 +181,17 @@
     "docs/BILLING.md exists",
     "scripts/setup-stripe.sh exists + executable",
     ".github/FUNDING.yml exists",
-    "Version: 3.1.0 in package.json",
+    "No empty files in src/core/",
+    "No stub files (< 5 LOC with no logic) in src/core/",
+    "24 stub files implemented or removed",
+    "Fake features removed (--stream, --cache)",
+    "Better Stack logging in all 4 target files",
+    "Execution trace complete (run_id, steps[], timing)",
+    "Version 3.1.0 in package.json",
     "CHANGELOG.md includes v3.1.0",
-    "git tag v3.1.0 pushed"
+    "git tag v3.1.0 exists",
+    "docs/V2.0-SPEC.md exists",
+    "docs/V2.0-ROADMAP.md exists",
+    "docs/V2.0-COMPETITIVE.md exists"
   ]
 }

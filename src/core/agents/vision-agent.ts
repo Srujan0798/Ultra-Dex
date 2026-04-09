@@ -3,20 +3,25 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
+import { singleton } from 'tsyringe';
 import { BaseAgent } from './base-agent.js';
 import { Vision } from './vision.js';
 let VisionAgent = class extends BaseAgent {
   constructor(options = {}) {
-    super("vision-agent", {
+    super('vision-agent', {
       ...options,
-      capabilities: ["image-analysis", "object-detection", "ocr", "visual-qa", ...options.capabilities || []]
+      capabilities: [
+        'image-analysis',
+        'object-detection',
+        'ocr',
+        'visual-qa',
+        ...(options.capabilities || []),
+      ],
     });
     this.vision = new Vision(options.vision);
   }
@@ -26,17 +31,17 @@ let VisionAgent = class extends BaseAgent {
   async onExecute(task) {
     const { action, imagePath, params } = task;
     switch (action) {
-      case "analyze":
+      case 'analyze':
         return await this.analyzeImage(imagePath, params);
-      case "detect-objects":
+      case 'detect-objects':
         return await this.detectObjects(imagePath, params);
-      case "extract-text":
+      case 'extract-text':
         return await this.extractText(imagePath, params);
-      case "describe":
+      case 'describe':
         return await this.describeImage(imagePath, params);
-      case "compare":
+      case 'compare':
         return await this.compareImages(params);
-      case "visual-qa":
+      case 'visual-qa':
         return await this.visualQA(imagePath, params);
       default:
         throw new Error(`Unknown vision action: ${action}`);
@@ -85,15 +90,10 @@ let VisionAgent = class extends BaseAgent {
       question,
       imagePath,
       analysis,
-      answer: "Based on the visual analysis..."
+      answer: 'Based on the visual analysis...',
     };
   }
 };
-VisionAgent = __decorateClass([
-  singleton()
-], VisionAgent);
+VisionAgent = __decorateClass([singleton()], VisionAgent);
 var vision_agent_default = VisionAgent;
-export {
-  VisionAgent,
-  vision_agent_default as default
-};
+export { VisionAgent, vision_agent_default as default };

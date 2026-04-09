@@ -19,12 +19,14 @@ This example demonstrates how to create an AI-powered content generation system 
 ## Setup
 
 1. **Install Dependencies**:
+
    ```bash
    # This example uses the UltraDex library
    ```
 
 2. **Environment Variables**:
    Create a `.env` file with the following:
+
    ```env
    ULTRA_DEX_API_KEY=your_ultra_dex_api_key
    ULTRA_DEX_ENDPOINT=https://api.ultra-dex.ai
@@ -53,14 +55,14 @@ The content creator can generate various types of content:
 const contentCreator = new ContentCreator({
   ultraDex: {
     apiKey: process.env.ULTRA_DEX_API_KEY,
-    endpoint: process.env.ULTRA_DEX_ENDPOINT || 'https://api.ultra-dex.ai'
+    endpoint: process.env.ULTRA_DEX_ENDPOINT || 'https://api.ultra-dex.ai',
   },
   brandGuidelines: {
     voice: 'professional yet approachable',
     tone: 'helpful and informative',
     keyMessages: ['innovation', 'reliability', 'customer-focus'],
-    prohibitedContent: ['jargon-heavy text', 'negative language']
-  }
+    prohibitedContent: ['jargon-heavy text', 'negative language'],
+  },
 });
 
 // Generate a blog post
@@ -71,7 +73,7 @@ const blogPost = await contentCreator.generateBlogPost(
   {
     audience: 'tech-leaders',
     keywords: ['AI orchestration', 'enterprise AI', 'workflow automation'],
-    tone: 'thought-leadership'
+    tone: 'thought-leadership',
   }
 );
 ```

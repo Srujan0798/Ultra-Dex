@@ -3,16 +3,15 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { performance } from "perf_hooks";
-import { cpus } from "os";
-import { logger } from '../utils/logging.js';
+import { singleton } from 'tsyringe';
+import { performance } from 'perf_hooks';
+import { cpus } from 'os';
+import { logger } from '../../utils/logging.js';
 let AdvancedPerformanceOptimizer = class {
   constructor(options = {}) {
     this.config = {
@@ -34,7 +33,7 @@ let AdvancedPerformanceOptimizer = class {
       maxWorkerThreads: Math.min(cpus().length, options.maxWorkerThreads || 16),
       maxConnections: options.maxConnections || 100,
       connectionTimeout: options.connectionTimeout || 3e4,
-      ...options
+      ...options,
     };
     this.predictiveCache = /* @__PURE__ */ new Map();
     this.resourcePool = /* @__PURE__ */ new Map();
@@ -47,7 +46,7 @@ let AdvancedPerformanceOptimizer = class {
       lazyInitSavings: 0,
       preloadEfficiency: 0,
       dynamicCompileSavings: 0,
-      adaptiveThrottleAdjustments: 0
+      adaptiveThrottleAdjustments: 0,
     };
     this.initializeAdvancedSystems();
   }
@@ -55,9 +54,9 @@ let AdvancedPerformanceOptimizer = class {
    * Initialize advanced optimization systems
    */
   async initializeAdvancedSystems() {
-    logger.info("\u{1F680} Initializing Advanced Performance Optimizer...", {
-      version: "6.0.0",
-      features: Object.keys(this.config).filter((key) => key.startsWith("enable"))
+    logger.info('\u{1F680} Initializing Advanced Performance Optimizer...', {
+      version: '6.0.0',
+      features: Object.keys(this.config).filter((key) => key.startsWith('enable')),
     });
     if (this.config.enableResourcePooling) {
       await this.initializeResourcePools();
@@ -71,13 +70,13 @@ let AdvancedPerformanceOptimizer = class {
     if (this.config.enablePreloading) {
       await this.setupPreloading();
     }
-    logger.success("\u2705 Advanced optimization systems initialized");
+    logger.success('\u2705 Advanced optimization systems initialized');
   }
   /**
    * Initialize resource pools for connection management
    */
   async initializeResourcePools() {
-    this.resourcePool.set("ai_connections", {
+    this.resourcePool.set('ai_connections', {
       resources: [],
       available: [],
       max: this.config.maxConnections,
@@ -87,14 +86,14 @@ let AdvancedPerformanceOptimizer = class {
           id: `ai_conn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           createdAt: Date.now(),
           lastUsed: Date.now(),
-          provider: null
+          provider: null,
         };
       },
       destroy: async (resource) => {
         resource = null;
-      }
+      },
     });
-    this.resourcePool.set("file_handles", {
+    this.resourcePool.set('file_handles', {
       resources: [],
       available: [],
       max: 50,
@@ -104,7 +103,7 @@ let AdvancedPerformanceOptimizer = class {
           id: `fh_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           createdAt: Date.now(),
           lastUsed: Date.now(),
-          handle: null
+          handle: null,
         };
       },
       destroy: async (resource) => {
@@ -112,11 +111,11 @@ let AdvancedPerformanceOptimizer = class {
           resource.handle.close();
         }
         resource = null;
-      }
+      },
     });
-    logger.info("\u{1F527} Resource pools initialized", {
+    logger.info('\u{1F527} Resource pools initialized', {
       pools: Array.from(this.resourcePool.keys()),
-      maxConnections: this.config.maxConnections
+      maxConnections: this.config.maxConnections,
     });
   }
   /**
@@ -157,9 +156,9 @@ let AdvancedPerformanceOptimizer = class {
   async initializePredictiveCaching() {
     this.predictiveCache.patternAnalyzer = {
       accessPatterns: /* @__PURE__ */ new Map(),
-      predictionModel: this.buildPredictionModel()
+      predictionModel: this.buildPredictionModel(),
     };
-    logger.info("\u{1F9E0} Predictive caching initialized");
+    logger.info('\u{1F9E0} Predictive caching initialized');
   }
   /**
    * Build prediction model for caching
@@ -170,9 +169,12 @@ let AdvancedPerformanceOptimizer = class {
         const pattern = this.predictiveCache.patternAnalyzer.accessPatterns.get(key) || {
           frequency: 0,
           recency: 0,
-          contextMatches: 0
+          contextMatches: 0,
         };
-        const score = Math.min(1, pattern.frequency * 0.4 + pattern.recency * 0.3 + pattern.contextMatches * 0.3);
+        const score = Math.min(
+          1,
+          pattern.frequency * 0.4 + pattern.recency * 0.3 + pattern.contextMatches * 0.3
+        );
         return score > 0.7;
       },
       updatePattern: (key, context, accessed) => {
@@ -180,13 +182,13 @@ let AdvancedPerformanceOptimizer = class {
           frequency: 0,
           recency: 0,
           contextMatches: 0,
-          lastAccess: Date.now()
+          lastAccess: Date.now(),
         };
         pattern.frequency = accessed ? pattern.frequency + 1 : pattern.frequency;
         pattern.recency = 1 / (1 + (Date.now() - pattern.lastAccess) / 36e5);
         pattern.lastAccess = Date.now();
         this.predictiveCache.patternAnalyzer.accessPatterns.set(key, pattern);
-      }
+      },
     };
   }
   /**
@@ -194,7 +196,10 @@ let AdvancedPerformanceOptimizer = class {
    */
   async predictiveCacheGet(key, context) {
     if (this.config.enablePredictiveCaching) {
-      const shouldCache = this.predictiveCache.patternAnalyzer.predictionModel.predictAccess(key, context);
+      const shouldCache = this.predictiveCache.patternAnalyzer.predictionModel.predictAccess(
+        key,
+        context
+      );
       if (shouldCache) {
         const cached = this.predictiveCache.get(key);
         if (cached) {
@@ -211,7 +216,10 @@ let AdvancedPerformanceOptimizer = class {
    */
   async predictiveCacheSet(key, value, context) {
     if (this.config.enablePredictiveCaching) {
-      const shouldCache = this.predictiveCache.patternAnalyzer.predictionModel.predictAccess(key, context);
+      const shouldCache = this.predictiveCache.patternAnalyzer.predictionModel.predictAccess(
+        key,
+        context
+      );
       if (shouldCache) {
         this.predictiveCache.set(key, value);
         this.predictiveCache.patternAnalyzer.predictionModel.updatePattern(key, context, true);
@@ -222,28 +230,28 @@ let AdvancedPerformanceOptimizer = class {
    * Setup lazy initialization for expensive components
    */
   async setupLazyInitialization() {
-    this.lazyInitializers.set("ai_provider", async () => {
-      const { createOpenAI } = await import("@ai-sdk/openai");
+    this.lazyInitializers.set('ai_provider', async () => {
+      const { createOpenAI } = await import('@ai-sdk/openai');
       return createOpenAI({
-        baseURL: "https://api.openai.com/v1",
-        apiKey: process.env.OPENAI_API_KEY
+        baseURL: 'https://api.openai.com/v1',
+        apiKey: process.env.OPENAI_API_KEY,
       });
     });
-    this.lazyInitializers.set("vector_db", async () => {
-      const { ChromaClient } = await import("chromadb");
+    this.lazyInitializers.set('vector_db', async () => {
+      const { ChromaClient } = await import('chromadb');
       return new ChromaClient();
     });
-    this.lazyInitializers.set("graph_db", async () => {
-      const neo4j = await import("neo4j-driver");
+    this.lazyInitializers.set('graph_db', async () => {
+      const neo4j = await import('neo4j-driver');
       return neo4j.driver(
-        process.env.NEO4J_URI || "bolt://localhost:7687",
+        process.env.NEO4J_URI || 'bolt://localhost:7687',
         neo4j.auth.basic(
-          process.env.NEO4J_USER || "neo4j",
-          process.env.NEO4J_PASSWORD || "password"
+          process.env.NEO4J_USER || 'neo4j',
+          process.env.NEO4J_PASSWORD || 'password'
         )
       );
     });
-    logger.info("\u{1F634} Lazy initialization setup complete");
+    logger.info('\u{1F634} Lazy initialization setup complete');
   }
   /**
    * Get lazily initialized component
@@ -269,18 +277,18 @@ let AdvancedPerformanceOptimizer = class {
     if (this.config.enablePreloading) {
       try {
         const agentPrompts = await this.preloadAgentPrompts();
-        this.preloadedData.set("agent_prompts", agentPrompts);
+        this.preloadedData.set('agent_prompts', agentPrompts);
         const config = await this.preloadConfiguration();
-        this.preloadedData.set("configuration", config);
+        this.preloadedData.set('configuration', config);
         const utils = await this.preloadUtilities();
-        this.preloadedData.set("utilities", utils);
-        logger.info("\u26A1 Preloading completed", {
+        this.preloadedData.set('utilities', utils);
+        logger.info('\u26A1 Preloading completed', {
           items: Array.from(this.preloadedData.keys()),
-          efficiency: this.calculatePreloadEfficiency()
+          efficiency: this.calculatePreloadEfficiency(),
         });
       } catch (error) {
-        logger.warning("\u26A0\uFE0F Preloading failed, continuing with normal initialization", {
-          error: error.message
+        logger.warning('\u26A0\uFE0F Preloading failed, continuing with normal initialization', {
+          error: error.message,
         });
       }
     }
@@ -290,18 +298,23 @@ let AdvancedPerformanceOptimizer = class {
    */
   async preloadAgentPrompts() {
     try {
-      const fs2 = await import("fs");
-      const path2 = await import("path");
-      const agentsDir = path2.join(process.cwd(), "agents");
-      if (!await fs2.promises.access(agentsDir).then(() => true).catch(() => false)) {
+      const fs2 = await import('fs');
+      const path2 = await import('path');
+      const agentsDir = path2.join(process.cwd(), 'agents');
+      if (
+        !(await fs2.promises
+          .access(agentsDir)
+          .then(() => true)
+          .catch(() => false))
+      ) {
         return /* @__PURE__ */ new Map();
       }
       const files = await fs2.promises.readdir(agentsDir);
       const prompts = /* @__PURE__ */ new Map();
       for (const file of files) {
-        if (file.endsWith(".md")) {
-          const content = await fs2.promises.readFile(path2.join(agentsDir, file), "utf8");
-          const agentName = path2.basename(file, ".md");
+        if (file.endsWith('.md')) {
+          const content = await fs2.promises.readFile(path2.join(agentsDir, file), 'utf8');
+          const agentName = path2.basename(file, '.md');
           prompts.set(agentName, content);
         }
       }
@@ -315,11 +328,16 @@ let AdvancedPerformanceOptimizer = class {
    */
   async preloadConfiguration() {
     try {
-      const fs2 = await import("fs");
-      const path2 = await import("path");
-      const configPath = path2.join(process.cwd(), "ultra-dex.config.json");
-      if (await fs2.promises.access(configPath).then(() => true).catch(() => false)) {
-        const config = await fs2.promises.readFile(configPath, "utf8");
+      const fs2 = await import('fs');
+      const path2 = await import('path');
+      const configPath = path2.join(process.cwd(), 'ultra-dex.config.json');
+      if (
+        await fs2.promises
+          .access(configPath)
+          .then(() => true)
+          .catch(() => false)
+      ) {
+        const config = await fs2.promises.readFile(configPath, 'utf8');
         return JSON.parse(config);
       }
       return {};
@@ -333,10 +351,10 @@ let AdvancedPerformanceOptimizer = class {
   async preloadUtilities() {
     try {
       const utils = {
-        performance: await import("perf_hooks"),
-        fs: await import("fs"),
-        path: await import("path"),
-        os: await import("os")
+        performance: await import('perf_hooks'),
+        fs: await import('fs'),
+        path: await import('path'),
+        os: await import('os'),
       };
       return utils;
     } catch {
@@ -357,7 +375,10 @@ let AdvancedPerformanceOptimizer = class {
       return operation();
     }
     const systemLoad = await this.assessSystemLoad();
-    if (systemLoad.cpu > this.config.cpuUsageThreshold || systemLoad.memory > this.config.memoryUsageThreshold) {
+    if (
+      systemLoad.cpu > this.config.cpuUsageThreshold ||
+      systemLoad.memory > this.config.memoryUsageThreshold
+    ) {
       this.advancedMetrics.adaptiveThrottleAdjustments++;
       const delay = Math.min(1e3, (systemLoad.cpu + systemLoad.memory) * 500);
       await new Promise((resolve) => setTimeout(resolve, delay));
@@ -369,7 +390,7 @@ let AdvancedPerformanceOptimizer = class {
    */
   async assessSystemLoad() {
     try {
-      const os = await import("os");
+      const os = await import('os');
       const loadAvg = os.loadavg();
       const totalMem = os.totalmem();
       const freeMem = os.freemem();
@@ -381,7 +402,7 @@ let AdvancedPerformanceOptimizer = class {
         // Memory usage percentage
         disk: this.assessDiskLoad(),
         // Simplified disk assessment
-        network: this.assessNetworkLoad()
+        network: this.assessNetworkLoad(),
         // Simplified network assessment
       };
     } catch {
@@ -389,7 +410,7 @@ let AdvancedPerformanceOptimizer = class {
         cpu: 0.5,
         memory: 0.5,
         disk: 0.5,
-        network: 0.5
+        network: 0.5,
       };
     }
   }
@@ -410,11 +431,15 @@ let AdvancedPerformanceOptimizer = class {
    */
   calculatePreloadEfficiency() {
     const totalItems = this.preloadedData.size;
-    const avgSize = Array.from(this.preloadedData.values()).reduce((sum, data) => sum + JSON.stringify(data).length, 0) / totalItems || 0;
+    const avgSize =
+      Array.from(this.preloadedData.values()).reduce(
+        (sum, data) => sum + JSON.stringify(data).length,
+        0
+      ) / totalItems || 0;
     return {
       items: totalItems,
       avgSize: Math.round(avgSize),
-      estimatedTimeSaved: totalItems * 50
+      estimatedTimeSaved: totalItems * 50,
       // 50ms saved per item
     };
   }
@@ -445,7 +470,7 @@ let AdvancedPerformanceOptimizer = class {
             logger.warning(`\u{1F40C} Slow operation detected`, {
               function: cacheKey,
               executionTime: Math.round(executionTime),
-              args: args.length > 0 ? args[0] : "no args"
+              args: args.length > 0 ? args[0] : 'no args',
             });
           }
           return result;
@@ -455,7 +480,7 @@ let AdvancedPerformanceOptimizer = class {
             function: cacheKey,
             executionTime: Math.round(executionTime),
             error: error.message,
-            args: args.length > 0 ? args[0] : "no args"
+            args: args.length > 0 ? args[0] : 'no args',
           });
           throw error;
         }
@@ -474,11 +499,11 @@ let AdvancedPerformanceOptimizer = class {
         batch.map((op) => this.adaptiveThrottle(() => op()))
       );
       for (const result of batchResults) {
-        if (result.status === "fulfilled") {
+        if (result.status === 'fulfilled') {
           results.push(result.value);
         } else {
           results.push(null);
-          logger.error("Batch operation failed", { error: result.reason.message });
+          logger.error('Batch operation failed', { error: result.reason.message });
         }
       }
     }
@@ -495,9 +520,9 @@ let AdvancedPerformanceOptimizer = class {
       resourcePoolStats: this.getResourcePoolStats(),
       preloadStats: {
         items: this.preloadedData.size,
-        efficiency: this.calculatePreloadEfficiency()
+        efficiency: this.calculatePreloadEfficiency(),
       },
-      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
     };
   }
   /**
@@ -510,7 +535,7 @@ let AdvancedPerformanceOptimizer = class {
         total: pool.resources.length,
         available: pool.available.length,
         used: pool.used,
-        utilization: pool.resources.length > 0 ? pool.used / pool.resources.length : 0
+        utilization: pool.resources.length > 0 ? pool.used / pool.resources.length : 0,
       };
     }
     return stats;
@@ -519,27 +544,25 @@ let AdvancedPerformanceOptimizer = class {
    * Shutdown advanced optimizer
    */
   async shutdown() {
-    logger.info("\u{1F6D1} Shutting down advanced performance optimizer...");
+    logger.info('\u{1F6D1} Shutting down advanced performance optimizer...');
     for (const [poolName, pool] of this.resourcePool) {
       for (const resource of pool.resources) {
         await pool.destroy(resource);
       }
     }
     for (const [key, value] of this.lazyInitializers) {
-      if (key.endsWith("_instance") && value && typeof value.close === "function") {
+      if (key.endsWith('_instance') && value && typeof value.close === 'function') {
         await value.close();
       }
     }
-    logger.success("\u2705 Advanced performance optimizer shut down successfully");
+    logger.success('\u2705 Advanced performance optimizer shut down successfully');
   }
 };
-AdvancedPerformanceOptimizer = __decorateClass([
-  singleton()
-], AdvancedPerformanceOptimizer);
+AdvancedPerformanceOptimizer = __decorateClass([singleton()], AdvancedPerformanceOptimizer);
 const advancedPerfOptimizer = new AdvancedPerformanceOptimizer();
 var advanced_optimizer_default = advancedPerfOptimizer;
 export {
   AdvancedPerformanceOptimizer,
   advancedPerfOptimizer,
-  advanced_optimizer_default as default
+  advanced_optimizer_default as default,
 };

@@ -12,7 +12,7 @@ const intelligenceProgram = program
   .option('-a, --analyze', 'Perform analysis')
   .action(async (options) => {
     console.log('Intelligence command executed with options:', options);
-    
+
     // Placeholder implementation
     if (options.analyze) {
       console.log('Performing intelligence analysis...');
@@ -20,15 +20,15 @@ const intelligenceProgram = program
         console.log(`Analyzing context: ${options.context}`);
       }
     }
-    
+
     if (options.task) {
       console.log(`Performing intelligence task: ${options.task}`);
     }
-    
+
     if (options.model) {
       console.log(`Using model: ${options.model}`);
     }
-    
+
     console.log('Intelligence operation completed successfully');
   });
 

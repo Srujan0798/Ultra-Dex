@@ -12,11 +12,11 @@ const browserProgram = program
   .option('-d, --driver <driver>', 'Browser driver to use (chrome, firefox, safari)', 'chrome')
   .action(async (options) => {
     console.log('Browser automation command executed with options:', options);
-    
+
     // Placeholder implementation
     if (options.url && options.task) {
       console.log(`Performing ${options.task} on ${options.url} using ${options.driver} driver`);
-      
+
       // In a real implementation, this would:
       // - Launch a browser instance
       // - Navigate to the URL

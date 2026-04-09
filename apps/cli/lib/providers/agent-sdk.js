@@ -11,7 +11,8 @@ import path from 'path';
 import { logger } from '../utils/logger.js';
 
 function logProvider(level, event, metadata = {}) {
-  const writer = typeof logger[level] === 'function' ? logger[level].bind(logger) : logger.info.bind(logger);
+  const writer =
+    typeof logger[level] === 'function' ? logger[level].bind(logger) : logger.info.bind(logger);
   writer(event, {
     run_id: process.env.ULTRA_DEX_RUN_ID,
     ...metadata,

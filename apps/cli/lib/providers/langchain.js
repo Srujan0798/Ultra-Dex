@@ -9,21 +9,40 @@ import { BaseProvider } from './base.js';
 
 // Mock LangChain imports when packages are corrupted
 class MockChatOpenAI {
-  constructor(config) { this.config = config; }
-  async invoke(_messages) { return { content: "Mock response" }; }
+  constructor(config) {
+    this.config = config;
+  }
+  async invoke(_messages) {
+    return { content: 'Mock response' };
+  }
 }
 
 class MockMessage {
-  constructor(content) { this.content = content; }
+  constructor(content) {
+    this.content = content;
+  }
 }
 
 class MockStateGraph {
-  constructor() { this.nodes = new Map(); }
-  addNode(name, fn) { this.nodes.set(name, fn); return this; }
-  addEdge(_from, _to) { return this; }
-  setEntryPoint(_node) { return this; }
-  setFinishPoint(_node) { return this; }
-  compile(_options) { return { invoke: async () => ({ messages: [] }) }; }
+  constructor() {
+    this.nodes = new Map();
+  }
+  addNode(name, fn) {
+    this.nodes.set(name, fn);
+    return this;
+  }
+  addEdge(_from, _to) {
+    return this;
+  }
+  setEntryPoint(_node) {
+    return this;
+  }
+  setFinishPoint(_node) {
+    return this;
+  }
+  compile(_options) {
+    return { invoke: async () => ({ messages: [] }) };
+  }
 }
 
 class MockMemorySaver {
@@ -33,11 +52,11 @@ class MockMemorySaver {
 // Use mocks instead of actual imports
 const ChatOpenAI = MockChatOpenAI;
 const HumanMessage = MockMessage;
-const SystemMessage = MockMessage; 
+const SystemMessage = MockMessage;
 const _AIMessage = MockMessage;
 const StateGraph = MockStateGraph;
-const START = "START";
-const END = "END";
+const START = 'START';
+const END = 'END';
 const _MemorySaver = MockMemorySaver;
 
 // State definition for our graphs

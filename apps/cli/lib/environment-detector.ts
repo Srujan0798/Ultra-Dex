@@ -38,7 +38,7 @@ export class EnvironmentDetector {
       userInfo: os.userInfo(),
       hostname: os.hostname(),
       tempDir: os.tmpdir(),
-      homeDir: os.homedir()
+      homeDir: os.homedir(),
     };
 
     return this.systemInfo;
@@ -64,7 +64,10 @@ export class EnvironmentDetector {
    * @param {string} versionFlag - Version flag (e.g., '--version', '-v')
    * @returns {Promise<string|null>} Version string or null if not available
    */
-  async getCommandVersion(command: string, versionFlag: string = '--version'): Promise<string | null> {
+  async getCommandVersion(
+    command: string,
+    versionFlag: string = '--version'
+  ): Promise<string | null> {
     try {
       const { stdout } = await execAsync(`${command} ${versionFlag}`);
       return stdout.trim().split('\n')[0]; // Take first line to avoid extra output
@@ -85,7 +88,7 @@ export class EnvironmentDetector {
       docker: await this.getDockerInfo(),
       python: await this.getPythonInfo(),
       system: await this.getSystemInfo(),
-      capabilities: {}
+      capabilities: {},
     };
 
     // Detect capabilities
@@ -112,7 +115,7 @@ export class EnvironmentDetector {
       version,
       npmVersion,
       nodePath: await this.getCommandPath('node'),
-      packageManager: npmVersion ? 'npm' : null
+      packageManager: npmVersion ? 'npm' : null,
     };
   }
 
@@ -131,7 +134,7 @@ export class EnvironmentDetector {
     return {
       available: true,
       version,
-      npmPath: await this.getCommandPath('npm')
+      npmPath: await this.getCommandPath('npm'),
     };
   }
 
@@ -164,7 +167,7 @@ export class EnvironmentDetector {
       version,
       userEmail,
       userName,
-      gitPath: await this.getCommandPath('git')
+      gitPath: await this.getCommandPath('git'),
     };
   }
 
@@ -195,7 +198,7 @@ export class EnvironmentDetector {
       available: true,
       version,
       daemonRunning,
-      dockerPath: await this.getCommandPath('docker')
+      dockerPath: await this.getCommandPath('docker'),
     };
   }
 
@@ -213,7 +216,7 @@ export class EnvironmentDetector {
         available: true,
         version,
         command: 'python3',
-        path: await this.getCommandPath('python3')
+        path: await this.getCommandPath('python3'),
       };
     } else if (py2Available) {
       const version = await this.getCommandVersion('python', '--version');
@@ -221,7 +224,7 @@ export class EnvironmentDetector {
         available: true,
         version,
         command: 'python',
-        path: await this.getCommandPath('python')
+        path: await this.getCommandPath('python'),
       };
     }
 
@@ -242,7 +245,7 @@ export class EnvironmentDetector {
       hasNetwork: await this.checkNetworkConnectivity(),
       hasEnoughMemory: env.system.totalMemory > 1024 * 1024 * 1024, // 1GB
       canWriteFiles: await this.checkWritePermissions(),
-      canAccessInternet: await this.checkInternetAccess()
+      canAccessInternet: await this.checkInternetAccess(),
     };
 
     return capabilities;

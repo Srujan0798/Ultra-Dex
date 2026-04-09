@@ -13,13 +13,13 @@ router.get('/', async (req, res) => {
     res.json({
       success: true,
       data: providers,
-      count: providers.length
+      count: providers.length,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message,
-      code: 'LIST_PROVIDERS_FAILED'
+      code: 'LIST_PROVIDERS_FAILED',
     });
   }
 });
@@ -33,13 +33,13 @@ router.get('/:id/status', async (req, res) => {
     const status = await aiMetaLayer.getProviderStatus(req.params.id);
     res.json({
       success: true,
-      data: status
+      data: status,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message,
-      code: 'GET_PROVIDER_STATUS_FAILED'
+      code: 'GET_PROVIDER_STATUS_FAILED',
     });
   }
 });
@@ -51,18 +51,18 @@ router.get('/:id/status', async (req, res) => {
 router.post('/test', async (req, res) => {
   try {
     const { provider, config } = req.body;
-    
+
     const result = await aiMetaLayer.testProvider(provider, config);
-    
+
     res.json({
       success: true,
-      data: result
+      data: result,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message,
-      code: 'TEST_PROVIDER_FAILED'
+      code: 'TEST_PROVIDER_FAILED',
     });
   }
 });

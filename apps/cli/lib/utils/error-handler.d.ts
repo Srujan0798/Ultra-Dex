@@ -1,6 +1,6 @@
 // Type declarations for error handler
 
-export type ErrorCode = 
+export type ErrorCode =
   | 'VALIDATION_ERROR'
   | 'AUTHENTICATION_ERROR'
   | 'AUTHORIZATION_ERROR'

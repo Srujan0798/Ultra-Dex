@@ -32,13 +32,14 @@ export function registerCheckCommand(program) {
 
       let nexus = null;
       try {
-        ({ agentOrchestrator: nexus } = await import('../../../../src/core/orchestration/index.js'));
+        ({ agentOrchestrator: nexus } =
+          await import('../../../../src/core/orchestration/index.js'));
       } catch {
         nexus = null;
       }
 
       logger.log(chalk.cyan.bold('\n👨‍⚕️ Ultra-Dex System Doctor\n'));
-      
+
       // 1. Check Docker
       const dockerOk = await checkDocker();
       if (dockerOk) {
@@ -83,7 +84,7 @@ export function registerCheckCommand(program) {
     .action(async (file) => {
       const { codeValidator } = await import('../../../../src/services/security/validators.js');
       logger.log(chalk.cyan.bold('\n🛡️  Ultra-Dex Security Scan\n'));
-      
+
       if (file) {
         try {
           const content = await fs.readFile(file, 'utf8');
@@ -97,7 +98,7 @@ export function registerCheckCommand(program) {
         // Project-wide scan logic (simplified)
         const { glob } = await import('glob');
         const files = await glob('**/*.{js,ts}', { ignore: 'node_modules/**' });
-        
+
         let totalFindings = 0;
         for (const f of files) {
           const content = await fs.readFile(f, 'utf8');
@@ -108,11 +109,13 @@ export function registerCheckCommand(program) {
             totalFindings++;
           }
         }
-        
+
         if (totalFindings === 0) {
           logger.log(chalk.green('\n✅ Project-wide scan complete. No critical risks found.'));
         } else {
-          logger.log(chalk.red(`\n❌ Project-wide scan complete. Found risks in ${totalFindings} files.`));
+          logger.log(
+            chalk.red(`\n❌ Project-wide scan complete. Found risks in ${totalFindings} files.`)
+          );
         }
       }
       logger.log('');
@@ -142,7 +145,9 @@ export function registerCheckCommand(program) {
     .option('--compliance', 'Show compliance checklist guidance (GDPR/CCPA/SOC2)')
     .option('--report <path>', 'Generate detailed report file (markdown or JSON)')
     .option('--visual', 'Show visual progress bars and enhanced colors')
-    .addHelpText('after', `
+    .addHelpText(
+      'after',
+      `
 
 Examples:
   $ ultra-dex check                    # Full completeness check
@@ -151,7 +156,8 @@ Examples:
   $ ultra-dex check --fix              # Auto-fill suggestions
   $ ultra-dex check --visual           # Enhanced visual output
   $ ultra-dex check --report check.md  # Save report to file
-    `)
+    `
+    )
     .action(async (options) => {
       try {
         if (options.compliance) {
@@ -292,9 +298,7 @@ Examples:
             await fs.writeFile(planPath, nextPlan);
             fixApplied = true;
             if (!silent) {
-              logger.log(
-                chalk.green('\n✅ Auto-fill suggestions added to IMPLEMENTATION-PLAN.md')
-              );
+              logger.log(chalk.green('\n✅ Auto-fill suggestions added to IMPLEMENTATION-PLAN.md'));
               logger.log(chalk.gray('   Review and refine the suggested content.\n'));
             }
           } else if (!silent) {
@@ -346,11 +350,27 @@ Examples:
             const barWidth = 10;
             const filled = Math.round((r.percentage / 100) * barWidth);
             const empty = barWidth - filled;
-            const barColor = r.status === 'complete' ? chalk.green : r.status === 'partial' ? chalk.yellow : chalk.red;
-            completeness = barColor('█'.repeat(filled)) + chalk.gray('░'.repeat(empty)) + ` ${r.percentage}%`;
-            status = r.status === 'complete' ? chalk.green('✓ COMPLETE') : r.status === 'partial' ? chalk.yellow('◐ PARTIAL') : chalk.red('✗ MISSING');
+            const barColor =
+              r.status === 'complete'
+                ? chalk.green
+                : r.status === 'partial'
+                  ? chalk.yellow
+                  : chalk.red;
+            completeness =
+              barColor('█'.repeat(filled)) + chalk.gray('░'.repeat(empty)) + ` ${r.percentage}%`;
+            status =
+              r.status === 'complete'
+                ? chalk.green('✓ COMPLETE')
+                : r.status === 'partial'
+                  ? chalk.yellow('◐ PARTIAL')
+                  : chalk.red('✗ MISSING');
           } else {
-            status = r.status === 'complete' ? chalk.green('✓') : r.status === 'partial' ? chalk.yellow('◐') : chalk.red('✗');
+            status =
+              r.status === 'complete'
+                ? chalk.green('✓')
+                : r.status === 'partial'
+                  ? chalk.yellow('◐')
+                  : chalk.red('✗');
             completeness = `${r.percentage}%`;
           }
 
@@ -383,7 +403,9 @@ Examples:
           criticalMissing.forEach((msg) => {
             logger.log(chalk.red(`  • ${msg}`));
           });
-          logger.log(chalk.yellow('\nThese 11 sections are required for a Production-Ready plan.\n'));
+          logger.log(
+            chalk.yellow('\nThese 11 sections are required for a Production-Ready plan.\n')
+          );
         } else {
           logger.log(chalk.green('\n✅ All 11 critical P0 sections are complete!\n'));
         }

@@ -39,18 +39,21 @@ This guide provides instructions for deploying Ultra-Dex in enterprise environme
 ## Prerequisites
 
 ### Infrastructure Requirements
+
 - **Compute**: 8+ CPU cores, 32GB+ RAM (16 cores, 64GB RAM recommended for production)
 - **Storage**: 500GB+ SSD (1TB+ recommended for production)
 - **Network**: High-speed network with low latency
 - **OS**: Ubuntu 22.04 LTS, RHEL 8+, or Windows Server 2022
 
 ### Security Prerequisites
+
 - **SSL Certificate**: Valid SSL certificate for HTTPS
 - **Identity Provider**: SAML 2.0 or OIDC compliant identity provider
 - **Network Security**: Firewall rules allowing necessary ports
 - **IAM Roles**: Proper permissions for cloud deployments
 
 ### Compliance Prerequisites
+
 - **SOC 2**: Understanding of SOC 2 requirements
 - **GDPR**: Data residency and privacy requirements
 - **Audit Trail**: Requirements for audit logging and retention
@@ -183,6 +186,7 @@ sudo systemctl start ultra-dex
 ### Security Configuration
 
 #### SSL/TLS Setup
+
 ```bash
 # Generate self-signed certificate (for testing only)
 openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
@@ -192,6 +196,7 @@ openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -node
 ```
 
 #### SSO Integration
+
 ```bash
 # Configure SAML with your identity provider
 ultra-dex config sso \
@@ -212,6 +217,7 @@ ultra-dex config sso \
 ### Database Setup
 
 #### PostgreSQL Configuration
+
 ```sql
 -- Create database and user
 CREATE DATABASE ultra_dex;
@@ -266,6 +272,7 @@ CREATE INDEX idx_audit_created_at ON audit_log(created_at);
 ```
 
 #### Redis Configuration
+
 ```bash
 # Configure Redis for security and performance
 echo "bind 127.0.0.1" >> /etc/redis/redis.conf
@@ -279,6 +286,7 @@ sudo systemctl restart redis
 ## Monitoring & Operations
 
 ### Health Checks
+
 ```bash
 # Check system health
 curl -s https://your-domain.com/health
@@ -290,6 +298,7 @@ curl -s https://your-domain.com/api/v1/health/providers
 ```
 
 ### Metrics Collection
+
 ```bash
 # Prometheus metrics endpoint
 curl -s https://your-domain.com/metrics
@@ -304,6 +313,7 @@ scrape_configs:
 ```
 
 ### Log Management
+
 ```bash
 # Access application logs
 tail -f /var/log/ultra-dex/app.log
@@ -328,6 +338,7 @@ EOF
 ## Security & Compliance
 
 ### Audit Logging
+
 ```bash
 # Verify audit logging is working
 tail -f /var/log/ultra-dex/audit.log | jq
@@ -337,6 +348,7 @@ grep "auth.login.success" /var/log/ultra-dex/audit.log
 ```
 
 ### Compliance Reports
+
 ```bash
 # Generate SOC 2 compliance report
 ultra-dex compliance report --type soc2
@@ -349,6 +361,7 @@ ultra-dex compliance report --type hipaa
 ```
 
 ### Security Scanning
+
 ```bash
 # Run security audit
 ultra-dex security audit
@@ -363,6 +376,7 @@ ultra-dex security verify --encryption
 ## Scaling & Performance
 
 ### Horizontal Scaling
+
 ```bash
 # Add more nodes to the cluster
 kubectl scale deployment ultra-dex --replicas=5
@@ -372,6 +386,7 @@ kubectl scale deployment ultra-dex --replicas=5
 ```
 
 ### Performance Tuning
+
 ```bash
 # Database performance tuning
 echo "shared_buffers = 8GB" >> /etc/postgresql/*/main/postgresql.conf
@@ -388,6 +403,7 @@ export AGENT_TIMEOUT=600s
 ## Backup & Recovery
 
 ### Backup Strategy
+
 ```bash
 # Create backup script
 cat > /usr/local/bin/ultra-dex-backup.sh << EOF
@@ -423,6 +439,7 @@ echo "0 2 * * * root /usr/local/bin/ultra-dex-backup.sh" >> /etc/crontab
 ```
 
 ### Recovery Process
+
 ```bash
 # In case of disaster, restore from backup
 ultra-dex-restore.sh --backup-path /path/to/backup.tar.gz.enc --encryption-key your-key
@@ -434,6 +451,7 @@ ultra-dex doctor
 ## Troubleshooting
 
 ### Common Issues
+
 ```bash
 # Check system status
 ultra-dex doctor
@@ -449,6 +467,7 @@ ultra-dex debug performance
 ```
 
 ### Enterprise Support
+
 ```bash
 # For enterprise support, contact:
 # Email: enterprise-support@ultra-dex.ai
@@ -459,6 +478,7 @@ ultra-dex debug performance
 ## Best Practices
 
 ### Security Best Practices
+
 - Regular security audits and penetration testing
 - Keep all dependencies updated
 - Monitor for security events and anomalies
@@ -466,6 +486,7 @@ ultra-dex debug performance
 - Use dedicated hardware for sensitive operations
 
 ### Performance Best Practices
+
 - Monitor resource utilization regularly
 - Implement proper caching strategies
 - Optimize database queries
@@ -473,6 +494,7 @@ ultra-dex debug performance
 - Plan for capacity growth
 
 ### Compliance Best Practices
+
 - Regular compliance audits
 - Maintain audit logs for required retention periods
 - Implement data classification

@@ -3,13 +3,12 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
+import { singleton } from 'tsyringe';
 import { DI_TOKENS } from '../di/tokens.js';
 import { UnifiedMemory } from './unified-api.js';
 import { registerAlias, registerSingleton, resolveFromContainer } from '../di/container.js';
@@ -29,8 +28,7 @@ let MemoryManager = class {
     this.tierById = /* @__PURE__ */ new Map();
   }
   async initialize() {
-    if (this.initialized)
-      return;
+    if (this.initialized) return;
     await this.memory.initialize();
     this.initialized = true;
   }
@@ -50,34 +48,29 @@ let MemoryManager = class {
     const context = {
       text: entry.content,
       metadata: {
-        type: entry.type || "observation",
-        source: entry.source || "user",
+        type: entry.type || 'observation',
+        source: entry.source || 'user',
         importance: entry.importance || 5,
-        ...entry.metadata
-      }
+        ...entry.metadata,
+      },
     };
-    let priority = "normal";
-    if (entry.importance > 8)
-      priority = "critical";
-    else if (entry.importance > 5)
-      priority = "high";
-    else if (entry.importance < 3)
-      priority = "low";
+    let priority = 'normal';
+    if (entry.importance > 8) priority = 'critical';
+    else if (entry.importance > 5) priority = 'high';
+    else if (entry.importance < 3) priority = 'low';
     const tags = [context.metadata.type];
-    if (entry.importance > 5)
-      tags.push("warm");
-    if (context.metadata.type === "decision")
-      tags.push("cold");
-    tags.push("hot");
+    if (entry.importance > 5) tags.push('warm');
+    if (context.metadata.type === 'decision') tags.push('cold');
+    tags.push('hot');
     const stored = await this.memory.store(context, {
       priority,
       tags,
-      sessionId: entry.metadata?.sessionId
+      sessionId: entry.metadata?.sessionId,
     });
     const key = entry.metadata?.key || stored.id;
     this.keyToId.set(key, stored.id);
     this.idToKey.set(stored.id, key);
-    this.tierById.set(stored.id, "hot");
+    this.tierById.set(stored.id, 'hot');
     this.accessCounts.set(stored.id, 0);
     return { ...stored, key };
   }
@@ -91,8 +84,7 @@ let MemoryManager = class {
     await this.initialize();
     const results = await this.memory.retrieve(query, { limit });
     for (const item of results.items) {
-      if (!item?.id)
-        continue;
+      if (!item?.id) continue;
       const current = this.accessCounts.get(item.id) || 0;
       this.accessCounts.set(item.id, current + 1);
     }
@@ -106,11 +98,13 @@ let MemoryManager = class {
   async getTier(tier) {
     await this.initialize();
     const targetTier = String(tier);
-    const results = await this.memory.retrieve("", { limit: 1e3 });
-    return results.items.filter((item) => (this.tierById.get(item.id) || "hot") === targetTier).map((item) => ({
-      ...item,
-      key: this.idToKey.get(item.id) || item.key || item.id
-    }));
+    const results = await this.memory.retrieve('', { limit: 1e3 });
+    return results.items
+      .filter((item) => (this.tierById.get(item.id) || 'hot') === targetTier)
+      .map((item) => ({
+        ...item,
+        key: this.idToKey.get(item.id) || item.key || item.id,
+      }));
   }
   /**
    * Get memory statistics
@@ -119,35 +113,34 @@ let MemoryManager = class {
   async stats() {
     await this.initialize();
     const stats = this.memory.getStats();
-    const hot = await this.getTier("hot");
-    const warm = await this.getTier("warm");
-    const cold = await this.getTier("cold");
+    const hot = await this.getTier('hot');
+    const warm = await this.getTier('warm');
+    const cold = await this.getTier('cold');
     return {
       ...stats,
       hot: hot.length,
       warm: warm.length,
-      cold: cold.length
+      cold: cold.length,
     };
   }
   async getTierStats() {
-    const hot = await this.getTier("hot");
-    const warm = await this.getTier("warm");
-    const cold = await this.getTier("cold");
+    const hot = await this.getTier('hot');
+    const warm = await this.getTier('warm');
+    const cold = await this.getTier('cold');
     return {
       hot: hot.length,
       warm: warm.length,
       cold: cold.length,
-      total: hot.length + warm.length + cold.length
+      total: hot.length + warm.length + cold.length,
     };
   }
   async archiveToCold(key) {
     await this.initialize();
     const id = this.keyToId.get(key);
-    if (!id)
-      return false;
-    this.tierById.set(id, "cold");
-    if (typeof this.memory.update === "function") {
-      await this.memory.update(id, { tags: ["cold"] });
+    if (!id) return false;
+    this.tierById.set(id, 'cold');
+    if (typeof this.memory.update === 'function') {
+      await this.memory.update(id, { tags: ['cold'] });
     }
     return true;
   }
@@ -155,9 +148,9 @@ let MemoryManager = class {
     await this.initialize();
     for (const [id, count] of this.accessCounts.entries()) {
       if (count >= 3) {
-        this.tierById.set(id, "hot");
-        if (typeof this.memory.update === "function") {
-          await this.memory.update(id, { tags: ["hot"] });
+        this.tierById.set(id, 'hot');
+        if (typeof this.memory.update === 'function') {
+          await this.memory.update(id, { tags: ['hot'] });
         }
         this.accessCounts.set(id, 0);
       }
@@ -165,25 +158,17 @@ let MemoryManager = class {
     return this.getTierStats();
   }
   async shutdown() {
-    if (typeof this.memory.close === "function") {
+    if (typeof this.memory.close === 'function') {
       await this.memory.close();
     }
     this.initialized = false;
   }
 };
-MemoryManager = __decorateClass([
-  singleton()
-], MemoryManager);
+MemoryManager = __decorateClass([singleton()], MemoryManager);
 registerSingleton(MemoryManager, () => new MemoryManager());
 registerAlias(DI_TOKENS.memoryManager, MemoryManager);
 const ppmManager = resolveFromContainer(MemoryManager);
 var manager_default = MemoryManager;
 import { VectorStore } from './vector-store.js';
 import { GraphEngine } from './graph-engine.js';
-export {
-  GraphEngine,
-  MemoryManager,
-  VectorStore,
-  manager_default as default,
-  ppmManager
-};
+export { GraphEngine, MemoryManager, VectorStore, manager_default as default, ppmManager };

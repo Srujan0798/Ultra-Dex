@@ -169,11 +169,7 @@ describe('dashboard command', () => {
       loadStateImpl: async () => ({
         project: { name: 'status-app' },
         score: 88,
-        phases: [
-          { status: 'completed' },
-          { status: 'in_progress' },
-          { status: 'pending' },
-        ],
+        phases: [{ status: 'completed' }, { status: 'in_progress' }, { status: 'pending' }],
       }),
       getUsageSummaryImpl: async () => ({
         totalCommands: 30,

@@ -3,14 +3,13 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { EventEmitter } from "events";
+import { singleton } from 'tsyringe';
+import { EventEmitter } from 'events';
 let SwarmEngine = class extends EventEmitter {
   constructor(options = {}) {
     super();
@@ -22,9 +21,9 @@ let SwarmEngine = class extends EventEmitter {
       autoRebalance: options.autoRebalance !== false,
       healthCheckInterval: options.healthCheckInterval || 5e3,
       communicationTimeout: options.communicationTimeout || 1e4,
-      ...options
+      ...options,
     };
-    this.state = "idle";
+    this.state = 'idle';
     this.loadBalancer = new LoadBalancer();
     this.healthChecker = null;
   }
@@ -32,11 +31,11 @@ let SwarmEngine = class extends EventEmitter {
    * Initialize swarm engine
    */
   async initialize() {
-    this.state = "initializing";
-    this.emit("swarm-engine.initializing");
+    this.state = 'initializing';
+    this.emit('swarm-engine.initializing');
     this.startHealthChecks();
-    this.state = "ready";
-    this.emit("swarm-engine.ready");
+    this.state = 'ready';
+    this.emit('swarm-engine.ready');
     return this;
   }
   /**
@@ -47,16 +46,14 @@ let SwarmEngine = class extends EventEmitter {
       throw new Error(`Swarm ${swarmId} already exists`);
     }
     if (agents.length > this.config.maxSwarmSize) {
-      throw new Error(
-        `Swarm size ${agents.length} exceeds maximum ${this.config.maxSwarmSize}`
-      );
+      throw new Error(`Swarm size ${agents.length} exceeds maximum ${this.config.maxSwarmSize}`);
     }
     const swarm = {
       id: swarmId,
       agents: new Map(agents.map((a) => [a.id, a])),
-      status: "created",
+      status: 'created',
       createdAt: Date.now(),
-      strategy: options.strategy || "consensus",
+      strategy: options.strategy || 'consensus',
       metadata: options.metadata || {},
       taskQueue: [],
       executingTasks: /* @__PURE__ */ new Map(),
@@ -64,12 +61,12 @@ let SwarmEngine = class extends EventEmitter {
         tasksCompleted: 0,
         tasksFailed: 0,
         averageLatency: 0,
-        successRate: 0
-      }
+        successRate: 0,
+      },
     };
     this.swarms.set(swarmId, swarm);
     agents.forEach((agent) => this.registerAgentToSwarm(agent, swarmId));
-    this.emit("swarm.created", { swarmId, agentCount: agents.length });
+    this.emit('swarm.created', { swarmId, agentCount: agents.length });
     return swarm;
   }
   /**
@@ -84,23 +81,23 @@ let SwarmEngine = class extends EventEmitter {
       throw new Error(`Swarm ${swarmId} is at maximum capacity`);
     }
     swarm.agents.set(agent.id, agent);
-    this.agents.set(agent.id, { swarmId, agent, status: "active" });
+    this.agents.set(agent.id, { swarmId, agent, status: 'active' });
     this.setupAgentListeners(agent, swarmId);
-    this.emit("agent.registered-to-swarm", { agentId: agent.id, swarmId });
+    this.emit('agent.registered-to-swarm', { agentId: agent.id, swarmId });
     return swarm;
   }
   /**
    * Setup event listeners for agent
    */
   setupAgentListeners(agent, swarmId) {
-    agent.on("task-complete", (data) => {
+    agent.on('task-complete', (data) => {
       this.handleAgentTaskComplete(agent.id, swarmId, data);
     });
-    agent.on("task-error", (data) => {
+    agent.on('task-error', (data) => {
       this.handleAgentTaskError(agent.id, swarmId, data);
     });
-    agent.on("state-change", (data) => {
-      this.emit("agent.state-changed", { agentId: agent.id, swarmId, ...data });
+    agent.on('state-change', (data) => {
+      this.emit('agent.state-changed', { agentId: agent.id, swarmId, ...data });
     });
   }
   /**
@@ -113,26 +110,26 @@ let SwarmEngine = class extends EventEmitter {
     }
     const strategy = options.strategy || swarm.strategy;
     const executionId = this.generateId();
-    this.emit("task.swarm-execution.started", { swarmId, taskId: executionId });
+    this.emit('task.swarm-execution.started', { swarmId, taskId: executionId });
     try {
       let result;
-      if (strategy === "consensus") {
+      if (strategy === 'consensus') {
         result = await this.executeWithConsensus(swarmId, task);
-      } else if (strategy === "hierarchical") {
+      } else if (strategy === 'hierarchical') {
         result = await this.executeHierarchical(swarmId, task);
-      } else if (strategy === "broadcast") {
+      } else if (strategy === 'broadcast') {
         result = await this.executeBroadcast(swarmId, task);
-      } else if (strategy === "tournament") {
+      } else if (strategy === 'tournament') {
         result = await this.executeTournament(swarmId, task);
       } else {
         throw new Error(`Unknown execution strategy: ${strategy}`);
       }
       swarm.metrics.tasksCompleted++;
-      this.emit("task.swarm-execution.completed", { swarmId, taskId: executionId, result });
+      this.emit('task.swarm-execution.completed', { swarmId, taskId: executionId, result });
       return result;
     } catch (error) {
       swarm.metrics.tasksFailed++;
-      this.emit("task.swarm-execution.error", { swarmId, taskId: executionId, error });
+      this.emit('task.swarm-execution.error', { swarmId, taskId: executionId, error });
       throw error;
     }
   }
@@ -145,9 +142,9 @@ let SwarmEngine = class extends EventEmitter {
     const results = await Promise.allSettled(
       agents.map((agent) => this.executeWithTimeout(agent, task))
     );
-    const successful = results.filter((r) => r.status === "fulfilled").map((r) => r.value);
+    const successful = results.filter((r) => r.status === 'fulfilled').map((r) => r.value);
     if (successful.length === 0) {
-      throw new Error("All agents failed to execute task");
+      throw new Error('All agents failed to execute task');
     }
     return this.aggregateResults(successful);
   }
@@ -175,8 +172,8 @@ let SwarmEngine = class extends EventEmitter {
     );
     return results.map((r, idx) => ({
       agent: agents[idx].id,
-      success: r.status === "fulfilled",
-      result: r.status === "fulfilled" ? r.value : r.reason
+      success: r.status === 'fulfilled',
+      result: r.status === 'fulfilled' ? r.value : r.reason,
     }));
   }
   /**
@@ -189,13 +186,16 @@ let SwarmEngine = class extends EventEmitter {
     const results = await Promise.allSettled(
       agents.slice(0, tournamentSize).map((agent) => this.executeWithTimeout(agent, task))
     );
-    const successful = results.map((r, idx) => ({
-      agent: agents[idx],
-      result: r.value,
-      success: r.status === "fulfilled"
-    })).filter((r) => r.success).sort((a, b) => (b.result?.score || 0) - (a.result?.score || 0));
+    const successful = results
+      .map((r, idx) => ({
+        agent: agents[idx],
+        result: r.value,
+        success: r.status === 'fulfilled',
+      }))
+      .filter((r) => r.success)
+      .sort((a, b) => (b.result?.score || 0) - (a.result?.score || 0));
     if (successful.length === 0) {
-      throw new Error("No agents won the tournament");
+      throw new Error('No agents won the tournament');
     }
     return successful[0].result;
   }
@@ -207,13 +207,16 @@ let SwarmEngine = class extends EventEmitter {
       const timer = setTimeout(() => {
         reject(new Error(`Task execution timeout for agent ${agent.id}`));
       }, timeout);
-      agent.execute(task).then((result) => {
-        clearTimeout(timer);
-        resolve(result);
-      }).catch((error) => {
-        clearTimeout(timer);
-        reject(error);
-      });
+      agent
+        .execute(task)
+        .then((result) => {
+          clearTimeout(timer);
+          resolve(result);
+        })
+        .catch((error) => {
+          clearTimeout(timer);
+          reject(error);
+        });
     });
   }
   /**
@@ -231,15 +234,17 @@ let SwarmEngine = class extends EventEmitter {
     const checkPromises = [];
     for (const [agentId, agentInfo] of this.agents) {
       checkPromises.push(
-        this.checkAgentHealth(agentInfo.agent).then((healthy) => ({
-          agentId,
-          healthy,
-          timestamp: Date.now()
-        })).catch(() => ({
-          agentId,
-          healthy: false,
-          timestamp: Date.now()
-        }))
+        this.checkAgentHealth(agentInfo.agent)
+          .then((healthy) => ({
+            agentId,
+            healthy,
+            timestamp: Date.now(),
+          }))
+          .catch(() => ({
+            agentId,
+            healthy: false,
+            timestamp: Date.now(),
+          }))
       );
     }
     const results = await Promise.all(checkPromises);
@@ -258,10 +263,10 @@ let SwarmEngine = class extends EventEmitter {
   async checkAgentHealth(agent) {
     try {
       const response = await Promise.race([
-        agent.execute({ type: "health-check", data: {} }),
-        new Promise(
-          (_, reject) => setTimeout(() => reject(new Error("Health check timeout")), 2e3)
-        )
+        agent.execute({ type: 'health-check', data: {} }),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Health check timeout')), 2e3)
+        ),
       ]);
       return response && response.healthy !== false;
     } catch {
@@ -274,8 +279,8 @@ let SwarmEngine = class extends EventEmitter {
   handleUnhealthyAgent(agentId) {
     const agentInfo = this.agents.get(agentId);
     if (agentInfo) {
-      agentInfo.status = "unhealthy";
-      this.emit("agent.unhealthy", { agentId, swarmId: agentInfo.swarmId });
+      agentInfo.status = 'unhealthy';
+      this.emit('agent.unhealthy', { agentId, swarmId: agentInfo.swarmId });
       if (this.config.removeUnhealthy) {
         this.removeAgentFromSwarm(agentId);
       }
@@ -287,10 +292,10 @@ let SwarmEngine = class extends EventEmitter {
   rebalanceSwarms() {
     for (const [swarmId, swarm] of this.swarms) {
       const healthyAgents = Array.from(swarm.agents.values()).filter(
-        (a) => this.agents.get(a.id)?.status === "active"
+        (a) => this.agents.get(a.id)?.status === 'active'
       );
       if (healthyAgents.length === 0 && swarm.taskQueue.length > 0) {
-        this.emit("swarm.no-healthy-agents", { swarmId });
+        this.emit('swarm.no-healthy-agents', { swarmId });
       }
     }
   }
@@ -299,12 +304,11 @@ let SwarmEngine = class extends EventEmitter {
    */
   removeAgentFromSwarm(agentId) {
     const agentInfo = this.agents.get(agentId);
-    if (!agentInfo)
-      return;
+    if (!agentInfo) return;
     const swarm = this.swarms.get(agentInfo.swarmId);
     if (swarm) {
       swarm.agents.delete(agentId);
-      this.emit("agent.removed-from-swarm", { agentId, swarmId: agentInfo.swarmId });
+      this.emit('agent.removed-from-swarm', { agentId, swarmId: agentInfo.swarmId });
     }
     this.agents.delete(agentId);
   }
@@ -312,14 +316,12 @@ let SwarmEngine = class extends EventEmitter {
    * Aggregate results from multiple agents
    */
   aggregateResults(results) {
-    if (results.length === 0)
-      return null;
-    if (results.length === 1)
-      return results[0];
+    if (results.length === 0) return null;
+    if (results.length === 1) return results[0];
     if (Array.isArray(results[0])) {
       return results.flat();
     }
-    if (typeof results[0] === "number") {
+    if (typeof results[0] === 'number') {
       return results.reduce((a, b) => a + b) / results.length;
     }
     return Object.assign({}, ...results);
@@ -328,30 +330,29 @@ let SwarmEngine = class extends EventEmitter {
    * Handle agent task completion
    */
   handleAgentTaskComplete(agentId, swarmId, data) {
-    this.emit("swarm.agent-task-complete", { agentId, swarmId, data });
+    this.emit('swarm.agent-task-complete', { agentId, swarmId, data });
   }
   /**
    * Handle agent task error
    */
   handleAgentTaskError(agentId, swarmId, data) {
-    this.emit("swarm.agent-task-error", { agentId, swarmId, data });
+    this.emit('swarm.agent-task-error', { agentId, swarmId, data });
   }
   /**
    * Get swarm statistics
    */
   getSwarmStats(swarmId) {
     const swarm = this.swarms.get(swarmId);
-    if (!swarm)
-      return null;
+    if (!swarm) return null;
     return {
       id: swarmId,
       agentCount: swarm.agents.size,
       healthyAgents: Array.from(swarm.agents.values()).filter(
-        (a) => this.agents.get(a.id)?.status === "active"
+        (a) => this.agents.get(a.id)?.status === 'active'
       ).length,
       metrics: swarm.metrics,
       strategy: swarm.strategy,
-      createdAt: swarm.createdAt
+      createdAt: swarm.createdAt,
     };
   }
   /**
@@ -374,13 +375,11 @@ let SwarmEngine = class extends EventEmitter {
         }
       }
     }
-    this.state = "shutdown";
-    this.emit("swarm-engine.shutdown");
+    this.state = 'shutdown';
+    this.emit('swarm-engine.shutdown');
   }
 };
-SwarmEngine = __decorateClass([
-  singleton()
-], SwarmEngine);
+SwarmEngine = __decorateClass([singleton()], SwarmEngine);
 class LoadBalancer {
   constructor() {
     this.agentMetrics = /* @__PURE__ */ new Map();
@@ -394,8 +393,7 @@ class LoadBalancer {
   }
   calculateAgentScore(agent) {
     let score = 100;
-    if (agent.state !== "ready")
-      score -= 50;
+    if (agent.state !== 'ready') score -= 50;
     if (agent.capabilities && agent.capabilities.length > 0) {
       score += agent.capabilities.length * 5;
     }
@@ -403,7 +401,4 @@ class LoadBalancer {
   }
 }
 var swarm_engine_default = SwarmEngine;
-export {
-  SwarmEngine,
-  swarm_engine_default as default
-};
+export { SwarmEngine, swarm_engine_default as default };

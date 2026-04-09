@@ -28,6 +28,7 @@ NVIDIA_API_KEY_4=nvapi-secondary-key-4...
 ```
 
 **Notes:**
+
 - Keys are used in order: `NVIDIA_API_KEY` → `NVIDIA_API_KEY_1` → `NVIDIA_API_KEY_2` → ...
 - You can add as many as you want (tested up to 10+)
 - Each key gets automatic rotation and failure tracking
@@ -42,19 +43,19 @@ import { keyManager } from './src/services/ai-providers/nvidia-key-manager.js';
 // Add keys manually
 keyManager.addKey('nvapi-key-1...', {
   name: 'Production-Key-1',
-  priority: 10,  // Higher = used first
+  priority: 10, // Higher = used first
   rateLimit: 100, // Max 100 requests/minute
 });
 
 keyManager.addKey('nvapi-key-2...', {
   name: 'Production-Key-2',
-  priority: 5,  // Lower priority
+  priority: 5, // Lower priority
   rateLimit: 50,
 });
 
 keyManager.addKey('nvapi-key-3...', {
   name: 'Backup-Key',
-  priority: 1,  // Lowest priority (backup only)
+  priority: 1, // Lowest priority (backup only)
 });
 ```
 
@@ -69,20 +70,14 @@ import { keyManager } from './src/services/ai-providers/nvidia-key-manager.js';
 keyManager.addKey('nvapi-premium-key...', {
   name: 'Premium-Key',
   priority: 10,
-  models: [
-    'nvidia/nemotron-3-super-120b-a12b',
-    'meta/llama-3.1-405b-instruct',
-  ],
+  models: ['nvidia/nemotron-3-super-120b-a12b', 'meta/llama-3.1-405b-instruct'],
 });
 
 // Key for coding models only
 keyManager.addKey('nvapi-coding-key...', {
   name: 'Coding-Key',
   priority: 10,
-  models: [
-    'qwen/qwen-2.5-coder-32b-instruct',
-    'deepseek-ai/deepseek-coder',
-  ],
+  models: ['qwen/qwen-2.5-coder-32b-instruct', 'deepseek-ai/deepseek-coder'],
 });
 
 // General purpose key (all models)
@@ -164,35 +159,37 @@ keyManager.resetFailures();
 ## 🔄 Automatic Features
 
 ### Key Rotation
+
 - ✅ Automatically rotates to next key on failure
 - ✅ Skips keys that exceeded rate limit
 - ✅ Skips keys with 5+ consecutive failures
 - ✅ Prioritizes high-priority keys
 
 ### Failure Handling
+
 ```javascript
 import { createRotatingClient } from './src/services/ai-providers/nemotron.js';
 import { keyManager } from './src/services/ai-providers/nvidia-key-manager.js';
 
 async function robustChat(messages) {
   const { client } = createRotatingClient('nvidia/nemotron-3-super-120b-a12b');
-  
+
   try {
     const response = await client.chat.completions.create({
       model: 'nvidia/nemotron-3-super-120b-a12b',
       messages,
     });
-    
+
     // Record success
     const currentKey = keyManager.getCurrentKey();
     keyManager.recordSuccess(currentKey.key);
-    
+
     return response;
   } catch (error) {
     // Record failure (auto-rotates to next key)
     const currentKey = keyManager.getCurrentKey();
     keyManager.recordFailure(currentKey.key);
-    
+
     // Retry with new key
     const { client: newClient } = createRotatingClient('nvidia/nemotron-3-super-120b-a12b');
     return await newClient.chat.completions.create({
@@ -212,21 +209,24 @@ import { keyManager } from './src/services/ai-providers/nvidia-key-manager.js';
 
 function printKeyDashboard() {
   const stats = keyManager.getUsageStats();
-  
+
   console.log('\n=== NVIDIA API Key Dashboard ===\n');
   console.log(`Total Keys: ${stats.length}`);
   console.log(`Total Requests: ${stats.reduce((sum, s) => sum + s.usage, 0)}`);
   console.log(`Total Failures: ${stats.reduce((sum, s) => sum + s.failures, 0)}`);
   console.log('\n');
-  
-  stats.forEach(stat => {
+
+  stats.forEach((stat) => {
     const usagePercent = ((stat.usage / stat.rateLimit) * 100).toFixed(1);
-    const bar = '█'.repeat(Math.floor(usagePercent / 5)) + '░'.repeat(20 - Math.floor(usagePercent / 5));
-    
-    console.log(`${stat.name.padEnd(15)} [${bar}] ${usagePercent}% (${stat.usage}/${stat.rateLimit})`);
+    const bar =
+      '█'.repeat(Math.floor(usagePercent / 5)) + '░'.repeat(20 - Math.floor(usagePercent / 5));
+
+    console.log(
+      `${stat.name.padEnd(15)} [${bar}] ${usagePercent}% (${stat.usage}/${stat.rateLimit})`
+    );
     console.log(`  Failures: ${stat.failures} | Priority: ${stat.priority}`);
   });
-  
+
   console.log('\n');
 }
 
@@ -239,6 +239,7 @@ setInterval(printKeyDashboard, 60000); // Every minute
 ## 💡 Best Practices
 
 ### 1. Key Organization
+
 ```bash
 # Production keys (high priority)
 NVIDIA_API_KEY=nvapi-prod-primary...
@@ -253,6 +254,7 @@ NVIDIA_API_KEY_4=nvapi-test-key...
 ```
 
 ### 2. Rate Limit Management
+
 ```javascript
 // Set appropriate rate limits per key
 keyManager.addKey('nvapi-free-key...', {
@@ -269,6 +271,7 @@ keyManager.addKey('nvapi-paid-key...', {
 ```
 
 ### 3. Automatic Reset
+
 ```javascript
 // Reset usage counters every hour
 setInterval(() => {
@@ -284,19 +287,20 @@ setInterval(() => {
 ```
 
 ### 4. Health Check
+
 ```javascript
 async function healthCheck() {
   const stats = keyManager.getUsageStats();
-  const healthyKeys = stats.filter(s => s.failures < 5);
-  const unhealthyKeys = stats.filter(s => s.failures >= 5);
-  
+  const healthyKeys = stats.filter((s) => s.failures < 5);
+  const unhealthyKeys = stats.filter((s) => s.failures >= 5);
+
   console.log(`✅ Healthy keys: ${healthyKeys.length}`);
   console.log(`❌ Unhealthy keys: ${unhealthyKeys.length}`);
-  
+
   if (unhealthyKeys.length > 0) {
     console.warn('⚠️  Consider replacing unhealthy keys');
   }
-  
+
   return unhealthyKeys.length === 0;
 }
 ```
@@ -315,18 +319,18 @@ async function healthCheck() {
 
 ## 📋 Quick Reference
 
-| Function | Description |
-|----------|-------------|
-| `initNVIDIAKeys()` | Initialize from env variables |
-| `keyManager.addKey()` | Add a new API key |
-| `keyManager.removeKey()` | Remove a key |
-| `keyManager.createClient()` | Create client with rotation |
-| `keyManager.getCurrentKey()` | Get current key info |
-| `keyManager.rotateKey()` | Rotate to next key |
-| `keyManager.getUsageStats()` | Get usage statistics |
-| `keyManager.listKeys()` | List all keys (masked) |
-| `keyManager.resetUsage()` | Reset usage counters |
-| `keyManager.resetFailures()` | Reset failure counters |
+| Function                     | Description                   |
+| ---------------------------- | ----------------------------- |
+| `initNVIDIAKeys()`           | Initialize from env variables |
+| `keyManager.addKey()`        | Add a new API key             |
+| `keyManager.removeKey()`     | Remove a key                  |
+| `keyManager.createClient()`  | Create client with rotation   |
+| `keyManager.getCurrentKey()` | Get current key info          |
+| `keyManager.rotateKey()`     | Rotate to next key            |
+| `keyManager.getUsageStats()` | Get usage statistics          |
+| `keyManager.listKeys()`      | List all keys (masked)        |
+| `keyManager.resetUsage()`    | Reset usage counters          |
+| `keyManager.resetFailures()` | Reset failure counters        |
 
 ---
 
@@ -346,9 +350,9 @@ initNVIDIAKeys(); // Loads all keys from env
 // 3. Use in your API calls
 async function generateResponse(prompt) {
   const { client, keyName } = createRotatingClient('nvidia/nemotron-3-super-120b-a12b');
-  
+
   console.log(`Using key: ${keyName}`);
-  
+
   const response = await client.chat.completions.create({
     model: 'nvidia/nemotron-3-super-120b-a12b',
     messages: [{ role: 'user', content: prompt }],
@@ -356,10 +360,10 @@ async function generateResponse(prompt) {
     temperature: 1.0,
     top_p: 0.95,
     extra_body: {
-      chat_template_kwargs: { enable_thinking: true }
-    }
+      chat_template_kwargs: { enable_thinking: true },
+    },
   });
-  
+
   return response.choices[0].message.content;
 }
 
@@ -375,4 +379,3 @@ setInterval(() => {
 **You can now add unlimited API keys for maximum throughput!** 🚀
 
 Get more free keys at: https://build.nvidia.com/
-

@@ -84,7 +84,9 @@ export const AgentCard = memo(function AgentCard({ agent, onAction }: AgentCardP
           <p className="mt-1 text-xs text-slate-400">{agent.id}</p>
         </div>
         <div className="flex items-center gap-2 text-xs text-slate-300">
-          <span className={`h-2.5 w-2.5 rounded-full shadow-lg ${stateStyles[agent.state]} animate-pulse`} />
+          <span
+            className={`h-2.5 w-2.5 rounded-full shadow-lg ${stateStyles[agent.state]} animate-pulse`}
+          />
           <span className="capitalize">{agent.state}</span>
         </div>
       </header>
@@ -92,7 +94,9 @@ export const AgentCard = memo(function AgentCard({ agent, onAction }: AgentCardP
       <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
         <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-2">
           <div className="text-slate-500">Last execution</div>
-          <div className="mt-1 font-semibold text-slate-200">{formatRelativeTime(agent.lastExecution)}</div>
+          <div className="mt-1 font-semibold text-slate-200">
+            {formatRelativeTime(agent.lastExecution)}
+          </div>
         </div>
         <div className="rounded-lg border border-slate-800 bg-slate-950/60 p-2">
           <div className="text-slate-500">Avg duration</div>

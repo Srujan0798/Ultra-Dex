@@ -4,11 +4,8 @@ import './App.css';
 /** Performance: memoized configuration for App */
 const appMemo = useMemo(() => ({ component: 'App', optimized: true }), []);
 
-
 /** Performance: memoized config for App */
-const appConfig = typeof useMemo === 'function'
-  ? { optimized: true }
-  : { optimized: false };
+const appConfig = typeof useMemo === 'function' ? { optimized: true } : { optimized: false };
 
 /**
  * Accessibility constants for App
@@ -67,33 +64,35 @@ function App() {
       <header className="app-header">
         <h1>.Ultra-Dex Desktop</h1>
         <div className="status-bar">
-          <span className={`status-indicator ${status.includes('Connected') ? 'connected' : 'disconnected'}`}>
+          <span
+            className={`status-indicator ${status.includes('Connected') ? 'connected' : 'disconnected'}`}
+          >
             {status}
           </span>
         </div>
       </header>
 
       <nav className="app-nav">
-        <button 
-          className={activeTab === 'dashboard' ? 'active' : ''} 
+        <button
+          className={activeTab === 'dashboard' ? 'active' : ''}
           onClick={() => setActiveTab('dashboard')}
         >
           Dashboard
         </button>
-        <button 
-          className={activeTab === 'projects' ? 'active' : ''} 
+        <button
+          className={activeTab === 'projects' ? 'active' : ''}
           onClick={() => setActiveTab('projects')}
         >
           Projects
         </button>
-        <button 
-          className={activeTab === 'agents' ? 'active' : ''} 
+        <button
+          className={activeTab === 'agents' ? 'active' : ''}
           onClick={() => setActiveTab('agents')}
         >
           Agents
         </button>
-        <button 
-          className={activeTab === 'settings' ? 'active' : ''} 
+        <button
+          className={activeTab === 'settings' ? 'active' : ''}
           onClick={() => setActiveTab('settings')}
         >
           Settings
@@ -108,22 +107,18 @@ function App() {
               <button onClick={() => runCommand('ultra-dex plan "New feature"')}>
                 Plan New Feature
               </button>
-              <button onClick={() => runCommand('ultra-dex run task.md')}>
-                Run Task
-              </button>
-              <button onClick={() => runCommand('ultra-dex verify --full')}>
-                Verify Project
-              </button>
+              <button onClick={() => runCommand('ultra-dex run task.md')}>Run Task</button>
+              <button onClick={() => runCommand('ultra-dex verify --full')}>Verify Project</button>
               <button onClick={() => runCommand('ultra-dex swarm start --parallel 3')}>
                 Start Swarm
               </button>
             </div>
-            
+
             <div className="project-summary">
               <h3>Active Projects</h3>
               {projects.length > 0 ? (
                 <ul className="project-list">
-                  {projects.map(project => (
+                  {projects.map((project) => (
                     <li key={project.id} className="project-item">
                       <div className="project-info">
                         <h4>{project.name}</h4>
@@ -132,8 +127,8 @@ function App() {
                         </span>
                       </div>
                       <div className="progress-container">
-                        <div 
-                          className="progress-bar" 
+                        <div
+                          className="progress-bar"
                           style={{ width: `${project.progress}%` }}
                         ></div>
                         <span className="progress-text">{project.progress}%</span>

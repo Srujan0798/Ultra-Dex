@@ -20,7 +20,7 @@ async def main():
         api_key="your-api-key",
         endpoint="https://api.ultra-dex.ai"
     )
-    
+
     # Create an agent
     agent = await client.create_agent(
         name="my-agent",
@@ -29,12 +29,12 @@ async def main():
             "temperature": 0.7
         }
     )
-    
+
     # Execute a task
     result = await agent.execute({
         "prompt": "Write a short poem about AI"
     })
-    
+
     print(result)
 
 # Run the async function
@@ -160,13 +160,13 @@ async def example():
                 "capabilities": ["code_review", "bug_detection"]
             }
         )
-        
+
         # Execute a task
         result = await agent.execute({
             "prompt": "Review this code snippet",
             "code": "def hello():\n    print('Hello, world!')"
         })
-        
+
         print(result)
 
 asyncio.run(example())
@@ -186,15 +186,15 @@ async def memory_example():
             "content": "prefers detailed explanations",
             "user_id": "user123"
         })
-        
+
         print(f"Stored memory with ID: {memory_id}")
-        
+
         # Retrieve information from memory
         memories = await client.retrieve_memory(
             query="user preferences",
             filters={"user_id": "user123"}
         )
-        
+
         print(f"Retrieved {len(memories)} memories")
 
 asyncio.run(memory_example())
@@ -211,7 +211,7 @@ async def stream_example():
         messages = [
             {"role": "user", "content": "Tell me about the history of artificial intelligence"}
         ]
-        
+
         async for chunk in client.stream(messages):
             print(chunk.get("content", ""), end="", flush=True)
 

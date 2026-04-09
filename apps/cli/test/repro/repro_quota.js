@@ -1,4 +1,3 @@
-
 import { createBudgetManager } from '../../lib/commerce/budget.js';
 import { MockOpenAI } from '../../lib/providers/mock.js';
 

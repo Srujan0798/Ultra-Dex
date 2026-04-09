@@ -30,20 +30,13 @@ declare module 'jsonwebtoken' {
 }
 
 declare module 'speakeasy' {
-  export function generateSecret(options?: {
-    name?: string;
-    issuer?: string;
-    length?: number;
-  }): {
+  export function generateSecret(options?: { name?: string; issuer?: string; length?: number }): {
     base32: string;
     otpauth_url?: string;
   };
 
   export const totp: {
-    (options: {
-      secret: string;
-      encoding: 'base32' | 'ascii' | 'hex';
-    }): string;
+    (options: { secret: string; encoding: 'base32' | 'ascii' | 'hex' }): string;
     verify(options: {
       secret: string;
       encoding: 'base32' | 'ascii' | 'hex';
@@ -71,7 +64,7 @@ declare module 'bcryptjs' {
 
 // Declarations for local JS modules
 declare module '../../../apps/cli/lib/utils/error-handler.js' {
-  export type ErrorCode = 
+  export type ErrorCode =
     | 'VALIDATION_ERROR'
     | 'AUTHENTICATION_ERROR'
     | 'AUTHORIZATION_ERROR'
@@ -103,15 +96,21 @@ declare module '../../core/auth/rbac-manager.js' {
 }
 
 declare module '../audit/audit-logger.js' {
-  import type { AuditEvent, AuditEventType, AuditSeverity, AuditFilter, AuditStats } from '../audit/audit-logger';
-  
+  import type {
+    AuditEvent,
+    AuditEventType,
+    AuditSeverity,
+    AuditFilter,
+    AuditStats,
+  } from '../audit/audit-logger';
+
   export type { AuditEvent, AuditEventType, AuditSeverity, AuditFilter, AuditStats };
-  
+
   export class AuditLogger {
     initialize(): Promise<void>;
     log(event: Omit<AuditEvent, 'id' | 'timestamp' | 'metadata'>): Promise<AuditEvent>;
   }
-  
+
   export const auditLogger: AuditLogger;
   export default auditLogger;
 }

@@ -2,10 +2,10 @@
 
 /**
  * Ultra-Dex Testing Automation
- * 
+ *
  * This example demonstrates how to create an AI-powered testing automation system using Ultra-Dex.
  * The system can generate tests, execute them, and analyze results to improve code quality.
- * 
+ *
  * Features:
  * - AI-powered test generation
  * - Multi-type testing (unit, integration, e2e)
@@ -21,40 +21,60 @@ import path from 'path';
 class TestingAutomation {
   constructor(config) {
     this.ultraDex = new UltraDex(config.ultraDex);
-    
+
     // Initialize specialized agents
     this.agents = {
       testGenerator: this.ultraDex.createAgent({
         name: 'test-generator',
         role: 'Generates comprehensive tests based on code analysis and requirements',
-        tools: ['code-analyzer', 'requirement-parser', 'edge-case-identifier', 'test-pattern-library']
+        tools: [
+          'code-analyzer',
+          'requirement-parser',
+          'edge-case-identifier',
+          'test-pattern-library',
+        ],
       }),
-      
+
       testExecutor: this.ultraDex.createAgent({
         name: 'test-executor',
         role: 'Executes tests and reports results with detailed analysis',
-        tools: ['test-runner', 'result-analyzer', 'performance-tracker', 'flaky-test-detector']
+        tools: ['test-runner', 'result-analyzer', 'performance-tracker', 'flaky-test-detector'],
       }),
-      
+
       defectPredictor: this.ultraDex.createAgent({
         name: 'defect-predictor',
         role: 'Predicts potential defects and suggests preventive measures',
-        tools: ['pattern-analyzer', 'risk-assessor', 'historical-data-analyzer', 'defect-classifier']
+        tools: [
+          'pattern-analyzer',
+          'risk-assessor',
+          'historical-data-analyzer',
+          'defect-classifier',
+        ],
       }),
-      
+
       coverageOptimizer: this.ultraDex.createAgent({
         name: 'coverage-optimizer',
         role: 'Analyzes test coverage and suggests improvements',
-        tools: ['coverage-analyzer', 'gap-identifier', 'priority-scheduler', 'duplication-detector']
+        tools: [
+          'coverage-analyzer',
+          'gap-identifier',
+          'priority-scheduler',
+          'duplication-detector',
+        ],
       }),
-      
+
       testMaintainer: this.ultraDex.createAgent({
         name: 'test-maintainer',
         role: 'Maintains and updates tests as code evolves',
-        tools: ['change-detector', 'test-updater', 'regression-analyzer', 'maintenance-prioritizer']
-      })
+        tools: [
+          'change-detector',
+          'test-updater',
+          'regression-analyzer',
+          'maintenance-prioritizer',
+        ],
+      }),
     };
-    
+
     this.testSuites = [];
     this.testResults = [];
     this.defectPredictions = [];
@@ -67,7 +87,7 @@ class TestingAutomation {
     try {
       // Read source code
       const code = await fs.readFile(sourcePath, 'utf8');
-      
+
       // Analyze code and generate tests
       const testGeneration = await this.agents.testGenerator.execute({
         code,
@@ -76,9 +96,9 @@ class TestingAutomation {
         testType: options.type || 'unit',
         targetCoverage: options.targetCoverage || 80,
         includeEdgeCases: options.includeEdgeCases !== false,
-        includeIntegration: options.includeIntegration || false
+        includeIntegration: options.includeIntegration || false,
       });
-      
+
       // Create test suite object
       const testSuite = {
         id: `test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -91,13 +111,12 @@ class TestingAutomation {
           testCount: testGeneration.tests.length,
           estimatedCoverage: testGeneration.estimatedCoverage,
           complexity: testGeneration.complexity,
-          riskLevel: testGeneration.riskLevel
-        }
+          riskLevel: testGeneration.riskLevel,
+        },
       };
-      
+
       this.testSuites.push(testSuite);
       return testSuite;
-      
     } catch (error) {
       console.error('Error generating tests:', error);
       throw error;
@@ -109,20 +128,20 @@ class TestingAutomation {
    */
   async executeTests(testSuiteId, options = {}) {
     try {
-      const testSuite = this.testSuites.find(ts => ts.id === testSuiteId);
+      const testSuite = this.testSuites.find((ts) => ts.id === testSuiteId);
       if (!testSuite) {
         throw new Error('Test suite not found');
       }
-      
+
       // Execute tests
       const executionResult = await this.agents.testExecutor.execute({
         tests: testSuite.tests,
         testFramework: options.framework || this.getDefaultFramework(testSuite.language),
         environment: options.environment || 'development',
         parallel: options.parallel !== false,
-        timeout: options.timeout || 30000
+        timeout: options.timeout || 30000,
       });
-      
+
       // Create test result object
       const testResult = {
         id: `result-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -135,13 +154,12 @@ class TestingAutomation {
           failed: executionResult.summary.failed,
           skipped: executionResult.summary.skipped,
           duration: executionResult.summary.duration,
-          coverage: executionResult.coverage
-        }
+          coverage: executionResult.coverage,
+        },
       };
-      
+
       this.testResults.push(testResult);
       return testResult;
-      
     } catch (error) {
       console.error('Error executing tests:', error);
       throw error;
@@ -155,7 +173,7 @@ class TestingAutomation {
     try {
       // Read source code
       const code = await fs.readFile(sourcePath, 'utf8');
-      
+
       // Predict defects
       const prediction = await this.agents.defectPredictor.execute({
         code,
@@ -163,9 +181,9 @@ class TestingAutomation {
         filePath: sourcePath,
         historicalData: options.historicalData || [],
         changeType: options.changeType || 'enhancement',
-        complexityThreshold: options.complexityThreshold || 5
+        complexityThreshold: options.complexityThreshold || 5,
       });
-      
+
       // Create defect prediction object
       const defectPrediction = {
         id: `defect-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -177,13 +195,12 @@ class TestingAutomation {
         metadata: {
           highRiskAreas: prediction.highRiskAreas,
           defectProbability: prediction.defectProbability,
-          suggestedTests: prediction.suggestedTests
-        }
+          suggestedTests: prediction.suggestedTests,
+        },
       };
-      
+
       this.defectPredictions.push(defectPrediction);
       return defectPrediction;
-      
     } catch (error) {
       console.error('Error predicting defects:', error);
       throw error;
@@ -195,37 +212,36 @@ class TestingAutomation {
    */
   async optimizeCoverage(testSuiteId, options = {}) {
     try {
-      const testSuite = this.testSuites.find(ts => ts.id === testSuiteId);
+      const testSuite = this.testSuites.find((ts) => ts.id === testSuiteId);
       if (!testSuite) {
         throw new Error('Test suite not found');
       }
-      
+
       // Get latest test results
       const latestResult = this.testResults
-        .filter(tr => tr.testSuiteId === testSuiteId)
+        .filter((tr) => tr.testSuiteId === testSuiteId)
         .sort((a, b) => new Date(b.executedAt) - new Date(a.executedAt))[0];
-      
+
       // Optimize coverage
       const optimization = await this.agents.coverageOptimizer.execute({
         testSuite: testSuite,
         currentCoverage: latestResult?.metadata.coverage || 0,
         targetCoverage: options.targetCoverage || 90,
         uncoveredAreas: latestResult?.coverageDetails?.uncovered || [],
-        codeComplexity: testSuite.metadata.complexity
+        codeComplexity: testSuite.metadata.complexity,
       });
-      
+
       // Update test suite with optimized tests
       testSuite.tests = [...testSuite.tests, ...optimization.additionalTests];
       testSuite.metadata.optimized = true;
       testSuite.metadata.optimizedAt = new Date().toISOString();
-      
+
       return {
         testSuiteId,
         additionalTests: optimization.additionalTests,
         expectedCoverageImprovement: optimization.expectedCoverageImprovement,
-        recommendations: optimization.recommendations
+        recommendations: optimization.recommendations,
       };
-      
     } catch (error) {
       console.error('Error optimizing coverage:', error);
       throw error;
@@ -239,33 +255,32 @@ class TestingAutomation {
     try {
       // Read updated source code
       const updatedCode = await fs.readFile(sourcePath, 'utf8');
-      
+
       // Analyze changes and update tests
       const maintenance = await this.agents.testMaintainer.execute({
         sourcePath,
         changeDescription,
         updatedCode,
         affectedTests: this.getAffectedTests(sourcePath),
-        testSuites: this.testSuites.filter(ts => ts.sourcePath === sourcePath)
+        testSuites: this.testSuites.filter((ts) => ts.sourcePath === sourcePath),
       });
-      
+
       // Update affected test suites
       for (const update of maintenance.testUpdates) {
-        const testSuite = this.testSuites.find(ts => ts.id === update.testSuiteId);
+        const testSuite = this.testSuites.find((ts) => ts.id === update.testSuiteId);
         if (testSuite) {
           testSuite.tests = update.updatedTests;
           testSuite.metadata.lastMaintained = new Date().toISOString();
         }
       }
-      
+
       return {
         sourcePath,
         changesApplied: maintenance.changesApplied,
         testsUpdated: maintenance.testsUpdated,
         newTestsAdded: maintenance.newTestsAdded,
-        deprecatedTests: maintenance.deprecatedTests
+        deprecatedTests: maintenance.deprecatedTests,
       };
-      
     } catch (error) {
       console.error('Error maintaining tests:', error);
       throw error;
@@ -279,34 +294,33 @@ class TestingAutomation {
     const cycleResult = {
       sourcePath,
       stages: {},
-      completedAt: new Date().toISOString()
+      completedAt: new Date().toISOString(),
     };
-    
+
     try {
       // 1. Predict defects
       cycleResult.stages.defectPrediction = await this.predictDefects(sourcePath, options);
-      
+
       // 2. Generate tests
       const testSuite = await this.generateTests(sourcePath, {
         ...options,
-        targetCoverage: cycleResult.stages.defectPrediction.metadata.suggestedTests?.coverage || 80
+        targetCoverage: cycleResult.stages.defectPrediction.metadata.suggestedTests?.coverage || 80,
       });
       cycleResult.stages.testGeneration = testSuite;
-      
+
       // 3. Execute tests
       const testResult = await this.executeTests(testSuite.id, options);
       cycleResult.stages.testExecution = testResult;
-      
+
       // 4. Optimize coverage
       const coverageOptimization = await this.optimizeCoverage(testSuite.id, options);
       cycleResult.stages.coverageOptimization = coverageOptimization;
-      
+
       // 5. Execute optimized tests
       const optimizedResult = await this.executeTests(testSuite.id, options);
       cycleResult.stages.optimizedExecution = optimizedResult;
-      
+
       return cycleResult;
-      
     } catch (error) {
       console.error('Error in testing cycle:', error);
       cycleResult.error = error.message;
@@ -334,9 +348,9 @@ class TestingAutomation {
       '.rb': 'ruby',
       '.swift': 'swift',
       '.kt': 'kotlin',
-      '.scala': 'scala'
+      '.scala': 'scala',
     };
-    
+
     return languageMap[ext] || 'unknown';
   }
 
@@ -354,9 +368,9 @@ class TestingAutomation {
       cplusplus: 'gtest',
       csharp: 'mstest',
       php: 'phpunit',
-      ruby: 'rspec'
+      ruby: 'rspec',
     };
-    
+
     return frameworkMap[language] || 'default';
   }
 
@@ -364,7 +378,7 @@ class TestingAutomation {
    * Get tests affected by a source file change
    */
   getAffectedTests(sourcePath) {
-    return this.testSuites.filter(ts => ts.sourcePath === sourcePath);
+    return this.testSuites.filter((ts) => ts.sourcePath === sourcePath);
   }
 
   /**
@@ -376,21 +390,21 @@ class TestingAutomation {
     const totalExecutions = this.testResults.length;
     const totalPassed = this.testResults.reduce((sum, tr) => sum + tr.metadata.passed, 0);
     const totalFailed = this.testResults.reduce((sum, tr) => sum + tr.metadata.failed, 0);
-    
+
     const passRate = totalExecutions > 0 ? (totalPassed / (totalPassed + totalFailed)) * 100 : 0;
-    
+
     const byLanguage = this.testSuites.reduce((acc, ts) => {
       const lang = ts.language || 'unknown';
       acc[lang] = (acc[lang] || 0) + 1;
       return acc;
     }, {});
-    
+
     const byType = this.testSuites.reduce((acc, ts) => {
       const type = ts.type || 'unit';
       acc[type] = (acc[type] || 0) + 1;
       return acc;
     }, {});
-    
+
     return {
       totalTestSuites,
       totalTests,
@@ -401,8 +415,8 @@ class TestingAutomation {
       byLanguage,
       byType,
       defectPredictions: this.defectPredictions.length,
-      coverageOptimizations: this.testSuites.filter(ts => ts.metadata.optimized).length,
-      timestamp: new Date().toISOString()
+      coverageOptimizations: this.testSuites.filter((ts) => ts.metadata.optimized).length,
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -415,9 +429,9 @@ class TestingAutomation {
       testResults: this.testResults,
       defectPredictions: this.defectPredictions,
       stats: this.getStats(),
-      exportedAt: new Date().toISOString()
+      exportedAt: new Date().toISOString(),
     };
-    
+
     if (format === 'json') {
       await fs.writeFile(outputPath, JSON.stringify(results, null, 2));
     } else if (format === 'junit') {
@@ -429,7 +443,7 @@ class TestingAutomation {
       const htmlReport = this.generateHtmlReport(results);
       await fs.writeFile(outputPath, htmlReport);
     }
-    
+
     return { success: true, outputPath, format };
   }
 
@@ -475,13 +489,18 @@ class TestingAutomation {
     <p>Defect Predictions: ${results.stats.defectPredictions}</p>
   </div>
   <h2>Recent Test Results</h2>
-  ${results.testResults.slice(0, 5).map(result => `
+  ${results.testResults
+    .slice(0, 5)
+    .map(
+      (result) => `
     <div class="test-result ${result.metadata.failed > 0 ? 'failed' : 'passed'}">
       <h3>Test Suite: ${result.testSuiteId}</h3>
       <p>Executed: ${result.executedAt}</p>
       <p>Passed: ${result.metadata.passed}, Failed: ${result.metadata.failed}</p>
     </div>
-  `).join('')}
+  `
+    )
+    .join('')}
 </body>
 </html>`;
   }
@@ -492,14 +511,16 @@ async function main() {
   const testingAutomation = new TestingAutomation({
     ultraDex: {
       apiKey: process.env.ULTRA_DEX_API_KEY,
-      endpoint: process.env.ULTRA_DEX_ENDPOINT || 'https://api.ultra-dex.ai'
-    }
+      endpoint: process.env.ULTRA_DEX_ENDPOINT || 'https://api.ultra-dex.ai',
+    },
   });
-  
+
   // Example of how to use the testing automation
   try {
-    console.log('Testing automation system initialized. Use runTestingCycle() to run a complete testing cycle.');
-    
+    console.log(
+      'Testing automation system initialized. Use runTestingCycle() to run a complete testing cycle.'
+    );
+
     // Example of running a testing cycle (would need actual source file):
     /*
     const result = await testingAutomation.runTestingCycle('./path/to/source/file.js', {
@@ -510,7 +531,7 @@ async function main() {
     
     console.log('Testing cycle completed:', result);
     */
-    
+
     // Print testing statistics
     console.log('Testing Stats:', testingAutomation.getStats());
   } catch (error) {

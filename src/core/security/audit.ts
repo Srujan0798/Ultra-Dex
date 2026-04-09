@@ -1,8 +1,8 @@
-import fs from "fs/promises";
-import path from "path";
-import crypto from "crypto";
-import { EventEmitter } from "events";
-const AUDIT_DIR = ".ultra-dex/security-audit";
+import fs from 'fs/promises';
+import path from 'path';
+import crypto from 'crypto';
+import { EventEmitter } from 'events';
+const AUDIT_DIR = '.ultra-dex/security-audit';
 class SecurityAudit extends EventEmitter {
   constructor(options = {}) {
     super();
@@ -10,12 +10,12 @@ class SecurityAudit extends EventEmitter {
       retentionDays: options.retentionDays || 90,
       enableEncryption: options.enableEncryption !== false,
       encryptionKey: options.encryptionKey || process.env.SECURITY_AUDIT_ENCRYPTION_KEY,
-      auditLevel: options.auditLevel || "info",
+      auditLevel: options.auditLevel || 'info',
       // 'debug', 'info', 'warn', 'error'
       enableRealTime: options.enableRealTime !== false,
       logIntegrity: options.logIntegrity !== false,
       // Enable cryptographic integrity checks
-      ...options
+      ...options,
     };
     this.auditDir = path.resolve(this.options.auditDir || AUDIT_DIR);
     this.auditLog = [];
@@ -30,154 +30,155 @@ class SecurityAudit extends EventEmitter {
     this.initializeComplianceControls();
     this.initializeSecurityPolicies();
     this.initializeVulnerabilityScanner();
-    console.log("\u{1F6E1}\uFE0F  Security Audit System Initialized");
+    console.log('\u{1F6E1}\uFE0F  Security Audit System Initialized');
   }
   initializeComplianceControls() {
-    this.complianceControls.set("soc2.access_controls", {
-      id: "CC5.2",
-      name: "Access Controls",
-      category: "security",
-      description: "Logical access security software, infrastructure, and architecture",
+    this.complianceControls.set('soc2.access_controls', {
+      id: 'CC5.2',
+      name: 'Access Controls',
+      category: 'security',
+      description: 'Logical access security software, infrastructure, and architecture',
       requirements: [
-        "User authentication and authorization",
-        "Access monitoring and logging",
-        "Segregation of duties",
-        "Regular access reviews"
+        'User authentication and authorization',
+        'Access monitoring and logging',
+        'Segregation of duties',
+        'Regular access reviews',
       ],
-      implementation: "RBAC with SSO, audit logging, and access reviews",
-      status: "implemented",
-      lastReviewed: (/* @__PURE__ */ new Date()).toISOString()
+      implementation: 'RBAC with SSO, audit logging, and access reviews',
+      status: 'implemented',
+      lastReviewed: /* @__PURE__ */ new Date().toISOString(),
     });
-    this.complianceControls.set("soc2.change_management", {
-      id: "CC8.1",
-      name: "Change Management",
-      category: "security",
-      description: "Changes to infrastructure, data, software, and procedures are properly authorized",
+    this.complianceControls.set('soc2.change_management', {
+      id: 'CC8.1',
+      name: 'Change Management',
+      category: 'security',
+      description:
+        'Changes to infrastructure, data, software, and procedures are properly authorized',
       requirements: [
-        "Change approval process",
-        "Impact assessment",
-        "Testing before deployment",
-        "Rollback procedures"
+        'Change approval process',
+        'Impact assessment',
+        'Testing before deployment',
+        'Rollback procedures',
       ],
-      implementation: "Git-based change management with approval workflows",
-      status: "implemented",
-      lastReviewed: (/* @__PURE__ */ new Date()).toISOString()
+      implementation: 'Git-based change management with approval workflows',
+      status: 'implemented',
+      lastReviewed: /* @__PURE__ */ new Date().toISOString(),
     });
-    this.complianceControls.set("soc2.data_protection", {
-      id: "CC6.1",
-      name: "Data Protection",
-      category: "confidentiality",
-      description: "Data is protected against unauthorized access, use, or disclosure",
+    this.complianceControls.set('soc2.data_protection', {
+      id: 'CC6.1',
+      name: 'Data Protection',
+      category: 'confidentiality',
+      description: 'Data is protected against unauthorized access, use, or disclosure',
       requirements: [
-        "Data encryption at rest and in transit",
-        "Access controls",
-        "Data classification",
-        "Secure disposal"
+        'Data encryption at rest and in transit',
+        'Access controls',
+        'Data classification',
+        'Secure disposal',
       ],
-      implementation: "AES-256 encryption, RBAC, data classification, secure deletion",
-      status: "implemented",
-      lastReviewed: (/* @__PURE__ */ new Date()).toISOString()
+      implementation: 'AES-256 encryption, RBAC, data classification, secure deletion',
+      status: 'implemented',
+      lastReviewed: /* @__PURE__ */ new Date().toISOString(),
     });
-    this.complianceControls.set("gdpr.right_to_erasure", {
-      id: "GDPR_ARTICLE_17",
-      name: "Right to Erasure",
-      category: "privacy",
-      description: "Data subjects have right to have personal data erased",
+    this.complianceControls.set('gdpr.right_to_erasure', {
+      id: 'GDPR_ARTICLE_17',
+      name: 'Right to Erasure',
+      category: 'privacy',
+      description: 'Data subjects have right to have personal data erased',
       requirements: [
-        "Data deletion procedures",
-        "Verification of identity",
-        "Notification to third parties",
-        "Documentation of erasures"
+        'Data deletion procedures',
+        'Verification of identity',
+        'Notification to third parties',
+        'Documentation of erasures',
       ],
-      implementation: "Automated data deletion with verification and logging",
-      status: "implemented",
-      lastReviewed: (/* @__PURE__ */ new Date()).toISOString()
+      implementation: 'Automated data deletion with verification and logging',
+      status: 'implemented',
+      lastReviewed: /* @__PURE__ */ new Date().toISOString(),
     });
-    this.complianceControls.set("gdpr.data_portability", {
-      id: "GDPR_ARTICLE_20",
-      name: "Data Portability",
-      category: "privacy",
-      description: "Data subjects have right to receive personal data in structured format",
+    this.complianceControls.set('gdpr.data_portability', {
+      id: 'GDPR_ARTICLE_20',
+      name: 'Data Portability',
+      category: 'privacy',
+      description: 'Data subjects have right to receive personal data in structured format',
       requirements: [
-        "Data export functionality",
-        "Standardized formats",
-        "Verification of identity",
-        "Timely response"
+        'Data export functionality',
+        'Standardized formats',
+        'Verification of identity',
+        'Timely response',
       ],
-      implementation: "JSON export with all personal data",
-      status: "implemented",
-      lastReviewed: (/* @__PURE__ */ new Date()).toISOString()
+      implementation: 'JSON export with all personal data',
+      status: 'implemented',
+      lastReviewed: /* @__PURE__ */ new Date().toISOString(),
     });
-    this.complianceControls.set("hipaa.access_control", {
-      id: "45_CFR_164_312_a",
-      name: "Access Control",
-      category: "security",
-      description: "Implement technical policies and procedures for electronic information systems",
+    this.complianceControls.set('hipaa.access_control', {
+      id: '45_CFR_164_312_a',
+      name: 'Access Control',
+      category: 'security',
+      description: 'Implement technical policies and procedures for electronic information systems',
       requirements: [
-        "Unique user identification",
-        "Emergency access procedures",
-        "Automatic logoff",
-        "Encryption and decryption"
+        'Unique user identification',
+        'Emergency access procedures',
+        'Automatic logoff',
+        'Encryption and decryption',
       ],
-      implementation: "SSO with MFA, session management, encryption",
-      status: "implemented",
-      lastReviewed: (/* @__PURE__ */ new Date()).toISOString()
+      implementation: 'SSO with MFA, session management, encryption',
+      status: 'implemented',
+      lastReviewed: /* @__PURE__ */ new Date().toISOString(),
     });
   }
   initializeSecurityPolicies() {
-    this.securityPolicies.set("auth.multi_factor", {
-      id: "POLICY_001",
-      name: "Multi-Factor Authentication",
-      category: "authentication",
-      description: "MFA required for all administrative access",
-      requirements: ["admin_role", "sensitive_operations"],
-      enforcement: "mandatory",
-      status: "active"
+    this.securityPolicies.set('auth.multi_factor', {
+      id: 'POLICY_001',
+      name: 'Multi-Factor Authentication',
+      category: 'authentication',
+      description: 'MFA required for all administrative access',
+      requirements: ['admin_role', 'sensitive_operations'],
+      enforcement: 'mandatory',
+      status: 'active',
     });
-    this.securityPolicies.set("auth.rbac_enforcement", {
-      id: "POLICY_002",
-      name: "Role-Based Access Control",
-      category: "authorization",
-      description: "All access controlled by RBAC system",
-      requirements: ["all_resources"],
-      enforcement: "mandatory",
-      status: "active"
+    this.securityPolicies.set('auth.rbac_enforcement', {
+      id: 'POLICY_002',
+      name: 'Role-Based Access Control',
+      category: 'authorization',
+      description: 'All access controlled by RBAC system',
+      requirements: ['all_resources'],
+      enforcement: 'mandatory',
+      status: 'active',
     });
-    this.securityPolicies.set("data.encryption_at_rest", {
-      id: "POLICY_003",
-      name: "Encryption at Rest",
-      category: "data_protection",
-      description: "All data encrypted at rest using AES-256",
-      requirements: ["all_persistent_data"],
-      enforcement: "mandatory",
-      status: "active"
+    this.securityPolicies.set('data.encryption_at_rest', {
+      id: 'POLICY_003',
+      name: 'Encryption at Rest',
+      category: 'data_protection',
+      description: 'All data encrypted at rest using AES-256',
+      requirements: ['all_persistent_data'],
+      enforcement: 'mandatory',
+      status: 'active',
     });
-    this.securityPolicies.set("data.encryption_in_transit", {
-      id: "POLICY_004",
-      name: "Encryption in Transit",
-      category: "data_protection",
-      description: "All data encrypted in transit using TLS 1.3",
-      requirements: ["all_network_communication"],
-      enforcement: "mandatory",
-      status: "active"
+    this.securityPolicies.set('data.encryption_in_transit', {
+      id: 'POLICY_004',
+      name: 'Encryption in Transit',
+      category: 'data_protection',
+      description: 'All data encrypted in transit using TLS 1.3',
+      requirements: ['all_network_communication'],
+      enforcement: 'mandatory',
+      status: 'active',
     });
-    this.securityPolicies.set("network.rate_limiting", {
-      id: "POLICY_005",
-      name: "Rate Limiting",
-      category: "network",
-      description: "API rate limiting to prevent abuse",
-      requirements: ["all_api_endpoints"],
-      enforcement: "mandatory",
-      status: "active"
+    this.securityPolicies.set('network.rate_limiting', {
+      id: 'POLICY_005',
+      name: 'Rate Limiting',
+      category: 'network',
+      description: 'API rate limiting to prevent abuse',
+      requirements: ['all_api_endpoints'],
+      enforcement: 'mandatory',
+      status: 'active',
     });
-    this.securityPolicies.set("audit.immutable_logging", {
-      id: "POLICY_006",
-      name: "Immutable Audit Logging",
-      category: "compliance",
-      description: "All security-relevant events logged immutably",
-      requirements: ["auth_events", "data_access", "config_changes"],
-      enforcement: "mandatory",
-      status: "active"
+    this.securityPolicies.set('audit.immutable_logging', {
+      id: 'POLICY_006',
+      name: 'Immutable Audit Logging',
+      category: 'compliance',
+      description: 'All security-relevant events logged immutably',
+      requirements: ['auth_events', 'data_access', 'config_changes'],
+      enforcement: 'mandatory',
+      status: 'active',
     });
   }
   initializeVulnerabilityScanner() {
@@ -189,11 +190,11 @@ class SecurityAudit extends EventEmitter {
       scan: async (target) => {
         return {
           target,
-          timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+          timestamp: /* @__PURE__ */ new Date().toISOString(),
           vulnerabilities: [],
           scanId: `scan_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          status: "completed",
-          summary: { critical: 0, high: 0, medium: 0, low: 0 }
+          status: 'completed',
+          summary: { critical: 0, high: 0, medium: 0, low: 0 },
         };
       },
       registerVulnerability: (vuln) => {
@@ -201,7 +202,7 @@ class SecurityAudit extends EventEmitter {
         if (vuln.severity in this.vulnerabilityScanner.severityCounts) {
           this.vulnerabilityScanner.severityCounts[vuln.severity]++;
         }
-      }
+      },
     };
   }
   /**
@@ -212,25 +213,27 @@ class SecurityAudit extends EventEmitter {
    * @param {string} ip - IP address of the actor
    * @returns {object} Logged entry with metadata
    */
-  async log(event, actor, details = {}, ip = "local") {
+  async log(event, actor, details = {}, ip = 'local') {
     if (!Object.values(SECURITY_EVENTS).includes(event)) {
       console.warn(`[Security Audit] Warning: Unknown security event type '${event}'`);
     }
     const entry = {
-      id: crypto.randomUUID ? crypto.randomUUID() : `audit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+      id: crypto.randomUUID
+        ? crypto.randomUUID()
+        : `audit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
       event,
       actor: {
-        id: actor.id || "system",
-        name: actor.name || "System",
-        role: actor.role || "system",
-        ip: actor.ip || ip
+        id: actor.id || 'system',
+        name: actor.name || 'System',
+        role: actor.role || 'system',
+        ip: actor.ip || ip,
       },
       ip,
       details,
-      integrity: "",
+      integrity: '',
       // Will be computed below
-      sequence: this.integrityChain.length
+      sequence: this.integrityChain.length,
       // For ordering verification
     };
     entry.integrity = this.computeIntegrityHash(entry);
@@ -243,9 +246,9 @@ class SecurityAudit extends EventEmitter {
       this.auditLog = this.auditLog.slice(-1e3);
     }
     await this.writeToPersistentStorage(entry);
-    this.emit("security:audit_event", entry);
+    this.emit('security:audit_event', entry);
     if (this.isSecurityIncident(event)) {
-      this.emit("security:incident", entry);
+      this.emit('security:incident', entry);
     }
     return entry;
   }
@@ -262,9 +265,9 @@ class SecurityAudit extends EventEmitter {
       actor: entry.actor,
       ip: entry.ip,
       details: entry.details,
-      sequence: entry.sequence
+      sequence: entry.sequence,
     });
-    return crypto.createHash("sha256").update(content).digest("hex");
+    return crypto.createHash('sha256').update(content).digest('hex');
   }
   /**
    * Check if an event is a security incident
@@ -280,7 +283,7 @@ class SecurityAudit extends EventEmitter {
       /^data\.access\.unauthorized$/,
       /^config\.tampering$/,
       /^system\.intrusion$/,
-      /^network\.attack\.detected$/
+      /^network\.attack\.detected$/,
     ];
     return incidentPatterns.some((pattern) => pattern.test(event));
   }
@@ -292,9 +295,9 @@ class SecurityAudit extends EventEmitter {
   async writeToPersistentStorage(entry) {
     try {
       await fs.mkdir(this.auditDir, { recursive: true });
-      const dateStr = entry.timestamp.split("T")[0];
+      const dateStr = entry.timestamp.split('T')[0];
       const logFile = path.join(this.auditDir, `security-audit-${dateStr}.jsonl`);
-      const logEntry = JSON.stringify(entry) + "\n";
+      const logEntry = JSON.stringify(entry) + '\n';
       await fs.appendFile(logFile, logEntry);
       if (this.options.logIntegrity) {
         await this.verifyLogFileIntegrity(logFile);
@@ -311,8 +314,11 @@ class SecurityAudit extends EventEmitter {
    */
   async verifyLogFileIntegrity(filePath) {
     try {
-      const content = await fs.readFile(filePath, "utf8");
-      const lines = content.trim().split("\n").filter((line) => line);
+      const content = await fs.readFile(filePath, 'utf8');
+      const lines = content
+        .trim()
+        .split('\n')
+        .filter((line) => line);
       let validEntries = 0;
       let invalidEntries = 0;
       let tamperedEntries = [];
@@ -328,14 +334,14 @@ class SecurityAudit extends EventEmitter {
               id: entry.id,
               timestamp: entry.timestamp,
               expected: expectedHash,
-              actual: entry.integrity
+              actual: entry.integrity,
             });
           }
         } catch (parseError) {
           invalidEntries++;
           tamperedEntries.push({
             error: `Parse error: ${parseError.message}`,
-            rawLine: line.substring(0, 100) + "..."
+            rawLine: line.substring(0, 100) + '...',
           });
         }
       }
@@ -344,14 +350,14 @@ class SecurityAudit extends EventEmitter {
         validEntries,
         invalidEntries,
         tamperedEntries,
-        integrity: validEntries > 0 ? validEntries / (validEntries + invalidEntries) * 100 : 100,
-        status: invalidEntries === 0 ? "verified" : "tampered"
+        integrity: validEntries > 0 ? (validEntries / (validEntries + invalidEntries)) * 100 : 100,
+        status: invalidEntries === 0 ? 'verified' : 'tampered',
       };
     } catch (error) {
       return {
         file: filePath,
         error: error.message,
-        status: "error"
+        status: 'error',
       };
     }
   }
@@ -363,18 +369,20 @@ class SecurityAudit extends EventEmitter {
   async search(filters = {}) {
     try {
       const files = await fs.readdir(this.auditDir);
-      const logFiles = files.filter((f) => f.startsWith("security-audit-") && f.endsWith(".jsonl"));
+      const logFiles = files.filter((f) => f.startsWith('security-audit-') && f.endsWith('.jsonl'));
       const logs = [];
       logFiles.sort((a, b) => {
         const dateA = a.match(/security-audit-(\d{4}-\d{2}-\d{2})/)?.[1];
         const dateB = b.match(/security-audit-(\d{4}-\d{2}-\d{2})/)?.[1];
-        if (!dateA || !dateB)
-          return 0;
+        if (!dateA || !dateB) return 0;
         return dateB.localeCompare(dateA);
       });
       for (const file of logFiles) {
-        const content = await fs.readFile(path.join(this.auditDir, file), "utf8");
-        const lines = content.trim().split("\n").filter((line) => line);
+        const content = await fs.readFile(path.join(this.auditDir, file), 'utf8');
+        const lines = content
+          .trim()
+          .split('\n')
+          .filter((line) => line);
         for (const line of lines) {
           try {
             const entry = JSON.parse(line);
@@ -395,7 +403,7 @@ class SecurityAudit extends EventEmitter {
       }
       return logs;
     } catch (error) {
-      if (error.code === "ENOENT") {
+      if (error.code === 'ENOENT') {
         return [];
       }
       throw error;
@@ -408,18 +416,12 @@ class SecurityAudit extends EventEmitter {
    * @returns {boolean} True if entry matches filters
    */
   matchesFilters(entry, filters) {
-    if (filters.event && entry.event !== filters.event)
-      return false;
-    if (filters.actorId && entry.actor.id !== filters.actorId)
-      return false;
-    if (filters.actorName && entry.actor.name !== filters.actorName)
-      return false;
-    if (filters.ip && entry.ip !== filters.ip)
-      return false;
-    if (filters.after && new Date(entry.timestamp) < new Date(filters.after))
-      return false;
-    if (filters.before && new Date(entry.timestamp) > new Date(filters.before))
-      return false;
+    if (filters.event && entry.event !== filters.event) return false;
+    if (filters.actorId && entry.actor.id !== filters.actorId) return false;
+    if (filters.actorName && entry.actor.name !== filters.actorName) return false;
+    if (filters.ip && entry.ip !== filters.ip) return false;
+    if (filters.after && new Date(entry.timestamp) < new Date(filters.after)) return false;
+    if (filters.before && new Date(entry.timestamp) > new Date(filters.before)) return false;
     if (filters.search) {
       const searchTerm = filters.search.toLowerCase();
       const entryText = JSON.stringify(entry).toLowerCase();
@@ -434,7 +436,7 @@ class SecurityAudit extends EventEmitter {
   async getStats() {
     try {
       const files = await fs.readdir(this.auditDir);
-      const logFiles = files.filter((f) => f.startsWith("security-audit-") && f.endsWith(".jsonl"));
+      const logFiles = files.filter((f) => f.startsWith('security-audit-') && f.endsWith('.jsonl'));
       let totalEntries = 0;
       let totalSize = 0;
       let earliestDate = null;
@@ -443,17 +445,18 @@ class SecurityAudit extends EventEmitter {
       for (const file of logFiles) {
         const filePath = path.join(this.auditDir, file);
         const stat = await fs.stat(filePath);
-        const content = await fs.readFile(filePath, "utf8");
-        const lines = content.trim().split("\n").filter((line) => line);
+        const content = await fs.readFile(filePath, 'utf8');
+        const lines = content
+          .trim()
+          .split('\n')
+          .filter((line) => line);
         totalEntries += lines.length;
         totalSize += stat.size;
         const dateMatch = file.match(/security-audit-(\d{4}-\d{2}-\d{2})\.jsonl/);
         if (dateMatch) {
           const date = dateMatch[1];
-          if (!earliestDate || date < earliestDate)
-            earliestDate = date;
-          if (!latestDate || date > latestDate)
-            latestDate = date;
+          if (!earliestDate || date < earliestDate) earliestDate = date;
+          if (!latestDate || date > latestDate) latestDate = date;
         }
         for (const line of lines) {
           try {
@@ -461,8 +464,7 @@ class SecurityAudit extends EventEmitter {
             if (this.isSecurityIncident(entry.event)) {
               incidentCount++;
             }
-          } catch (_e) {
-          }
+          } catch (_e) {}
         }
       }
       return {
@@ -472,10 +474,10 @@ class SecurityAudit extends EventEmitter {
         dateRange: { start: earliestDate, end: latestDate },
         retentionDays: this.options.retentionDays,
         incidentCount,
-        incidentRate: totalEntries > 0 ? incidentCount / totalEntries * 100 : 0
+        incidentRate: totalEntries > 0 ? (incidentCount / totalEntries) * 100 : 0,
       };
     } catch (error) {
-      if (error.code === "ENOENT") {
+      if (error.code === 'ENOENT') {
         return {
           totalEntries: 0,
           totalSize: 0,
@@ -483,7 +485,7 @@ class SecurityAudit extends EventEmitter {
           dateRange: { start: null, end: null },
           retentionDays: this.options.retentionDays,
           incidentCount: 0,
-          incidentRate: 0
+          incidentRate: 0,
         };
       }
       throw error;
@@ -511,7 +513,7 @@ class SecurityAudit extends EventEmitter {
           description: control.description,
           compliant: isCompliant,
           implementation: control.implementation,
-          lastReviewed: control.lastReviewed
+          lastReviewed: control.lastReviewed,
         });
       }
     }
@@ -520,9 +522,9 @@ class SecurityAudit extends EventEmitter {
       totalChecks,
       compliantCount,
       nonCompliantCount: totalChecks - compliantCount,
-      complianceRate: totalChecks > 0 ? compliantCount / totalChecks * 100 : 100,
+      complianceRate: totalChecks > 0 ? (compliantCount / totalChecks) * 100 : 100,
       checks,
-      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
     };
   }
   /**
@@ -531,7 +533,7 @@ class SecurityAudit extends EventEmitter {
    * @returns {boolean} True if control is properly implemented
    */
   async verifyControlImplementation(control) {
-    return control.status === "implemented";
+    return control.status === 'implemented';
   }
   /**
    * Run security policy enforcement check
@@ -553,16 +555,16 @@ class SecurityAudit extends EventEmitter {
         category: policy.category,
         description: policy.description,
         enforced: isEnforced,
-        status: policy.status
+        status: policy.status,
       });
     }
     return {
       totalPolicies,
       compliantPolicies,
       nonCompliantPolicies: totalPolicies - compliantPolicies,
-      enforcementRate: totalPolicies > 0 ? compliantPolicies / totalPolicies * 100 : 100,
+      enforcementRate: totalPolicies > 0 ? (compliantPolicies / totalPolicies) * 100 : 100,
       policies: results,
-      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
     };
   }
   /**
@@ -571,7 +573,7 @@ class SecurityAudit extends EventEmitter {
    * @returns {boolean} True if policy is enforced
    */
   async verifyPolicyEnforcement(policy) {
-    return policy.status === "active";
+    return policy.status === 'active';
   }
   /**
    * Generate security report
@@ -579,17 +581,18 @@ class SecurityAudit extends EventEmitter {
    * @returns {object} Security report
    */
   async generateReport(options = {}) {
-    const startTime = options.startTime || new Date(Date.now() - 7 * 24 * 60 * 60 * 1e3).toISOString();
-    const endTime = options.endTime || (/* @__PURE__ */ new Date()).toISOString();
+    const startTime =
+      options.startTime || new Date(Date.now() - 7 * 24 * 60 * 60 * 1e3).toISOString();
+    const endTime = options.endTime || /* @__PURE__ */ new Date().toISOString();
     const [stats, soc2Check, gdprCheck, policyCheck] = await Promise.all([
       this.getStats(),
-      this.runComplianceCheck("soc2"),
-      this.runComplianceCheck("gdpr"),
-      this.runPolicyCheck()
+      this.runComplianceCheck('soc2'),
+      this.runComplianceCheck('gdpr'),
+      this.runPolicyCheck(),
     ]);
     const report = {
       id: `security_report_${Date.now()}`,
-      generatedAt: (/* @__PURE__ */ new Date()).toISOString(),
+      generatedAt: /* @__PURE__ */ new Date().toISOString(),
       period: { startTime, endTime },
       summary: {
         totalEvents: stats.totalEntries,
@@ -597,19 +600,19 @@ class SecurityAudit extends EventEmitter {
         incidentRate: stats.incidentRate,
         compliance: {
           soc2: soc2Check.complianceRate,
-          gdpr: gdprCheck.complianceRate
+          gdpr: gdprCheck.complianceRate,
         },
-        policyEnforcement: policyCheck.enforcementRate
+        policyEnforcement: policyCheck.enforcementRate,
       },
       statistics: stats,
       compliance: {
         soc2: soc2Check,
         gdpr: gdprCheck,
-        hipaa: await this.runComplianceCheck("hipaa")
+        hipaa: await this.runComplianceCheck('hipaa'),
       },
       policies: policyCheck,
       recommendations: this.generateRecommendations(stats, soc2Check, gdprCheck, policyCheck),
-      nextReview: new Date(Date.now() + 30 * 24 * 60 * 60 * 1e3).toISOString()
+      nextReview: new Date(Date.now() + 30 * 24 * 60 * 60 * 1e3).toISOString(),
       // 30 days from now
     };
     if (this.options.enablePersistence) {
@@ -629,42 +632,42 @@ class SecurityAudit extends EventEmitter {
     const recommendations = [];
     if (stats.incidentRate > 1) {
       recommendations.push({
-        priority: "high",
-        title: "High Security Incident Rate",
+        priority: 'high',
+        title: 'High Security Incident Rate',
         description: `Security incident rate is ${stats.incidentRate.toFixed(2)}% which is above recommended threshold of 1%`,
-        action: "Review security policies and implement additional monitoring"
+        action: 'Review security policies and implement additional monitoring',
       });
     }
     if (soc2Check.complianceRate < 95) {
       recommendations.push({
-        priority: "high",
-        title: "SOC 2 Compliance Gap",
+        priority: 'high',
+        title: 'SOC 2 Compliance Gap',
         description: `SOC 2 compliance rate is ${soc2Check.complianceRate.toFixed(2)}% which is below enterprise standard of 95%`,
-        action: "Address non-compliant controls identified in SOC 2 report"
+        action: 'Address non-compliant controls identified in SOC 2 report',
       });
     }
     if (gdprCheck.complianceRate < 95) {
       recommendations.push({
-        priority: "high",
-        title: "GDPR Compliance Gap",
+        priority: 'high',
+        title: 'GDPR Compliance Gap',
         description: `GDPR compliance rate is ${gdprCheck.complianceRate.toFixed(2)}% which is below enterprise standard of 95%`,
-        action: "Address non-compliant controls identified in GDPR report"
+        action: 'Address non-compliant controls identified in GDPR report',
       });
     }
     if (policyCheck.enforcementRate < 100) {
       recommendations.push({
-        priority: "medium",
-        title: "Policy Enforcement Gap",
+        priority: 'medium',
+        title: 'Policy Enforcement Gap',
         description: `Security policy enforcement rate is ${policyCheck.enforcementRate.toFixed(2)}% which indicates some policies are not fully enforced`,
-        action: "Verify all security policies are properly implemented and enforced"
+        action: 'Verify all security policies are properly implemented and enforced',
       });
     }
     if (recommendations.length === 0) {
       recommendations.push({
-        priority: "info",
-        title: "Security Posture Strong",
-        description: "All security metrics and compliance checks are within acceptable ranges",
-        action: "Continue regular monitoring and compliance reviews"
+        priority: 'info',
+        title: 'Security Posture Strong',
+        description: 'All security metrics and compliance checks are within acceptable ranges',
+        action: 'Continue regular monitoring and compliance reviews',
       });
     }
     return recommendations;
@@ -675,7 +678,7 @@ class SecurityAudit extends EventEmitter {
    * @private
    */
   async saveReport(report) {
-    const reportDir = path.join(this.auditDir, "reports");
+    const reportDir = path.join(this.auditDir, 'reports');
     await fs.mkdir(reportDir, { recursive: true });
     const reportPath = path.join(reportDir, `${report.id}.json`);
     await fs.writeFile(reportPath, JSON.stringify(report, null, 2));
@@ -688,12 +691,12 @@ class SecurityAudit extends EventEmitter {
   async runVulnerabilityScan(options = {}) {
     if (!this.vulnerabilityScanner || !this.vulnerabilityScanner.enabled) {
       return {
-        status: "disabled",
-        message: "Vulnerability scanner not enabled"
+        status: 'disabled',
+        message: 'Vulnerability scanner not enabled',
       };
     }
-    const scanResults = await this.vulnerabilityScanner.scan(options.target || "entire_system");
-    this.vulnerabilityScanner.lastScan = (/* @__PURE__ */ new Date()).toISOString();
+    const scanResults = await this.vulnerabilityScanner.scan(options.target || 'entire_system');
+    this.vulnerabilityScanner.lastScan = /* @__PURE__ */ new Date().toISOString();
     return scanResults;
   }
   /**
@@ -703,10 +706,10 @@ class SecurityAudit extends EventEmitter {
   async getSecurityPosture() {
     const [stats, soc2Check, gdprCheck, policyCheck, scanResults] = await Promise.all([
       this.getStats(),
-      this.runComplianceCheck("soc2"),
-      this.runComplianceCheck("gdpr"),
+      this.runComplianceCheck('soc2'),
+      this.runComplianceCheck('gdpr'),
       this.runPolicyCheck(),
-      this.runVulnerabilityScan({ target: "recent_changes" })
+      this.runVulnerabilityScan({ target: 'recent_changes' }),
     ]);
     return {
       overallScore: this.calculateSecurityScore(soc2Check, gdprCheck, policyCheck, stats),
@@ -714,12 +717,12 @@ class SecurityAudit extends EventEmitter {
       compliance: {
         soc2: soc2Check.complianceRate,
         gdpr: gdprCheck.complianceRate,
-        hipaa: (await this.runComplianceCheck("hipaa")).complianceRate
+        hipaa: (await this.runComplianceCheck('hipaa')).complianceRate,
       },
       policies: policyCheck.enforcementRate,
       vulnerabilities: scanResults,
-      timestamp: (/* @__PURE__ */ new Date()).toISOString(),
-      riskLevel: this.assessRiskLevel(stats, soc2Check, gdprCheck, policyCheck)
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
+      riskLevel: this.assessRiskLevel(stats, soc2Check, gdprCheck, policyCheck),
     };
   }
   /**
@@ -740,7 +743,10 @@ class SecurityAudit extends EventEmitter {
     const policyScore = policyCheck.enforcementRate;
     const incidentScore = Math.max(0, 100 - stats.incidentRate * 10);
     return Math.round(
-      soc2Score * soc2Weight + gdprScore * gdprWeight + policyScore * policyWeight + incidentScore * incidentWeight
+      soc2Score * soc2Weight +
+        gdprScore * gdprWeight +
+        policyScore * policyWeight +
+        incidentScore * incidentWeight
     );
   }
   /**
@@ -752,16 +758,31 @@ class SecurityAudit extends EventEmitter {
    * @returns {string} Risk level (low, medium, high, critical)
    */
   assessRiskLevel(stats, soc2Check, gdprCheck, policyCheck) {
-    if (stats.incidentRate > 5 || soc2Check.complianceRate < 80 || gdprCheck.complianceRate < 80 || policyCheck.enforcementRate < 80) {
-      return "critical";
+    if (
+      stats.incidentRate > 5 ||
+      soc2Check.complianceRate < 80 ||
+      gdprCheck.complianceRate < 80 ||
+      policyCheck.enforcementRate < 80
+    ) {
+      return 'critical';
     }
-    if (stats.incidentRate > 2 || soc2Check.complianceRate < 90 || gdprCheck.complianceRate < 90 || policyCheck.enforcementRate < 90) {
-      return "high";
+    if (
+      stats.incidentRate > 2 ||
+      soc2Check.complianceRate < 90 ||
+      gdprCheck.complianceRate < 90 ||
+      policyCheck.enforcementRate < 90
+    ) {
+      return 'high';
     }
-    if (stats.incidentRate > 1 || soc2Check.complianceRate < 95 || gdprCheck.complianceRate < 95 || policyCheck.enforcementRate < 95) {
-      return "medium";
+    if (
+      stats.incidentRate > 1 ||
+      soc2Check.complianceRate < 95 ||
+      gdprCheck.complianceRate < 95 ||
+      policyCheck.enforcementRate < 95
+    ) {
+      return 'medium';
     }
-    return "low";
+    return 'low';
   }
   /**
    * Get system health information
@@ -769,12 +790,12 @@ class SecurityAudit extends EventEmitter {
    */
   getHealth() {
     return {
-      status: "healthy",
+      status: 'healthy',
       auditDir: this.auditDir,
       logIntegrity: this.options.logIntegrity,
       encryptionEnabled: this.options.enableEncryption,
       stats: this.getStatsSync(),
-      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
     };
   }
   /**
@@ -784,80 +805,80 @@ class SecurityAudit extends EventEmitter {
   getStatsSync() {
     try {
       const files = fs.readdirSync(this.auditDir);
-      const logFiles = files.filter((f) => f.startsWith("security-audit-") && f.endsWith(".jsonl"));
+      const logFiles = files.filter((f) => f.startsWith('security-audit-') && f.endsWith('.jsonl'));
       return {
         logFiles: logFiles.length,
         retentionDays: this.options.retentionDays,
-        auditLevel: this.options.auditLevel
+        auditLevel: this.options.auditLevel,
       };
     } catch (error) {
-      if (error.code === "ENOENT") {
-        return { logFiles: 0, retentionDays: this.options.retentionDays, auditLevel: this.options.auditLevel };
+      if (error.code === 'ENOENT') {
+        return {
+          logFiles: 0,
+          retentionDays: this.options.retentionDays,
+          auditLevel: this.options.auditLevel,
+        };
       }
       return {
         logFiles: 0,
         retentionDays: this.options.retentionDays,
         auditLevel: this.options.auditLevel,
-        error: error.message
+        error: error.message,
       };
     }
   }
 }
 const SECURITY_EVENTS = {
   // Authentication events
-  "auth.login.success": "Successful login",
-  "auth.login.failure": "Failed login attempt",
-  "auth.logout": "User logout",
-  "auth.token.refresh": "Token refresh",
-  "auth.token.invalid": "Invalid token used",
-  "auth.mfa.required": "MFA required for access",
-  "auth.mfa.success": "MFA verification successful",
-  "auth.mfa.failure": "MFA verification failed",
+  'auth.login.success': 'Successful login',
+  'auth.login.failure': 'Failed login attempt',
+  'auth.logout': 'User logout',
+  'auth.token.refresh': 'Token refresh',
+  'auth.token.invalid': 'Invalid token used',
+  'auth.mfa.required': 'MFA required for access',
+  'auth.mfa.success': 'MFA verification successful',
+  'auth.mfa.failure': 'MFA verification failed',
   // Authorization events
-  "auth.permission.granted": "Permission granted",
-  "auth.permission.denied": "Permission denied",
-  "auth.role.assigned": "Role assigned to user",
-  "auth.role.removed": "Role removed from user",
-  "auth.rbac.violation": "RBAC policy violation",
+  'auth.permission.granted': 'Permission granted',
+  'auth.permission.denied': 'Permission denied',
+  'auth.role.assigned': 'Role assigned to user',
+  'auth.role.removed': 'Role removed from user',
+  'auth.rbac.violation': 'RBAC policy violation',
   // Data access events
-  "data.access.read": "Data read operation",
-  "data.access.write": "Data write operation",
-  "data.access.delete": "Data deletion",
-  "data.access.unauthorized": "Unauthorized data access attempt",
-  "data.export": "Data export operation",
-  "data.classification.changed": "Data classification changed",
+  'data.access.read': 'Data read operation',
+  'data.access.write': 'Data write operation',
+  'data.access.delete': 'Data deletion',
+  'data.access.unauthorized': 'Unauthorized data access attempt',
+  'data.export': 'Data export operation',
+  'data.classification.changed': 'Data classification changed',
   // System events
-  "system.config.changed": "System configuration changed",
-  "system.access.granted": "System access granted",
-  "system.access.denied": "System access denied",
-  "system.maintenance": "System maintenance performed",
-  "system.backup": "System backup performed",
-  "system.restore": "System restore performed",
-  "system.tampering.detected": "System tampering detected",
+  'system.config.changed': 'System configuration changed',
+  'system.access.granted': 'System access granted',
+  'system.access.denied': 'System access denied',
+  'system.maintenance': 'System maintenance performed',
+  'system.backup': 'System backup performed',
+  'system.restore': 'System restore performed',
+  'system.tampering.detected': 'System tampering detected',
   // Network events
-  "network.attack.detected": "Network attack detected",
-  "network.rate_limit.exceeded": "Rate limit exceeded",
-  "network.ip.blocked": "IP address blocked",
-  "network.ip.whitelisted": "IP address whitelisted",
+  'network.attack.detected': 'Network attack detected',
+  'network.rate_limit.exceeded': 'Rate limit exceeded',
+  'network.ip.blocked': 'IP address blocked',
+  'network.ip.whitelisted': 'IP address whitelisted',
   // Security events
-  "security.vulnerability.detected": "Vulnerability detected",
-  "security.scan.completed": "Security scan completed",
-  "security.policy.violation": "Security policy violation",
-  "security.encryption.enabled": "Encryption enabled",
-  "security.encryption.disabled": "Encryption disabled",
-  "security.audit.enabled": "Audit logging enabled",
-  "security.audit.disabled": "Audit logging disabled",
+  'security.vulnerability.detected': 'Vulnerability detected',
+  'security.scan.completed': 'Security scan completed',
+  'security.policy.violation': 'Security policy violation',
+  'security.encryption.enabled': 'Encryption enabled',
+  'security.encryption.disabled': 'Encryption disabled',
+  'security.audit.enabled': 'Audit logging enabled',
+  'security.audit.disabled': 'Audit logging disabled',
   // Compliance events
-  "compliance.soc2.check": "SOC 2 compliance check",
-  "compliance.gdpr.check": "GDPR compliance check",
-  "compliance.hipaa.check": "HIPAA compliance check",
-  "compliance.failed": "Compliance check failed",
-  "compliance.passed": "Compliance check passed"
+  'compliance.soc2.check': 'SOC 2 compliance check',
+  'compliance.gdpr.check': 'GDPR compliance check',
+  'compliance.hipaa.check': 'HIPAA compliance check',
+  'compliance.failed': 'Compliance check failed',
+  'compliance.passed': 'Compliance check passed',
 };
 const securityAudit = new SecurityAudit();
 var audit_default = SecurityAudit;
-export {
-  SECURITY_EVENTS,
-  audit_default as default,
-  securityAudit
-};
+export { SECURITY_EVENTS, audit_default as default, securityAudit };

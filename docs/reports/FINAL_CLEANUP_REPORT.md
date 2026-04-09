@@ -18,4 +18,3 @@
 
 - Secret/key rotation policy remains owner-controlled
 - Final optional pruning of archive material can be done later without affecting runtime
-

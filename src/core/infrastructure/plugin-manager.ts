@@ -3,34 +3,33 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import fs from "fs/promises";
-import path from "path";
-import { fileURLToPath } from "url";
+import { singleton } from 'tsyringe';
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const REQUIRED_PLUGIN_EXPORTS = ["name", "version", "activate"];
-const OPTIONAL_PLUGIN_EXPORTS = ["deactivate", "description", "author", "hooks", "config"];
+const REQUIRED_PLUGIN_EXPORTS = ['name', 'version', 'activate'];
+const OPTIONAL_PLUGIN_EXPORTS = ['deactivate', 'description', 'author', 'hooks', 'config'];
 const PluginStatus = {
-  DISCOVERED: "discovered",
-  INSTALLED: "installed",
-  ACTIVE: "active",
-  INACTIVE: "inactive",
-  ERROR: "error",
-  UNINSTALLED: "uninstalled"
+  DISCOVERED: 'discovered',
+  INSTALLED: 'installed',
+  ACTIVE: 'active',
+  INACTIVE: 'inactive',
+  ERROR: 'error',
+  UNINSTALLED: 'uninstalled',
 };
 let Plugin = class {
   constructor(metadata) {
     this.id = metadata.id;
     this.name = metadata.name;
     this.version = metadata.version;
-    this.description = metadata.description || "";
-    this.author = metadata.author || "";
+    this.description = metadata.description || '';
+    this.author = metadata.author || '';
     this.entryPoint = metadata.entryPoint;
     this.path = metadata.path;
     this.status = PluginStatus.DISCOVERED;
@@ -43,7 +42,7 @@ let Plugin = class {
       activations: 0,
       deactivations: 0,
       hookCalls: 0,
-      errors: 0
+      errors: 0,
     };
   }
   /**
@@ -59,23 +58,21 @@ let Plugin = class {
       activatedAt: this.activatedAt,
       hooks: Array.from(this.hooks.keys()),
       stats: { ...this.stats },
-      error: this.error
+      error: this.error,
     };
   }
 };
-Plugin = __decorateClass([
-  singleton()
-], Plugin);
+Plugin = __decorateClass([singleton()], Plugin);
 let PluginManager = class {
   constructor(config = {}) {
     this.config = {
       pluginDirs: config.pluginDirs || [
-        path.join(process.cwd(), "packages", "plugins"),
-        path.join(process.cwd(), ".ultra-dex", "plugins")
+        path.join(process.cwd(), 'packages', 'plugins'),
+        path.join(process.cwd(), '.ultra-dex', 'plugins'),
       ],
       autoDiscover: config.autoDiscover !== false,
       allowHooks: config.allowHooks !== false,
-      ...config
+      ...config,
     };
     this.plugins = /* @__PURE__ */ new Map();
     this.hooks = /* @__PURE__ */ new Map();
@@ -86,8 +83,7 @@ let PluginManager = class {
    * Initialize the plugin manager
    */
   async initialize() {
-    if (this.initialized)
-      return;
+    if (this.initialized) return;
     if (this.config.autoDiscover) {
       await this.discoverPlugins();
     }
@@ -102,8 +98,7 @@ let PluginManager = class {
       try {
         const entries = await fs.readdir(pluginDir, { withFileTypes: true });
         for (const entry of entries) {
-          if (!entry.isDirectory())
-            continue;
+          if (!entry.isDirectory()) continue;
           const pluginPath = path.join(pluginDir, entry.name);
           const plugin = await this.validatePluginDirectory(pluginPath);
           if (plugin && !this.plugins.has(plugin.id)) {
@@ -112,7 +107,7 @@ let PluginManager = class {
           }
         }
       } catch (error) {
-        if (error.code !== "ENOENT") {
+        if (error.code !== 'ENOENT') {
           console.warn(`[PluginManager] Failed to scan ${pluginDir}: ${error.message}`);
         }
       }
@@ -124,24 +119,24 @@ let PluginManager = class {
    */
   async validatePluginDirectory(pluginPath) {
     try {
-      const packageJsonPath = path.join(pluginPath, "package.json");
-      const indexPath = path.join(pluginPath, "index.js");
+      const packageJsonPath = path.join(pluginPath, 'package.json');
+      const indexPath = path.join(pluginPath, 'index.js');
       await fs.access(packageJsonPath);
       await fs.access(indexPath);
-      const packageJson = JSON.parse(await fs.readFile(packageJsonPath, "utf-8"));
+      const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'));
       const manifest = packageJson.manifest || packageJson;
       if (!manifest.id && !packageJson.name) {
         return null;
       }
       return new Plugin({
-        id: manifest.id || packageJson.name.replace("@ultra-dex/plugin-", ""),
+        id: manifest.id || packageJson.name.replace('@ultra-dex/plugin-', ''),
         name: manifest.name || packageJson.name,
         version: manifest.version || packageJson.version,
         description: manifest.description || packageJson.description,
         author: manifest.author || packageJson.author,
-        entryPoint: manifest.entryPoint || "index.js",
+        entryPoint: manifest.entryPoint || 'index.js',
         config: manifest.configSchema || {},
-        path: pluginPath
+        path: pluginPath,
       });
     } catch (_error) {
       return null;
@@ -153,11 +148,9 @@ let PluginManager = class {
   validatePluginModule(module, pluginId) {
     const missing = REQUIRED_PLUGIN_EXPORTS.filter((exp) => !(exp in module));
     if (missing.length > 0) {
-      throw new Error(
-        `Plugin "${pluginId}" missing required exports: ${missing.join(", ")}`
-      );
+      throw new Error(`Plugin "${pluginId}" missing required exports: ${missing.join(', ')}`);
     }
-    if (typeof module.activate !== "function") {
+    if (typeof module.activate !== 'function') {
       throw new Error(`Plugin "${pluginId}" activate must be a function`);
     }
     return true;
@@ -206,7 +199,7 @@ let PluginManager = class {
       }
       await plugin.module.activate(this, context.cliProgram || null);
       plugin.status = PluginStatus.ACTIVE;
-      plugin.activatedAt = (/* @__PURE__ */ new Date()).toISOString();
+      plugin.activatedAt = /* @__PURE__ */ new Date().toISOString();
       plugin.stats.activations++;
       plugin.error = null;
       return plugin;
@@ -264,7 +257,7 @@ let PluginManager = class {
   /**
    * Register a hook
    */
-  registerHook(hookName, description = "") {
+  registerHook(hookName, description = '') {
     if (!this.hooks.has(hookName)) {
       this.hooks.set(hookName, []);
       this.hookStats.set(hookName, { calls: 0, errors: 0 });
@@ -305,7 +298,7 @@ let PluginManager = class {
     let result = context;
     for (const { pluginId, handler } of handlers) {
       try {
-        result = await handler(result) || result;
+        result = (await handler(result)) || result;
         const plugin = this.plugins.get(pluginId);
         if (plugin) {
           plugin.stats.hookCalls++;
@@ -316,7 +309,9 @@ let PluginManager = class {
         if (plugin) {
           plugin.stats.errors++;
         }
-        console.warn(`[PluginManager] Hook "${hookName}" failed for plugin "${pluginId}": ${error.message}`);
+        console.warn(
+          `[PluginManager] Hook "${hookName}" failed for plugin "${pluginId}": ${error.message}`
+        );
       }
     }
     return result;
@@ -343,7 +338,7 @@ let PluginManager = class {
       name: p.name,
       version: p.version,
       status: p.status,
-      author: p.author
+      author: p.author,
     }));
   }
   /**
@@ -360,8 +355,8 @@ let PluginManager = class {
       error: plugins.filter((p) => p.status === PluginStatus.ERROR).length,
       hooks: {
         registered: this.hooks.size,
-        stats: Object.fromEntries(this.hookStats.entries())
-      }
+        stats: Object.fromEntries(this.hookStats.entries()),
+      },
     };
   }
   /**
@@ -371,7 +366,7 @@ let PluginManager = class {
     return {
       plugins: Array.from(this.plugins.values()).map((p) => p.getDashboard()),
       stats: this.getStats(),
-      hooks: Array.from(this.hooks.keys())
+      hooks: Array.from(this.hooks.keys()),
     };
   }
   /**
@@ -396,13 +391,6 @@ let PluginManager = class {
     return this.stop();
   }
 };
-PluginManager = __decorateClass([
-  singleton()
-], PluginManager);
+PluginManager = __decorateClass([singleton()], PluginManager);
 var plugin_manager_default = PluginManager;
-export {
-  Plugin,
-  PluginManager,
-  PluginStatus,
-  plugin_manager_default as default
-};
+export { Plugin, PluginManager, PluginStatus, plugin_manager_default as default };

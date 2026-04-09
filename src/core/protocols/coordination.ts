@@ -1,4 +1,4 @@
-import { EventEmitter } from "events";
+import { EventEmitter } from 'events';
 class AgentCoordinationProtocol extends EventEmitter {
   constructor(config = {}) {
     super();
@@ -7,7 +7,7 @@ class AgentCoordinationProtocol extends EventEmitter {
       maxHops: config.maxHops || 5,
       enableNegotiation: config.enableNegotiation !== false,
       consensusThreshold: config.consensusThreshold || 0.66,
-      ...config
+      ...config,
     };
     this.agents = /* @__PURE__ */ new Map();
     this.sessions = /* @__PURE__ */ new Map();
@@ -17,7 +17,7 @@ class AgentCoordinationProtocol extends EventEmitter {
       messagesSent: 0,
       messagesReceived: 0,
       negotiations: 0,
-      conflicts: 0
+      conflicts: 0,
     };
     this.initialized = false;
   }
@@ -28,7 +28,7 @@ class AgentCoordinationProtocol extends EventEmitter {
     this._registerDefaultProtocols();
     this._startMessageProcessor();
     this.initialized = true;
-    this.emit("initialized");
+    this.emit('initialized');
     return true;
   }
   /**
@@ -42,12 +42,12 @@ class AgentCoordinationProtocol extends EventEmitter {
     this.agents.set(agentId, {
       id: agentId,
       capabilities,
-      status: "active",
+      status: 'active',
       messageHandler,
       inbox: [],
-      lastActive: Date.now()
+      lastActive: Date.now(),
     });
-    this.emit("agent:registered", { agentId, capabilities });
+    this.emit('agent:registered', { agentId, capabilities });
   }
   /**
    * Create coordination session
@@ -59,17 +59,17 @@ class AgentCoordinationProtocol extends EventEmitter {
     const sessionId = this._generateSessionId();
     const session = {
       id: sessionId,
-      createdAt: (/* @__PURE__ */ new Date()).toISOString(),
+      createdAt: /* @__PURE__ */ new Date().toISOString(),
       leader: options.leader || null,
       agents: new Set(options.agents || []),
       goal: options.goal || null,
-      status: "active",
+      status: 'active',
       messages: [],
       decisions: [],
-      context: options.context || {}
+      context: options.context || {},
     };
     this.sessions.set(sessionId, session);
-    this.emit("session:created", { sessionId });
+    this.emit('session:created', { sessionId });
     return session;
   }
   /**
@@ -82,12 +82,12 @@ class AgentCoordinationProtocol extends EventEmitter {
     const {
       from,
       to,
-      type = "message",
+      type = 'message',
       content,
       sessionId = null,
       requiresResponse = false,
       timeout = this.config.defaultTimeout,
-      metadata = {}
+      metadata = {},
     } = message;
     if (!this.agents.has(from)) {
       throw new Error(`Sender agent '${from}' not registered`);
@@ -103,20 +103,20 @@ class AgentCoordinationProtocol extends EventEmitter {
       type,
       content,
       sessionId,
-      timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
       requiresResponse,
       timeout,
       metadata,
-      status: "pending",
-      hops: 0
+      status: 'pending',
+      hops: 0,
     };
     this.messageQueue.push(envelope);
     this.metrics.messagesSent++;
-    this.emit("message:sent", envelope);
+    this.emit('message:sent', envelope);
     if (requiresResponse) {
       return this._waitForResponse(messageId, timeout);
     }
-    return { messageId, status: "sent" };
+    return { messageId, status: 'sent' };
   }
   /**
    * Broadcast message to multiple agents
@@ -127,12 +127,12 @@ class AgentCoordinationProtocol extends EventEmitter {
    * @returns {Promise<Array<Object>>} Results
    */
   async broadcast(from, to, content, options = {}) {
-    const promises = to.map(
-      (agentId) => this.sendMessage({
+    const promises = to.map((agentId) =>
+      this.sendMessage({
         from,
         to: agentId,
         content,
-        ...options
+        ...options,
       })
     );
     return Promise.allSettled(promises);
@@ -153,32 +153,32 @@ class AgentCoordinationProtocol extends EventEmitter {
       task,
       assignments: /* @__PURE__ */ new Map(),
       results: /* @__PURE__ */ new Map(),
-      status: "coordinating"
+      status: 'coordinating',
     };
     const assignments = this._assignTaskToAgents(task, Array.from(session.agents));
     for (const [agentId, subtask] of assignments) {
       coordination.assignments.set(agentId, subtask);
       await this.sendMessage({
-        from: session.leader || "coordinator",
+        from: session.leader || 'coordinator',
         to: agentId,
-        type: "task_assignment",
+        type: 'task_assignment',
         content: subtask,
         sessionId,
-        requiresResponse: true
+        requiresResponse: true,
       });
     }
     const timeout = task.timeout || this.config.defaultTimeout;
     const results = await this._gatherResults(sessionId, coordination.assignments, timeout);
     coordination.results = results;
-    coordination.status = "complete";
+    coordination.status = 'complete';
     const aggregated = this._aggregateResults(results, task.aggregationStrategy);
-    this.emit("coordination:complete", { sessionId, task, results: aggregated });
+    this.emit('coordination:complete', { sessionId, task, results: aggregated });
     return {
       task,
       assignments: Object.fromEntries(coordination.assignments),
       results: Object.fromEntries(results),
       aggregated,
-      duration: Date.now() - new Date(session.createdAt).getTime()
+      duration: Date.now() - new Date(session.createdAt).getTime(),
     };
   }
   /**
@@ -191,7 +191,7 @@ class AgentCoordinationProtocol extends EventEmitter {
   async negotiate(sessionId, agents, conflict) {
     this._ensureInitialized();
     if (!this.config.enableNegotiation) {
-      throw new Error("Negotiation is disabled");
+      throw new Error('Negotiation is disabled');
     }
     this.metrics.negotiations++;
     const negotiation = {
@@ -201,32 +201,32 @@ class AgentCoordinationProtocol extends EventEmitter {
       conflict,
       proposals: /* @__PURE__ */ new Map(),
       round: 0,
-      maxRounds: 5
+      maxRounds: 5,
     };
-    const proposalPromises = agents.map(
-      (agentId) => this.sendMessage({
-        from: "negotiator",
+    const proposalPromises = agents.map((agentId) =>
+      this.sendMessage({
+        from: 'negotiator',
         to: agentId,
-        type: "negotiation_request",
+        type: 'negotiation_request',
         content: { conflict, negotiationId: negotiation.id },
         sessionId,
         requiresResponse: true,
-        timeout: 1e4
+        timeout: 1e4,
       })
     );
     const proposals = await Promise.allSettled(proposalPromises);
     proposals.forEach((result, index) => {
-      if (result.status === "fulfilled") {
+      if (result.status === 'fulfilled') {
         negotiation.proposals.set(agents[index], result.value.content);
       }
     });
     const resolution = this._resolveNegotiation(negotiation);
-    this.emit("negotiation:complete", { negotiationId: negotiation.id, resolution });
+    this.emit('negotiation:complete', { negotiationId: negotiation.id, resolution });
     return {
       negotiationId: negotiation.id,
       proposals: Object.fromEntries(negotiation.proposals),
       resolution,
-      consensus: resolution.consensus
+      consensus: resolution.consensus,
     };
   }
   /**
@@ -239,21 +239,21 @@ class AgentCoordinationProtocol extends EventEmitter {
   async consensus(question, agents, options = {}) {
     this._ensureInitialized();
     const { threshold = this.config.consensusThreshold } = options;
-    const queryPromises = agents.map(
-      (agentId) => this.sendMessage({
-        from: "consensus_coordinator",
+    const queryPromises = agents.map((agentId) =>
+      this.sendMessage({
+        from: 'consensus_coordinator',
         to: agentId,
-        type: "consensus_query",
+        type: 'consensus_query',
         content: { question },
         requiresResponse: true,
-        timeout: 15e3
+        timeout: 15e3,
       }).catch(() => null)
     );
     const responses = await Promise.all(queryPromises);
     const validResponses = responses.filter((r) => r !== null);
     const counts = {};
     validResponses.forEach((response) => {
-      const answer = response.content?.answer || "no_response";
+      const answer = response.content?.answer || 'no_response';
       counts[answer] = (counts[answer] || 0) + 1;
     });
     const total = validResponses.length;
@@ -270,11 +270,11 @@ class AgentCoordinationProtocol extends EventEmitter {
       question,
       responses: validResponses.map((r) => ({
         agent: r.from,
-        answer: r.content?.answer
+        answer: r.content?.answer,
       })),
       consensus: confidence >= threshold ? consensus : null,
       confidence,
-      counts
+      counts,
     };
   }
   /**
@@ -285,8 +285,7 @@ class AgentCoordinationProtocol extends EventEmitter {
    */
   verifyIdentity(agentId, expectedRole) {
     const agent = this.agents.get(agentId);
-    if (!agent)
-      return false;
+    if (!agent) return false;
     return agent.capabilities.includes(expectedRole);
   }
   /**
@@ -296,9 +295,9 @@ class AgentCoordinationProtocol extends EventEmitter {
   endSession(sessionId) {
     const session = this.sessions.get(sessionId);
     if (session) {
-      session.status = "ended";
-      session.endedAt = (/* @__PURE__ */ new Date()).toISOString();
-      this.emit("session:ended", { sessionId });
+      session.status = 'ended';
+      session.endedAt = /* @__PURE__ */ new Date().toISOString();
+      this.emit('session:ended', { sessionId });
     }
   }
   /**
@@ -310,41 +309,37 @@ class AgentCoordinationProtocol extends EventEmitter {
       agents: this.agents.size,
       sessions: this.sessions.size,
       queueLength: this.messageQueue.length,
-      ...this.metrics
+      ...this.metrics,
     };
   }
   // Private methods
   _ensureInitialized() {
     if (!this.initialized) {
-      throw new Error("Coordination protocol not initialized");
+      throw new Error('Coordination protocol not initialized');
     }
   }
   _registerDefaultProtocols() {
-    this.protocols.set("request-response", {
-      name: "Request-Response",
-      handler: async (message) => {
-      }
+    this.protocols.set('request-response', {
+      name: 'Request-Response',
+      handler: async (message) => {},
     });
-    this.protocols.set("pub-sub", {
-      name: "Publish-Subscribe",
-      handler: async (message) => {
-      }
+    this.protocols.set('pub-sub', {
+      name: 'Publish-Subscribe',
+      handler: async (message) => {},
     });
-    this.protocols.set("consensus", {
-      name: "Consensus",
-      handler: async (message) => {
-      }
+    this.protocols.set('consensus', {
+      name: 'Consensus',
+      handler: async (message) => {},
     });
   }
   _startMessageProcessor() {
     setInterval(async () => {
-      if (this.messageQueue.length === 0)
-        return;
+      if (this.messageQueue.length === 0) return;
       const message = this.messageQueue.shift();
       try {
         await this._processMessage(message);
       } catch (error) {
-        this.emit("message:error", { message, error });
+        this.emit('message:error', { message, error });
       }
     }, 10);
   }
@@ -360,7 +355,7 @@ class AgentCoordinationProtocol extends EventEmitter {
     }
     agent.lastActive = Date.now();
     this.metrics.messagesReceived++;
-    this.emit("message:delivered", message);
+    this.emit('message:delivered', message);
   }
   _waitForResponse(messageId, timeout) {
     return new Promise((resolve, reject) => {
@@ -370,11 +365,11 @@ class AgentCoordinationProtocol extends EventEmitter {
       const handler = (message) => {
         if (message.inReplyTo === messageId) {
           clearTimeout(timer);
-          this.off("message:delivered", handler);
+          this.off('message:delivered', handler);
           resolve(message);
         }
       };
-      this.on("message:delivered", handler);
+      this.on('message:delivered', handler);
     });
   }
   _assignTaskToAgents(task, availableAgents) {
@@ -395,7 +390,7 @@ class AgentCoordinationProtocol extends EventEmitter {
         const session = this.sessions.get(sessionId);
         if (session) {
           session.messages.forEach((msg) => {
-            if (msg.type === "task_result" && pending.has(msg.from)) {
+            if (msg.type === 'task_result' && pending.has(msg.from)) {
               results.set(msg.from, msg.content);
               pending.delete(msg.from);
             }
@@ -408,14 +403,14 @@ class AgentCoordinationProtocol extends EventEmitter {
       }, 100);
     });
   }
-  _aggregateResults(results, strategy = "concatenate") {
+  _aggregateResults(results, strategy = 'concatenate') {
     const resultArray = Array.from(results.values());
     switch (strategy) {
-      case "concatenate":
-        return resultArray.join("\n");
-      case "merge":
+      case 'concatenate':
+        return resultArray.join('\n');
+      case 'merge':
         return resultArray.reduce((acc, result) => ({ ...acc, ...result }), {});
-      case "vote":
+      case 'vote':
         const votes = {};
         resultArray.forEach((r) => {
           const key = JSON.stringify(r);
@@ -442,7 +437,7 @@ class AgentCoordinationProtocol extends EventEmitter {
       consensus: count / total >= this.config.consensusThreshold,
       resolution: JSON.parse(winningProposal),
       votes: count,
-      total
+      total,
     };
   }
   _generateSessionId() {
@@ -456,7 +451,4 @@ class AgentCoordinationProtocol extends EventEmitter {
   }
 }
 var coordination_default = AgentCoordinationProtocol;
-export {
-  AgentCoordinationProtocol,
-  coordination_default as default
-};
+export { AgentCoordinationProtocol, coordination_default as default };

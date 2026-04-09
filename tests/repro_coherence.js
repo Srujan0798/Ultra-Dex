@@ -1,4 +1,3 @@
-
 import { ultraMemory } from '../apps/cli/lib/mcp/memory.js';
 import { multiTierMemory } from '../apps/cli/lib/memory/multi-tier.js';
 
@@ -35,7 +34,11 @@ async function run() {
   // UltraMemory uses content as key effectively for search. But let's check if we can find it by content query in multi-tier.
   const multiQueryResult = await multiTierMemory.query(ultraValue);
 
-  if (multiQueryResult.hot.length === 0 && multiQueryResult.warm.length === 0 && multiQueryResult.cold.length === 0) {
+  if (
+    multiQueryResult.hot.length === 0 &&
+    multiQueryResult.warm.length === 0 &&
+    multiQueryResult.cold.length === 0
+  ) {
     console.log('SUCCESS: Multi-Tier cannot see data in UltraMemory.');
   } else {
     console.log('FAILURE: Multi-Tier unexpectedly found data from UltraMemory.');

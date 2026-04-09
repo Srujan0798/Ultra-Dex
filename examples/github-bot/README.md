@@ -19,12 +19,14 @@ This example demonstrates how to create a GitHub automation bot using Ultra-Dex 
 ## Setup
 
 1. **Install Dependencies**:
+
    ```bash
    npm install @octokit/rest express body-parser
    ```
 
 2. **Environment Variables**:
    Create a `.env` file with the following:
+
    ```env
    ULTRA_DEX_API_KEY=your_ultra_dex_api_key
    ULTRA_DEX_ENDPOINT=https://api.ultra-dex.ai

@@ -1,6 +1,6 @@
-name: "CodeQL Config"
+name: 'CodeQL Config'
 
 paths-ignore:
-  - "**/node_modules/**"
-  - "**/dist/**"
-  - "**/build/**"
+  - '**/node_modules/**'
+  - '**/dist/**'
+  - '**/build/**'

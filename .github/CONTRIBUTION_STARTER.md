@@ -3,6 +3,7 @@
 ## Quick Contribution (5 minutes)
 
 ### 1. Fix a Typo
+
 ```bash
 # Find typo in docs
 # Click "Edit" on GitHub
@@ -10,6 +11,7 @@
 ```
 
 ### 2. Add an Example
+
 ```bash
 # Copy examples/auth-workflow.md
 # Modify for your use case
@@ -17,6 +19,7 @@
 ```
 
 ### 3. Improve an Agent
+
 ```bash
 # Copy .agents/backend.md
 # Add missing quality check
@@ -27,6 +30,7 @@
 ## Medium Contribution (30 minutes)
 
 ### Create a New Agent
+
 ```bash
 # Copy .agents/MY_CUSTOM_AGENT.md
 # Fill in your specialty
@@ -35,6 +39,7 @@
 ```
 
 ### Write a Workflow
+
 ```bash
 # Copy examples/auth-workflow.md
 # Document your process
@@ -45,12 +50,14 @@
 ## Large Contribution (2+ hours)
 
 ### Add Industry Guide
+
 - Fintech compliance
 - Healthcare (HIPAA)
 - E-commerce patterns
 - SaaS best practices
 
 ### Create Video Tutorial
+
 - Record screen
 - Show agent usage
 - Explain workflow
@@ -70,6 +77,7 @@
 ## Get Recognized!
 
 Contributors get:
+
 - Name in README
 - Contributor badge
 - Community thanks

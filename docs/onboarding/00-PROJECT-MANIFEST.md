@@ -9,11 +9,11 @@
 
 **This file is the absolute source of truth.** All project components, from the CLI engine to the agent swarms, MUST align with the versions listed here.
 
-| Phase | Version | Status | Focus |
-| :--- | :--- | :--- | :--- |
-| **Current** | **v6.0.0** | ✅ **ACTIVE** | Singularity Era: 1000% Efficiency, Self-Healing, P2P Swarms. |
-| **Target** | **v6.1.0** | 🚀 **UPCOMING** | Enterprise Foundation: Multi-Tenancy, RBAC, Audit Logging. |
-| **Future** | **v7.0.0** | 🔮 **PLANNING** | Neuro-Link: BCI Integration, Quantum-Safe Security. |
+| Phase       | Version    | Status          | Focus                                                        |
+| :---------- | :--------- | :-------------- | :----------------------------------------------------------- |
+| **Current** | **v6.0.0** | ✅ **ACTIVE**   | Singularity Era: 1000% Efficiency, Self-Healing, P2P Swarms. |
+| **Target**  | **v6.1.0** | 🚀 **UPCOMING** | Enterprise Foundation: Multi-Tenancy, RBAC, Audit Logging.   |
+| **Future**  | **v7.0.0** | 🔮 **PLANNING** | Neuro-Link: BCI Integration, Quantum-Safe Security.          |
 
 ---
 
@@ -26,18 +26,23 @@
 ## 🔒 SACRED PRINCIPLES (NEVER Compromise)
 
 ### 1. The 34-Section Template is NON-NEGOTIABLE
+
 Production-grade applications require comprehensive planning. The 34-section blueprint is our architectural backbone.
 
 ### 2. The 21-Step Verification is MANDATORY
+
 Every task must pass the Protocol 21 gates—from security audits to performance benchmarks—before being declared "Done."
 
 ### 3. AI-Agnostic Meta-Layer
+
 We do not compete with AI models; we orchestrate them. Ultra-Dex is the skeleton that allows Claude, GPT, and Gemini to work together seamlessly.
 
 ### 4. Atomic Tasks (4-9 Hours)
+
 Granularity prevents hidden complexity. We enforce small, verifiable units of work to maintain 100% velocity.
 
 ### 5. Persistent Context (The Mind)
+
 Context survives session amnesia. Through the MCP Context Bus and Persistent Memory Graph, the project "Mind" is never lost.
 
 ---

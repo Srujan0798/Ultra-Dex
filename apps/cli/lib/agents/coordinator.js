@@ -10,9 +10,12 @@ export class AgentCoordinator {
     const agents = [];
 
     if (description.includes('security')) agents.push(this.registry.get('security'));
-    if (description.includes('db') || description.includes('database')) agents.push(this.registry.get('database'));
-    if (description.includes('ui') || description.includes('frontend')) agents.push(this.registry.get('frontend'));
-    if (description.includes('api') || description.includes('backend')) agents.push(this.registry.get('backend'));
+    if (description.includes('db') || description.includes('database'))
+      agents.push(this.registry.get('database'));
+    if (description.includes('ui') || description.includes('frontend'))
+      agents.push(this.registry.get('frontend'));
+    if (description.includes('api') || description.includes('backend'))
+      agents.push(this.registry.get('backend'));
 
     if (!agents.length && this.registry.get) {
       const defaultAgent = this.registry.get('planner') || this.registry.get('reviewer');

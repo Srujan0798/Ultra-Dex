@@ -1,32 +1,35 @@
-import { readdir } from "fs/promises";
-import path from "path";
-import { fileURLToPath, pathToFileURL } from "url";
+import { readdir } from 'fs/promises';
+import path from 'path';
+import { fileURLToPath, pathToFileURL } from 'url';
 import { MODEL_PROVIDER_MAP } from './router-config.js';
 import { MockProvider } from './providers/mock.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const PROVIDERS_DIR = path.resolve(__dirname, "providers");
+const PROVIDERS_DIR = path.resolve(__dirname, 'providers');
 function isProviderFile(filename) {
-  if (!filename.endsWith(".js"))
-    return false;
-  if (filename === "index.js")
-    return false;
-  if (filename === "http-utils.js")
-    return false;
-  if (filename === "openai-compatible-provider.js")
-    return false;
+  if (!filename.endsWith('.js')) return false;
+  if (filename === 'index.js') return false;
+  if (filename === 'http-utils.js') return false;
+  if (filename === 'openai-compatible-provider.js') return false;
   return true;
 }
 function normalizeProviderKey(name) {
-  return name.replace(/\.js$/i, "").replace(/-provider$/i, "").replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+  return name
+    .replace(/\.js$/i, '')
+    .replace(/-provider$/i, '')
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .toLowerCase();
 }
 function findProviderClass(mod) {
   const exported = Object.values(mod || {});
   for (const candidate of exported) {
-    if (typeof candidate !== "function")
-      continue;
+    if (typeof candidate !== 'function') continue;
     const proto = candidate.prototype || {};
-    if (typeof proto.chat === "function" && typeof proto.stream === "function" && typeof proto.embed === "function") {
+    if (
+      typeof proto.chat === 'function' &&
+      typeof proto.stream === 'function' &&
+      typeof proto.embed === 'function'
+    ) {
       return candidate;
     }
   }
@@ -40,7 +43,7 @@ function buildConfigFor(name, base = {}) {
     defaultModel: base.defaultModel || process.env[`${upper}_MODEL`],
     embeddingModel: base.embeddingModel || process.env[`${upper}_EMBEDDING_MODEL`],
     timeoutMs: base.timeoutMs,
-    extraHeaders: base.extraHeaders
+    extraHeaders: base.extraHeaders,
   };
 }
 class ProviderRegistry {
@@ -53,9 +56,14 @@ class ProviderRegistry {
   registerProvider(name, instance, metadata = {}) {
     const key = normalizeProviderKey(name);
     if (!instance) {
-      throw new Error(`[provider-registry] Cannot register provider "${name}": instance is required`);
+      throw new Error(
+        `[provider-registry] Cannot register provider "${name}": instance is required`
+      );
     }
-    const hasContract = typeof instance.chat === "function" && typeof instance.stream === "function" && typeof instance.embed === "function";
+    const hasContract =
+      typeof instance.chat === 'function' &&
+      typeof instance.stream === 'function' &&
+      typeof instance.embed === 'function';
     if (!hasContract) {
       throw new Error(
         `[provider-registry] Provider "${name}" must implement chat(messages, opts), stream(messages, opts), and embed(text)`
@@ -66,43 +74,42 @@ class ProviderRegistry {
     this.registry.set(key, instance);
     this.providerMetadata.set(key, {
       name: key,
-      registeredAt: (/* @__PURE__ */ new Date()).toISOString(),
-      ...metadata
+      registeredAt: /* @__PURE__ */ new Date().toISOString(),
+      ...metadata,
     });
     return instance;
   }
   validateProviderInterface(provider) {
     const errors = [];
-    if (typeof provider.chat !== "function") {
-      errors.push("Missing required method: chat(messages, opts)");
+    if (typeof provider.chat !== 'function') {
+      errors.push('Missing required method: chat(messages, opts)');
     }
-    if (typeof provider.stream !== "function") {
-      errors.push("Missing required method: stream(messages, opts)");
+    if (typeof provider.stream !== 'function') {
+      errors.push('Missing required method: stream(messages, opts)');
     }
-    if (typeof provider.embed !== "function") {
-      errors.push("Missing required method: embed(text)");
+    if (typeof provider.embed !== 'function') {
+      errors.push('Missing required method: embed(text)');
     }
     try {
-      if (provider.chat.constructor.name !== "AsyncFunction") {
-        errors.push("chat method should be async");
+      if (provider.chat.constructor.name !== 'AsyncFunction') {
+        errors.push('chat method should be async');
       }
-      if (provider.stream.constructor.name !== "AsyncFunction") {
-        errors.push("stream method should be async");
+      if (provider.stream.constructor.name !== 'AsyncFunction') {
+        errors.push('stream method should be async');
       }
-      if (provider.embed.constructor.name !== "AsyncFunction") {
-        errors.push("embed method should be async");
+      if (provider.embed.constructor.name !== 'AsyncFunction') {
+        errors.push('embed method should be async');
       }
-    } catch (_e) {
-    }
+    } catch (_e) {}
     return {
       valid: errors.length === 0,
       errors,
-      validatedAt: (/* @__PURE__ */ new Date()).toISOString()
+      validatedAt: /* @__PURE__ */ new Date().toISOString(),
     };
   }
   getProvider(name) {
-    if (process.env.MOCK_AI_PROVIDERS === "true") {
-      const key2 = "mock";
+    if (process.env.MOCK_AI_PROVIDERS === 'true') {
+      const key2 = 'mock';
       if (!this.registry.has(key2)) {
         this.registry.set(key2, new MockProvider());
       }
@@ -128,39 +135,41 @@ class ProviderRegistry {
         registeredAt: metadata?.registeredAt,
         isValid: validation?.valid,
         validationErrors: validation?.errors,
-        capabilities: this.getProviderCapabilities(provider)
+        capabilities: this.getProviderCapabilities(provider),
       });
     }
     return details;
   }
   getProviderCapabilities(provider) {
-    const capabilities = ["chat", "stream", "embed"];
-    if (typeof provider.complete === "function") {
-      capabilities.push("complete");
+    const capabilities = ['chat', 'stream', 'embed'];
+    if (typeof provider.complete === 'function') {
+      capabilities.push('complete');
     }
-    if (typeof provider.vision !== "undefined" || provider.constructor && provider.constructor.name.includes("Vision")) {
-      capabilities.push("vision");
+    if (
+      typeof provider.vision !== 'undefined' ||
+      (provider.constructor && provider.constructor.name.includes('Vision'))
+    ) {
+      capabilities.push('vision');
     }
-    if (typeof provider.code !== "undefined") {
-      capabilities.push("code");
+    if (typeof provider.code !== 'undefined') {
+      capabilities.push('code');
     }
-    if (typeof provider.reasoning !== "undefined") {
-      capabilities.push("reasoning");
+    if (typeof provider.reasoning !== 'undefined') {
+      capabilities.push('reasoning');
     }
-    if (typeof provider.functionCalling !== "undefined" || provider.supportsFunctions) {
-      capabilities.push("functionCalling");
+    if (typeof provider.functionCalling !== 'undefined' || provider.supportsFunctions) {
+      capabilities.push('functionCalling');
     }
     return capabilities;
   }
   resolveModel(modelId) {
-    if (!modelId)
-      return null;
+    if (!modelId) return null;
     const explicit = MODEL_PROVIDER_MAP[modelId] || MODEL_PROVIDER_MAP[modelId.toLowerCase()];
     if (explicit) {
       return this.getProvider(explicit);
     }
-    const fallback = Object.entries(MODEL_PROVIDER_MAP).find(
-      ([knownModel]) => modelId.toLowerCase().includes(knownModel.toLowerCase())
+    const fallback = Object.entries(MODEL_PROVIDER_MAP).find(([knownModel]) =>
+      modelId.toLowerCase().includes(knownModel.toLowerCase())
     );
     if (fallback) {
       return this.getProvider(fallback[1]);
@@ -178,30 +187,28 @@ class ProviderRegistry {
         continue;
       }
       const ProviderClass = findProviderClass(mod);
-      if (!ProviderClass)
-        continue;
+      if (!ProviderClass) continue;
       const registryKey = normalizeProviderKey(file);
       const providerConfig = buildConfigFor(registryKey, configMap[registryKey] || {});
       try {
         const instance = new ProviderClass(providerConfig);
         this.registerProvider(registryKey, instance, {
           sourceFile: file,
-          autoDiscovered: true
+          autoDiscovered: true,
         });
       } catch {
         const placeholderConfig = {
           ...providerConfig,
-          apiKey: providerConfig.apiKey || "placeholder-key"
+          apiKey: providerConfig.apiKey || 'placeholder-key',
         };
         try {
           const instance = new ProviderClass(placeholderConfig);
           this.registerProvider(registryKey, instance, {
             sourceFile: file,
             autoDiscovered: true,
-            requiresConfig: true
+            requiresConfig: true,
           });
-        } catch {
-        }
+        } catch {}
       }
     }
     this.discoveryLoaded = true;
@@ -211,12 +218,12 @@ class ProviderRegistry {
   async registerWithRouting(providerName, instance, routingConfig = {}) {
     this.registerProvider(providerName, instance, {
       routingEnabled: true,
-      ...routingConfig
+      ...routingConfig,
     });
     if (routingConfig.priority) {
       const metadata = this.providerMetadata.get(normalizeProviderKey(providerName));
       metadata.routingPriority = routingConfig.priority;
-      metadata.routingStrategy = routingConfig.strategy || "quality";
+      metadata.routingStrategy = routingConfig.strategy || 'quality';
     }
     return instance;
   }
@@ -241,5 +248,5 @@ export {
   providerRegistry,
   registerProvider,
   resolveModel,
-  validateProviderInterface
+  validateProviderInterface,
 };

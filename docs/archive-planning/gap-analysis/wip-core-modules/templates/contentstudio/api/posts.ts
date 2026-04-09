@@ -40,9 +40,7 @@ export async function updatePost(
       status: data.status ?? existing.status,
       categoryId: data.categoryId ?? existing.categoryId,
       publishedAt:
-        data.status === 'published' && !existing.publishedAt
-          ? new Date()
-          : existing.publishedAt,
+        data.status === 'published' && !existing.publishedAt ? new Date() : existing.publishedAt,
     },
   });
 }

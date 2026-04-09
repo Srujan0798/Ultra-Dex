@@ -7,7 +7,11 @@ const users = new Map<string, User>();
 const sessions = new Map<string, UserSession>();
 
 export class AuthService {
-  async register(email: string, password: string, name: string): Promise<{ user: User; session: UserSession }> {
+  async register(
+    email: string,
+    password: string,
+    name: string
+  ): Promise<{ user: User; session: UserSession }> {
     try {
       // Create user in Clerk
       const clerkUser = await clerkClient.users.createUser({
@@ -31,7 +35,7 @@ export class AuthService {
         userId: user.id,
         token: clerkSession.id,
         expiresAt: new Date(clerkSession.expireAt),
-        createdAt: new Date(clerkSession.createdAt)
+        createdAt: new Date(clerkSession.createdAt),
       };
       sessions.set(session.token, session);
 
@@ -44,13 +48,13 @@ export class AuthService {
       throw new Error('User registration failed: ' + (error as Error).message);
     }
   }
-  
+
   async login(email: string, password: string): Promise<{ user: User; session: UserSession }> {
     try {
       // Get user from Clerk by email
       const clerkUsers = await clerkClient.users.getUserList({ emailAddress: [email] });
       const clerkUser = clerkUsers.data[0];
-      
+
       if (!clerkUser) {
         throw new Error('Invalid credentials');
       }
@@ -75,7 +79,7 @@ export class AuthService {
         userId: user.id,
         token: clerkSession.id,
         expiresAt: new Date(clerkSession.expireAt),
-        createdAt: new Date(clerkSession.createdAt)
+        createdAt: new Date(clerkSession.createdAt),
       };
       sessions.set(session.token, session);
 
@@ -88,12 +92,12 @@ export class AuthService {
       throw new Error('Invalid credentials');
     }
   }
-  
+
   async validateSession(token: string): Promise<User | null> {
     try {
       // Validate session with Clerk
       const clerkSession = await clerkClient.sessions.getSession(token);
-      
+
       if (!clerkSession || clerkSession.status !== 'active') {
         return null;
       }
@@ -105,7 +109,7 @@ export class AuthService {
       return null;
     }
   }
-  
+
   async logout(token: string): Promise<void> {
     try {
       // Revoke Clerk session
@@ -115,11 +119,11 @@ export class AuthService {
       logError('Logout failed', error as Error, { token });
     }
   }
-  
+
   async getUserByApiKey(apiKey: string): Promise<User | null> {
-    return Array.from(users.values()).find(u => u.apiKey === apiKey) || null;
+    return Array.from(users.values()).find((u) => u.apiKey === apiKey) || null;
   }
-  
+
   async updateUsage(userId: string, requests: number, tokens: number): Promise<void> {
     const user = users.get(userId);
     if (user) {

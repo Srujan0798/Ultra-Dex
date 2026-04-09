@@ -229,7 +229,7 @@ export async function startUnifiedKernel(portStr, options = {}) {
     // Add 5s timeout to graph scan to prevent hanging
     await Promise.race([
       projectGraph.scan(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Graph scan timed out')), 5000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Graph scan timed out')), 5000)),
     ]);
     printSuccess(`✅ Graph stabilized: ${projectGraph.nodes.size} nodes`);
   } catch (e) {

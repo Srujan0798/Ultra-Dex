@@ -35,8 +35,10 @@ function checkPrerequisites() {
   return {
     ready: missing.length === 0,
     missing,
-    installInstructions: missing.length > 0 ?
-      `Missing prerequisites:\n${missing.map(m => `- ${m}`).join('\n')}\n\nTo install SoX:\n  macOS: brew install sox\n  Linux: sudo apt install sox` : null
+    installInstructions:
+      missing.length > 0
+        ? `Missing prerequisites:\n${missing.map((m) => `- ${m}`).join('\n')}\n\nTo install SoX:\n  macOS: brew install sox\n  Linux: sudo apt install sox`
+        : null,
   };
 }
 

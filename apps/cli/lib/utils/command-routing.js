@@ -63,9 +63,7 @@ export function analyzeCliInput(rawArgs, commandNames, options = {}) {
     Boolean(confidence.intent) &&
     (confidence.confidence >= intentThreshold || EXACT_MATCH_TYPES.has(confidence.matchType));
   const preferTypoSuggestion =
-    Boolean(typoSuggestion) &&
-    args.length === 1 &&
-    !EXACT_MATCH_TYPES.has(confidence.matchType);
+    Boolean(typoSuggestion) && args.length === 1 && !EXACT_MATCH_TYPES.has(confidence.matchType);
 
   if (translatedArgs.length > 0 && strongIntent && !preferTypoSuggestion) {
     return {

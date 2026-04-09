@@ -147,7 +147,7 @@ Provide your output for the next agent in the pipeline.
 
         // Extract token usage if available
         if (response.usage) {
-          this.tokenCounter += (response.usage.total_tokens || 0);
+          this.tokenCounter += response.usage.total_tokens || 0;
         }
 
         return typeof response === 'string'
@@ -190,7 +190,7 @@ Provide your output for the next agent in the pipeline.
 
       if (availableForContext > 0) {
         const fullContext = fullPrompt.substring(contextStart + 11, contextEnd); // +11 to skip "## Context"
-        
+
         // Use more sophisticated truncation - preserve important parts
         const lines = fullContext.split('\n');
         const importantLines = [];
@@ -208,7 +208,7 @@ Provide your output for the next agent in the pipeline.
         // Calculate space for other lines after accounting for important lines
         const importantText = importantLines.join('\n');
         const importantSize = Buffer.byteLength(importantText, 'utf-8');
-        
+
         let finalContext = importantText;
         if (importantSize < availableForContext) {
           // Add other lines until we reach the limit
@@ -221,26 +221,48 @@ Provide your output for the next agent in the pipeline.
           }
         }
 
-        return prefix + '## Context\n' + finalContext + `\n\n[Context was optimized due to size limits.]\n` + suffix;
+        return (
+          prefix +
+          '## Context\n' +
+          finalContext +
+          `\n\n[Context was optimized due to size limits.]\n` +
+          suffix
+        );
       }
     }
 
     // Fallback: simple truncation if structure isn't as expected
     const promptBytes = Buffer.from(fullPrompt, 'utf-8');
     const truncatedPrompt = promptBytes.subarray(0, MAX_CONTEXT_SIZE - 1000);
-    return new TextDecoder().decode(truncatedPrompt) + `\n\n[Prompt was optimized due to size limits.]`;
+    return (
+      new TextDecoder().decode(truncatedPrompt) + `\n\n[Prompt was optimized due to size limits.]`
+    );
   }
 
   // Determine if a line is important for context
   isImportantLine(line) {
     const importantKeywords = [
-      'ERROR', 'WARNING', 'CRITICAL', 'FATAL', 'BUG', 'ISSUE', 
-      'CONFIG', 'SETUP', 'INITIALIZE', 'AUTH', 'SECURITY',
-      'DATABASE', 'API', 'ENDPOINT', 'ROUTE', 'MODEL', 'SCHEMA'
+      'ERROR',
+      'WARNING',
+      'CRITICAL',
+      'FATAL',
+      'BUG',
+      'ISSUE',
+      'CONFIG',
+      'SETUP',
+      'INITIALIZE',
+      'AUTH',
+      'SECURITY',
+      'DATABASE',
+      'API',
+      'ENDPOINT',
+      'ROUTE',
+      'MODEL',
+      'SCHEMA',
     ];
-    
+
     const upperLine = line.toUpperCase();
-    return importantKeywords.some(keyword => upperLine.includes(keyword));
+    return importantKeywords.some((keyword) => upperLine.includes(keyword));
   }
 
   // Generate cache key for agent execution
@@ -249,7 +271,7 @@ Provide your output for the next agent in the pipeline.
       agent: agent.name,
       task: task.substring(0, 100), // Limit task length
       contextHash: this.hashString(context.substring(0, 500)), // Limit context
-      prevOutputHash: this.hashString(previousOutput.substring(0, 500))
+      prevOutputHash: this.hashString(previousOutput.substring(0, 500)),
     });
     return this.hashString(input);
   }
@@ -259,7 +281,7 @@ Provide your output for the next agent in the pipeline.
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash |= 0; // Convert to 32bit integer
     }
     return hash.toString();
@@ -275,7 +297,7 @@ Provide your output for the next agent in the pipeline.
       const paths = [
         path.join(process.cwd(), 'agents', `${name}.md`),
         path.join(process.cwd(), 'prompts', `${name}.md`),
-        path.join(process.cwd(), 'cli', 'agents', `${name}.md`)
+        path.join(process.cwd(), 'cli', 'agents', `${name}.md`),
       ];
 
       for (const filePath of paths) {
@@ -314,9 +336,10 @@ Provide your output for the next agent in the pipeline.
   getStats() {
     return {
       ...this.stats,
-      cacheHitRate: this.stats.totalExecutions > 0 
-        ? (this.stats.cachedExecutions / this.stats.totalExecutions) * 100 
-        : 0,
+      cacheHitRate:
+        this.stats.totalExecutions > 0
+          ? (this.stats.cachedExecutions / this.stats.totalExecutions) * 100
+          : 0,
       cacheSize: this.cache.cache.size,
     };
   }
@@ -347,13 +370,19 @@ class OptimizedSwarmExecutor {
 
       if (tier.parallel) {
         // Execute tier in parallel with concurrency limiting
-        const tierResults = await this.executeTierParallel(tier, task, context, previousOutput, provider);
+        const tierResults = await this.executeTierParallel(
+          tier,
+          task,
+          context,
+          previousOutput,
+          provider
+        );
         results.push(...tierResults);
 
         // Update previous output with successful results
-        const successfulResults = tierResults.filter(r => r.success);
+        const successfulResults = tierResults.filter((r) => r.success);
         if (successfulResults.length > 0) {
-          previousOutput += '\n\n' + successfulResults.map(r => r.result).join('\n\n');
+          previousOutput += '\n\n' + successfulResults.map((r) => r.result).join('\n\n');
 
           // Share results with communication bus for other agents to potentially access
           for (const result of successfulResults) {
@@ -387,7 +416,7 @@ class OptimizedSwarmExecutor {
       results,
       totalTime,
       stats: this.executor.getStats(),
-      successRate: results.filter(r => r.success).length / results.length * 100
+      successRate: (results.filter((r) => r.success).length / results.length) * 100,
     };
   }
 
@@ -397,15 +426,18 @@ class OptimizedSwarmExecutor {
       return baseContext;
     }
 
-    return baseContext + '\n\n## Shared Insights from Other Agents\n' +
-           Object.entries(sharedContext).map(([agent, insight]) =>
-             `### @${agent} Insight:\n${insight}`
-           ).join('\n\n');
+    return (
+      baseContext +
+      '\n\n## Shared Insights from Other Agents\n' +
+      Object.entries(sharedContext)
+        .map(([agent, insight]) => `### @${agent} Insight:\n${insight}`)
+        .join('\n\n')
+    );
   }
 
   // Execute a tier in parallel with concurrency control
   async executeTierParallel(tier, task, context, previousOutput, provider) {
-    const promises = tier.agents.map(agent => 
+    const promises = tier.agents.map((agent) =>
       this.concurrencyLimiter.run(async () => {
         return this.executeAgentInTier(agent, task, context, previousOutput, provider);
       })
@@ -417,7 +449,13 @@ class OptimizedSwarmExecutor {
   // Execute a single agent in a tier
   async executeAgentInTier(agent, task, context, previousOutput, provider) {
     try {
-      const result = await this.executor.executeAgent(agent, task, context, previousOutput, provider);
+      const result = await this.executor.executeAgent(
+        agent,
+        task,
+        context,
+        previousOutput,
+        provider
+      );
       return { agent: agent.name, result, success: true };
     } catch (error) {
       return { agent: agent.name, error: error.message, success: false };
@@ -430,31 +468,33 @@ class OptimizedSwarmExecutor {
       return [
         {
           name: '1-Planning',
-          agents: pipeline.filter(a => a.tier === '1-planning'),
+          agents: pipeline.filter((a) => a.tier === '1-planning'),
           parallel: false,
         },
         {
           name: '2-Implementation',
-          agents: pipeline.filter(a => a.tier === '2-implementation'),
+          agents: pipeline.filter((a) => a.tier === '2-implementation'),
           parallel: true,
         },
         {
           name: '3-Security',
-          agents: pipeline.filter(a => a.tier === '3-security'),
+          agents: pipeline.filter((a) => a.tier === '3-security'),
           parallel: false,
         },
         {
           name: '4-Quality',
-          agents: pipeline.filter(a => a.tier === '4-quality'),
+          agents: pipeline.filter((a) => a.tier === '4-quality'),
           parallel: false,
         },
-      ].filter(tier => tier.agents.length > 0);
+      ].filter((tier) => tier.agents.length > 0);
     } else {
-      return [{
-        name: 'All',
-        agents: pipeline,
-        parallel: false,
-      }];
+      return [
+        {
+          name: 'All',
+          agents: pipeline,
+          parallel: false,
+        },
+      ];
     }
   }
 }
@@ -513,11 +553,12 @@ class AgentCommunicationBus {
     this.sharedResults.set(agentName, {
       result,
       timestamp: new Date(),
-      taskContext: this.taskContext
+      taskContext: this.taskContext,
     });
 
     // Keep only recent results to prevent memory issues
-    if (this.sharedResults.size > 50) { // Keep max 50 shared results
+    if (this.sharedResults.size > 50) {
+      // Keep max 50 shared results
       const entries = Array.from(this.sharedResults.entries());
       const sortedEntries = entries.sort((a, b) => b[1].timestamp - a[1].timestamp);
       this.sharedResults = new Map(sortedEntries.slice(0, 40)); // Keep newest 40
@@ -543,9 +584,7 @@ class AgentCommunicationBus {
     if (keywords.length > 0) {
       const relevantContext = {};
       for (const [agentName, result] of Object.entries(allContext)) {
-        if (keywords.some(keyword =>
-          result.toLowerCase().includes(keyword.toLowerCase())
-        )) {
+        if (keywords.some((keyword) => result.toLowerCase().includes(keyword.toLowerCase()))) {
           relevantContext[agentName] = result;
         }
       }
@@ -562,7 +601,7 @@ export {
   OptimizedSwarmExecutor,
   ConcurrencyLimiter,
   AgentCommunicationBus,
-  PERF_CONFIG as perfConfig
+  PERF_CONFIG as perfConfig,
 };
 
 // Performance enhancement utilities
@@ -578,15 +617,13 @@ export const perfUtils = {
   // Batch process items with performance optimization
   async batchProcess(items, processor, batchSize = PERF_CONFIG.batchSize) {
     const results = [];
-    
+
     for (let i = 0; i < items.length; i += batchSize) {
       const batch = items.slice(i, i + batchSize);
-      const batchResults = await Promise.all(
-        batch.map(item => processor(item))
-      );
+      const batchResults = await Promise.all(batch.map((item) => processor(item)));
       results.push(...batchResults);
     }
-    
+
     return results;
   },
 
@@ -595,14 +632,14 @@ export const perfUtils = {
     const cache = new Map();
     return function (...args) {
       const key = resolver ? resolver.apply(this, args) : JSON.stringify(args);
-      
+
       if (cache.has(key)) {
         return cache.get(key);
       }
-      
+
       const result = fn.apply(this, args);
       cache.set(key, result);
       return result;
     };
-  }
+  },
 };

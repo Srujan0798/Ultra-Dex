@@ -47,9 +47,16 @@ export function OnboardingTour() {
   if (!active) return <></>;
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/75 p-6" role="dialog" aria-modal="true" aria-label="Dashboard onboarding tour">
+    <div
+      className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/75 p-6"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Dashboard onboarding tour"
+    >
       <section className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900 p-6 text-slate-100 shadow-2xl">
-        <p className="text-xs uppercase tracking-[0.2em] text-emerald-400">Step {step + 1} of {STEPS.length}</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-emerald-400">
+          Step {step + 1} of {STEPS.length}
+        </p>
         <h2 className="mt-2 text-xl font-semibold">{current.title}</h2>
         <p className="mt-3 text-sm text-slate-300">{current.body}</p>
 

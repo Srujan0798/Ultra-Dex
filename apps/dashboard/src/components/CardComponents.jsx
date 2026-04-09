@@ -1,5 +1,64 @@
 import React, { memo } from 'react';
-import { Activity, Bot, CheckCircle, AlertTriangle, Clock, Zap, Shield, Users, GitBranch, Database, Cpu, HardDrive, Globe, Terminal, Code, Eye, Brain, Cog, TrendingUp, Star, MessageSquare, GitCommit, Server, Smartphone, Globe as GlobeIcon, Activity as ActivityIcon, Shield as ShieldIcon, Cpu as CpuIcon, HardDrive as HardDriveIcon, GitCommit as GitCommitIcon, Bot as BotIcon, CheckCircle as CheckCircleIcon, AlertTriangle as AlertTriangleIcon, MessageSquare as MessageSquareIcon, User, Settings, BarChart3, PieChart as PieChartIcon, BarChart as BarChartIcon, LineChart as LineChartIcon, Eye as EyeIcon, ShieldCheck, Server as ServerIcon, Smartphone as SmartphoneIcon, Globe as GlobeIcon2, Activity as ActivityIcon2, Shield as ShieldIcon2, Cpu as CpuIcon2, HardDrive as HardDriveIcon2, GitCommit as GitCommitIcon2, Bot as BotIcon2, CheckCircle as CheckCircleIcon2, AlertTriangle as AlertTriangleIcon2, MessageSquare as MessageSquareIcon2, GitCommit as GitCommitIcon3, Zap as ZapIcon, Cog as CogIcon, Clock as ClockIcon } from 'lucide-react';
+import {
+  Activity,
+  Bot,
+  CheckCircle,
+  AlertTriangle,
+  Clock,
+  Zap,
+  Shield,
+  Users,
+  GitBranch,
+  Database,
+  Cpu,
+  HardDrive,
+  Globe,
+  Terminal,
+  Code,
+  Eye,
+  Brain,
+  Cog,
+  TrendingUp,
+  Star,
+  MessageSquare,
+  GitCommit,
+  Server,
+  Smartphone,
+  Globe as GlobeIcon,
+  Activity as ActivityIcon,
+  Shield as ShieldIcon,
+  Cpu as CpuIcon,
+  HardDrive as HardDriveIcon,
+  GitCommit as GitCommitIcon,
+  Bot as BotIcon,
+  CheckCircle as CheckCircleIcon,
+  AlertTriangle as AlertTriangleIcon,
+  MessageSquare as MessageSquareIcon,
+  User,
+  Settings,
+  BarChart3,
+  PieChart as PieChartIcon,
+  BarChart as BarChartIcon,
+  LineChart as LineChartIcon,
+  Eye as EyeIcon,
+  ShieldCheck,
+  Server as ServerIcon,
+  Smartphone as SmartphoneIcon,
+  Globe as GlobeIcon2,
+  Activity as ActivityIcon2,
+  Shield as ShieldIcon2,
+  Cpu as CpuIcon2,
+  HardDrive as HardDriveIcon2,
+  GitCommit as GitCommitIcon2,
+  Bot as BotIcon2,
+  CheckCircle as CheckCircleIcon2,
+  AlertTriangle as AlertTriangleIcon2,
+  MessageSquare as MessageSquareIcon2,
+  GitCommit as GitCommitIcon3,
+  Zap as ZapIcon,
+  Cog as CogIcon,
+  Clock as ClockIcon,
+} from 'lucide-react';
 
 /**
  * StatCard - Displays a statistic with optional change indicator
@@ -16,8 +75,18 @@ export const StatCard = memo(({ title, value, icon: Icon, change }) => (
   >
     <div className="flex items-center justify-between">
       <div>
-        <p className="text-gray-400 text-sm" id={`stat-${title.replace(/\s+/g, '-').toLowerCase()}`}>{title}</p>
-        <p className="text-2xl font-bold mt-1" aria-labelledby={`stat-${title.replace(/\s+/g, '-').toLowerCase()}`}>{value}</p>
+        <p
+          className="text-gray-400 text-sm"
+          id={`stat-${title.replace(/\s+/g, '-').toLowerCase()}`}
+        >
+          {title}
+        </p>
+        <p
+          className="text-2xl font-bold mt-1"
+          aria-labelledby={`stat-${title.replace(/\s+/g, '-').toLowerCase()}`}
+        >
+          {value}
+        </p>
         {change && (
           <p
             className={`text-sm mt-1 ${change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}
@@ -47,13 +116,13 @@ export const AgentStatusCard = memo(({ name, status, tasks, icon: Icon }) => {
   const statusColors = {
     active: 'text-green-400',
     busy: 'text-yellow-400',
-    idle: 'text-gray-400'
+    idle: 'text-gray-400',
   };
 
   const statusIcons = {
     active: '🟢',
     busy: '🟡',
-    idle: '⚪'
+    idle: '⚪',
   };
 
   return (
@@ -72,9 +141,12 @@ export const AgentStatusCard = memo(({ name, status, tasks, icon: Icon }) => {
           role="status"
           aria-label={`Status: ${status}`}
         >
-          <span aria-hidden="true">{statusIcons[status]}</span> {status.charAt(0).toUpperCase() + status.slice(1)}
+          <span aria-hidden="true">{statusIcons[status]}</span>{' '}
+          {status.charAt(0).toUpperCase() + status.slice(1)}
         </span>
-        <span className="text-sm text-gray-400" aria-label={`${tasks} tasks`}>{tasks} tasks</span>
+        <span className="text-sm text-gray-400" aria-label={`${tasks} tasks`}>
+          {tasks} tasks
+        </span>
       </div>
     </div>
   );
@@ -88,13 +160,13 @@ export const AgentStatusCard = memo(({ name, status, tasks, icon: Icon }) => {
  * @param {string} change - Optional change indicator
  * @param {string} color - Color theme
  */
-export const StatusCard = memo(({ title, value, icon: Icon, change, color = "blue" }) => {
+export const StatusCard = memo(({ title, value, icon: Icon, change, color = 'blue' }) => {
   const colorClasses = {
-    blue: "text-blue-400",
-    green: "text-green-400",
-    yellow: "text-yellow-400",
-    red: "text-red-400",
-    purple: "text-purple-400"
+    blue: 'text-blue-400',
+    green: 'text-green-400',
+    yellow: 'text-yellow-400',
+    red: 'text-red-400',
+    purple: 'text-purple-400',
   };
 
   return (
@@ -136,7 +208,7 @@ export const TaskCard = memo(({ task, agent, status, time }) => {
   const statusColors = {
     completed: 'bg-green-500/20 text-green-400',
     'in-progress': 'bg-yellow-500/20 text-yellow-400',
-    pending: 'bg-gray-500/20 text-gray-400'
+    pending: 'bg-gray-500/20 text-gray-400',
   };
 
   return (
@@ -179,17 +251,18 @@ export const ActivityItem = memo(({ timestamp, commits, aiRequests, errors }) =>
     <time className="text-sm text-gray-400">{timestamp}</time>
     <div className="flex items-center space-x-4 text-sm">
       <span className="text-blue-400 flex items-center" aria-label={`${commits} commits`}>
-        <GitCommit className="w-4 h-4 mr-1" aria-hidden="true" />
-        +{commits} commits
+        <GitCommit className="w-4 h-4 mr-1" aria-hidden="true" />+{commits} commits
       </span>
       <span className="text-green-400 flex items-center" aria-label={`${aiRequests} AI requests`}>
-        <Zap className="w-4 h-4 mr-1" aria-hidden="true" />
-        +{aiRequests} AI req
+        <Zap className="w-4 h-4 mr-1" aria-hidden="true" />+{aiRequests} AI req
       </span>
       {errors > 0 && (
-        <span className="text-red-400 flex items-center" role="alert" aria-label={`${errors} errors`}>
-          <AlertTriangle className="w-4 h-4 mr-1" aria-hidden="true" />
-          -{errors} err
+        <span
+          className="text-red-400 flex items-center"
+          role="alert"
+          aria-label={`${errors} errors`}
+        >
+          <AlertTriangle className="w-4 h-4 mr-1" aria-hidden="true" />-{errors} err
         </span>
       )}
     </div>
@@ -201,7 +274,7 @@ export default {
   AgentStatusCard,
   StatusCard,
   TaskCard,
-  ActivityItem
+  ActivityItem,
 };
 
 /**

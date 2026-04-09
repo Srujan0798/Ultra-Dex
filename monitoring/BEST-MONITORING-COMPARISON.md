@@ -2,14 +2,14 @@
 
 ## Executive Summary
 
-| Rank | Tool | Best For | Free Tier | Price | Rating |
-|------|------|----------|-----------|-------|--------|
-| 🥇 | **Better Stack** | All-in-one | 100k logs, 10 monitors | $25/mo | ⭐ 4.9 |
-| 🥈 | **Hyperping** | Status pages | 5 monitors | $29/mo | ⭐ 4.8 |
-| 🥉 | **UptimeRobot** | Simple uptime | 50 monitors | $15/mo | ⭐ 4.5 |
-| 4 | **Pingdom** | Enterprise | None | $15/mo | ⭐ 4.4 |
-| 5 | **Cronitor** | Cron jobs | 5 monitors | $24/mo | ⭐ 4.3 |
-| 6 | **Freshping** | Free option | 50 monitors | $11/mo | ⭐ 4.2 |
+| Rank | Tool             | Best For      | Free Tier              | Price  | Rating |
+| ---- | ---------------- | ------------- | ---------------------- | ------ | ------ |
+| 🥇   | **Better Stack** | All-in-one    | 100k logs, 10 monitors | $25/mo | ⭐ 4.9 |
+| 🥈   | **Hyperping**    | Status pages  | 5 monitors             | $29/mo | ⭐ 4.8 |
+| 🥉   | **UptimeRobot**  | Simple uptime | 50 monitors            | $15/mo | ⭐ 4.5 |
+| 4    | **Pingdom**      | Enterprise    | None                   | $15/mo | ⭐ 4.4 |
+| 5    | **Cronitor**     | Cron jobs     | 5 monitors             | $24/mo | ⭐ 4.3 |
+| 6    | **Freshping**    | Free option   | 50 monitors            | $11/mo | ⭐ 4.2 |
 
 ---
 
@@ -18,6 +18,7 @@
 **Website:** https://betterstack.com
 
 ### Why It's #1
+
 - ✅ **Best free tier** (100k logs, 10 monitors)
 - ✅ **Beautiful status pages**
 - ✅ **Incident management**
@@ -26,14 +27,16 @@
 - ✅ **Slack/Discord/PagerDuty**
 
 ### Pricing
-| Plan | Price | Features |
-|------|-------|----------|
-| **Free** | $0 | 10 monitors, 100k logs, 3 users, 30-day retention |
-| **Freelancer** | $25/mo | 50 monitors, 1M logs, unlimited users |
-| **Small Team** | $85/mo | 150 monitors, 5M logs, priority support |
-| **Business** | $160/mo | Unlimited monitors, 20M logs, SLA |
+
+| Plan           | Price   | Features                                          |
+| -------------- | ------- | ------------------------------------------------- |
+| **Free**       | $0      | 10 monitors, 100k logs, 3 users, 30-day retention |
+| **Freelancer** | $25/mo  | 50 monitors, 1M logs, unlimited users             |
+| **Small Team** | $85/mo  | 150 monitors, 5M logs, priority support           |
+| **Business**   | $160/mo | Unlimited monitors, 20M logs, SLA                 |
 
 ### Free Tier Includes
+
 ```yaml
 Monitors: 10 (HTTP, Ping, Port, SSL)
 Log Volume: 100,000 logs/month
@@ -45,6 +48,7 @@ Check Interval: 1 minute
 ```
 
 ### Pros
+
 ✅ Generous free tier (best in class)
 ✅ Modern, fast UI
 ✅ Built-in incident management
@@ -54,6 +58,7 @@ Check Interval: 1 minute
 ✅ SSL certificate monitoring
 
 ### Cons
+
 ❌ Limited free monitors (10 vs 50 UptimeRobot)
 ❌ Can get expensive at scale
 
@@ -64,20 +69,23 @@ Check Interval: 1 minute
 **Website:** https://hyperping.io
 
 ### Why It's #2
+
 - ✅ **Best status pages** (beautiful design)
 - ✅ **Simple pricing**
 - ✅ **Good for agencies**
 - ✅ **Multi-region checks**
 
 ### Pricing
-| Plan | Price | Features |
-|------|-------|----------|
-| **Hobby** | $0 | 5 monitors, 1 status page, 5 min checks |
-| **Starter** | $29/mo | 20 monitors, 3 status pages, 1 min checks |
-| **Growth** | $79/mo | 100 monitors, 10 status pages, 30s checks |
-| **Scale** | $199/mo | Unlimited, 30s checks, phone calls |
+
+| Plan        | Price   | Features                                  |
+| ----------- | ------- | ----------------------------------------- |
+| **Hobby**   | $0      | 5 monitors, 1 status page, 5 min checks   |
+| **Starter** | $29/mo  | 20 monitors, 3 status pages, 1 min checks |
+| **Growth**  | $79/mo  | 100 monitors, 10 status pages, 30s checks |
+| **Scale**   | $199/mo | Unlimited, 30s checks, phone calls        |
 
 ### Free Tier
+
 ```yaml
 Monitors: 5
 Status Pages: 1
@@ -87,12 +95,14 @@ Team: 1 user
 ```
 
 ### Pros
+
 ✅ Most beautiful status pages
 ✅ Great for client projects
 ✅ Simple, no complexity
 ✅ Good mobile app
 
 ### Cons
+
 ❌ Limited free tier (5 monitors)
 ❌ No log aggregation
 ❌ No incident management
@@ -104,19 +114,22 @@ Team: 1 user
 **Website:** https://uptimerobot.com
 
 ### Why It's #3
+
 - ✅ **50 monitors FREE** (most generous)
 - ✅ **Been around forever** (reliable)
 - ✅ **Simple setup**
 - ✅ **Mobile app**
 
 ### Pricing
-| Plan | Price | Features |
-|------|-------|----------|
-| **Free** | $0 | 50 monitors, 5 min checks, email alerts |
-| **Pro** | $15/mo | 100 monitors, 1 min checks, SMS |
-| **Enterprise** | Custom | White-label, API, dedicated support |
+
+| Plan           | Price  | Features                                |
+| -------------- | ------ | --------------------------------------- |
+| **Free**       | $0     | 50 monitors, 5 min checks, email alerts |
+| **Pro**        | $15/mo | 100 monitors, 1 min checks, SMS         |
+| **Enterprise** | Custom | White-label, API, dedicated support     |
 
 ### Free Tier
+
 ```yaml
 Monitors: 50 (most generous!)
 Check Interval: 5 minutes
@@ -126,12 +139,14 @@ Logs: 60 days
 ```
 
 ### Pros
+
 ✅ 50 monitors free (unbeatable)
 ✅ Rock solid reliability
 ✅ Simple, no learning curve
 ✅ Good API
 
 ### Cons
+
 ❌ Basic status pages
 ❌ No log management
 ❌ No team features (free)
@@ -144,22 +159,26 @@ Logs: 60 days
 **Website:** https://www.pingdom.com
 
 ### Best For
+
 - Enterprise companies
 - SolarWinds ecosystem users
 - Those needing global monitoring
 
 ### Pricing
+
 - **Synthetic Monitoring**: $15/mo (10 monitors)
 - **Real User Monitoring**: $15/mo (10k RUM)
 - **Combined**: $25/mo
 
 ### Pros
+
 ✅ Industry standard
 ✅ Global monitoring network
 ✅ Advanced reporting
 ✅ Root cause analysis
 
 ### Cons
+
 ❌ No free tier
 ❌ Expensive for small teams
 ❌ Complex interface
@@ -171,22 +190,26 @@ Logs: 60 days
 **Website:** https://cronitor.io
 
 ### Best For
+
 - Background job monitoring
 - Cron job tracking
 - API endpoint monitoring
 
 ### Pricing
+
 - **Developer**: $0 (5 monitors)
 - **Team**: $24/mo (unlimited)
 - **Business**: $99/mo (phone alerts)
 
 ### Pros
+
 ✅ Best for cron jobs
 ✅ Heartbeat monitoring
 ✅ Job duration tracking
 ✅ Simple integration
 
 ### Cons
+
 ❌ Not for general uptime
 ❌ Limited free tier
 
@@ -197,20 +220,24 @@ Logs: 60 days
 **Website:** https://www.freshworks.com/website-monitoring/
 
 ### Best For
+
 - Freshworks ecosystem users
 - Those wanting integration with Freshdesk
 
 ### Pricing
+
 - **Sprout**: $0 (50 monitors)
 - **Blossom**: $11/mo (unlimited)
 - **Garden**: $25/mo (advanced features)
 
 ### Pros
+
 ✅ 50 monitors free
 ✅ Freshworks integration
 ✅ Good for support teams
 
 ### Cons
+
 ❌ Less popular than UptimeRobot
 ❌ Smaller community
 
@@ -218,51 +245,61 @@ Logs: 60 days
 
 ## 📊 COMPLETE FEATURE COMPARISON
 
-| Feature | Better Stack | Hyperping | UptimeRobot | Pingdom |
-|---------|--------------|-----------|-------------|---------|
-| **Free Monitors** | 10 | 5 | 50 | 0 |
-| **Check Interval** | 1 min | 5 min | 5 min | 1 min |
-| **Status Pages** | ✅ Yes | ✅ Yes | ✅ Basic | ✅ Yes |
-| **Log Aggregation** | ✅ Yes | ❌ No | ❌ No | ❌ No |
-| **Incident Mgmt** | ✅ Yes | ❌ No | ❌ No | ✅ Yes |
-| **Team Members** | 3 free | 1 free | 0 free | Paid only |
-| **SMS Alerts** | Paid | Paid | Paid | Paid |
-| **Phone Calls** | Paid | Paid | ❌ No | Paid |
-| **SSL Monitoring** | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes |
-| **API Access** | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes |
-| **Webhooks** | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes |
+| Feature             | Better Stack | Hyperping | UptimeRobot | Pingdom   |
+| ------------------- | ------------ | --------- | ----------- | --------- |
+| **Free Monitors**   | 10           | 5         | 50          | 0         |
+| **Check Interval**  | 1 min        | 5 min     | 5 min       | 1 min     |
+| **Status Pages**    | ✅ Yes       | ✅ Yes    | ✅ Basic    | ✅ Yes    |
+| **Log Aggregation** | ✅ Yes       | ❌ No     | ❌ No       | ❌ No     |
+| **Incident Mgmt**   | ✅ Yes       | ❌ No     | ❌ No       | ✅ Yes    |
+| **Team Members**    | 3 free       | 1 free    | 0 free      | Paid only |
+| **SMS Alerts**      | Paid         | Paid      | Paid        | Paid      |
+| **Phone Calls**     | Paid         | Paid      | ❌ No       | Paid      |
+| **SSL Monitoring**  | ✅ Yes       | ✅ Yes    | ✅ Yes      | ✅ Yes    |
+| **API Access**      | ✅ Yes       | ✅ Yes    | ✅ Yes      | ✅ Yes    |
+| **Webhooks**        | ✅ Yes       | ✅ Yes    | ✅ Yes      | ✅ Yes    |
 
 ---
 
 ## 🎯 RECOMMENDATIONS BY USE CASE
 
 ### Just Starting (Free Budget)
+
 **→ Better Stack (Free)**
+
 - 10 monitors is enough initially
 - Built-in status page
 - Log aggregation included
 - Professional features
 
 ### Need Many Monitors
+
 **→ UptimeRobot (Free)**
+
 - 50 monitors unbeatable
 - Simple and reliable
 - Good for microservices
 
 ### Beautiful Status Page
+
 **→ Hyperping**
+
 - Best-looking status pages
 - Impress customers
 - Good for agencies
 
 ### Enterprise/Compliance
+
 **→ Pingdom**
+
 - Industry standard
 - Compliance reporting
 - Global infrastructure
 
 ### Cron Jobs/Background Tasks
+
 **→ Cronitor**
+
 - Purpose-built for jobs
 - Heartbeat monitoring
 - Developer-friendly
@@ -272,26 +309,34 @@ Logs: 60 days
 ## 💰 PRICING FOR GROWING SAAS
 
 ### Stage 1: MVP (0-10 customers)
+
 **Cost: $0**
+
 - Better Stack Free (10 monitors)
 - GitHub Pages status page
 - Slack alerts
 
 ### Stage 2: Early Traction (10-100 customers)
+
 **Cost: $25/mo**
+
 - Better Stack Freelancer ($25)
 - 50 monitors, 1M logs
 - Custom domain status page
 
 ### Stage 3: Growth (100-1000 customers)
+
 **Cost: $85/mo**
+
 - Better Stack Small Team ($85)
 - 150 monitors, 5M logs
 - Phone call alerts
 - Priority support
 
 ### Stage 4: Scale (1000+ customers)
+
 **Cost: $160+/mo**
+
 - Better Stack Business ($160)
 - Unlimited monitors
 - 20M logs

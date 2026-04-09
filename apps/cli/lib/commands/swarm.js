@@ -171,9 +171,8 @@ export function registerSwarmCommand(program) {
     .action(async (task, options) => {
       try {
         if (options.nexus && task && !options.dryRun) {
-          const { agentOrchestrator: nexus } = await import(
-            '../../../../src/core/orchestration/index.js'
-          );
+          const { agentOrchestrator: nexus } =
+            await import('../../../../src/core/orchestration/index.js');
           await nexus.execute(task);
           return;
         }

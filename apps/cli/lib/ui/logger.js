@@ -235,7 +235,7 @@ export function printWarning(message) {
 export function printTable(data) {
   // Simple table printing implementation
   for (const row of data) {
-    const formattedRow = row.map(cell => String(cell)).join('\t');
+    const formattedRow = row.map((cell) => String(cell)).join('\t');
     console.log(formattedRow);
   }
 }

@@ -2,11 +2,7 @@
   "uptime": {
     "enabled": true,
     "interval": 30000,
-    "endpoints": [
-      "/health",
-      "/health/ready",
-      "/api/status"
-    ]
+    "endpoints": ["/health", "/health/ready", "/api/status"]
   },
   "alerts": {
     "enabled": true,

@@ -3,13 +3,12 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
+import { singleton } from 'tsyringe';
 let AgentStateMachine = class {
   constructor() {
     this.states = /* @__PURE__ */ new Map();
@@ -20,17 +19,17 @@ let AgentStateMachine = class {
     this.historyCount = 0;
   }
   async initialize() {
-    this.transitions.set("idle", ["working", "sleeping"]);
-    this.transitions.set("working", ["idle", "error", "paused"]);
-    this.transitions.set("paused", ["working", "idle"]);
-    this.transitions.set("error", ["idle", "working"]);
-    this.transitions.set("sleeping", ["idle"]);
+    this.transitions.set('idle', ['working', 'sleeping']);
+    this.transitions.set('working', ['idle', 'error', 'paused']);
+    this.transitions.set('paused', ['working', 'idle']);
+    this.transitions.set('error', ['idle', 'working']);
+    this.transitions.set('sleeping', ['idle']);
   }
   /**
    * Transition an agent to a new state
    */
   async transition(agentId, newState) {
-    const currentState = this.states.get(agentId) || "idle";
+    const currentState = this.states.get(agentId) || 'idle';
     if (!this.canTransition(currentState, newState)) {
       throw new Error(`Invalid state transition: ${currentState} -> ${newState}`);
     }
@@ -38,7 +37,7 @@ let AgentStateMachine = class {
       agentId,
       from: currentState,
       to: newState,
-      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
     };
     this.stateHistory[this.historyIndex] = transitionRecord;
     this.historyIndex = (this.historyIndex + 1) % this.MAX_HISTORY_SIZE;
@@ -50,7 +49,7 @@ let AgentStateMachine = class {
       agentId,
       from: currentState,
       to: newState,
-      timestamp: (/* @__PURE__ */ new Date()).toISOString()
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
     };
   }
   /**
@@ -64,7 +63,7 @@ let AgentStateMachine = class {
    * Get current state of an agent
    */
   getState(agentId) {
-    return this.states.get(agentId) || "idle";
+    return this.states.get(agentId) || 'idle';
   }
   /**
    * Get state history for an agent (filtered from global ring buffer)
@@ -106,12 +105,7 @@ let AgentStateMachine = class {
     }
     return agents;
   }
-  async shutdown() {
-  }
+  async shutdown() {}
 };
-AgentStateMachine = __decorateClass([
-  singleton()
-], AgentStateMachine);
-export {
-  AgentStateMachine
-};
+AgentStateMachine = __decorateClass([singleton()], AgentStateMachine);
+export { AgentStateMachine };

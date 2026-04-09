@@ -15,7 +15,9 @@ export const CapabilitySchema = z.object({
       window: z.string().optional(),
     })
     .optional(),
-  riskScore: z.union([z.number().min(1).max(10), z.enum(['low', 'medium', 'high', 'critical'])]).optional(),
+  riskScore: z
+    .union([z.number().min(1).max(10), z.enum(['low', 'medium', 'high', 'critical'])])
+    .optional(),
   permissions: z.array(z.enum(['read', 'write', 'execute', 'admin'])).optional(),
   requiresApproval: z.boolean().optional(),
 });

@@ -6,15 +6,14 @@ class CacheStore {
   }
   async get(key) {
     const item = this.store.get(key);
-    if (!item)
-      return null;
+    if (!item) return null;
     const ttl = this.ttlMap.get(key);
     if (ttl && Date.now() > ttl) {
       this.store.delete(key);
       this.ttlMap.delete(key);
       return null;
     }
-    performanceMonitor?.trackRequest({ endpoint: "cache", method: "GET" }, 1);
+    performanceMonitor?.trackRequest({ endpoint: 'cache', method: 'GET' }, 1);
     return item;
   }
   async set(key, value, ttlSeconds = 300) {
@@ -22,7 +21,7 @@ class CacheStore {
     if (ttlSeconds) {
       this.ttlMap.set(key, Date.now() + ttlSeconds * 1e3);
     }
-    performanceMonitor?.trackRequest({ endpoint: "cache", method: "SET" }, 1);
+    performanceMonitor?.trackRequest({ endpoint: 'cache', method: 'SET' }, 1);
   }
   async del(key) {
     this.store.delete(key);
@@ -35,7 +34,4 @@ class CacheStore {
 }
 const performanceOptimizer = new CacheStore();
 var cache_default = performanceOptimizer;
-export {
-  cache_default as default,
-  performanceOptimizer
-};
+export { cache_default as default, performanceOptimizer };

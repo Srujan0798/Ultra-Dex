@@ -31,7 +31,7 @@ export async function atomicWrite(filePath, data, options = {}) {
   try {
     // Write to temp file
     await writeFile(tempPath, data, options);
-    
+
     // Atomic rename
     await rename(tempPath, filePath);
   } catch (error) {
@@ -129,5 +129,5 @@ export default {
   safeRead,
   safeReadJSON,
   safeExists,
-  safeDelete
+  safeDelete,
 };

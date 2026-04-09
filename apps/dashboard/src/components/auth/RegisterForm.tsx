@@ -11,16 +11,16 @@ export const RegisterForm: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
+
     try {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, name })
+        body: JSON.stringify({ email, password, name }),
       });
-      
+
       if (!res.ok) throw new Error('Registration failed');
-      
+
       const data = await res.json();
       localStorage.setItem('session_token', data.session.token);
       window.location.href = '/dashboard';
@@ -39,21 +39,21 @@ export const RegisterForm: React.FC = () => {
         type="text"
         placeholder="Name"
         value={name}
-        onChange={e => setName(e.target.value)}
+        onChange={(e) => setName(e.target.value)}
         required
       />
       <input
         type="email"
         placeholder="Email"
         value={email}
-        onChange={e => setEmail(e.target.value)}
+        onChange={(e) => setEmail(e.target.value)}
         required
       />
       <input
         type="password"
         placeholder="Password"
         value={password}
-        onChange={e => setPassword(e.target.value)}
+        onChange={(e) => setPassword(e.target.value)}
         required
       />
       <button type="submit" disabled={loading}>

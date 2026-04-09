@@ -21,12 +21,14 @@ This example demonstrates how to create a Slack bot that integrates with Ultra-D
 ## Setup
 
 1. **Install Dependencies**:
+
    ```bash
    npm install @slack/web-api @slack/rtm-api
    ```
 
 2. **Environment Variables**:
    Create a `.env` file with the following:
+
    ```env
    SLACK_BOT_TOKEN=xoxb-your-slack-bot-token
    ULTRA_DEX_API_KEY=your_ultra_dex_api_key

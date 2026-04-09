@@ -33,13 +33,11 @@ async function main() {
 
   console.log('🔥 Warming up Ultra-Dex CLI for profiling...');
   for (let i = 0; i < WARMUP_RUNS; i++) {
-     
     await runOnce(args);
   }
 
   console.log('🧪 Running profiled scenarios...');
   for (let i = 0; i < PROFILE_RUNS; i++) {
-     
     const code = await runOnce(args);
     if (code !== 0) {
       console.error(`Run ${i + 1} exited with code ${code}`);
@@ -48,7 +46,7 @@ async function main() {
   }
 
   console.log(
-    '\n✅ Profiling workload complete. Inspect the generated V8 log via `node --prof-process`.',
+    '\n✅ Profiling workload complete. Inspect the generated V8 log via `node --prof-process`.'
   );
 }
 
@@ -56,4 +54,3 @@ main().catch((error) => {
   console.error('❌ Profile script failed:', error);
   process.exitCode = 1;
 });
-

@@ -206,7 +206,10 @@ describe('providers/index', () => {
     const providers = getAvailableProviders();
     for (const provider of providers) {
       if (provider.id !== 'router' && provider.id !== 'mock') {
-        assert.ok(provider.envKey, `Provider ${provider.id} should have envKey (except router and mock)`);
+        assert.ok(
+          provider.envKey,
+          `Provider ${provider.id} should have envKey (except router and mock)`
+        );
       }
     }
   });

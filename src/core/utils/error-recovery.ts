@@ -1,15 +1,15 @@
 import { monitoring } from './monitoring.js';
 const CIRCUIT_STATES = {
-  CLOSED: "closed",
-  OPEN: "open",
-  HALF_OPEN: "half-open"
+  CLOSED: 'closed',
+  OPEN: 'open',
+  HALF_OPEN: 'half-open',
 };
 const RECOVERY_STRATEGIES = {
-  RETRY: "retry",
-  FALLBACK: "fallback",
-  CIRCUIT_BREAKER: "circuit-breaker",
-  TIMEOUT: "timeout",
-  DEGRADED_MODE: "degraded-mode"
+  RETRY: 'retry',
+  FALLBACK: 'fallback',
+  CIRCUIT_BREAKER: 'circuit-breaker',
+  TIMEOUT: 'timeout',
+  DEGRADED_MODE: 'degraded-mode',
 };
 class CircuitBreaker {
   failureThreshold;
@@ -28,7 +28,7 @@ class CircuitBreaker {
     this.failureCount = 0;
     this.lastFailureTime = null;
     this.nextAttemptTime = null;
-    this.name = options.name || "default";
+    this.name = options.name || 'default';
   }
   async call(fn, ...args) {
     if (this.state === CIRCUIT_STATES.OPEN) {
@@ -36,12 +36,12 @@ class CircuitBreaker {
         this.state = CIRCUIT_STATES.HALF_OPEN;
         monitoring.info(`Circuit breaker ${this.name} entering half-open state`, {
           circuit: this.name,
-          state: this.state
+          state: this.state,
         });
       } else {
         monitoring.warn(`Circuit breaker ${this.name} is open, rejecting request`, {
           circuit: this.name,
-          state: this.state
+          state: this.state,
         });
         throw new Error(`Circuit breaker ${this.name} is open`);
       }
@@ -52,7 +52,7 @@ class CircuitBreaker {
         this.close();
         monitoring.info(`Circuit breaker ${this.name} closed after successful call`, {
           circuit: this.name,
-          state: this.state
+          state: this.state,
         });
       }
       return result;
@@ -70,7 +70,7 @@ class CircuitBreaker {
         circuit: this.name,
         state: this.state,
         failureCount: this.failureCount,
-        error: error.message
+        error: error.message,
       });
     }
   }
@@ -97,7 +97,7 @@ class CircuitBreaker {
       threshold: this.failureThreshold,
       lastFailureTime: this.lastFailureTime,
       nextAttemptTime: this.nextAttemptTime,
-      canTry: this.state === CIRCUIT_STATES.CLOSED || Date.now() >= this.nextAttemptTime
+      canTry: this.state === CIRCUIT_STATES.CLOSED || Date.now() >= this.nextAttemptTime,
     };
   }
 }
@@ -119,7 +119,7 @@ class ErrorRecoveryManager {
   registerCircuitBreaker(name, options = {}) {
     const circuitBreaker = new CircuitBreaker({
       name,
-      ...options
+      ...options,
     });
     this.circuitBreakers.set(name, circuitBreaker);
     return circuitBreaker;
@@ -139,7 +139,7 @@ class ErrorRecoveryManager {
       exponentialBackoff: options.exponentialBackoff !== false,
       fallback: options.fallback,
       timeout: options.timeout || 3e4,
-      circuitBreaker: options.circuitBreaker !== false
+      circuitBreaker: options.circuitBreaker !== false,
     };
     let lastError = null;
     let retryCount = 0;
@@ -148,7 +148,7 @@ class ErrorRecoveryManager {
       if (circuitBreaker && circuitBreaker.getStatus().state === CIRCUIT_STATES.OPEN) {
         monitoring.warn(`Operation blocked by open circuit breaker: ${serviceName}`, {
           service: serviceName,
-          strategy: recoveryOptions.strategy
+          strategy: recoveryOptions.strategy,
         });
         const fallback2 = this.fallbackHandlers.get(serviceName) || recoveryOptions.fallback;
         if (fallback2) {
@@ -156,7 +156,7 @@ class ErrorRecoveryManager {
             const result = await fallback2();
             monitoring.info(`Fallback executed for ${serviceName}`, {
               service: serviceName,
-              strategy: "fallback"
+              strategy: 'fallback',
             });
             return result;
           } catch (fallbackError) {
@@ -171,7 +171,7 @@ class ErrorRecoveryManager {
     while (retryCount <= recoveryOptions.maxRetries) {
       try {
         const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error("Operation timeout")), recoveryOptions.timeout);
+          setTimeout(() => reject(new Error('Operation timeout')), recoveryOptions.timeout);
         });
         const operationPromise = operation();
         const result = await Promise.race([operationPromise, timeoutPromise]);
@@ -179,25 +179,27 @@ class ErrorRecoveryManager {
         if (circuitBreaker) {
           circuitBreaker.reset();
         }
-        this.recordOperation(serviceName, "success", Date.now() - startTime);
+        this.recordOperation(serviceName, 'success', Date.now() - startTime);
         return result;
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
         retryCount++;
-        this.recordOperation(serviceName, "failure", Date.now() - startTime, lastError);
+        this.recordOperation(serviceName, 'failure', Date.now() - startTime, lastError);
         const circuitBreaker = this.getCircuitBreaker(serviceName);
         if (circuitBreaker) {
           circuitBreaker.onFailure(lastError);
         }
         if (retryCount <= recoveryOptions.maxRetries) {
-          const delay = recoveryOptions.exponentialBackoff ? recoveryOptions.retryDelay * Math.pow(2, retryCount - 1) : recoveryOptions.retryDelay;
+          const delay = recoveryOptions.exponentialBackoff
+            ? recoveryOptions.retryDelay * Math.pow(2, retryCount - 1)
+            : recoveryOptions.retryDelay;
           monitoring.warn(
             `Operation failed, retrying (${retryCount}/${recoveryOptions.maxRetries}): ${serviceName}`,
             {
               service: serviceName,
               retryCount,
               error: lastError.message,
-              delay
+              delay,
             }
           );
           await this.sleep(delay);
@@ -210,30 +212,31 @@ class ErrorRecoveryManager {
         const result = await fallback();
         monitoring.info(`Fallback executed after retries failed: ${serviceName}`, {
           service: serviceName,
-          retries: retryCount - 1
+          retries: retryCount - 1,
         });
         return result;
       } catch (fallbackError) {
         monitoring.error(`Both operation and fallback failed: ${serviceName}`, {
           service: serviceName,
           originalError: lastError?.message,
-          fallbackError: fallbackError instanceof Error ? fallbackError.message : String(fallbackError)
+          fallbackError:
+            fallbackError instanceof Error ? fallbackError.message : String(fallbackError),
         });
       }
     }
-    throw lastError || new Error("Unknown error occurred");
+    throw lastError || new Error('Unknown error occurred');
   }
   async executeInDegradedMode(serviceName, operation, degradedOperation) {
     try {
       return await this.executeWithRecovery(serviceName, operation, {
         strategy: RECOVERY_STRATEGIES.DEGRADED_MODE,
         maxRetries: 1,
-        fallback: degradedOperation
+        fallback: degradedOperation,
       });
     } catch (error) {
       monitoring.error(`Degraded mode operation failed: ${serviceName}`, {
         service: serviceName,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -253,7 +256,7 @@ class ErrorRecoveryManager {
     if (circuitBreaker) {
       circuitBreaker.reset();
       monitoring.info(`Circuit breaker reset: ${serviceName}`, {
-        service: serviceName
+        service: serviceName,
       });
     }
   }
@@ -261,12 +264,12 @@ class ErrorRecoveryManager {
     if (degraded) {
       this.degradedServices.add(serviceName);
       monitoring.warn(`Service set to degraded mode: ${serviceName}`, {
-        service: serviceName
+        service: serviceName,
       });
     } else {
       this.degradedServices.delete(serviceName);
       monitoring.info(`Service restored from degraded mode: ${serviceName}`, {
-        service: serviceName
+        service: serviceName,
       });
     }
   }
@@ -278,15 +281,15 @@ class ErrorRecoveryManager {
       serviceName,
       status,
       duration,
-      timestamp: (/* @__PURE__ */ new Date()).toISOString(),
-      error: error ? error.message : null
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
+      error: error ? error.message : null,
     };
     this.errorHistory.push(record);
     if (this.errorHistory.length > this.maxErrorHistory) {
       this.errorHistory = this.errorHistory.slice(-this.maxErrorHistory);
     }
-    if (status === "failure") {
-      monitoring.incrementCounter("errors");
+    if (status === 'failure') {
+      monitoring.incrementCounter('errors');
     }
     monitoring.recordPerformance(`service.${serviceName}`, duration, { status });
   }
@@ -299,16 +302,17 @@ class ErrorRecoveryManager {
   getErrorStatistics(serviceName = null) {
     const history = serviceName ? this.getErrorHistory(serviceName) : this.errorHistory;
     const total = history.length;
-    const failures = history.filter((r) => r.status === "failure").length;
-    const successRate = total > 0 ? (total - failures) / total * 100 : 100;
+    const failures = history.filter((r) => r.status === 'failure').length;
+    const successRate = total > 0 ? ((total - failures) / total) * 100 : 100;
     const durations = history.map((r) => r.duration);
-    const avgDuration = durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0;
+    const avgDuration =
+      durations.length > 0 ? durations.reduce((a, b) => a + b, 0) / durations.length : 0;
     return {
       total,
       failures,
-      successRate: successRate.toFixed(2) + "%",
+      successRate: successRate.toFixed(2) + '%',
       averageDuration: avgDuration,
-      errorRate: total > 0 ? (failures / total * 100).toFixed(2) + "%" : "0.00%"
+      errorRate: total > 0 ? ((failures / total) * 100).toFixed(2) + '%' : '0.00%',
     };
   }
   sleep(ms) {
@@ -322,9 +326,9 @@ class ErrorRecoveryManager {
     return {
       circuitBreakers: circuitStatus,
       degradedServices: Array.from(this.degradedServices),
-      totalErrors: this.errorHistory.filter((r) => r.status === "failure").length,
+      totalErrors: this.errorHistory.filter((r) => r.status === 'failure').length,
       totalOperations: this.errorHistory.length,
-      errorHistoryCount: this.errorHistory.length
+      errorHistoryCount: this.errorHistory.length,
     };
   }
   emergencyReset() {
@@ -332,27 +336,24 @@ class ErrorRecoveryManager {
       circuit.reset();
     }
     this.degradedServices.clear();
-    monitoring.warn("Emergency reset performed - all circuits reset and degraded mode cleared");
+    monitoring.warn('Emergency reset performed - all circuits reset and degraded mode cleared');
   }
 }
 const errorRecovery = new ErrorRecoveryManager();
-errorRecovery.registerCircuitBreaker("mcp-server", {
+errorRecovery.registerCircuitBreaker('mcp-server', {
   failureThreshold: 3,
   timeout: 6e4,
-  resetTimeout: 3e4
+  resetTimeout: 3e4,
 });
-errorRecovery.registerCircuitBreaker("ai-provider", {
+errorRecovery.registerCircuitBreaker('ai-provider', {
   failureThreshold: 5,
   timeout: 12e4,
-  resetTimeout: 6e4
+  resetTimeout: 6e4,
 });
-errorRecovery.registerCircuitBreaker("file-operations", {
+errorRecovery.registerCircuitBreaker('file-operations', {
   failureThreshold: 10,
   timeout: 3e4,
-  resetTimeout: 15e3
+  resetTimeout: 15e3,
 });
 var error_recovery_default = errorRecovery;
-export {
-  error_recovery_default as default,
-  errorRecovery
-};
+export { error_recovery_default as default, errorRecovery };

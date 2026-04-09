@@ -5,11 +5,13 @@ The Ultra-Dex GitHub integration enables seamless repository management, issue t
 ## Setup
 
 ### Prerequisites
+
 - GitHub account with repository access
 - Personal Access Token (PAT) with appropriate scopes
 - Or GitHub App with necessary permissions
 
 ### Configuration
+
 ```bash
 # Set your GitHub token
 ultra-dex config set GITHUB_TOKEN ghp_...
@@ -21,6 +23,7 @@ ultra-dex config set GITHUB_INSTALLATION_ID your_installation_id
 ```
 
 ### Environment Variables
+
 ```env
 GITHUB_TOKEN=ghp_your_personal_access_token
 GITHUB_APP_ID=your_github_app_id
@@ -31,6 +34,7 @@ GITHUB_INSTALLATION_ID=your_installation_id
 ## Features
 
 ### Repository Management
+
 ```bash
 # Create a new repository
 ultra-dex github repo create --name my-project --private
@@ -43,6 +47,7 @@ ultra-dex github repo info owner/repo-name
 ```
 
 ### Issue Management
+
 ```bash
 # Create an issue
 ultra-dex github issue create --repo owner/repo-name --title "Bug Report" --body "Description here"
@@ -55,6 +60,7 @@ ultra-dex github issue assign --issue-number 123 --assignee username
 ```
 
 ### Pull Request Automation
+
 ```bash
 # Create a pull request
 ultra-dex github pr create --repo owner/repo-name --title "Feature" --body "Description" --head branch-name --base main
@@ -67,6 +73,7 @@ ultra-dex github pr merge --pr-number 456 --method squash
 ```
 
 ### Branch Operations
+
 ```bash
 # Create a branch
 ultra-dex github branch create --repo owner/repo-name --branch-name feature/new-feature --source main
@@ -76,6 +83,7 @@ ultra-dex github branch delete --repo owner/repo-name --branch-name feature/old-
 ```
 
 ### Release Management
+
 ```bash
 # Create a release
 ultra-dex github release create --repo owner/repo-name --tag v1.0.0 --title "Version 1.0.0" --notes "Release notes here"
@@ -99,6 +107,7 @@ ultra-dex github workflow status --repo owner/repo-name --run-id 123456
 ## CLI Commands
 
 ### Main GitHub Commands
+
 - `ultra-dex github repo` - Manage repositories
 - `ultra-dex github issue` - Manage issues
 - `ultra-dex github pr` - Manage pull requests
@@ -111,6 +120,7 @@ ultra-dex github workflow status --repo owner/repo-name --run-id 123456
 ### Examples
 
 Automate a complete feature workflow:
+
 ```bash
 # Create a new branch for the feature
 ultra-dex github branch create --repo myorg/myrepo --branch-name feature/user-auth --source main
@@ -146,6 +156,7 @@ The integration includes robust error handling:
 ## Monitoring & Logging
 
 All GitHub operations are logged in the Ultra-Dex ledger:
+
 ```bash
 # View recent GitHub operations
 ultra-dex ledger view --service github --last 10

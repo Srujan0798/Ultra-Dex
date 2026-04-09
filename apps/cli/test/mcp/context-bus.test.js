@@ -26,8 +26,8 @@ describe('Context Bus - Initialization', () => {
       'project.context': {
         content: '# Project Context',
         timestamp: new Date().toISOString(),
-        source: 'CONTEXT.md'
-      }
+        source: 'CONTEXT.md',
+      },
     };
 
     assert.ok(initialContext['project.context']);
@@ -40,7 +40,7 @@ describe('Context Bus - Publish/Subscribe', () => {
       key: 'test.key',
       value: 'test value',
       timestamp: new Date().toISOString(),
-      source: 'ultra-dex'
+      source: 'ultra-dex',
     };
 
     assert.ok(update.key);
@@ -71,7 +71,7 @@ describe('Context Bus - Publish/Subscribe', () => {
     let callCount = 0;
     const callbacks = Array.from({ length: 3 }, () => () => callCount++);
 
-    callbacks.forEach(cb => cb());
+    callbacks.forEach((cb) => cb());
 
     assert.strictEqual(callCount, 3);
   });
@@ -120,7 +120,7 @@ describe('Context Bus - WebSocket Server', () => {
   test('should start server on port', () => {
     const serverConfig = {
       port: 3003,
-      host: 'localhost'
+      host: 'localhost',
     };
 
     assert.ok(serverConfig.port);
@@ -137,8 +137,8 @@ describe('Context Bus - WebSocket Server', () => {
     const initialMessage = {
       type: 'initial-context',
       data: {
-        'project.context': { content: '...' }
-      }
+        'project.context': { content: '...' },
+      },
     };
 
     assert.strictEqual(initialMessage.type, 'initial-context');
@@ -149,7 +149,7 @@ describe('Context Bus - WebSocket Server', () => {
     const connectedClients = 5;
     const broadcast = {
       type: 'context-update',
-      data: { key: 'test', value: 'updated' }
+      data: { key: 'test', value: 'updated' },
     };
 
     assert.ok(connectedClients > 0);
@@ -161,7 +161,7 @@ describe('Context Bus - Message Types', () => {
   test('should handle context-request messages', () => {
     const request = {
       type: 'context-request',
-      key: 'project.state'
+      key: 'project.state',
     };
 
     assert.strictEqual(request.type, 'context-request');
@@ -173,7 +173,7 @@ describe('Context Bus - Message Types', () => {
       type: 'context-update',
       key: 'project.state',
       value: { phase: 'planning' },
-      metadata: { source: 'client' }
+      metadata: { source: 'client' },
     };
 
     assert.strictEqual(update.type, 'context-update');
@@ -183,7 +183,7 @@ describe('Context Bus - Message Types', () => {
     const response = {
       type: 'context-response',
       key: 'project.state',
-      data: { phase: 'planning' }
+      data: { phase: 'planning' },
     };
 
     assert.strictEqual(response.type, 'context-response');
@@ -195,7 +195,7 @@ describe('Context Bus - File Synchronization', () => {
     const syncOperation = {
       source: 'CONTEXT.md',
       key: 'project.context',
-      sync: true
+      sync: true,
     };
 
     assert.ok(syncOperation.source);
@@ -206,7 +206,7 @@ describe('Context Bus - File Synchronization', () => {
     const syncOperation = {
       source: 'IMPLEMENTATION-PLAN.md',
       key: 'project.plan',
-      sync: true
+      sync: true,
     };
 
     assert.ok(syncOperation.source.includes('PLAN'));
@@ -216,7 +216,7 @@ describe('Context Bus - File Synchronization', () => {
     const syncOperation = {
       source: '.ultra/state.json',
       key: 'project.state',
-      sync: true
+      sync: true,
     };
 
     assert.ok(syncOperation.source.includes('state.json'));
@@ -231,11 +231,7 @@ describe('Context Bus - File Synchronization', () => {
 
 describe('Context Bus - Watch Mode', () => {
   test('should watch for file changes', () => {
-    const watchPaths = [
-      'CONTEXT.md',
-      'IMPLEMENTATION-PLAN.md',
-      '.ultra/state.json'
-    ];
+    const watchPaths = ['CONTEXT.md', 'IMPLEMENTATION-PLAN.md', '.ultra/state.json'];
 
     assert.ok(Array.isArray(watchPaths));
     assert.ok(watchPaths.length > 0);
@@ -244,7 +240,7 @@ describe('Context Bus - Watch Mode', () => {
   test('should detect file modifications', () => {
     const changeEvent = {
       type: 'change',
-      path: 'CONTEXT.md'
+      path: 'CONTEXT.md',
     };
 
     assert.strictEqual(changeEvent.type, 'change');
@@ -263,7 +259,7 @@ describe('Context Bus - MCP Integration', () => {
     const resource = {
       name: 'context_bus',
       uri: 'ultradex://context-bus',
-      description: 'Shared context bus'
+      description: 'Shared context bus',
     };
 
     assert.ok(resource.uri.includes('context-bus'));
@@ -275,9 +271,9 @@ describe('Context Bus - MCP Integration', () => {
         {
           uri: 'ultradex://context-bus',
           mimeType: 'application/json',
-          text: JSON.stringify({ 'project.context': {} })
-        }
-      ]
+          text: JSON.stringify({ 'project.context': {} }),
+        },
+      ],
     };
 
     assert.ok(mcpResponse.contents[0].text);
@@ -307,7 +303,7 @@ describe('Context Bus - Error Handling', () => {
   test('should handle file read errors', () => {
     const fileError = {
       code: 'ENOENT',
-      message: 'File not found'
+      message: 'File not found',
     };
 
     assert.strictEqual(fileError.code, 'ENOENT');
@@ -331,7 +327,7 @@ describe('Context Bus - Edge Cases', () => {
   test('should handle rapid updates', () => {
     const updates = Array.from({ length: 100 }, (_, i) => ({
       key: `key${i}`,
-      value: `value${i}`
+      value: `value${i}`,
     }));
 
     assert.strictEqual(updates.length, 100);
@@ -339,8 +335,8 @@ describe('Context Bus - Edge Cases', () => {
 
   test('should handle unicode keys and values', () => {
     const unicodeContext = {
-      '日本語': 'こんにちは',
-      'العربية': 'مرحبا'
+      日本語: 'こんにちは',
+      العربية: 'مرحبا',
     };
 
     assert.ok(unicodeContext['日本語']);

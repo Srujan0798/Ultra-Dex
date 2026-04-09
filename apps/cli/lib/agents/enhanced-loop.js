@@ -96,69 +96,67 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
           // Define available tools for the agent
           const tools = [
             {
-              type: "function",
+              type: 'function',
               function: {
-                name: "read_file",
-                description: "Read a file from the project",
+                name: 'read_file',
+                description: 'Read a file from the project',
                 parameters: {
-                  type: "object",
+                  type: 'object',
                   properties: {
                     filePath: {
-                      type: "string",
-                      description: "Path to the file to read"
-                    }
+                      type: 'string',
+                      description: 'Path to the file to read',
+                    },
                   },
-                  required: ["filePath"]
-                }
-              }
+                  required: ['filePath'],
+                },
+              },
             },
             {
-              type: "function",
+              type: 'function',
               function: {
-                name: "write_file",
-                description: "Write content to a file in the project",
+                name: 'write_file',
+                description: 'Write content to a file in the project',
                 parameters: {
-                  type: "object",
+                  type: 'object',
                   properties: {
                     filePath: {
-                      type: "string",
-                      description: "Path to the file to write"
+                      type: 'string',
+                      description: 'Path to the file to write',
                     },
                     content: {
-                      type: "string",
-                      description: "Content to write to the file"
-                    }
+                      type: 'string',
+                      description: 'Content to write to the file',
+                    },
                   },
-                  required: ["filePath", "content"]
-                }
-              }
+                  required: ['filePath', 'content'],
+                },
+              },
             },
             {
-              type: "function",
+              type: 'function',
               function: {
-                name: "run_shell",
-                description: "Execute a shell command",
+                name: 'run_shell',
+                description: 'Execute a shell command',
                 parameters: {
-                  type: "object",
+                  type: 'object',
                   properties: {
                     command: {
-                      type: "string",
-                      description: "Command to execute"
-                    }
+                      type: 'string',
+                      description: 'Command to execute',
+                    },
                   },
-                  required: ["command"]
-                }
-              }
-            }
+                  required: ['command'],
+                },
+              },
+            },
           ];
-          
+
           // Use tool calling if available
-          return await providerInstance.generateWithTools(
-            agent.systemPrompt,
-            prompt,
-            tools,
-            { maxTokens: 2000, temperature: 0.7 }
-          );
+          return await providerInstance.generateWithTools(agent.systemPrompt, prompt, tools, {
+            maxTokens: 2000,
+            temperature: 0.7,
+          });
         } else {
           // Fall back to regular generation
           return await providerInstance.generate(agent.systemPrompt, prompt);
@@ -200,32 +198,28 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
     // Check if the provider returned tool calls
     if (result.toolCalls && result.toolCalls.length > 0) {
       // Process tool calls using the new tool execution system
-      printInfo(chalk.cyan(`\n🔧 ${agent.name} is executing ${result.toolCalls.length} tool calls...`));
-      
+      printInfo(
+        chalk.cyan(`\n🔧 ${agent.name} is executing ${result.toolCalls.length} tool calls...`)
+      );
+
       try {
         const toolResults = await processToolCalls(result.toolCalls, process.cwd());
-        
+
         // Format tool results for the agent
-        let toolOutput = "## Tool Execution Results\n";
+        let toolOutput = '## Tool Execution Results\n';
         for (const toolResult of toolResults) {
           const { result: toolResultData } = toolResult;
-          
+
           if (toolResultData.success) {
             toolOutput += `\n✅ Tool executed successfully:\n${JSON.stringify(toolResultData, null, 2)}\n`;
           } else {
             toolOutput += `\n❌ Tool execution failed:\n${JSON.stringify(toolResultData, null, 2)}\n`;
           }
         }
-        
+
         // Feed the tool results back to the agent
         const nextPrompt = `${content}\n\n${toolOutput}\n\nPlease continue with your task based on these results.`;
-        return await runAgentLoop(
-          agentName,
-          nextPrompt,
-          provider,
-          projectContext,
-          depth + 1
-        );
+        return await runAgentLoop(agentName, nextPrompt, provider, projectContext, depth + 1);
       } catch (e) {
         return await runAgentLoop(
           agentName,
@@ -236,7 +230,7 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
         );
       }
     }
-    
+
     // Legacy parsing for backward compatibility
     const readMatch = content.match(/>>\s*READ_CODE:\s*["'](.+?)["']/);
     const writeMatch = content.match(/>>\s*WRITE_CODE:\s*["'](.+?)["']\s*["']([\s\S]+?)["']/);
@@ -279,8 +273,8 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
       const result = await executeTool({
         function: {
           name: 'read_file',
-          arguments: JSON.stringify({ filePath })
-        }
+          arguments: JSON.stringify({ filePath }),
+        },
       });
 
       if (result.success) {
@@ -367,8 +361,8 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
         const writeResult = await executeTool({
           function: {
             name: 'write_file',
-            arguments: JSON.stringify({ filePath, content: newContent })
-          }
+            arguments: JSON.stringify({ filePath, content: newContent }),
+          },
         });
 
         if (!writeResult.success) {
@@ -447,8 +441,8 @@ export async function runAgentLoop(agentName, task, provider, projectContext, de
       const result = await executeTool({
         function: {
           name: 'run_shell',
-          arguments: JSON.stringify({ command })
-        }
+          arguments: JSON.stringify({ command }),
+        },
       });
 
       if (result.success) {

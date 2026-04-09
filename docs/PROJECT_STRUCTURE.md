@@ -14,4 +14,3 @@ This repository is now organized around these top-level areas:
 
 Keep only essential project entry files in root (`README`, governance docs, package manifests, tool configs).  
 Infrastructure files and one-off scripts are moved under `config/runtime/` and `scripts/legacy/`.
-

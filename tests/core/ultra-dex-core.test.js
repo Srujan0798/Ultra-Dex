@@ -1,4 +1,4 @@
-import "reflect-metadata";
+import 'reflect-metadata';
 // Copyright (c) 2026 Ultra-Dex
 import { test, describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert';
@@ -6,12 +6,19 @@ import { UltraDexCore } from '../../src/core/orchestration/ultra-dex-core.js';
 
 // Minimal mocks for all subsystems
 class MockSubsystem {
-  async initialize() { this.initialized = true; return this; }
+  async initialize() {
+    this.initialized = true;
+    return this;
+  }
   on() {}
-  getStats() { return {}; }
+  getStats() {
+    return {};
+  }
   log() {}
   recordMetric() {}
-  getDashboard() { return {}; }
+  getDashboard() {
+    return {};
+  }
 }
 
 describe('UltraDexCore', () => {
@@ -30,7 +37,7 @@ describe('UltraDexCore', () => {
     // We need to override the constructor calls or just mock the instances after they are created
     // But since initialize creates them, we might need a different approach.
     // For this unit test, let's just test that the class can be instantiated and has initial state.
-    
+
     assert.strictEqual(core.status, 'stopped');
     assert.strictEqual(core.initialized, false);
   });

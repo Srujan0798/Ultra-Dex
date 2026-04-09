@@ -3,20 +3,19 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
+import { singleton } from 'tsyringe';
 import { logger } from '../../utils/logging.js';
 import { ObservabilitySystem } from '../system/observability.js';
 import { SmartAIRouter } from '../ai/router.js';
 import { AgentRegistry } from './registry.js';
 import { ExecutionTrace } from '../agents/protocol.js';
 let ExecutionTask = class {
-  constructor(id, input, agent, steps = [], status = "pending") {
+  constructor(id, input, agent, steps = [], status = 'pending') {
     this.id = id;
     this.input = input;
     this.agent = agent;
@@ -26,16 +25,14 @@ let ExecutionTask = class {
     this.errors = [];
   }
 };
-ExecutionTask = __decorateClass([
-  singleton()
-], ExecutionTask);
+ExecutionTask = __decorateClass([singleton()], ExecutionTask);
 let ExecutionEngine = class {
   constructor(options = {}) {
     this.options = {
       enableTracing: options.enableTracing !== false,
       maxRetries: options.maxRetries || 3,
       enablePerformanceMetrics: options.enablePerformanceMetrics !== false,
-      ...options
+      ...options,
     };
     this.aiRouter = options.aiRouter || new SmartAIRouter();
     this.agentRegistry = options.agentRegistry || new AgentRegistry();
@@ -44,13 +41,13 @@ let ExecutionEngine = class {
     this.performanceMetrics = options.performanceMetrics || null;
   }
   async initialize() {
-    if (this.aiRouter && typeof this.aiRouter.initialize === "function") {
+    if (this.aiRouter && typeof this.aiRouter.initialize === 'function') {
       await this.aiRouter.initialize();
     }
-    if (this.agentRegistry && typeof this.agentRegistry.initialize === "function") {
+    if (this.agentRegistry && typeof this.agentRegistry.initialize === 'function') {
       await this.agentRegistry.initialize();
     }
-    if (this.observability && typeof this.observability.initialize === "function") {
+    if (this.observability && typeof this.observability.initialize === 'function') {
       await this.observability.initialize();
     }
     return this;
@@ -71,8 +68,12 @@ let ExecutionEngine = class {
           trace.addStep(stepId, task.agent, step.type, []);
         });
       }
-      logger.info("Starting task execution", { taskId: task.id, steps: task.steps.length, run_id: trace?.taskId });
-      task.status = "running";
+      logger.info('Starting task execution', {
+        taskId: task.id,
+        steps: task.steps.length,
+        run_id: trace?.taskId,
+      });
+      task.status = 'running';
       for (let i = 0; i < task.steps.length; i++) {
         const step = task.steps[i];
         const stepId = step.id || `step_${i}`;
@@ -80,10 +81,19 @@ let ExecutionEngine = class {
           try {
             trace.startStep(stepId);
           } catch (traceError) {
-            logger.warn("Failed to start step in trace", { taskId: task.id, stepId, error: traceError.message });
+            logger.warn('Failed to start step in trace', {
+              taskId: task.id,
+              stepId,
+              error: traceError.message,
+            });
           }
         }
-        logger.info("Executing step", { taskId: task.id, stepId, type: step.type, agent: task.agent });
+        logger.info('Executing step', {
+          taskId: task.id,
+          stepId,
+          type: step.type,
+          agent: task.agent,
+        });
         const startTime = Date.now();
         try {
           const result = await this.executeStep(step, task);
@@ -93,46 +103,64 @@ let ExecutionEngine = class {
             try {
               trace.recordResult(task.agent, { stepId, result, duration }, true);
             } catch (traceError) {
-              logger.warn("Failed to record step result in trace", { taskId: task.id, stepId, error: traceError.message });
+              logger.warn('Failed to record step result in trace', {
+                taskId: task.id,
+                stepId,
+                error: traceError.message,
+              });
             }
           }
-          logger.info("Step completed successfully", { taskId: task.id, stepId, duration });
+          logger.info('Step completed successfully', { taskId: task.id, stepId, duration });
         } catch (error) {
           const duration = Date.now() - startTime;
-          logger.error("Step execution failed", { taskId: task.id, stepId, error: error.message });
+          logger.error('Step execution failed', { taskId: task.id, stepId, error: error.message });
           task.errors.push({ stepId, error: error.message });
           if (trace) {
             try {
               trace.recordResult(task.agent, { stepId, error: error.message, duration }, false);
             } catch (traceError) {
-              logger.warn("Failed to record step error in trace", { taskId: task.id, stepId, error: traceError.message });
+              logger.warn('Failed to record step error in trace', {
+                taskId: task.id,
+                stepId,
+                error: traceError.message,
+              });
             }
           }
           throw error;
         }
       }
-      task.status = "completed";
-      logger.info("Task execution completed", { taskId: task.id, duration: trace?.getDurationFormatted() });
+      task.status = 'completed';
+      logger.info('Task execution completed', {
+        taskId: task.id,
+        duration: trace?.getDurationFormatted(),
+      });
       if (trace) {
         trace.complete(true);
       }
       return {
-        status: "completed",
+        status: 'completed',
         results: task.results,
         trace: trace ? trace.toJSON() : null,
         run_id: trace?.taskId,
         agents: trace ? trace.pipeline.map((s) => s.agent) : [task.agent],
         steps: task.steps.map((s, i) => s.id || `step_${i}`),
-        duration: trace?.getDuration()
+        duration: trace?.getDuration(),
       };
     } catch (error) {
-      task.status = "failed";
-      logger.error("Task execution failed", { taskId: task.id, error: error.message, duration: trace?.getDurationFormatted() });
+      task.status = 'failed';
+      logger.error('Task execution failed', {
+        taskId: task.id,
+        error: error.message,
+        duration: trace?.getDurationFormatted(),
+      });
       if (trace) {
         try {
           trace.complete(false);
         } catch (traceError) {
-          logger.warn("Failed to complete trace on error", { taskId: task.id, error: traceError.message });
+          logger.warn('Failed to complete trace on error', {
+            taskId: task.id,
+            error: traceError.message,
+          });
         }
       }
       throw error;
@@ -150,7 +178,7 @@ let ExecutionEngine = class {
     const trace = this.options.enableTracing ? new ExecutionTrace(task.id, task.input) : null;
     try {
       if (cancellationToken?.aborted) {
-        throw new Error("Execution cancelled");
+        throw new Error('Execution cancelled');
       }
       if (trace) {
         trace.start();
@@ -159,22 +187,25 @@ let ExecutionEngine = class {
           trace.addStep(stepId, task.agent, step.type, []);
         });
       }
-      logger.info("Starting task execution", { taskId: task.id, steps: task.steps.length, run_id: trace ? trace.taskId : void 0 });
-      task.status = "running";
+      logger.info('Starting task execution', {
+        taskId: task.id,
+        steps: task.steps.length,
+        run_id: trace ? trace.taskId : void 0,
+      });
+      task.status = 'running';
       const initialProgress = {
-        type: "start",
+        type: 'start',
         taskId: task.id,
         totalSteps: task.steps.length,
         completedSteps: 0,
-        status: "running",
-        trace: trace ? trace.toJSON() : null
+        status: 'running',
+        trace: trace ? trace.toJSON() : null,
       };
-      if (onProgress)
-        onProgress(initialProgress);
+      if (onProgress) onProgress(initialProgress);
       yield initialProgress;
       for (let i = 0; i < task.steps.length; i++) {
         if (cancellationToken?.aborted) {
-          throw new Error("Execution cancelled");
+          throw new Error('Execution cancelled');
         }
         const step = task.steps[i];
         const stepId = step.id || `step_${i}`;
@@ -182,23 +213,31 @@ let ExecutionEngine = class {
           try {
             trace.startStep(stepId);
           } catch (traceError) {
-            logger.warn("Failed to start step in trace", { taskId: task.id, stepId, error: traceError.message });
+            logger.warn('Failed to start step in trace', {
+              taskId: task.id,
+              stepId,
+              error: traceError.message,
+            });
           }
         }
-        logger.info("Executing step", { taskId: task.id, stepId, type: step.type, agent: task.agent });
+        logger.info('Executing step', {
+          taskId: task.id,
+          stepId,
+          type: step.type,
+          agent: task.agent,
+        });
         const startTime = Date.now();
         const stepStartProgress = {
-          type: "step_start",
+          type: 'step_start',
           taskId: task.id,
           stepId,
           stepIndex: i,
           totalSteps: task.steps.length,
           stepType: step.type,
           agent: task.agent,
-          status: "running"
+          status: 'running',
         };
-        if (onProgress)
-          onProgress(stepStartProgress);
+        if (onProgress) onProgress(stepStartProgress);
         yield stepStartProgress;
         try {
           const result = await this.executeStep(step, task);
@@ -208,94 +247,108 @@ let ExecutionEngine = class {
             try {
               trace.recordResult(task.agent, { stepId, result, duration }, true);
             } catch (traceError) {
-              logger.warn("Failed to record step result in trace", { taskId: task.id, stepId, error: traceError.message });
+              logger.warn('Failed to record step result in trace', {
+                taskId: task.id,
+                stepId,
+                error: traceError.message,
+              });
             }
           }
           const stepCompleteProgress = {
-            type: "step_complete",
+            type: 'step_complete',
             taskId: task.id,
             stepId,
             stepIndex: i,
             totalSteps: task.steps.length,
             result,
             duration,
-            status: "running",
-            trace: trace ? trace.toJSON() : null
+            status: 'running',
+            trace: trace ? trace.toJSON() : null,
           };
-          if (onProgress)
-            onProgress(stepCompleteProgress);
+          if (onProgress) onProgress(stepCompleteProgress);
           yield stepCompleteProgress;
-          logger.info("Step completed successfully", { taskId: task.id, stepId, duration });
+          logger.info('Step completed successfully', { taskId: task.id, stepId, duration });
         } catch (error) {
           const duration = Date.now() - startTime;
-          logger.error("Step execution failed", { taskId: task.id, stepId, error: error.message });
+          logger.error('Step execution failed', { taskId: task.id, stepId, error: error.message });
           task.errors.push({ stepId, error: error.message });
           if (trace) {
             try {
               trace.recordResult(task.agent, { stepId, error: error.message, duration }, false);
             } catch (traceError) {
-              logger.warn("Failed to record step error in trace", { taskId: task.id, stepId, error: traceError.message });
+              logger.warn('Failed to record step error in trace', {
+                taskId: task.id,
+                stepId,
+                error: traceError.message,
+              });
             }
           }
           const stepErrorProgress = {
-            type: "step_error",
+            type: 'step_error',
             taskId: task.id,
             stepId,
             stepIndex: i,
             totalSteps: task.steps.length,
             error: error.message,
             duration,
-            status: "running"
+            status: 'running',
           };
-          if (onProgress)
-            onProgress(stepErrorProgress);
+          if (onProgress) onProgress(stepErrorProgress);
           yield stepErrorProgress;
-          if (step.type === "delegate" || step.type === "generate") {
-            logger.warn("Continuing execution despite step error", { taskId: task.id, stepId });
+          if (step.type === 'delegate' || step.type === 'generate') {
+            logger.warn('Continuing execution despite step error', { taskId: task.id, stepId });
           } else {
             throw error;
           }
         }
       }
-      task.status = "completed";
-      logger.info("Task execution completed", { taskId: task.id, duration: trace?.getDurationFormatted() });
+      task.status = 'completed';
+      logger.info('Task execution completed', {
+        taskId: task.id,
+        duration: trace?.getDurationFormatted(),
+      });
       if (trace) {
         trace.complete(true);
       }
       const finalResult = {
-        type: "complete",
-        status: "completed",
+        type: 'complete',
+        status: 'completed',
         results: task.results,
         trace: trace ? trace.toJSON() : null,
         run_id: trace?.taskId,
         agents: trace ? trace.pipeline.map((s) => s.agent) : [task.agent],
         steps: task.steps.map((s, i) => s.id || `step_${i}`),
         duration: trace?.getDuration(),
-        errors: task.errors
+        errors: task.errors,
       };
-      if (onProgress)
-        onProgress(finalResult);
+      if (onProgress) onProgress(finalResult);
       yield finalResult;
       return finalResult;
     } catch (error) {
-      task.status = "failed";
-      logger.error("Task execution failed", { taskId: task.id, error: error.message, duration: trace?.getDurationFormatted() });
+      task.status = 'failed';
+      logger.error('Task execution failed', {
+        taskId: task.id,
+        error: error.message,
+        duration: trace?.getDurationFormatted(),
+      });
       if (trace) {
         try {
           trace.complete(false);
         } catch (traceError) {
-          logger.warn("Failed to complete trace on error", { taskId: task.id, error: traceError.message });
+          logger.warn('Failed to complete trace on error', {
+            taskId: task.id,
+            error: traceError.message,
+          });
         }
       }
       const errorResult = {
-        type: "error",
-        status: "failed",
+        type: 'error',
+        status: 'failed',
         error: error.message,
         trace: trace ? trace.toJSON() : null,
-        run_id: trace?.taskId
+        run_id: trace?.taskId,
       };
-      if (onProgress)
-        onProgress(errorResult);
+      if (onProgress) onProgress(errorResult);
       yield errorResult;
       throw error;
     }
@@ -317,16 +370,20 @@ let ExecutionEngine = class {
           trace.addStep(stepId, task.agent, step.type, []);
         });
       }
-      logger.info("Starting task execution", { taskId: task.id, steps: task.steps.length, run_id: trace?.taskId });
-      task.status = "running";
+      logger.info('Starting task execution', {
+        taskId: task.id,
+        steps: task.steps.length,
+        run_id: trace?.taskId,
+      });
+      task.status = 'running';
       if (onProgress) {
         onProgress({
-          type: "start",
+          type: 'start',
           taskId: task.id,
           totalSteps: task.steps.length,
           completedSteps: 0,
-          status: "running",
-          trace: trace ? trace.toJSON() : null
+          status: 'running',
+          trace: trace ? trace.toJSON() : null,
         });
       }
       for (let i = 0; i < task.steps.length; i++) {
@@ -336,21 +393,30 @@ let ExecutionEngine = class {
           try {
             trace.startStep(stepId);
           } catch (traceError) {
-            logger.warn("Failed to start step in trace", { taskId: task.id, stepId, error: traceError.message });
+            logger.warn('Failed to start step in trace', {
+              taskId: task.id,
+              stepId,
+              error: traceError.message,
+            });
           }
         }
-        logger.info("Executing step", { taskId: task.id, stepId, type: step.type, agent: task.agent });
+        logger.info('Executing step', {
+          taskId: task.id,
+          stepId,
+          type: step.type,
+          agent: task.agent,
+        });
         const startTime = Date.now();
         if (onProgress) {
           onProgress({
-            type: "step_start",
+            type: 'step_start',
             taskId: task.id,
             stepId,
             stepIndex: i,
             totalSteps: task.steps.length,
             stepType: step.type,
             agent: task.agent,
-            status: "running"
+            status: 'running',
           });
         }
         try {
@@ -361,93 +427,111 @@ let ExecutionEngine = class {
             try {
               trace.recordResult(task.agent, { stepId, result, duration }, true);
             } catch (traceError) {
-              logger.warn("Failed to record step result in trace", { taskId: task.id, stepId, error: traceError.message });
+              logger.warn('Failed to record step result in trace', {
+                taskId: task.id,
+                stepId,
+                error: traceError.message,
+              });
             }
           }
           if (onProgress) {
             onProgress({
-              type: "step_complete",
+              type: 'step_complete',
               taskId: task.id,
               stepId,
               stepIndex: i,
               totalSteps: task.steps.length,
               result,
               duration,
-              status: "running",
-              trace: trace ? trace.toJSON() : null
+              status: 'running',
+              trace: trace ? trace.toJSON() : null,
             });
           }
-          logger.info("Step completed successfully", { taskId: task.id, stepId, duration });
+          logger.info('Step completed successfully', { taskId: task.id, stepId, duration });
         } catch (error) {
           const duration = Date.now() - startTime;
-          logger.error("Step execution failed", { taskId: task.id, stepId, error: error.message });
+          logger.error('Step execution failed', { taskId: task.id, stepId, error: error.message });
           task.errors.push({ stepId, error: error.message });
           if (trace) {
             try {
               trace.recordResult(task.agent, { stepId, error: error.message, duration }, false);
             } catch (traceError) {
-              logger.warn("Failed to record step error in trace", { taskId: task.id, stepId, error: traceError.message });
+              logger.warn('Failed to record step error in trace', {
+                taskId: task.id,
+                stepId,
+                error: traceError.message,
+              });
             }
           }
           if (onProgress) {
             onProgress({
-              type: "step_error",
+              type: 'step_error',
               taskId: task.id,
               stepId,
               stepIndex: i,
               totalSteps: task.steps.length,
               error: error.message,
               duration,
-              status: "running"
+              status: 'running',
             });
           }
           throw error;
         }
       }
-      task.status = "completed";
-      logger.info("Task execution completed", { taskId: task.id, duration: trace?.getDurationFormatted() });
+      task.status = 'completed';
+      logger.info('Task execution completed', {
+        taskId: task.id,
+        duration: trace?.getDurationFormatted(),
+      });
       if (trace) {
         trace.complete(true);
       }
       if (onProgress) {
         onProgress({
-          type: "complete",
-          status: "completed",
+          type: 'complete',
+          status: 'completed',
           results: task.results,
           trace: trace ? trace.toJSON() : null,
           run_id: trace?.taskId,
           agents: trace ? trace.pipeline.map((s) => s.agent) : [task.agent],
           steps: task.steps.map((s, i) => s.id || `step_${i}`),
           duration: trace?.getDuration(),
-          errors: task.errors
+          errors: task.errors,
         });
       }
       return {
-        status: "completed",
+        status: 'completed',
         results: task.results,
         trace: trace ? trace.toJSON() : null,
         run_id: trace?.taskId,
         agents: trace ? trace.pipeline.map((s) => s.agent) : [task.agent],
         steps: task.steps.map((s, i) => s.id || `step_${i}`),
-        duration: trace?.getDuration()
+        duration: trace?.getDuration(),
       };
     } catch (error) {
-      task.status = "failed";
-      logger.error("Task execution failed", { taskId: task.id, error: error.message, duration: trace?.getDurationFormatted() });
+      task.status = 'failed';
+      logger.error('Task execution failed', {
+        taskId: task.id,
+        error: error.message,
+        duration: trace?.getDurationFormatted(),
+      });
       if (trace) {
         try {
           trace.complete(false);
         } catch (traceError) {
-          logger.warn("Failed to complete trace on error", { taskId: task.id, error: traceError.message });
+          logger.warn('Failed to complete trace on error', {
+            taskId: task.id,
+            error: traceError.message,
+          });
         }
       }
       if (onProgress) {
         onProgress({
-          type: "error",
-          status: "failed",
+          type: 'error',
+          status: 'failed',
           error: error.message,
           trace: trace ? trace.toJSON() : null,
-          run_id: trace?.taskId
+          run_id: trace?.taskId,
         });
       }
       throw error;
@@ -455,11 +539,11 @@ let ExecutionEngine = class {
   }
   async executeStep(step, task, cancellationToken = null) {
     switch (step.type) {
-      case "generate":
+      case 'generate':
         return await this.executeGenerateStep(step, task);
-      case "tool":
+      case 'tool':
         return await this.executeToolStep(step, task);
-      case "delegate":
+      case 'delegate':
         return await this.executeDelegateStep(step, task);
       default:
         throw new Error(`Unknown step type: ${step.type}`);
@@ -471,13 +555,13 @@ let ExecutionEngine = class {
   async executeGenerateStep(step, task, cancellationToken = null) {
     const { prompt, model, temperature } = step.params || {};
     const messages = [
-      { role: "system", content: `You are executing task: ${task.input}` },
-      { role: "user", content: prompt || task.input }
+      { role: 'system', content: `You are executing task: ${task.input}` },
+      { role: 'user', content: prompt || task.input },
     ];
-    const response = await this.aiRouter.routeRequest(messages, "quality", {
-      model: model || "gpt-4",
+    const response = await this.aiRouter.routeRequest(messages, 'quality', {
+      model: model || 'gpt-4',
       temperature: temperature || 0.7,
-      signal: cancellationToken
+      signal: cancellationToken,
     });
     return response.text || response.content;
   }
@@ -487,14 +571,14 @@ let ExecutionEngine = class {
   async executeToolStep(step, task, cancellationToken = null) {
     const { toolName, args } = step.params || {};
     if (!this.mcpServer || !this.mcpServer.toolsMap) {
-      throw new Error("MCP server not configured for tool execution");
+      throw new Error('MCP server not configured for tool execution');
     }
     const tool = this.mcpServer.toolsMap.get(toolName);
     if (!tool) {
       throw new Error(`Tool ${toolName} not found`);
     }
     if (cancellationToken?.aborted) {
-      throw new Error("Execution cancelled");
+      throw new Error('Execution cancelled');
     }
     return await tool.handler(args);
   }
@@ -504,14 +588,14 @@ let ExecutionEngine = class {
   async executeDelegateStep(step, task, cancellationToken = null) {
     const { agentId, subTask } = step.params || {};
     if (cancellationToken?.aborted) {
-      throw new Error("Execution cancelled");
+      throw new Error('Execution cancelled');
     }
     const agent = await this.agentRegistry.getAgent(agentId);
     if (!agent) {
       throw new Error(`Agent ${agentId} not found`);
     }
     if (cancellationToken?.aborted) {
-      throw new Error("Execution cancelled");
+      throw new Error('Execution cancelled');
     }
     const subExecutionTask = new ExecutionTask(
       `${task.id}_delegate_${agentId}`,
@@ -519,22 +603,16 @@ let ExecutionEngine = class {
       agentId,
       [],
       // Assume agent handles its own steps, or pass if needed
-      "pending"
+      'pending'
     );
     if (agent.execute) {
       return await agent.execute(subExecutionTask);
     } else {
-      const { agentOrchestrator } = await import("./index.js");
+      const { agentOrchestrator } = await import('./index.js');
       return await agentOrchestrator.executeTask(subTask || task.input, { agentId });
     }
   }
 };
-ExecutionEngine = __decorateClass([
-  singleton()
-], ExecutionEngine);
+ExecutionEngine = __decorateClass([singleton()], ExecutionEngine);
 var execution_engine_default = ExecutionEngine;
-export {
-  ExecutionEngine,
-  ExecutionTask,
-  execution_engine_default as default
-};
+export { ExecutionEngine, ExecutionTask, execution_engine_default as default };

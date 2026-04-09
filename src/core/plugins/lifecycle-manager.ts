@@ -3,47 +3,51 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { EventEmitter } from "events";
+import { singleton } from 'tsyringe';
+import { EventEmitter } from 'events';
 let Plugin = class {
-  constructor({ name, version = "1.0.0", description = "", hooks = {}, config = {}, dependencies = [] }) {
+  constructor({
+    name,
+    version = '1.0.0',
+    description = '',
+    hooks = {},
+    config = {},
+    dependencies = [],
+  }) {
     this.name = name;
     this.version = version;
     this.description = description;
     this.hooks = hooks;
     this.config = config;
     this.dependencies = dependencies;
-    this.status = "registered";
+    this.status = 'registered';
     this.loadedAt = null;
     this.stats = { invocations: 0, errors: 0, totalMs: 0 };
   }
   async initialize() {
-    this.status = "loading";
+    this.status = 'loading';
     if (this.hooks.onInit) {
       await this.hooks.onInit(this.config);
     }
-    this.status = "active";
+    this.status = 'active';
     this.loadedAt = Date.now();
   }
   async teardown() {
-    this.status = "unloading";
+    this.status = 'unloading';
     if (this.hooks.onDestroy) {
       await this.hooks.onDestroy();
     }
-    this.status = "inactive";
+    this.status = 'inactive';
   }
   async execute(hookName, ...args) {
-    if (this.status !== "active")
-      return null;
+    if (this.status !== 'active') return null;
     const hook = this.hooks[hookName];
-    if (!hook)
-      return null;
+    if (!hook) return null;
     const start = Date.now();
     try {
       const result = await hook(...args);
@@ -65,15 +69,14 @@ let Plugin = class {
       dependencies: this.dependencies,
       stats: {
         ...this.stats,
-        avgMs: this.stats.invocations > 0 ? Math.round(this.stats.totalMs / this.stats.invocations) : 0
+        avgMs:
+          this.stats.invocations > 0 ? Math.round(this.stats.totalMs / this.stats.invocations) : 0,
       },
-      loadedAt: this.loadedAt
+      loadedAt: this.loadedAt,
     };
   }
 };
-Plugin = __decorateClass([
-  singleton()
-], Plugin);
+Plugin = __decorateClass([singleton()], Plugin);
 let PluginManager = class extends EventEmitter {
   constructor({ maxPlugins = 50, enableHotReload = true } = {}) {
     super();
@@ -98,7 +101,7 @@ let PluginManager = class extends EventEmitter {
         throw new Error(`Missing dependency "${dep}" for plugin "${plugin.name}"`);
       }
       const depPlugin = this.plugins.get(dep);
-      if (depPlugin.status !== "active") {
+      if (depPlugin.status !== 'active') {
         throw new Error(`Dependency "${dep}" is not active (status: ${depPlugin.status})`);
       }
     }
@@ -109,7 +112,7 @@ let PluginManager = class extends EventEmitter {
       }
       this.hookRegistry.get(hookName).push(plugin.name);
     }
-    this.emit("plugin:registered", { name: plugin.name, version: plugin.version });
+    this.emit('plugin:registered', { name: plugin.name, version: plugin.version });
     return plugin;
   }
   /**
@@ -117,12 +120,10 @@ let PluginManager = class extends EventEmitter {
    */
   async load(name) {
     const plugin = this.plugins.get(name);
-    if (!plugin)
-      throw new Error(`Plugin "${name}" not found`);
-    if (plugin.status === "active")
-      return plugin;
+    if (!plugin) throw new Error(`Plugin "${name}" not found`);
+    if (plugin.status === 'active') return plugin;
     await plugin.initialize();
-    this.emit("plugin:loaded", { name, version: plugin.version });
+    this.emit('plugin:loaded', { name, version: plugin.version });
     return plugin;
   }
   /**
@@ -130,19 +131,21 @@ let PluginManager = class extends EventEmitter {
    */
   async unload(name) {
     const plugin = this.plugins.get(name);
-    if (!plugin)
-      throw new Error(`Plugin "${name}" not found`);
-    const dependents = [...this.plugins.values()].filter((p) => p.dependencies.includes(name) && p.status === "active");
+    if (!plugin) throw new Error(`Plugin "${name}" not found`);
+    const dependents = [...this.plugins.values()].filter(
+      (p) => p.dependencies.includes(name) && p.status === 'active'
+    );
     if (dependents.length > 0) {
-      throw new Error(`Cannot unload "${name}" \u2014 ${dependents.map((d) => d.name).join(", ")} depend on it`);
+      throw new Error(
+        `Cannot unload "${name}" \u2014 ${dependents.map((d) => d.name).join(', ')} depend on it`
+      );
     }
     await plugin.teardown();
     for (const [hookName, plugins] of this.hookRegistry) {
       const idx = plugins.indexOf(name);
-      if (idx !== -1)
-        plugins.splice(idx, 1);
+      if (idx !== -1) plugins.splice(idx, 1);
     }
-    this.emit("plugin:unloaded", { name });
+    this.emit('plugin:unloaded', { name });
     return plugin;
   }
   /**
@@ -150,17 +153,20 @@ let PluginManager = class extends EventEmitter {
    */
   async reload(name, newConfig) {
     if (!this.enableHotReload) {
-      throw new Error("Hot-reload is disabled");
+      throw new Error('Hot-reload is disabled');
     }
     const existing = this.plugins.get(name);
-    if (!existing)
-      throw new Error(`Plugin "${name}" not found`);
+    if (!existing) throw new Error(`Plugin "${name}" not found`);
     await this.unload(name);
     this.plugins.delete(name);
     const updated = new Plugin({ ...newConfig, name });
     this.register(updated);
     await this.load(name);
-    this.emit("plugin:reloaded", { name, oldVersion: existing.version, newVersion: updated.version });
+    this.emit('plugin:reloaded', {
+      name,
+      oldVersion: existing.version,
+      newVersion: updated.version,
+    });
     return updated;
   }
   /**
@@ -171,13 +177,13 @@ let PluginManager = class extends EventEmitter {
     const results = [];
     for (const name of pluginNames) {
       const plugin = this.plugins.get(name);
-      if (plugin && plugin.status === "active") {
+      if (plugin && plugin.status === 'active') {
         try {
           const result = await plugin.execute(hookName, ...args);
           results.push({ plugin: name, result });
         } catch (error) {
           results.push({ plugin: name, error: error.message });
-          this.emit("hook:error", { hookName, plugin: name, error });
+          this.emit('hook:error', { hookName, plugin: name, error });
         }
       }
     }
@@ -194,8 +200,7 @@ let PluginManager = class extends EventEmitter {
    */
   list(filter = {}) {
     let results = [...this.plugins.values()];
-    if (filter.status)
-      results = results.filter((p) => p.status === filter.status);
+    if (filter.status) results = results.filter((p) => p.status === filter.status);
     return results.map((p) => p.toJSON());
   }
   /**
@@ -205,20 +210,14 @@ let PluginManager = class extends EventEmitter {
     const plugins = [...this.plugins.values()];
     return {
       total: plugins.length,
-      active: plugins.filter((p) => p.status === "active").length,
-      inactive: plugins.filter((p) => p.status === "inactive" || p.status === "registered").length,
+      active: plugins.filter((p) => p.status === 'active').length,
+      inactive: plugins.filter((p) => p.status === 'inactive' || p.status === 'registered').length,
       hooks: this.hookRegistry.size,
       totalInvocations: plugins.reduce((sum, p) => sum + p.stats.invocations, 0),
-      totalErrors: plugins.reduce((sum, p) => sum + p.stats.errors, 0)
+      totalErrors: plugins.reduce((sum, p) => sum + p.stats.errors, 0),
     };
   }
 };
-PluginManager = __decorateClass([
-  singleton()
-], PluginManager);
+PluginManager = __decorateClass([singleton()], PluginManager);
 var lifecycle_manager_default = PluginManager;
-export {
-  Plugin,
-  PluginManager,
-  lifecycle_manager_default as default
-};
+export { Plugin, PluginManager, lifecycle_manager_default as default };

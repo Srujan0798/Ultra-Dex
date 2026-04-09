@@ -3,14 +3,13 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { EventEmitter } from "events";
+import { singleton } from 'tsyringe';
+import { EventEmitter } from 'events';
 let Negotiation = class extends EventEmitter {
   constructor(options = {}) {
     super();
@@ -18,7 +17,7 @@ let Negotiation = class extends EventEmitter {
       maxRounds: options.maxRounds || 10,
       timeout: options.timeout || 3e4,
       consensusThreshold: options.consensusThreshold || 0.8,
-      ...options
+      ...options,
     };
     this.sessions = /* @__PURE__ */ new Map();
     this.proposals = /* @__PURE__ */ new Map();
@@ -31,21 +30,21 @@ let Negotiation = class extends EventEmitter {
       id: negotiationId,
       participants,
       agenda,
-      status: "started",
+      status: 'started',
       createdAt: Date.now(),
       rounds: 0,
       proposals: [],
       agreements: [],
-      votingRecords: []
+      votingRecords: [],
     };
     this.sessions.set(negotiationId, session);
-    this.emit("negotiation.started", { negotiationId, participants });
+    this.emit('negotiation.started', { negotiationId, participants });
     try {
       const result = await this.conductNegotiation(session, options);
       return result;
     } catch (error) {
-      session.status = "failed";
-      this.emit("negotiation.failed", { negotiationId, error });
+      session.status = 'failed';
+      this.emit('negotiation.failed', { negotiationId, error });
       throw error;
     }
   }
@@ -55,7 +54,7 @@ let Negotiation = class extends EventEmitter {
   async conductNegotiation(session, options = {}) {
     while (session.rounds < this.config.maxRounds) {
       session.rounds++;
-      this.emit("negotiation.round-start", { sessionId: session.id, round: session.rounds });
+      this.emit('negotiation.round-start', { sessionId: session.id, round: session.rounds });
       const proposals = await this.gatherProposals(session);
       session.proposals.push(...proposals);
       const evaluations = await this.evaluateProposals(session, proposals);
@@ -63,29 +62,29 @@ let Negotiation = class extends EventEmitter {
       session.votingRecords.push(votes);
       const consensus = this.checkConsensus(votes);
       if (consensus.reached) {
-        session.status = "consensus-reached";
+        session.status = 'consensus-reached';
         session.agreements.push(consensus.agreement);
-        this.emit("negotiation.consensus-reached", {
+        this.emit('negotiation.consensus-reached', {
           sessionId: session.id,
           round: session.rounds,
-          agreement: consensus.agreement
+          agreement: consensus.agreement,
         });
         break;
       }
-      this.emit("negotiation.round-end", {
+      this.emit('negotiation.round-end', {
         sessionId: session.id,
         round: session.rounds,
-        consensus: false
+        consensus: false,
       });
       await this.delay(100);
     }
-    session.status = "completed";
+    session.status = 'completed';
     session.completedAt = Date.now();
     return {
       sessionId: session.id,
       status: session.status,
       roundsNeeded: session.rounds,
-      agreements: session.agreements
+      agreements: session.agreements,
     };
   }
   /**
@@ -95,7 +94,7 @@ let Negotiation = class extends EventEmitter {
     return session.participants.map((participant) => ({
       proposedBy: participant,
       proposal: { preference: Math.random() },
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }));
   }
   /**
@@ -105,7 +104,7 @@ let Negotiation = class extends EventEmitter {
     return proposals.map((p) => ({
       ...p,
       score: Math.random(),
-      feasible: true
+      feasible: true,
     }));
   }
   /**
@@ -117,8 +116,8 @@ let Negotiation = class extends EventEmitter {
       votes: session.participants.map((p) => ({
         voter: p,
         votedFor: proposals[0].proposedBy,
-        weight: 1
-      }))
+        weight: 1,
+      })),
     };
   }
   /**
@@ -139,7 +138,7 @@ let Negotiation = class extends EventEmitter {
       const winner = Array.from(voteWeights.entries()).sort((a, b) => b[1] - a[1])[0][0];
       return {
         reached: true,
-        agreement: { consensusParticipant: winner, percentage: consensusPercentage }
+        agreement: { consensusParticipant: winner, percentage: consensusPercentage },
       };
     }
     return { reached: false };
@@ -153,7 +152,7 @@ let Negotiation = class extends EventEmitter {
     }
     this.proposals.get(sessionId).push({
       ...proposal,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
   /**
@@ -169,11 +168,6 @@ let Negotiation = class extends EventEmitter {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 };
-Negotiation = __decorateClass([
-  singleton()
-], Negotiation);
+Negotiation = __decorateClass([singleton()], Negotiation);
 var negotiation_default = Negotiation;
-export {
-  Negotiation,
-  negotiation_default as default
-};
+export { Negotiation, negotiation_default as default };

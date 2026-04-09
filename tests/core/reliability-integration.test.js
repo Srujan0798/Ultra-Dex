@@ -29,10 +29,7 @@ describe('Reliability integration', () => {
     assert.strictEqual(recoveryEvents.length, 1);
     assert.strictEqual(recoveryEvents[0].phase, 'reasoning');
     assert.strictEqual(recoveryEvents[0].recovery.strategy, 'retry');
-    assert.strictEqual(
-      recoveryEvents[0].recovery.diagnostics.circuitState.failures,
-      1
-    );
+    assert.strictEqual(recoveryEvents[0].recovery.diagnostics.circuitState.failures, 1);
     assert.strictEqual(history[0].error.message, 'Reasoning failed');
     assert.strictEqual(history[0].recovery.strategy, 'retry');
     assert.strictEqual(history[0].recovery.diagnostics.phase, 'reasoning');

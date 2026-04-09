@@ -1,4 +1,4 @@
-import "reflect-metadata";
+import 'reflect-metadata';
 import assert from 'node:assert';
 import { describe, test } from 'node:test';
 import { AIMetaLayer, aiMetaLayer } from '../../src/core/ai/ai-meta-layer.js';
@@ -75,7 +75,9 @@ describe('core DI container', () => {
 
         sessionContainer.registerInstance(DI_TOKENS.memoryManager, memory);
         sessionContainer.registerInstance(DI_TOKENS.agentRegistry, registry);
-        sessionContainer.registerInstance(DI_TOKENS.aiMetaLayer, { call: async () => ({ text: sessionId }) });
+        sessionContainer.registerInstance(DI_TOKENS.aiMetaLayer, {
+          call: async () => ({ text: sessionId }),
+        });
         sessionContainer.registerInstance(DI_TOKENS.telemetryService, telemetry);
 
         const orchestrator = sessionContainer.resolve(AgentOrchestrator);
@@ -91,11 +93,11 @@ describe('core DI container', () => {
       })
     );
 
-    assert.strictEqual(new Set(resolved.map((entry) => entry.orchestrator)).size, sessionIds.length);
-    assert.deepStrictEqual(
-      resolved.map((entry) => entry.sessionId).sort(),
-      [...sessionIds].sort()
+    assert.strictEqual(
+      new Set(resolved.map((entry) => entry.orchestrator)).size,
+      sessionIds.length
     );
+    assert.deepStrictEqual(resolved.map((entry) => entry.sessionId).sort(), [...sessionIds].sort());
     assert.strictEqual(new Set(resolved.map((entry) => entry.memoryId)).size, sessionIds.length);
     assert.strictEqual(new Set(resolved.map((entry) => entry.registryId)).size, sessionIds.length);
     assert.strictEqual(

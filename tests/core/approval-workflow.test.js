@@ -10,8 +10,8 @@ describe('ApprovalWorkflow', () => {
     workflow.definePolicy('deploy-prod', {
       steps: [
         { name: 'QA Review', approvers: ['qa-lead'] },
-        { name: 'CTO Sign-off', approvers: ['cto'] }
-      ]
+        { name: 'CTO Sign-off', approvers: ['cto'] },
+      ],
     });
   });
 

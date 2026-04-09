@@ -13,6 +13,7 @@ Complete standards for creating and maintaining example repositories that demons
 Example repositories serve as the bridge between documentation and implementation, providing production-ready reference implementations that community members can study, adapt, and extend. These repositories must meet the highest standards of quality, completeness, and maintainability.
 
 ### Core Principles
+
 - **Production-Ready:** Examples must be deployable to production
 - **Complete:** All required functionality implemented
 - **Well-Documented:** Comprehensive documentation and comments
@@ -20,6 +21,7 @@ Example repositories serve as the bridge between documentation and implementatio
 - **Maintainable:** Clear code organization and architecture
 
 ### Quality Targets
+
 - **Completeness:** 100% of described functionality implemented
 - **Documentation:** 100% of code documented with JSDoc
 - **Testing:** 80%+ code coverage for core logic
@@ -31,6 +33,7 @@ Example repositories serve as the bridge between documentation and implementatio
 ## 📋 REQUIRED FILES & STRUCTURE
 
 ### Essential Documentation Files
+
 ```
 example-repo/
 ├── README.md                    # Project overview and setup
@@ -44,6 +47,7 @@ example-repo/
 ```
 
 ### Essential Configuration Files
+
 ```
 example-repo/
 ├── .env.example                 # Environment variables template
@@ -54,6 +58,7 @@ example-repo/
 ```
 
 ### Essential Source Files
+
 ```
 example-repo/
 ├── src/                         # Source code
@@ -76,6 +81,7 @@ example-repo/
 ## 🏗️ STRUCTURAL REQUIREMENTS
 
 ### 1. Project Architecture
+
 - **Modular Design:** Clear separation of concerns
 - **Scalable Structure:** Architecture that supports growth
 - **Maintainable Code:** Clean, well-organized code
@@ -83,6 +89,7 @@ example-repo/
 - **Secure by Default:** Security considerations built-in
 
 ### 2. Code Organization
+
 - **Logical Grouping:** Related functionality grouped together
 - **Clear Dependencies:** Well-defined module dependencies
 - **Consistent Patterns:** Consistent coding patterns throughout
@@ -90,6 +97,7 @@ example-repo/
 - **Error Handling:** Comprehensive error handling and recovery
 
 ### 3. Documentation Structure
+
 - **README.md:** Complete project overview and setup
 - **CONTEXT.md:** Project context and architectural decisions
 - **IMPLEMENTATION-PLAN.md:** Complete 34-section implementation plan
@@ -101,7 +109,8 @@ example-repo/
 ## 📝 CONTENT STANDARDS
 
 ### README.md Requirements
-```markdown
+
+````markdown
 # [Project Name]
 
 > **Brief description of the project**
@@ -115,10 +124,12 @@ Complete description of the example project, its purpose, and key features.
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js v18+
 - [Other prerequisites]
 
 ### Installation
+
 ```bash
 # Clone the repository
 git clone https://github.com/ultra-dex/example-project.git
@@ -134,18 +145,22 @@ cp .env.example .env
 # Start the development server
 npm run dev
 ```
+````
 
 ## 🏗️ Architecture
 
 ### System Overview
+
 [Architecture diagram and description]
 
 ### Key Components
+
 [Description of key components and their responsibilities]
 
 ## 🧪 Testing
 
 ### Running Tests
+
 ```bash
 # Run all tests
 npm test
@@ -160,6 +175,7 @@ npm run test:integration
 ## 🚢 Deployment
 
 ### Production Deployment
+
 [Deployment instructions]
 
 ## 📚 Documentation
@@ -177,7 +193,8 @@ npm run test:integration
 ---
 
 _Last Updated: [Date]_
-```
+
+````
 
 ### CONTEXT.md Requirements
 ```markdown
@@ -203,46 +220,59 @@ _Last Updated: [Date]_
 
 ## Key Features
 - [List of key features with status]
-```
+````
 
 ### IMPLEMENTATION-PLAN.md Requirements
+
 ```markdown
 # Implementation Plan
 
 ## Section 1: High-Level Summary
+
 [Complete section with requirements, goals, success criteria]
 
 ## Section 2: Tech Stack
+
 [Complete section with technology choices and rationale]
 
 ## Section 3: Architecture Overview
+
 [Complete section with system architecture decisions]
 
 ## Section 4: Key Components
+
 [Complete section with component specifications]
 
 ## Section 5: Data Models
+
 [Complete section with database schemas and relationships]
 
 ## Section 6: API Design
+
 [Complete section with API endpoints and contracts]
 
 ## Section 7: Security Model
+
 [Complete section with security architecture and controls]
 
 ## Section 8: Testing Strategy
+
 [Complete section with testing approach and coverage]
 
 ## Section 9: Deployment Architecture
+
 [Complete section with deployment strategy and infrastructure]
 
 ## Section 10: Monitoring & Observability
+
 [Complete section with monitoring and alerting]
 
 ## Section 11: Scalability Plan
+
 [Complete section with scaling strategy]
 
 ## Section 12: Risk Mitigation
+
 [Complete section with risk assessment and mitigation]
 
 [Continue through all 34 sections...]
@@ -253,6 +283,7 @@ _Last Updated: [Date]_
 ## 🧪 TESTING STANDARDS
 
 ### Test Coverage Requirements
+
 - **Unit Tests:** 80%+ coverage for core logic
 - **Integration Tests:** All integrations tested
 - **End-to-End Tests:** Critical user flows tested
@@ -260,6 +291,7 @@ _Last Updated: [Date]_
 - **Security Tests:** Vulnerability scanning
 
 ### Test Structure
+
 ```javascript
 // tests/unit/example.test.js
 import { describe, it, expect } from 'vitest';
@@ -283,6 +315,7 @@ describe('Example Function', () => {
 ```
 
 ### Test Categories
+
 - **Unit Tests:** Individual function/component testing
 - **Integration Tests:** Multi-component interaction testing
 - **End-to-End Tests:** Complete user flow testing
@@ -294,6 +327,7 @@ describe('Example Function', () => {
 ## 🔐 SECURITY STANDARDS
 
 ### Security Requirements
+
 - **Input Validation:** All inputs validated against schemas
 - **Output Sanitization:** All outputs sanitized for security
 - **Authentication:** Proper authentication implementation
@@ -301,12 +335,14 @@ describe('Example Function', () => {
 - **Encryption:** Data encrypted at rest and in transit
 
 ### Security Testing
+
 - **Dependency Scanning:** Regular vulnerability scanning
 - **Code Analysis:** Static analysis for security issues
 - **Penetration Testing:** Regular security assessments
 - **Compliance Checking:** Regulatory compliance verification
 
 ### Security Implementation
+
 ```javascript
 // src/lib/security.js
 import { z } from 'zod';
@@ -331,6 +367,7 @@ export function validateUserInput(input) {
 ## 🚀 PERFORMANCE STANDARDS
 
 ### Performance Targets
+
 - **Response Time:** <100ms for 95% of requests
 - **Throughput:** 1000+ requests per second
 - **Memory Usage:** <500MB for typical usage
@@ -338,16 +375,22 @@ export function validateUserInput(input) {
 - **Load Time:** <3 seconds for initial page load
 
 ### Performance Testing
+
 ```javascript
 // tests/performance/example.test.js
 import { bench } from 'vitest';
 
-bench('example function performance', () => {
-  exampleFunction('input');
-}, { time: 1000 });
+bench(
+  'example function performance',
+  () => {
+    exampleFunction('input');
+  },
+  { time: 1000 }
+);
 ```
 
 ### Performance Optimization
+
 - **Caching:** Intelligent caching strategies
 - **Compression:** Response compression
 - **Database:** Optimized queries and indexing
@@ -359,6 +402,7 @@ bench('example function performance', () => {
 ## 📊 QUALITY METRICS
 
 ### Code Quality Standards
+
 - **ESLint:** All code passes linting rules
 - **Prettier:** All code formatted consistently
 - **TypeScript:** Strict mode with complete type coverage
@@ -366,6 +410,7 @@ bench('example function performance', () => {
 - **Testing:** All functionality tested
 
 ### Quality Gates
+
 - **Code Coverage:** 80%+ for core logic
 - **Security Score:** Zero critical vulnerabilities
 - **Performance Score:** Meets target benchmarks
@@ -377,12 +422,14 @@ bench('example function performance', () => {
 ## 🔄 MAINTENANCE STANDARDS
 
 ### Update Frequency
+
 - **Security Updates:** Weekly dependency updates
 - **Feature Updates:** Monthly feature additions
 - **Documentation Updates:** Quarterly documentation reviews
 - **Performance Updates:** Continuous optimization
 
 ### Maintenance Procedures
+
 1. **Version Updates:** Keep dependencies current
 2. **Security Patches:** Apply security updates promptly
 3. **Performance Monitoring:** Monitor and optimize continuously
@@ -394,6 +441,7 @@ bench('example function performance', () => {
 ## 🤝 COMMUNITY CONTRIBUTION STANDARDS
 
 ### Pull Request Requirements
+
 - **Description:** Clear description of changes
 - **Testing:** All tests passing
 - **Documentation:** Updated documentation
@@ -401,6 +449,7 @@ bench('example function performance', () => {
 - **Review:** Approved by maintainers
 
 ### Issue Reporting
+
 - **Reproduction:** Clear steps to reproduce
 - **Environment:** Complete environment information
 - **Expected Behavior:** What should happen
@@ -412,6 +461,7 @@ bench('example function performance', () => {
 ## 🧪 VALIDATION CHECKLIST
 
 ### Pre-Publication Checklist
+
 - [ ] **All Required Files:** README.md, CONTEXT.md, IMPLEMENTATION-PLAN.md exist
 - [ ] **Code Quality:** ESLint and Prettier pass
 - [ ] **Testing:** All tests pass with 80%+ coverage
@@ -424,6 +474,7 @@ bench('example function performance', () => {
 - [ ] **Examples:** Working examples included
 
 ### Post-Publication Checklist
+
 - [ ] **Repository Setup:** Proper repository configuration
 - [ ] **Issue Templates:** Issue templates configured
 - [ ] **Pull Request Templates:** PR templates configured
@@ -439,13 +490,14 @@ bench('example function performance', () => {
 ## 🚀 DEPLOYMENT STANDARDS
 
 ### Deployment Configuration
+
 ```yaml
 # .github/workflows/deploy.yml
 name: Deploy Example
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   deploy:
@@ -465,6 +517,7 @@ jobs:
 ```
 
 ### Deployment Requirements
+
 - **Environment Variables:** Properly configured for deployment
 - **Database Migrations:** Automated migration execution
 - **Health Checks:** Proper health check endpoints
@@ -476,6 +529,7 @@ jobs:
 ## 📞 SUPPORT & MAINTENANCE
 
 ### Community Support
+
 - **Issue Tracker:** GitHub issues for bug reports
 - **Discussions:** GitHub discussions for questions
 - **Documentation:** Comprehensive documentation
@@ -483,6 +537,7 @@ jobs:
 - **Community:** Active community support
 
 ### Maintenance Responsibility
+
 - **Primary Maintainer:** [Maintainer information]
 - **Secondary Maintainer:** [Maintainer information]
 - **Community Maintainers:** [Maintainer information]
@@ -494,6 +549,7 @@ jobs:
 ## 🏆 BEST PRACTICES
 
 ### For Contributors
+
 - **Follow Standards:** Adhere to all example repository standards
 - **Test Thoroughly:** Ensure all functionality is tested
 - **Document Well:** Provide comprehensive documentation
@@ -501,6 +557,7 @@ jobs:
 - **Performance Conscious:** Optimize for performance
 
 ### For Maintainers
+
 - **Regular Updates:** Keep examples current with latest features
 - **Quality Assurance:** Maintain high quality standards
 - **Community Engagement:** Respond to community feedback
@@ -512,6 +569,7 @@ jobs:
 ## 🔄 CONTINUOUS IMPROVEMENT
 
 ### Improvement Process
+
 1. **Feedback Collection:** Gather community feedback
 2. **Analysis:** Analyze feedback and identify improvements
 3. **Implementation:** Implement improvements systematically
@@ -520,6 +578,7 @@ jobs:
 6. **Publication:** Release improvements to community
 
 ### Metrics Tracking
+
 - **Usage Metrics:** Track example repository usage
 - **Feedback Metrics:** Track community feedback
 - **Quality Metrics:** Track code quality metrics

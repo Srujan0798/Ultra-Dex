@@ -29,9 +29,18 @@ describe('Performance System Verification', () => {
   describe('Performance Monitoring', () => {
     it('should have monitoring module structure', async () => {
       assert.ok(performanceMonitor, 'Performance monitor should be exported');
-      assert.ok(typeof performanceMonitor.trackRequest === 'function', 'Should have trackRequest method');
-      assert.ok(typeof performanceMonitor.collectMetrics === 'function', 'Should have collectMetrics method');
-      assert.ok(typeof performanceMonitor.getPerformanceReport === 'function', 'Should have getPerformanceReport method');
+      assert.ok(
+        typeof performanceMonitor.trackRequest === 'function',
+        'Should have trackRequest method'
+      );
+      assert.ok(
+        typeof performanceMonitor.collectMetrics === 'function',
+        'Should have collectMetrics method'
+      );
+      assert.ok(
+        typeof performanceMonitor.getPerformanceReport === 'function',
+        'Should have getPerformanceReport method'
+      );
     });
 
     it('should track request metrics', async () => {
@@ -51,13 +60,24 @@ describe('Performance System Verification', () => {
   describe('Database Optimization', () => {
     it('should have database optimizer module structure', async () => {
       assert.ok(databaseOptimizer, 'Database optimizer should be exported');
-      assert.ok(typeof databaseOptimizer.optimizeQuery === 'function', 'Should have optimizeQuery method');
-      assert.ok(typeof databaseOptimizer.createQueryWithTracking === 'function', 'Should have createQueryWithTracking method');
-      assert.ok(typeof databaseOptimizer.getQueryStats === 'function', 'Should have getQueryStats method');
+      assert.ok(
+        typeof databaseOptimizer.optimizeQuery === 'function',
+        'Should have optimizeQuery method'
+      );
+      assert.ok(
+        typeof databaseOptimizer.createQueryWithTracking === 'function',
+        'Should have createQueryWithTracking method'
+      );
+      assert.ok(
+        typeof databaseOptimizer.getQueryStats === 'function',
+        'Should have getQueryStats method'
+      );
     });
 
     it('should analyze a simple query', async () => {
-      const result = await databaseOptimizer.optimizeQuery('SELECT * FROM agents WHERE status = "active"');
+      const result = await databaseOptimizer.optimizeQuery(
+        'SELECT * FROM agents WHERE status = "active"'
+      );
       assert.ok(result.analysis, 'Should have analysis result');
       assert.ok(Array.isArray(result.analysis.suggestions), 'Should have suggestions array');
     });
@@ -65,7 +85,7 @@ describe('Performance System Verification', () => {
     it('should identify SELECT * anti-pattern', async () => {
       const result = await databaseOptimizer.optimizeQuery('SELECT * FROM memory');
       const hasSelectAllSuggestion = result.analysis.suggestions.some(
-        s => s.appliesTo === 'selectAll'
+        (s) => s.appliesTo === 'selectAll'
       );
       assert.ok(hasSelectAllSuggestion, 'Should identify SELECT * anti-pattern');
     });

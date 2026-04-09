@@ -14,7 +14,6 @@ import cliProgress from 'cli-progress';
 let multiBar = null;
 
 export function showProgress(tasks) {
-   
   const _total = tasks.length;
   logger.log('');
   logger.log(gradient(['#6366f1', '#8b5cf6']).bold('  ⚡ EXECUTING TASKS...'));

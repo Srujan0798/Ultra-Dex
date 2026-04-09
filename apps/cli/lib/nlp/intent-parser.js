@@ -20,7 +20,7 @@ const INTENT_MAP = {
 
 export function parseIntent(input) {
   const lower = input.toLowerCase().trim();
-  
+
   for (const [pattern, command] of Object.entries(INTENT_MAP)) {
     if (new RegExp(pattern).test(lower)) {
       return command;

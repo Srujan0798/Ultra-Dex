@@ -7,7 +7,6 @@
 
 import EventEmitter from 'events';
 
-
 /**
  * AutoScaler - Dynamic scaling of agents and resources
  */

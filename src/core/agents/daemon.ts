@@ -3,14 +3,13 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { EventEmitter } from "events";
+import { singleton } from 'tsyringe';
+import { EventEmitter } from 'events';
 let Daemon = class extends EventEmitter {
   constructor(options = {}) {
     super();
@@ -20,18 +19,18 @@ let Daemon = class extends EventEmitter {
       maxRestarts: options.maxRestarts || 5,
       restartDelay: options.restartDelay || 1e3,
       healthCheckInterval: options.healthCheckInterval || 1e4,
-      ...options
+      ...options,
     };
-    this.state = "idle";
+    this.state = 'idle';
     this.healthChecker = null;
   }
   /**
    * Initialize daemon
    */
   async initialize() {
-    this.state = "ready";
+    this.state = 'ready';
     this.startHealthChecks();
-    this.emit("daemon.ready");
+    this.emit('daemon.ready');
     return this;
   }
   /**
@@ -44,27 +43,27 @@ let Daemon = class extends EventEmitter {
     const process = {
       id: processId,
       agent,
-      status: "starting",
+      status: 'starting',
       startedAt: Date.now(),
       restartCount: 0,
       lastError: null,
       pid: Math.random().toString(36).substr(2, 9),
-      ...options
+      ...options,
     };
     this.processes.set(processId, process);
-    this.emit("process.starting", { processId });
+    this.emit('process.starting', { processId });
     try {
       if (agent.initialize) {
         await agent.initialize();
       }
-      process.status = "running";
+      process.status = 'running';
       process.startedAt = Date.now();
-      this.emit("process.started", { processId, pid: process.pid });
+      this.emit('process.started', { processId, pid: process.pid });
       return process;
     } catch (error) {
-      process.status = "failed";
+      process.status = 'failed';
       process.lastError = error;
-      this.emit("process.start-failed", { processId, error });
+      this.emit('process.start-failed', { processId, error });
       throw error;
     }
   }
@@ -76,17 +75,17 @@ let Daemon = class extends EventEmitter {
     if (!process) {
       return false;
     }
-    this.emit("process.stopping", { processId });
+    this.emit('process.stopping', { processId });
     try {
       if (process.agent.shutdown) {
         await process.agent.shutdown();
       }
-      process.status = "stopped";
+      process.status = 'stopped';
       this.processes.delete(processId);
-      this.emit("process.stopped", { processId });
+      this.emit('process.stopped', { processId });
       return true;
     } catch (error) {
-      this.emit("process.stop-failed", { processId, error });
+      this.emit('process.stop-failed', { processId, error });
       throw error;
     }
   }
@@ -98,23 +97,23 @@ let Daemon = class extends EventEmitter {
     if (!process) {
       throw new Error(`Process ${processId} not found`);
     }
-    this.emit("process.restarting", { processId });
+    this.emit('process.restarting', { processId });
     try {
       if (process.agent.shutdown) {
         await process.agent.shutdown();
       }
-      process.status = "running";
+      process.status = 'running';
       process.restartCount++;
       process.startedAt = Date.now();
       if (process.agent.initialize) {
         await process.agent.initialize();
       }
-      this.emit("process.restarted", { processId, restartCount: process.restartCount });
+      this.emit('process.restarted', { processId, restartCount: process.restartCount });
       return process;
     } catch (error) {
-      process.status = "failed";
+      process.status = 'failed';
       process.lastError = error;
-      this.emit("process.restart-failed", { processId, error });
+      this.emit('process.restart-failed', { processId, error });
       throw error;
     }
   }
@@ -134,19 +133,18 @@ let Daemon = class extends EventEmitter {
    */
   async performHealthChecks() {
     for (const [processId, process] of this.processes) {
-      if (process.status !== "running")
-        continue;
+      if (process.status !== 'running') continue;
       try {
         const healthy = await this.checkProcessHealth(process);
         if (!healthy) {
-          process.status = "unhealthy";
-          this.emit("process.unhealthy", { processId });
+          process.status = 'unhealthy';
+          this.emit('process.unhealthy', { processId });
           if (this.config.restartOnFailure) {
             await this.handleProcessFailure(processId, process);
           }
         }
       } catch (error) {
-        process.status = "unhealthy";
+        process.status = 'unhealthy';
         process.lastError = error;
         if (this.config.restartOnFailure) {
           await this.handleProcessFailure(processId, process);
@@ -161,7 +159,7 @@ let Daemon = class extends EventEmitter {
     try {
       if (process.agent.getStatus) {
         const status = process.agent.getStatus();
-        return status && status.state !== "error";
+        return status && status.state !== 'error';
       }
       return process.agent !== null;
     } catch {
@@ -173,17 +171,17 @@ let Daemon = class extends EventEmitter {
    */
   async handleProcessFailure(processId, process) {
     if (process.restartCount >= this.config.maxRestarts) {
-      this.emit("process.max-restarts-exceeded", {
+      this.emit('process.max-restarts-exceeded', {
         processId,
-        restartCount: process.restartCount
+        restartCount: process.restartCount,
       });
       return;
     }
     const delay = this.config.restartDelay * Math.pow(2, process.restartCount - 1);
-    this.emit("process.scheduling-restart", { processId, delay });
+    this.emit('process.scheduling-restart', { processId, delay });
     setTimeout(() => {
       this.restartProcess(processId).catch((error) => {
-        this.emit("process.restart-error", { processId, error });
+        this.emit('process.restart-error', { processId, error });
       });
     }, delay);
   }
@@ -192,8 +190,7 @@ let Daemon = class extends EventEmitter {
    */
   getProcessStatus(processId) {
     const process = this.processes.get(processId);
-    if (!process)
-      return null;
+    if (!process) return null;
     return {
       id: process.id,
       status: process.status,
@@ -201,7 +198,7 @@ let Daemon = class extends EventEmitter {
       uptime: Date.now() - process.startedAt,
       restartCount: process.restartCount,
       lastError: process.lastError,
-      pid: process.pid
+      pid: process.pid,
     };
   }
   /**
@@ -216,7 +213,7 @@ let Daemon = class extends EventEmitter {
       id: p.id,
       status: p.status,
       uptime: Date.now() - p.startedAt,
-      restartCount: p.restartCount
+      restartCount: p.restartCount,
     }));
   }
   /**
@@ -224,16 +221,16 @@ let Daemon = class extends EventEmitter {
    */
   getStats() {
     const processes = Array.from(this.processes.values());
-    const running = processes.filter((p) => p.status === "running").length;
-    const stopped = processes.filter((p) => p.status === "stopped").length;
-    const unhealthy = processes.filter((p) => p.status === "unhealthy").length;
+    const running = processes.filter((p) => p.status === 'running').length;
+    const stopped = processes.filter((p) => p.status === 'stopped').length;
+    const unhealthy = processes.filter((p) => p.status === 'unhealthy').length;
     return {
       totalProcesses: processes.length,
       running,
       stopped,
       unhealthy,
       totalRestarts: processes.reduce((sum, p) => sum + p.restartCount, 0),
-      daemonUptime: this.daemonStartTime ? Date.now() - this.daemonStartTime : 0
+      daemonUptime: this.daemonStartTime ? Date.now() - this.daemonStartTime : 0,
     };
   }
   /**
@@ -247,15 +244,10 @@ let Daemon = class extends EventEmitter {
     for (const processId of processIds) {
       await this.stopProcess(processId).catch(() => null);
     }
-    this.state = "shutdown";
-    this.emit("daemon.shutdown");
+    this.state = 'shutdown';
+    this.emit('daemon.shutdown');
   }
 };
-Daemon = __decorateClass([
-  singleton()
-], Daemon);
+Daemon = __decorateClass([singleton()], Daemon);
 var daemon_default = Daemon;
-export {
-  Daemon,
-  daemon_default as default
-};
+export { Daemon, daemon_default as default };

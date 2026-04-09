@@ -16,20 +16,23 @@ This log documents the integration of the archive AI Router system into the live
 **Target:** `src/core/ai/router.js` (enhanced), `src/core/ai/router-config.js`
 
 **What was integrated:**
+
 - Added `task-aware` strategy to `SmartAIRouter.pickProviders()`
 - New `pickProvidersByTask()` method uses `ModelRouter` to classify tasks
 - Task classification routes to optimal provider based on task type
 - Strategy configuration added to `DEFAULT_ROUTER_CONFIG`
 
 **Usage:**
+
 ```javascript
 // Route request using task-aware strategy
-await router.routeRequest(messages, 'task-aware', { 
-  task: 'Write a React component for user login' 
+await router.routeRequest(messages, 'task-aware', {
+  task: 'Write a React component for user login',
 });
 ```
 
 **Task classifications supported:**
+
 - `code-generation` → gpt-4o, claude-3-5-sonnet
 - `refactoring` → claude-3-5-sonnet, gpt-4o
 - `documentation` → gemini-1.5-pro, claude-3-5-sonnet
@@ -46,6 +49,7 @@ await router.routeRequest(messages, 'task-aware', {
 **Status:** Copied as reference documentation for provider interface contracts.
 
 **Contents:**
+
 - Required methods: `chat()`, `stream()`, `embed()`
 - Optional methods: `complete()`, `vision()`, `code()`, `reasoning()`, `functionCalling()`
 - Configuration schema
@@ -62,6 +66,7 @@ await router.routeRequest(messages, 'task-aware', {
 **Status:** Already integrated - live system has identical implementation.
 
 **Files:**
+
 - `engine.js` - MCTS algorithm implementation (Selection, Expansion, Simulation, Backpropagation)
 - `node.js` - MCTSNode class with UCB1 selection
 - `architect-simulator.js` - Simulator for architectural decisions
@@ -75,6 +80,7 @@ await router.routeRequest(messages, 'task-aware', {
 **Status:** Live system has equivalent implementation with additional features.
 
 **Live system advantages:**
+
 - Load balancing across providers
 - Latency-based fallback
 - Deterministic provider selection (tiebreaker by name)
@@ -86,6 +92,7 @@ await router.routeRequest(messages, 'task-aware', {
 **Status:** Already present in `src/core/ai/model-router.js` (identical to archive).
 
 **Features:**
+
 - `MODEL_CONFIGS` with capabilities and costs
 - `ROUTING_TABLE` mapping task types to models
 - `TASK_CLASSIFICATIONS` with keyword matching
@@ -97,6 +104,7 @@ await router.routeRequest(messages, 'task-aware', {
 **Status:** Live system has comprehensive configuration in `src/core/ai/router-config.js`.
 
 **Already includes:**
+
 - `STRATEGY_PROVIDER_PRIORITIES` for cost/latency/quality/fallback
 - `PROVIDER_PRIORITY_CONFIG` with per-provider scores
 - `MODEL_PROVIDER_MAP` for model-to-provider resolution
@@ -107,6 +115,7 @@ await router.routeRequest(messages, 'task-aware', {
 **Archive providers (9):** anthropic, deepseek, groq, kimi, llama, openai, openclaw, together, yi
 
 **Live providers (17):** All archive providers PLUS:
+
 - `cohere.js` - Cohere command models
 - `google.js` - Google Gemini models
 - `mistral.js` - Mistral models
@@ -121,23 +130,23 @@ await router.routeRequest(messages, 'task-aware', {
 
 ## Provider Capability Comparison
 
-| Provider | Archive | Live | Notes |
-|----------|---------|------|-------|
-| anthropic | ✅ | ✅ | Identical |
-| deepseek | ✅ | ✅ | Identical |
-| groq | ✅ | ✅ | Identical |
-| kimi | ✅ | ✅ | Identical |
-| llama | ✅ | ✅ | Identical |
-| openai | ✅ | ✅ | Identical |
-| openclaw | ✅ | ✅ | Identical |
-| together | ✅ | ✅ | Identical |
-| yi | ✅ | ✅ | Identical |
-| cohere | ❌ | ✅ | NEW in live |
-| google | ❌ | ✅ | NEW in live |
-| mistral | ❌ | ✅ | NEW in live |
-| qwen | ❌ | ✅ | NEW in live |
-| zhipu | ❌ | ✅ | NEW in live |
-| deepseek-r1 | ❌ | ✅ | NEW in live |
+| Provider    | Archive | Live | Notes       |
+| ----------- | ------- | ---- | ----------- |
+| anthropic   | ✅      | ✅   | Identical   |
+| deepseek    | ✅      | ✅   | Identical   |
+| groq        | ✅      | ✅   | Identical   |
+| kimi        | ✅      | ✅   | Identical   |
+| llama       | ✅      | ✅   | Identical   |
+| openai      | ✅      | ✅   | Identical   |
+| openclaw    | ✅      | ✅   | Identical   |
+| together    | ✅      | ✅   | Identical   |
+| yi          | ✅      | ✅   | Identical   |
+| cohere      | ❌      | ✅   | NEW in live |
+| google      | ❌      | ✅   | NEW in live |
+| mistral     | ❌      | ✅   | NEW in live |
+| qwen        | ❌      | ✅   | NEW in live |
+| zhipu       | ❌      | ✅   | NEW in live |
+| deepseek-r1 | ❌      | ✅   | NEW in live |
 
 ## Testing
 
@@ -148,6 +157,7 @@ npm test
 ```
 
 **Results:**
+
 - Unit tests: 273/273 pass
 - Integration tests: 44/44 pass
 - No regressions detected

@@ -8,7 +8,6 @@
 
 import { logger } from '../utils/logger.js';
 
-
 const MAX_RETRIES = 3;
 const DEFAULT_TIMEOUT_MS = 300_000; // 5 minutes
 
@@ -64,58 +63,86 @@ export class ExecutionEngine {
 
     try {
       // Step 1: Validate agent exists
-      await this._traceStep('validate_agent', async () => {
-        if (!this.agents[agentName]) {
-          throw new Error(`Unknown agent: "${agentName}". Available: ${Object.keys(this.agents).join(', ')}`);
-        }
-      }, trace);
+      await this._traceStep(
+        'validate_agent',
+        async () => {
+          if (!this.agents[agentName]) {
+            throw new Error(
+              `Unknown agent: "${agentName}". Available: ${Object.keys(this.agents).join(', ')}`
+            );
+          }
+        },
+        trace
+      );
 
       // Step 2: Governance check (lazy import to avoid circular dependency)
-      await this._traceStep('governance_check', async () => {
-        try {
-          const { authorizeOperation } = await import('../governance/index.js');
-          await authorizeOperation(`agent:${agentName}`, { task, runId });
-        } catch {
-          // Governance not available, skip
-        }
-      }, trace);
+      await this._traceStep(
+        'governance_check',
+        async () => {
+          try {
+            const { authorizeOperation } = await import('../governance/index.js');
+            await authorizeOperation(`agent:${agentName}`, { task, runId });
+          } catch {
+            // Governance not available, skip
+          }
+        },
+        trace
+      );
 
       // Step 3: Initialize agent or use provider directly
-      const agent = await this._traceStep('initialize_agent', async () => {
-        const agentDef = this.agents[agentName];
-        // If agent def has a create function, use it; otherwise use the provider directly
-        if (typeof agentDef?.create === 'function') {
-          return agentDef.create({ provider: this.provider, runId });
-        }
-        // Fallback: return the agent config + provider for direct execution
-        return {
-          config: agentDef || {},
-          provider: this.provider,
-          run: async (taskText) => {
-            // Direct provider call using agent's system prompt
-            const systemPrompt = agentDef?.systemPrompt || `You are an AI assistant.`;
-            // Use provider.generate() if available, otherwise try .complete()
-            if (typeof this.provider.generate === 'function') {
-              const response = await this.provider.generate(systemPrompt, taskText, { maxTokens: 4096 });
-              return response?.text || response?.content || response?.output || JSON.stringify(response) || 'No response';
-            }
-            if (typeof this.provider.complete === 'function') {
-              const messages = [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: taskText },
-              ];
-              const response = await this.provider.complete(messages, { maxTokens: 4096 });
-              return response?.text || response?.content || JSON.stringify(response) || 'No response';
-            }
-            return `[Provider has no callable generate/complete method]`;
-          },
-        };
-      }, trace);
+      const agent = await this._traceStep(
+        'initialize_agent',
+        async () => {
+          const agentDef = this.agents[agentName];
+          // If agent def has a create function, use it; otherwise use the provider directly
+          if (typeof agentDef?.create === 'function') {
+            return agentDef.create({ provider: this.provider, runId });
+          }
+          // Fallback: return the agent config + provider for direct execution
+          return {
+            config: agentDef || {},
+            provider: this.provider,
+            run: async (taskText) => {
+              // Direct provider call using agent's system prompt
+              const systemPrompt = agentDef?.systemPrompt || `You are an AI assistant.`;
+              // Use provider.generate() if available, otherwise try .complete()
+              if (typeof this.provider.generate === 'function') {
+                const response = await this.provider.generate(systemPrompt, taskText, {
+                  maxTokens: 4096,
+                });
+                return (
+                  response?.text ||
+                  response?.content ||
+                  response?.output ||
+                  JSON.stringify(response) ||
+                  'No response'
+                );
+              }
+              if (typeof this.provider.complete === 'function') {
+                const messages = [
+                  { role: 'system', content: systemPrompt },
+                  { role: 'user', content: taskText },
+                ];
+                const response = await this.provider.complete(messages, { maxTokens: 4096 });
+                return (
+                  response?.text || response?.content || JSON.stringify(response) || 'No response'
+                );
+              }
+              return `[Provider has no callable generate/complete method]`;
+            },
+          };
+        },
+        trace
+      );
 
       // Step 4: Execute with retries
-      const result = await this._traceStep('execute_task', async () => {
-        return this._executeWithRetry(agent, task, { runId, trace });
-      }, trace);
+      const result = await this._traceStep(
+        'execute_task',
+        async () => {
+          return this._executeWithRetry(agent, task, { runId, trace });
+        },
+        trace
+      );
 
       const durationMs = Date.now() - startTime;
 
@@ -159,13 +186,14 @@ export class ExecutionEngine {
     // Guard: agent must have a .run() method
     if (typeof agent?.run !== 'function') {
       const agentType = agent === null ? 'null' : typeof agent;
-      const availableMethods = agent && typeof agent === 'object'
-        ? Object.keys(agent).filter((k) => typeof agent[k] === 'function')
-        : [];
+      const availableMethods =
+        agent && typeof agent === 'object'
+          ? Object.keys(agent).filter((k) => typeof agent[k] === 'function')
+          : [];
       throw new Error(
         `Agent executor missing or invalid: expected .run() method but got ${agentType}. ` +
-        `Available methods: [${availableMethods.join(', ')}]. ` +
-        `Ensure the agent definition includes a callable run function.`
+          `Available methods: [${availableMethods.join(', ')}]. ` +
+          `Ensure the agent definition includes a callable run function.`
       );
     }
 
@@ -192,10 +220,13 @@ export class ExecutionEngine {
         return result;
       } catch (error) {
         lastError = error;
-        logger.warn(`Execution attempt ${attempt}/${this.config.maxRetries} failed: ${error.message}`, {
-          runId,
-          attempt,
-        });
+        logger.warn(
+          `Execution attempt ${attempt}/${this.config.maxRetries} failed: ${error.message}`,
+          {
+            runId,
+            attempt,
+          }
+        );
 
         if (attempt < this.config.maxRetries) {
           const backoffMs = Math.min(1000 * Math.pow(2, attempt - 1), 10_000);

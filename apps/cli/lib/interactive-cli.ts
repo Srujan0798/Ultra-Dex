@@ -1,8 +1,23 @@
 import { singleton } from 'tsyringe';
 
 import inquirer from 'inquirer';
-import { createSpinner, showSuccess, showInfo, showWarning, showError, withLoading, runTaskSuite } from './spinner.js';
-import { colors, gradients, formatMessage, formatTitle, formatSection, formatListItem } from './colors.js';
+import {
+  createSpinner,
+  showSuccess,
+  showInfo,
+  showWarning,
+  showError,
+  withLoading,
+  runTaskSuite,
+} from './spinner.js';
+import {
+  colors,
+  gradients,
+  formatMessage,
+  formatTitle,
+  formatSection,
+  formatListItem,
+} from './colors.js';
 import { performance } from 'perf_hooks';
 import chalk from 'chalk';
 
@@ -21,14 +36,18 @@ export class InteractiveCLI {
    * Show a welcome message with Ultra-Dex branding
    */
   showWelcome(): void {
-    console.log('\n' + gradients.brand(`
+    console.log(
+      '\n' +
+        gradients.brand(`
    __  ____  __               ____            
   / / / / / / /__________ _  / __ \\___  _  __ 
  / / / / / / / ___/ __ \`/ / / / / / _ \\| |/_/ 
 / /_/ / /_/ / /  / /_/ / / / /_/ /  __/>  <   
 \\____/\\____/_/   \\__,_/_/ /_____/\\___/_/|_|   
                                               
-    `) + '\n');
+    `) +
+        '\n'
+    );
     console.log(`  ${colors.brand('AI Orchestration Meta-Layer for SaaS Development')}`);
     console.log(`  ${chalk.dim('Version 6.0.0 | Enterprise Ready')}\n`);
   }
@@ -40,17 +59,21 @@ export class InteractiveCLI {
    * @param {any} defaultChoice - Default value
    * @returns {Promise<any>} Selected value
    */
-  async promptList(message: string, choices: Array<{ name: string, value: unknown, short?: string }>, defaultChoice: unknown = null): Promise<unknown> {
+  async promptList(
+    message: string,
+    choices: Array<{ name: string; value: unknown; short?: string }>,
+    defaultChoice: unknown = null
+  ): Promise<unknown> {
     const question = {
       type: 'list',
       name: 'selection',
       message: chalk.cyan(message),
-      choices: choices.map(choice => ({
+      choices: choices.map((choice) => ({
         name: choice.name,
         value: choice.value,
-        short: choice.short || choice.name
+        short: choice.short || choice.name,
       })),
-      default: defaultChoice
+      default: defaultChoice,
     };
 
     const result = await inquirer.prompt([question]);
@@ -63,16 +86,19 @@ export class InteractiveCLI {
    * @param {Array<{name: string, value: any, checked?: boolean}>} choices - Options to choose from
    * @returns {Promise<Array<any>>} Selected values
    */
-  async promptCheckbox(message: string, choices: Array<{ name: string, value: unknown, checked?: boolean }>): Promise<unknown[]> {
+  async promptCheckbox(
+    message: string,
+    choices: Array<{ name: string; value: unknown; checked?: boolean }>
+  ): Promise<unknown[]> {
     const question = {
       type: 'checkbox',
       name: 'selections',
       message: chalk.cyan(message),
-      choices: choices.map(choice => ({
+      choices: choices.map((choice) => ({
         name: choice.name,
         value: choice.value,
-        checked: choice.checked || false
-      }))
+        checked: choice.checked || false,
+      })),
     };
 
     const result = await inquirer.prompt([question]);
@@ -86,12 +112,16 @@ export class InteractiveCLI {
    * @param {Function} validateFn - Validation function
    * @returns {Promise<string>} User input
    */
-  async promptInput(message: string, defaultValue: string = '', validateFn: AnyFunction | null = null): Promise<string> {
+  async promptInput(
+    message: string,
+    defaultValue: string = '',
+    validateFn: AnyFunction | null = null
+  ): Promise<string> {
     const question = {
       type: 'input',
       name: 'input',
       message: chalk.cyan(message),
-      default: defaultValue
+      default: defaultValue,
     };
 
     if (validateFn) {
@@ -112,7 +142,7 @@ export class InteractiveCLI {
       type: 'password',
       name: 'password',
       message: chalk.cyan(message),
-      mask: '*'
+      mask: '*',
     };
 
     const result = await inquirer.prompt([question]);
@@ -130,7 +160,7 @@ export class InteractiveCLI {
       type: 'confirm',
       name: 'confirmed',
       message: chalk.yellow(message),
-      default: defaultAnswer
+      default: defaultAnswer,
     };
 
     const result = await inquirer.prompt([question]);
@@ -173,23 +203,34 @@ export class InteractiveCLI {
     const { default: Table } = await import('cli-table3');
 
     const table = new Table({
-      head: headers.map(h => chalk.bold(h)),
+      head: headers.map((h) => chalk.bold(h)),
       chars: {
-        'top': '━', 'top-mid': '┳', 'top-left': '┏', 'top-right': '┓',
-        'bottom': '━', 'bottom-mid': '┻', 'bottom-left': '┗', 'bottom-right': '┛',
-        'left': '┃', 'left-mid': '┣', 'mid': '━', 'mid-mid': '╋',
-        'right': '┃', 'right-mid': '┫', 'middle': '┃'
+        top: '━',
+        'top-mid': '┳',
+        'top-left': '┏',
+        'top-right': '┓',
+        bottom: '━',
+        'bottom-mid': '┻',
+        'bottom-left': '┗',
+        'bottom-right': '┛',
+        left: '┃',
+        'left-mid': '┣',
+        mid: '━',
+        'mid-mid': '╋',
+        right: '┃',
+        'right-mid': '┫',
+        middle: '┃',
       },
       style: {
         head: [], // Disable default colors to use our own
-        border: ['dim']
-      }
+        border: ['dim'],
+      },
     });
 
     // Colorize headers
-    table.options.head = headers.map(h => gradients.info(h));
+    table.options.head = headers.map((h) => gradients.info(h));
 
-    rows.forEach(row => {
+    rows.forEach((row) => {
       table.push(row);
     });
 
@@ -199,7 +240,7 @@ export class InteractiveCLI {
   /**
    * Run a suite of tasks
    */
-  async runTasks(title: string, tasks: Array<{ name: string, fn: AnyFunction }>): Promise<unknown> {
+  async runTasks(title: string, tasks: Array<{ name: string; fn: AnyFunction }>): Promise<unknown> {
     return await runTaskSuite(title, tasks);
   }
 
@@ -270,12 +311,4 @@ export class InteractiveCLI {
 export const interactiveCLI = new InteractiveCLI();
 
 // Export individual utilities
-export {
-  createSpinner,
-  showSuccess,
-  showInfo,
-  showWarning,
-  showError,
-  withLoading,
-  runTaskSuite
-};
+export { createSpinner, showSuccess, showInfo, showWarning, showError, withLoading, runTaskSuite };

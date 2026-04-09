@@ -29,7 +29,8 @@ function readPreferences(): DashboardPreferences {
       theme: parsed.theme || DEFAULTS.theme,
       defaultRange: parsed.defaultRange || DEFAULTS.defaultRange,
       language: parsed.language || DEFAULTS.language,
-      notifyErrors: typeof parsed.notifyErrors === 'boolean' ? parsed.notifyErrors : DEFAULTS.notifyErrors,
+      notifyErrors:
+        typeof parsed.notifyErrors === 'boolean' ? parsed.notifyErrors : DEFAULTS.notifyErrors,
       notifyDeploys:
         typeof parsed.notifyDeploys === 'boolean' ? parsed.notifyDeploys : DEFAULTS.notifyDeploys,
     };
@@ -62,7 +63,10 @@ export function SettingsPanel() {
     applyTheme(prefs.theme);
   }, [prefs]);
 
-  const summary = useMemo(() => `${prefs.theme} | ${prefs.defaultRange} | ${prefs.language}`, [prefs]);
+  const summary = useMemo(
+    () => `${prefs.theme} | ${prefs.defaultRange} | ${prefs.language}`,
+    [prefs]
+  );
 
   return (
     <div className="relative">
@@ -77,7 +81,10 @@ export function SettingsPanel() {
       </button>
 
       {open && (
-        <section className="absolute right-0 z-40 mt-3 w-80 rounded-xl border border-slate-800 bg-slate-950 p-4 shadow-2xl" aria-label="Dashboard preferences panel">
+        <section
+          className="absolute right-0 z-40 mt-3 w-80 rounded-xl border border-slate-800 bg-slate-950 p-4 shadow-2xl"
+          aria-label="Dashboard preferences panel"
+        >
           <h3 className="text-sm font-semibold text-slate-100">Quick Preferences</h3>
           <p className="mt-1 text-[11px] text-slate-500">{summary}</p>
 
@@ -87,7 +94,10 @@ export function SettingsPanel() {
               <select
                 value={prefs.theme}
                 onChange={(event) =>
-                  setPrefs((previous) => ({ ...previous, theme: event.target.value as DashboardPreferences['theme'] }))
+                  setPrefs((previous) => ({
+                    ...previous,
+                    theme: event.target.value as DashboardPreferences['theme'],
+                  }))
                 }
                 className="mt-1 w-full rounded-md border border-slate-800 bg-slate-900 px-2 py-2 text-sm text-slate-100"
               >
@@ -102,7 +112,10 @@ export function SettingsPanel() {
               <select
                 value={prefs.defaultRange}
                 onChange={(event) =>
-                  setPrefs((previous) => ({ ...previous, defaultRange: event.target.value as DashboardPreferences['defaultRange'] }))
+                  setPrefs((previous) => ({
+                    ...previous,
+                    defaultRange: event.target.value as DashboardPreferences['defaultRange'],
+                  }))
                 }
                 className="mt-1 w-full rounded-md border border-slate-800 bg-slate-900 px-2 py-2 text-sm text-slate-100"
               >
@@ -117,7 +130,10 @@ export function SettingsPanel() {
               <select
                 value={prefs.language}
                 onChange={(event) =>
-                  setPrefs((previous) => ({ ...previous, language: event.target.value as DashboardPreferences['language'] }))
+                  setPrefs((previous) => ({
+                    ...previous,
+                    language: event.target.value as DashboardPreferences['language'],
+                  }))
                 }
                 className="mt-1 w-full rounded-md border border-slate-800 bg-slate-900 px-2 py-2 text-sm text-slate-100"
               >

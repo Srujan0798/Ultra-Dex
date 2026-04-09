@@ -24,19 +24,19 @@ const MONITORING_CONFIG = {
 
 // Define redaction format
 const redactPII = format((info) => {
-  const skipKeys = ['level', 'timestamp']; 
-  
+  const skipKeys = ['level', 'timestamp'];
+
   // Sanitize message
   if (info.message) {
     info.message = sanitizePayload(info.message);
   }
-  
+
   // Sanitize other properties
   for (const key of Object.keys(info)) {
     if (skipKeys.includes(key)) continue;
     info[key] = sanitizePayload(info[key]);
   }
-  
+
   return info;
 });
 
@@ -238,7 +238,7 @@ async function createLoggerInstance() {
         format.splat(),
         redactPII(),
         format.json()
-      )
+      ),
     }),
   ];
 

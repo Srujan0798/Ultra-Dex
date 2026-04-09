@@ -21,12 +21,14 @@ This example demonstrates how to create an AI-powered testing automation system 
 ## Setup
 
 1. **Install Dependencies**:
+
    ```bash
    # This example uses the UltraDex library
    ```
 
 2. **Environment Variables**:
    Create a `.env` file with the following:
+
    ```env
    ULTRA_DEX_API_KEY=your_ultra_dex_api_key
    ULTRA_DEX_ENDPOINT=https://api.ultra-dex.ai
@@ -55,40 +57,40 @@ The testing automation can perform complete testing cycles:
 const testingAutomation = new TestingAutomation({
   ultraDex: {
     apiKey: process.env.ULTRA_DEX_API_KEY,
-    endpoint: process.env.ULTRA_DEX_ENDPOINT || 'https://api.ultra-dex.ai'
-  }
+    endpoint: process.env.ULTRA_DEX_ENDPOINT || 'https://api.ultra-dex.ai',
+  },
 });
 
 // Run a complete testing cycle
 const result = await testingAutomation.runTestingCycle('./path/to/source/file.js', {
   type: 'unit',
   targetCoverage: 90,
-  includeEdgeCases: true
+  includeEdgeCases: true,
 });
 
 // Generate tests for specific file
 const testSuite = await testingAutomation.generateTests('./path/to/file.js', {
   type: 'integration',
   targetCoverage: 85,
-  includeEdgeCases: true
+  includeEdgeCases: true,
 });
 
 // Execute tests
 const results = await testingAutomation.executeTests(testSuite.id, {
   framework: 'jest',
   environment: 'production',
-  parallel: true
+  parallel: true,
 });
 
 // Predict defects
 const defects = await testingAutomation.predictDefects('./path/to/file.js', {
   changeType: 'refactoring',
-  complexityThreshold: 7
+  complexityThreshold: 7,
 });
 
 // Optimize test coverage
 const optimization = await testingAutomation.optimizeCoverage(testSuite.id, {
-  targetCoverage: 95
+  targetCoverage: 95,
 });
 ```
 

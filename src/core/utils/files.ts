@@ -1,24 +1,22 @@
-import fs from "fs/promises";
-import path from "path";
+import fs from 'fs/promises';
+import path from 'path';
 import { logger } from './logging.js';
-async function readFileSafe(filePath, label = "") {
+async function readFileSafe(filePath, label = '') {
   try {
-    const content = await fs.readFile(filePath, "utf-8");
+    const content = await fs.readFile(filePath, 'utf-8');
     return { label, content };
   } catch (err) {
-    if (err.code !== "ENOENT") {
+    if (err.code !== 'ENOENT') {
       logger.error(`[File] Error reading ${filePath}: ${err.message}`);
     }
-    return { label, content: "" };
+    return { label, content: '' };
   }
 }
-async function pathExists(targetPath, type = "file") {
+async function pathExists(targetPath, type = 'file') {
   try {
     const stats = await fs.stat(targetPath);
-    if (type === "file")
-      return stats.isFile();
-    if (type === "dir")
-      return stats.isDirectory();
+    if (type === 'file') return stats.isFile();
+    if (type === 'dir') return stats.isDirectory();
     return false;
   } catch {
     return false;
@@ -29,7 +27,7 @@ function resolveAssetPath(basePath, relativePath) {
     return path.join(basePath, relativePath);
   } catch (err) {
     logger.error(`[File] Error resolving path: ${err.message}`);
-    return "";
+    return '';
   }
 }
 async function copyDirectory(sourceDir, targetDir) {
@@ -50,9 +48,4 @@ async function copyDirectory(sourceDir, targetDir) {
     throw err;
   }
 }
-export {
-  copyDirectory,
-  pathExists,
-  readFileSafe,
-  resolveAssetPath
-};
+export { copyDirectory, pathExists, readFileSafe, resolveAssetPath };

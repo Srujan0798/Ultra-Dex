@@ -34,7 +34,10 @@ function normalizeCommandName(command) {
 let usageSinkInitialized = false;
 
 function isUsageEvent(event) {
-  return event.type === 'usage.command' || (event.type === 'log.entry' && event.message === 'usage.command');
+  return (
+    event.type === 'usage.command' ||
+    (event.type === 'log.entry' && event.message === 'usage.command')
+  );
 }
 
 export function initializeUsageSink() {

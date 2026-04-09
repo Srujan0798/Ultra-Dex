@@ -13,7 +13,6 @@ import { promisify } from 'util';
 import inquirer from 'inquirer';
 import { printInfo, printSuccess, printWarning, printError } from '../utils/output.js';
 
-
 const execAsync = promisify(exec);
 
 // Docker compose file template
@@ -102,7 +101,7 @@ class DockerManager {
       // Check if Docker daemon is running
       const { stdout: version } = await execAsync('docker --version');
       printInfo(chalk.gray(`Docker version: ${version.trim()}`));
-      
+
       // Check if Docker daemon is running
       await execAsync('docker ps');
       printSuccess(chalk.green('✅ Docker is installed and running'));
@@ -118,9 +117,9 @@ class DockerManager {
    */
   async generateDockerfile(options = {}) {
     printInfo(chalk.cyan('\n🐳 Generating Dockerfile...\n'));
-    
+
     const dockerfilePath = path.join(this.projectPath, 'Dockerfile');
-    
+
     // Check if Dockerfile already exists
     try {
       await fs.access(dockerfilePath);
@@ -129,10 +128,10 @@ class DockerManager {
           type: 'confirm',
           name: 'overwrite',
           message: chalk.yellow('Dockerfile already exists. Overwrite?'),
-          default: false
-        }
+          default: false,
+        },
       ]);
-      
+
       if (!overwrite) {
         printInfo(chalk.gray('Dockerfile generation cancelled.'));
         return dockerfilePath;
@@ -140,13 +139,13 @@ class DockerManager {
     } catch (_error) {
       // Dockerfile doesn't exist, that's fine
     }
-    
+
     // Use provided template or default
     const dockerfileContent = options.template || DOCKERFILE_TEMPLATE;
-    
+
     await fs.writeFile(dockerfilePath, dockerfileContent);
     printSuccess(chalk.green(`✅ Dockerfile generated: ${dockerfilePath}`));
-    
+
     return dockerfilePath;
   }
 
@@ -155,9 +154,9 @@ class DockerManager {
    */
   async generateComposeFile(options = {}) {
     printInfo(chalk.cyan('\n🐳 Generating docker-compose.yml...\n'));
-    
+
     const composePath = path.join(this.projectPath, 'docker-compose.yml');
-    
+
     // Check if docker-compose.yml already exists
     try {
       await fs.access(composePath);
@@ -166,10 +165,10 @@ class DockerManager {
           type: 'confirm',
           name: 'overwrite',
           message: chalk.yellow('docker-compose.yml already exists. Overwrite?'),
-          default: false
-        }
+          default: false,
+        },
       ]);
-      
+
       if (!overwrite) {
         printInfo(chalk.gray('docker-compose.yml generation cancelled.'));
         return composePath;
@@ -177,13 +176,13 @@ class DockerManager {
     } catch (_error) {
       // docker-compose.yml doesn't exist, that's fine
     }
-    
+
     // Use provided template or default
     const composeContent = options.template || DOCKER_COMPOSE_TEMPLATE;
-    
+
     await fs.writeFile(composePath, composeContent);
     printSuccess(chalk.green(`✅ docker-compose.yml generated: ${composePath}`));
-    
+
     return composePath;
   }
 
@@ -196,10 +195,10 @@ class DockerManager {
     }
 
     printInfo(chalk.cyan('\n🏗️  Building Docker image...\n'));
-    
+
     const imageName = options.imageName || `ultra-dex-app:${Date.now()}`;
     const dockerfilePath = path.join(this.projectPath, 'Dockerfile');
-    
+
     // Check if Dockerfile exists
     try {
       await fs.access(dockerfilePath);
@@ -207,25 +206,29 @@ class DockerManager {
       printWarning(chalk.yellow('Dockerfile not found. Generating default Dockerfile...'));
       await this.generateDockerfile();
     }
-    
+
     const buildArgs = [
       'build',
-      '-t', imageName,
+      '-t',
+      imageName,
       ...(options.dockerfile ? ['-f', options.dockerfile] : []),
       ...(options.noCache ? ['--no-cache'] : []),
       ...(options.platform ? ['--platform', options.platform] : []),
-      '.'
+      '.',
     ];
 
     const buildCmd = `docker ${buildArgs.join(' ')}`;
     printInfo(chalk.gray(`Running: ${buildCmd}`));
 
     try {
-      const { stdout, stderr } = await execAsync(buildCmd, { cwd: this.projectPath, maxBuffer: 10 * 1024 * 1024 }); // 10MB buffer
-      
+      const { stdout, stderr } = await execAsync(buildCmd, {
+        cwd: this.projectPath,
+        maxBuffer: 10 * 1024 * 1024,
+      }); // 10MB buffer
+
       if (stdout) printInfo(chalk.gray(stdout));
       if (stderr) printWarning(chalk.yellow(stderr));
-      
+
       printSuccess(chalk.green(`✅ Docker image built: ${imageName}`));
       return { imageName, stdout, stderr };
     } catch (error) {
@@ -243,14 +246,15 @@ class DockerManager {
     }
 
     printInfo(chalk.cyan('\n🏃 Running Docker container...\n'));
-    
+
     const imageName = options.imageName || 'ultra-dex-app:latest';
     const containerName = options.containerName || `ultra-dex-${Date.now()}`;
-    
+
     const runArgs = [
       'run',
       '-d', // Detached mode
-      '--name', containerName,
+      '--name',
+      containerName,
       ...(options.port ? ['-p', `${options.port}:${options.port}`] : []),
       ...(options.envFile ? ['--env-file', options.envFile] : []),
       ...(options.volume ? ['-v', `${options.volume}`] : []),
@@ -258,8 +262,8 @@ class DockerManager {
       ...(options.rm ? ['--rm'] : []), // Remove after exit
       ...(options.interactive ? ['-i'] : []),
       ...(options.tty ? ['-t'] : []),
-      ...(options.env ? options.env.flatMap(e => ['-e', e]) : []),
-      imageName
+      ...(options.env ? options.env.flatMap((e) => ['-e', e]) : []),
+      imageName,
     ];
 
     const runCmd = `docker ${runArgs.join(' ')}`;
@@ -267,10 +271,10 @@ class DockerManager {
 
     try {
       const { stdout, stderr } = await execAsync(runCmd, { cwd: this.projectPath });
-      
+
       printSuccess(chalk.green(`✅ Container running: ${containerName}`));
       printInfo(chalk.gray(`Container ID: ${stdout.trim()}`));
-      
+
       return { containerName, containerId: stdout.trim(), stdout, stderr };
     } catch (error) {
       printError(chalk.red(`Docker run failed: ${error.message}`));
@@ -287,17 +291,19 @@ class DockerManager {
     }
 
     printInfo(chalk.cyan('\n🚢 Starting services with docker-compose...\n'));
-    
+
     const composePath = path.join(this.projectPath, 'docker-compose.yml');
-    
+
     // Check if docker-compose.yml exists
     try {
       await fs.access(composePath);
     } catch (_error) {
-      printWarning(chalk.yellow('docker-compose.yml not found. Generating default compose file...'));
+      printWarning(
+        chalk.yellow('docker-compose.yml not found. Generating default compose file...')
+      );
       await this.generateComposeFile();
     }
-    
+
     const startArgs = [
       'docker-compose',
       ...(options.file ? ['-f', options.file] : ['-f', 'docker-compose.yml']),
@@ -305,7 +311,7 @@ class DockerManager {
       ...(options.daemon ? ['-d'] : []), // Detached mode
       ...(options.build ? ['--build'] : []),
       ...(options.forceRecreate ? ['--force-recreate'] : []),
-      ...(options.noDeps ? ['--no-deps'] : [])
+      ...(options.noDeps ? ['--no-deps'] : []),
     ];
 
     const startCmd = startArgs.join(' ');
@@ -313,10 +319,10 @@ class DockerManager {
 
     try {
       const { stdout, stderr } = await execAsync(startCmd, { cwd: this.projectPath });
-      
+
       if (stdout) printInfo(chalk.gray(stdout));
       if (stderr) printWarning(chalk.yellow(stderr));
-      
+
       printSuccess(chalk.green('✅ Services started with docker-compose'));
       return { stdout, stderr };
     } catch (error) {
@@ -334,13 +340,13 @@ class DockerManager {
     }
 
     printInfo(chalk.cyan('\n🛑 Stopping services with docker-compose...\n'));
-    
+
     const stopArgs = [
       'docker-compose',
       ...(options.file ? ['-f', options.file] : ['-f', 'docker-compose.yml']),
       'down',
       ...(options.volumes ? ['-v'] : []), // Remove volumes
-      ...(options.removeOrphans ? ['--remove-orphans'] : [])
+      ...(options.removeOrphans ? ['--remove-orphans'] : []),
     ];
 
     const stopCmd = stopArgs.join(' ');
@@ -348,10 +354,10 @@ class DockerManager {
 
     try {
       const { stdout, stderr } = await execAsync(stopCmd, { cwd: this.projectPath });
-      
+
       if (stdout) printInfo(chalk.gray(stdout));
       if (stderr) printWarning(chalk.yellow(stderr));
-      
+
       printSuccess(chalk.green('✅ Services stopped with docker-compose'));
       return { stdout, stderr };
     } catch (error) {
@@ -371,24 +377,33 @@ class DockerManager {
     const listArgs = [
       'ps',
       ...(options.all ? ['-a'] : []), // Show all containers
-      '--format', '"{{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Ports}}"'
+      '--format',
+      '"{{.ID}}\t{{.Names}}\t{{.Status}}\t{{.Ports}}"',
     ];
 
     const listCmd = `docker ${listArgs.join(' ')}`;
-    
+
     try {
       const { stdout } = await execAsync(listCmd);
-      
-      const containers = stdout.trim().split('\n').slice(1).map(container => {
-        const [id, name, status, ports] = container.split('\t');
-        return { id, name, status, ports };
-      });
+
+      const containers = stdout
+        .trim()
+        .split('\n')
+        .slice(1)
+        .map((container) => {
+          const [id, name, status, ports] = container.split('\t');
+          return { id, name, status, ports };
+        });
 
       printSuccess(chalk.green(`\n🐳 Running containers: ${containers.length}\n`));
-      
+
       if (containers.length > 0) {
-        containers.forEach(container => {
-          printInfo(chalk.gray(`${container.id.substring(0, 12)}\t${container.name}\t${container.status}\t${container.ports}`));
+        containers.forEach((container) => {
+          printInfo(
+            chalk.gray(
+              `${container.id.substring(0, 12)}\t${container.name}\t${container.status}\t${container.ports}`
+            )
+          );
         });
       }
 
@@ -412,21 +427,21 @@ class DockerManager {
       ...(options.follow ? ['-f'] : []),
       ...(options.tail ? [`--tail=${options.tail}`] : []),
       ...(options.since ? [`--since=${options.since}`] : []),
-      containerName
+      containerName,
     ];
 
     const logCmd = `docker ${logArgs.join(' ')}`;
-    
+
     try {
       const { stdout, stderr } = await execAsync(logCmd);
-      
+
       if (stdout) {
         printInfo(chalk.gray('\n📋 Container Logs:\n'));
         console.log(stdout);
       }
-      
+
       if (stderr) printWarning(chalk.yellow(stderr));
-      
+
       return { stdout, stderr };
     } catch (error) {
       printError(chalk.red(`Docker logs failed: ${error.message}`));
@@ -448,7 +463,7 @@ class DockerManager {
       ...(options.tty ? ['-t'] : []),
       ...(options.user ? ['--user', options.user] : []),
       containerName,
-      ...(Array.isArray(command) ? command : command.split(' '))
+      ...(Array.isArray(command) ? command : command.split(' ')),
     ];
 
     const execCmd = `docker ${execArgs.join(' ')}`;
@@ -456,10 +471,10 @@ class DockerManager {
 
     try {
       const { stdout, stderr } = await execAsync(execCmd);
-      
+
       if (stdout) console.log(stdout);
       if (stderr) printWarning(chalk.yellow(stderr));
-      
+
       return { stdout, stderr };
     } catch (error) {
       printError(chalk.red(`Docker exec failed: ${error.message}`));
@@ -479,14 +494,14 @@ class DockerManager {
       'rm',
       ...(options.force ? ['-f'] : []),
       ...(options.volumes ? ['-v'] : []),
-      containerName
+      containerName,
     ];
 
     const removeCmd = `docker ${removeArgs.join(' ')}`;
-    
+
     try {
       const { stdout, stderr } = await execAsync(removeCmd);
-      
+
       printSuccess(chalk.green(`✅ Container removed: ${containerName}`));
       return { stdout, stderr };
     } catch (error) {
@@ -503,17 +518,13 @@ class DockerManager {
       throw new Error('Docker is not available');
     }
 
-    const removeArgs = [
-      'rmi',
-      ...(options.force ? ['-f'] : []),
-      imageName
-    ];
+    const removeArgs = ['rmi', ...(options.force ? ['-f'] : []), imageName];
 
     const removeCmd = `docker ${removeArgs.join(' ')}`;
-    
+
     try {
       const { stdout, stderr } = await execAsync(removeCmd);
-      
+
       printSuccess(chalk.green(`✅ Image removed: ${imageName}`));
       return { stdout, stderr };
     } catch (error) {
@@ -535,14 +546,22 @@ class DockerManager {
         execAsync('docker version --format "{{json .}}"'),
         execAsync('docker info --format "{{json .}}"'),
         execAsync('docker images --format "{{json .}}"'),
-        execAsync('docker ps -a --format "{{json .}}"')
+        execAsync('docker ps -a --format "{{json .}}"'),
       ]);
 
       const systemInfo = {
         version: JSON.parse(version.stdout),
         info: JSON.parse(info.stdout),
-        images: images.stdout.trim().split('\n').filter(Boolean).map(img => JSON.parse(img)),
-        containers: containers.stdout.trim().split('\n').filter(Boolean).map(cont => JSON.parse(cont))
+        images: images.stdout
+          .trim()
+          .split('\n')
+          .filter(Boolean)
+          .map((img) => JSON.parse(img)),
+        containers: containers.stdout
+          .trim()
+          .split('\n')
+          .filter(Boolean)
+          .map((cont) => JSON.parse(cont)),
       };
 
       printSuccess(chalk.green('\n🐳 Docker System Information:\n'));
@@ -551,7 +570,11 @@ class DockerManager {
       printInfo(chalk.gray(`Storage Driver: ${systemInfo.info.Driver}`));
       printInfo(chalk.gray(`Total Images: ${systemInfo.images.length}`));
       printInfo(chalk.gray(`Total Containers: ${systemInfo.containers.length}`));
-      printInfo(chalk.gray(`Running Containers: ${systemInfo.containers.filter(c => c.State === 'running').length}`));
+      printInfo(
+        chalk.gray(
+          `Running Containers: ${systemInfo.containers.filter((c) => c.State === 'running').length}`
+        )
+      );
 
       return systemInfo;
     } catch (error) {
@@ -569,25 +592,25 @@ class DockerManager {
     }
 
     printInfo(chalk.cyan('\n🧹 Pruning Docker system...\n'));
-    
+
     const pruneTasks = [];
-    
+
     if (options.containers || options.all) {
       pruneTasks.push(execAsync('docker container prune -f'));
     }
-    
+
     if (options.images || options.all) {
       pruneTasks.push(execAsync('docker image prune -f'));
     }
-    
+
     if (options.volumes || options.all) {
       pruneTasks.push(execAsync('docker volume prune -f'));
     }
-    
+
     if (options.networks || options.all) {
       pruneTasks.push(execAsync('docker network prune -f'));
     }
-    
+
     if (pruneTasks.length === 0) {
       // Default to pruning just containers and images
       pruneTasks.push(execAsync('docker container prune -f'));
@@ -596,15 +619,17 @@ class DockerManager {
 
     try {
       const results = await Promise.allSettled(pruneTasks);
-      
+
       results.forEach((result, index) => {
         if (result.status === 'fulfilled') {
           printSuccess(chalk.green(`✅ Pruned Docker objects ${index + 1}`));
         } else {
-          printWarning(chalk.yellow(`⚠️  Prune task ${index + 1} failed: ${result.reason.message}`));
+          printWarning(
+            chalk.yellow(`⚠️  Prune task ${index + 1} failed: ${result.reason.message}`)
+          );
         }
       });
-      
+
       printSuccess(chalk.green('\n✅ Docker system pruned'));
       return results;
     } catch (error) {
@@ -618,7 +643,9 @@ class DockerManager {
    */
   async isContainerRunning(containerName) {
     try {
-      const { stdout } = await execAsync(`docker ps --filter "name=${containerName}" --format "{{.Names}}"`);
+      const { stdout } = await execAsync(
+        `docker ps --filter "name=${containerName}" --format "{{.Names}}"`
+      );
       return stdout.trim() === containerName;
     } catch (_error) {
       return false;
@@ -632,22 +659,22 @@ class DockerManager {
     const timeout = options.timeout || 60000; // 60 seconds default
     const interval = options.interval || 2000; // 2 seconds default
     const maxAttempts = Math.ceil(timeout / interval);
-    
+
     printInfo(chalk.gray(`Waiting for container ${containerName} to be ready...`));
-    
+
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const isRunning = await this.isContainerRunning(containerName);
-      
+
       if (isRunning) {
         printSuccess(chalk.green(`✅ Container ${containerName} is ready`));
         return true;
       }
-      
+
       if (attempt < maxAttempts) {
-        await new Promise(resolve => setTimeout(resolve, interval));
+        await new Promise((resolve) => setTimeout(resolve, interval));
       }
     }
-    
+
     throw new Error(`Container ${containerName} did not become ready within ${timeout}ms`);
   }
 
@@ -656,10 +683,10 @@ class DockerManager {
    */
   async generateDockerConfig(projectType = 'generic', _options = {}) {
     printInfo(chalk.cyan(`\n🐳 Generating Docker configuration for ${projectType} project...\n`));
-    
+
     let dockerfileContent = '';
     let _composeContent = '';
-    
+
     switch (projectType.toLowerCase()) {
       case 'nextjs':
         dockerfileContent = `FROM node:18-alpine AS deps
@@ -693,7 +720,7 @@ ENV NEXT_TELEMETRY_DISABLED 1
 CMD ["npm", "start"]
 `;
         break;
-        
+
       case 'express':
         dockerfileContent = `FROM node:18-alpine AS builder
 
@@ -718,7 +745,7 @@ EXPOSE 3000
 CMD ["npm", "start"]
 `;
         break;
-        
+
       case 'react':
         dockerfileContent = `FROM node:18-alpine AS builder
 
@@ -734,22 +761,24 @@ EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
 `;
         break;
-        
+
       default:
         // Use generic template
         dockerfileContent = DOCKERFILE_TEMPLATE;
     }
-    
+
     // Write Dockerfile
     const dockerfilePath = path.join(this.projectPath, 'Dockerfile');
     await fs.writeFile(dockerfilePath, dockerfileContent);
-    printSuccess(chalk.green(`✅ Dockerfile generated for ${projectType} project: ${dockerfilePath}`));
-    
+    printSuccess(
+      chalk.green(`✅ Dockerfile generated for ${projectType} project: ${dockerfilePath}`)
+    );
+
     // Write docker-compose.yml
     const composePath = path.join(this.projectPath, 'docker-compose.yml');
     await fs.writeFile(composePath, DOCKER_COMPOSE_TEMPLATE);
     printSuccess(chalk.green(`✅ docker-compose.yml generated: ${composePath}`));
-    
+
     return { dockerfile: dockerfilePath, compose: composePath };
   }
 }
@@ -791,7 +820,7 @@ export function registerDockerCommand(program) {
         await dockerManager.buildImage({
           imageName: options.tag,
           noCache: options.noCache,
-          platform: options.platform
+          platform: options.platform,
         });
       } catch (error) {
         printError(chalk.red(`Docker build failed: ${error.message}`));
@@ -817,7 +846,7 @@ export function registerDockerCommand(program) {
           env: options.env,
           volume: options.volume,
           network: options.network,
-          rm: options.rm
+          rm: options.rm,
         });
       } catch (error) {
         printError(chalk.red(`Docker run failed: ${error.message}`));
@@ -836,7 +865,7 @@ export function registerDockerCommand(program) {
         await dockerManager.startServices({
           daemon: options.daemon,
           build: options.build,
-          forceRecreate: options.forceRecreate
+          forceRecreate: options.forceRecreate,
         });
       } catch (error) {
         printError(chalk.red(`Docker compose up failed: ${error.message}`));
@@ -853,7 +882,7 @@ export function registerDockerCommand(program) {
       try {
         await dockerManager.stopServices({
           volumes: options.volumes,
-          removeOrphans: options.removeOrphans
+          removeOrphans: options.removeOrphans,
         });
       } catch (error) {
         printError(chalk.red(`Docker compose down failed: ${error.message}`));
@@ -884,7 +913,7 @@ export function registerDockerCommand(program) {
       try {
         await dockerManager.getContainerLogs(container, {
           follow: options.follow,
-          tail: parseInt(options.tail)
+          tail: parseInt(options.tail),
         });
       } catch (error) {
         printError(chalk.red(`Docker logs failed: ${error.message}`));
@@ -905,7 +934,7 @@ export function registerDockerCommand(program) {
         await dockerManager.execInContainer(container, command, {
           interactive: options.interactive,
           tty: options.tty,
-          user: options.user
+          user: options.user,
         });
       } catch (error) {
         printError(chalk.red(`Docker exec failed: ${error.message}`));
@@ -928,7 +957,7 @@ export function registerDockerCommand(program) {
           images: options.images,
           volumes: options.volumes,
           networks: options.networks,
-          all: options.all
+          all: options.all,
         });
       } catch (error) {
         printError(chalk.red(`Docker prune failed: ${error.message}`));
@@ -957,7 +986,7 @@ export function registerDockerCommand(program) {
     { command: 'ultra-dex docker ps', description: 'List containers' },
     { command: 'ultra-dex docker logs my-container', description: 'View container logs' },
     { command: 'ultra-dex docker prune --all', description: 'Clean up unused objects' },
-    { command: 'ultra-dex docker status', description: 'Show Docker system info' }
+    { command: 'ultra-dex docker status', description: 'Show Docker system info' },
   ];
 }
 
@@ -966,5 +995,5 @@ export default {
   dockerManager,
   registerDockerCommand,
   DOCKERFILE_TEMPLATE,
-  DOCKER_COMPOSE_TEMPLATE
+  DOCKER_COMPOSE_TEMPLATE,
 };

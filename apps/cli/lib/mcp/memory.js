@@ -41,7 +41,7 @@ export class UltraMemory {
       searches: 0,
       hits: 0,
       avgSearchTime: 0,
-      lastUpdated: null
+      lastUpdated: null,
     };
   }
 
@@ -140,13 +140,13 @@ export class UltraMemory {
         ...metadata,
         wordCount: text.split(/\s+/).length,
         charCount: text.length,
-        createdAt: new Date().toISOString()
-      }
+        createdAt: new Date().toISOString(),
+      },
     };
 
     // Check for duplicate content before adding
-    const existingIndex = this.memory.findIndex(mem =>
-      this.calculateSimilarity(mem.text, text) > 0.9
+    const existingIndex = this.memory.findIndex(
+      (mem) => this.calculateSimilarity(mem.text, text) > 0.9
     );
 
     if (existingIndex !== -1) {
@@ -233,30 +233,32 @@ export class UltraMemory {
     let results = [];
 
     // 1. Exact match search
-    const exactMatches = this.memory.filter(entry =>
-      entry.text.toLowerCase().includes(normalizedQuery) ||
-      entry.tags.some(tag => tag.toLowerCase().includes(normalizedQuery))
+    const exactMatches = this.memory.filter(
+      (entry) =>
+        entry.text.toLowerCase().includes(normalizedQuery) ||
+        entry.tags.some((tag) => tag.toLowerCase().includes(normalizedQuery))
     );
 
     // 2. Fuzzy search for similar content
-    const fuzzyMatches = this.memory.filter(entry => {
+    const fuzzyMatches = this.memory.filter((entry) => {
       if (exactMatches.includes(entry)) return false; // Skip if already matched exactly
       return this.calculateSimilarity(entry.text, query) > 0.7;
     });
 
     // 3. Tag-based search
-    const tagMatches = this.memory.filter(entry => {
+    const tagMatches = this.memory.filter((entry) => {
       if (exactMatches.includes(entry) || fuzzyMatches.includes(entry)) return false;
-      return entry.tags.some(tag =>
-        this.calculateSimilarity(tag, query) > 0.8
-      );
+      return entry.tags.some((tag) => this.calculateSimilarity(tag, query) > 0.8);
     });
 
     // Combine and rank results
     results = [
-      ...exactMatches.map(e => ({ ...e, score: 1.0 })),
-      ...fuzzyMatches.map(e => ({ ...e, score: this.calculateSimilarity(e.text, query) })),
-      ...tagMatches.map(e => ({ ...e, score: this.calculateSimilarity(e.tags.join(' '), query) }))
+      ...exactMatches.map((e) => ({ ...e, score: 1.0 })),
+      ...fuzzyMatches.map((e) => ({ ...e, score: this.calculateSimilarity(e.text, query) })),
+      ...tagMatches.map((e) => ({
+        ...e,
+        score: this.calculateSimilarity(e.tags.join(' '), query),
+      })),
     ];
 
     // Sort by score and recency
@@ -275,7 +277,8 @@ export class UltraMemory {
     // Update stats
     const searchTime = performance.now() - startTime;
     this.stats.hits += results.length;
-    this.stats.avgSearchTime = ((this.stats.avgSearchTime * (this.stats.searches - 1)) + searchTime) / this.stats.searches;
+    this.stats.avgSearchTime =
+      (this.stats.avgSearchTime * (this.stats.searches - 1) + searchTime) / this.stats.searches;
 
     // Cache the result
     this.setCachedResult(cacheKey, results);
@@ -298,7 +301,7 @@ export class UltraMemory {
   setCachedResult(key, value) {
     this.cache.set(key, {
       value,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
@@ -326,17 +329,15 @@ export class UltraMemory {
     const baseResults = await this.search(query, limit * 2); // Get more results to filter
 
     // Then, boost results that match context tags
-    const contextualResults = baseResults.map(result => {
-      const contextScore = contextTags.filter(tag =>
-        result.tags.some(resultTag =>
-          this.calculateSimilarity(tag, resultTag) > 0.8
-        )
+    const contextualResults = baseResults.map((result) => {
+      const contextScore = contextTags.filter((tag) =>
+        result.tags.some((resultTag) => this.calculateSimilarity(tag, resultTag) > 0.8)
       ).length;
 
       return {
         ...result,
         contextScore,
-        combinedScore: result.score + (contextScore * 0.2) // Boost by context relevance
+        combinedScore: result.score + contextScore * 0.2, // Boost by context relevance
       };
     });
 
@@ -379,7 +380,7 @@ export class UltraMemory {
   async getByTag(tag, limit = 10) {
     await this.init();
     return this.memory
-      .filter(entry => entry.tags.includes(tag))
+      .filter((entry) => entry.tags.includes(tag))
       .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
       .slice(0, limit);
   }
@@ -396,7 +397,7 @@ export class UltraMemory {
   async forget(id) {
     await this.init();
     const initialLength = this.memory.length;
-    this.memory = this.memory.filter(entry => entry.id !== id);
+    this.memory = this.memory.filter((entry) => entry.id !== id);
     if (initialLength !== this.memory.length) {
       this.stats.totalEntries = this.memory.length;
       this.invalidateCache(); // Clear cache after removing entry
@@ -409,7 +410,7 @@ export class UltraMemory {
   // Update an existing memory entry
   async update(id, newText, newTags = null) {
     await this.init();
-    const index = this.memory.findIndex(entry => entry.id === id);
+    const index = this.memory.findIndex((entry) => entry.id === id);
     if (index !== -1) {
       this.memory[index].text = newText;
       if (newTags !== null) {

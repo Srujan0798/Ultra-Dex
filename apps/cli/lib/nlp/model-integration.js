@@ -15,20 +15,20 @@ const INTENT_TO_TASK_MAP = {
   'code-gen': 'code-generation',
   scaffold: 'code-generation',
   create: 'code-generation',
-  
+
   // Refactoring tasks
   refactor: 'refactoring',
   optimize: 'refactoring',
   improve: 'refactoring',
   format: 'refactoring',
   lint: 'refactoring',
-  
+
   // Documentation tasks
   docs: 'documentation',
   document: 'documentation',
   explain: 'documentation',
   describe: 'documentation',
-  
+
   // Analysis tasks
   audit: 'analysis',
   review: 'analysis',
@@ -38,13 +38,13 @@ const INTENT_TO_TASK_MAP = {
   quality: 'analysis',
   security: 'analysis',
   'reality-check': 'analysis',
-  
+
   // Reasoning tasks
   plan: 'reasoning',
   'neuro-plan': 'reasoning',
   estimate: 'reasoning',
   design: 'reasoning',
-  
+
   // Quick query tasks
   help: 'quick-query',
   search: 'quick-query',
@@ -52,25 +52,25 @@ const INTENT_TO_TASK_MAP = {
   config: 'quick-query',
   status: 'quick-query',
   version: 'quick-query',
-  
+
   // Agent/Swarm tasks - use reasoning models
   agents: 'reasoning',
   swarm: 'reasoning',
   daemon: 'reasoning',
   ralph: 'reasoning',
   bot: 'code-generation',
-  
+
   // Build/Test tasks - use code generation models
   build: 'code-generation',
   test: 'code-generation',
   compile: 'code-generation',
-  
+
   // Deployment tasks - use reasoning models
   deploy: 'reasoning',
   docker: 'code-generation',
   k8s: 'code-generation',
   cicd: 'code-generation',
-  
+
   // Integration tasks - varies
   github: 'quick-query',
   jira: 'quick-query',
@@ -78,7 +78,7 @@ const INTENT_TO_TASK_MAP = {
   trello: 'quick-query',
   mcp: 'quick-query',
   serve: 'quick-query',
-  
+
   // Utility tasks
   setup: 'code-generation',
   install: 'quick-query',
@@ -86,7 +86,7 @@ const INTENT_TO_TASK_MAP = {
   clean: 'refactoring',
   undo: 'refactoring',
   rollback: 'refactoring',
-  
+
   // Monitoring tasks
   monitor: 'analysis',
   dashboard: 'quick-query',
@@ -95,12 +95,12 @@ const INTENT_TO_TASK_MAP = {
   memory: 'quick-query',
   brain: 'reasoning',
   sync: 'quick-query',
-  
+
   // Governance tasks
   gate: 'analysis',
   governance: 'analysis',
   compliance: 'analysis',
-  
+
   // Fallback
   default: 'quick-query',
 };
@@ -118,7 +118,7 @@ export function intentToTaskType(intent) {
  */
 export function getModelForIntent(input) {
   const intent = routeIntent(input);
-  
+
   if (!intent) {
     return {
       taskType: 'quick-query',
@@ -129,14 +129,14 @@ export function getModelForIntent(input) {
       params: {},
     };
   }
-  
+
   const taskType = intentToTaskType(intent);
   const params = extractParams(intent, input);
   const { confidence } = getIntentConfidence(input);
-  
+
   // Get model recommendations based on task type
   const modelRecommendation = getModelForTaskType(taskType);
-  
+
   return {
     intent,
     taskType,
@@ -185,7 +185,7 @@ function getModelForTaskType(taskType) {
       description: 'Quick queries and simple tasks',
     },
   };
-  
+
   return modelConfig[taskType] || modelConfig['quick-query'];
 }
 
@@ -198,7 +198,7 @@ export function enhanceInputForModel(input, intent, params) {
     params,
     timestamp: Date.now(),
   };
-  
+
   // Add task-specific context
   const taskEnhancements = {
     'code-generation': (p) => {
@@ -220,14 +220,14 @@ export function enhanceInputForModel(input, intent, params) {
       return 'Think step-by-step. Consider edge cases and provide a well-reasoned solution.';
     },
   };
-  
+
   const taskType = intentToTaskType(intent);
   const enhancer = taskEnhancements[taskType];
-  
+
   if (enhancer) {
     context.enhancement = enhancer(params);
   }
-  
+
   return {
     originalInput: input,
     enhancedInput: `${input}\n\n${context.enhancement || ''}`.trim(),
@@ -258,7 +258,7 @@ export function logModelSelection(intent, taskType, model, confidence) {
  */
 export function estimateIntentCost(input, tokenEstimate = 1000) {
   const { taskType, preferredModels } = getModelForIntent(input);
-  
+
   // Model costs per 1K tokens
   const modelCosts = {
     'claude-3-opus': { input: 0.015, output: 0.075 },
@@ -269,17 +269,16 @@ export function estimateIntentCost(input, tokenEstimate = 1000) {
     'gemini-1.5-pro': { input: 0.0035, output: 0.0105 },
     'gemini-1.5-flash': { input: 0.0007, output: 0.0021 },
   };
-  
+
   const primaryModel = preferredModels[0];
   const costs = modelCosts[primaryModel] || { input: 0.001, output: 0.003 };
-  
+
   // Estimate: 30% input tokens, 70% output tokens
   const inputTokens = tokenEstimate * 0.3;
   const outputTokens = tokenEstimate * 0.7;
-  
-  const estimatedCost = (inputTokens / 1000) * costs.input + 
-                        (outputTokens / 1000) * costs.output;
-  
+
+  const estimatedCost = (inputTokens / 1000) * costs.input + (outputTokens / 1000) * costs.output;
+
   return {
     taskType,
     model: primaryModel,

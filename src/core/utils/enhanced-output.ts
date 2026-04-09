@@ -4,7 +4,7 @@ import {
   formatWarning,
   formatInfo,
   formatLoading,
-  formatStatusCard
+  formatStatusCard,
 } from './status.js';
 import { formatHelpSection } from './help.js';
 import { logger } from './logging.js';
@@ -23,7 +23,7 @@ function printInfo(message) {
 function printLoading(message) {
   logger.log(formatLoading(message));
 }
-function printStatusCard(title, message, type = "info") {
+function printStatusCard(title, message, type = 'info') {
   logger.log(formatStatusCard(title, message, type));
 }
 function printHelpSection(title, content, options = {}) {
@@ -36,14 +36,13 @@ var enhanced_output_default = {
   printInfo,
   printLoading,
   printStatusCard,
-  printHelpSection
+  printHelpSection,
 };
-function _handleModuleError(error, context = "enhanced-output") {
+function _handleModuleError(error, context = 'enhanced-output') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     logger.error(`[${context}] Error: ${message}`);
-  } catch (_) {
-  }
+  } catch (_) {}
 }
 export {
   enhanced_output_default as default,
@@ -53,5 +52,5 @@ export {
   printLoading,
   printStatusCard,
   printSuccess,
-  printWarning
+  printWarning,
 };

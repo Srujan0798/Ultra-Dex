@@ -58,18 +58,17 @@ export class BaseAgent {
   }
 
   // Subclasses must implement these:
-   
+
   async plan(_objective, _context) {
     throw new Error('Method "plan" must be implemented by subclass');
   }
 
-   
   async execute(_plan, _context) {
     throw new Error('Method "execute" must be implemented by subclass');
   }
 
   // Default verification hook
-   
+
   async verify(_result) {
     return { passed: true, steps: [] };
   }

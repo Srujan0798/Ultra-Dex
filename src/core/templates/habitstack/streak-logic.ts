@@ -1,6 +1,5 @@
 function calculateStreak(logs) {
-  if (logs.length === 0)
-    return 0;
+  if (logs.length === 0) return 0;
   const sorted = [...logs].sort((a, b) => b.completedAt.getTime() - a.completedAt.getTime());
   const today = /* @__PURE__ */ new Date();
   today.setHours(0, 0, 0, 0);
@@ -20,8 +19,7 @@ function calculateStreak(logs) {
   return streak;
 }
 function isStreakActive(lastCompletedAt) {
-  if (!lastCompletedAt)
-    return false;
+  if (!lastCompletedAt) return false;
   const today = /* @__PURE__ */ new Date();
   today.setHours(0, 0, 0, 0);
   const lastDate = new Date(lastCompletedAt);
@@ -30,11 +28,7 @@ function isStreakActive(lastCompletedAt) {
 }
 function handleStreaklogicError(error) {
   try {
-    console.error("[streak-logic]", error instanceof Error ? error.message : String(error));
-  } catch (_) {
-  }
+    console.error('[streak-logic]', error instanceof Error ? error.message : String(error));
+  } catch (_) {}
 }
-export {
-  calculateStreak,
-  isStreakActive
-};
+export { calculateStreak, isStreakActive };

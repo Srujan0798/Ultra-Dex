@@ -48,7 +48,7 @@ describe('OpenAI Provider - Models', () => {
   test('should support GPT-4 models', () => {
     const models = ['gpt-4', 'gpt-4-turbo', 'gpt-4o', 'gpt-4o-mini'];
 
-    models.forEach(model => {
+    models.forEach((model) => {
       assert.ok(model.startsWith('gpt-'));
       assert.ok(model.length > 4);
     });
@@ -57,7 +57,7 @@ describe('OpenAI Provider - Models', () => {
   test('should support GPT-3.5 models', () => {
     const models = ['gpt-3.5-turbo', 'gpt-3.5-turbo-16k'];
 
-    models.forEach(model => {
+    models.forEach((model) => {
       assert.ok(model.startsWith('gpt-3.5'));
     });
   });
@@ -66,11 +66,11 @@ describe('OpenAI Provider - Models', () => {
     const validModels = ['gpt-4', 'gpt-3.5-turbo', 'gpt-4o'];
     const invalidModels = ['', null, undefined, 'invalid-model'];
 
-    validModels.forEach(model => {
+    validModels.forEach((model) => {
       assert.ok(isValidOpenAIModel(model));
     });
 
-    invalidModels.forEach(model => {
+    invalidModels.forEach((model) => {
       assert.ok(!isValidOpenAIModel(model));
     });
   });
@@ -87,7 +87,7 @@ describe('OpenAI Provider - Configuration', () => {
   test('should allow custom temperature', () => {
     const validTemperatures = [0, 0.5, 1.0, 1.5, 2.0];
 
-    validTemperatures.forEach(temp => {
+    validTemperatures.forEach((temp) => {
       assert.ok(temp >= 0 && temp <= 2.0);
     });
   });
@@ -95,7 +95,7 @@ describe('OpenAI Provider - Configuration', () => {
   test('should allow custom max_tokens', () => {
     const validTokens = [100, 1000, 4000, 8000, 16000];
 
-    validTokens.forEach(tokens => {
+    validTokens.forEach((tokens) => {
       assert.ok(tokens > 0);
       assert.ok(Number.isInteger(tokens));
     });
@@ -104,7 +104,7 @@ describe('OpenAI Provider - Configuration', () => {
   test('should handle streaming option', () => {
     const streamingOptions = [true, false];
 
-    streamingOptions.forEach(option => {
+    streamingOptions.forEach((option) => {
       assert.strictEqual(typeof option, 'boolean');
     });
   });
@@ -114,7 +114,7 @@ describe('OpenAI Provider - Error Handling', () => {
   test('should handle rate limiting errors', () => {
     const rateLimitError = {
       status: 429,
-      message: 'Rate limit exceeded'
+      message: 'Rate limit exceeded',
     };
 
     assert.strictEqual(rateLimitError.status, 429);
@@ -124,7 +124,7 @@ describe('OpenAI Provider - Error Handling', () => {
   test('should handle authentication errors', () => {
     const authError = {
       status: 401,
-      message: 'Invalid API key'
+      message: 'Invalid API key',
     };
 
     assert.strictEqual(authError.status, 401);
@@ -134,7 +134,7 @@ describe('OpenAI Provider - Error Handling', () => {
   test('should handle timeout errors', () => {
     const timeoutError = {
       code: 'ETIMEDOUT',
-      message: 'Request timed out'
+      message: 'Request timed out',
     };
 
     assert.strictEqual(timeoutError.code, 'ETIMEDOUT');
@@ -143,7 +143,7 @@ describe('OpenAI Provider - Error Handling', () => {
   test('should handle malformed responses', () => {
     const malformedResponses = [null, undefined, '', {}, { error: 'Invalid' }];
 
-    malformedResponses.forEach(response => {
+    malformedResponses.forEach((response) => {
       assert.ok(!response || !response.choices || response.error);
     });
   });
@@ -184,7 +184,7 @@ describe('OpenAI Provider - Response Parsing', () => {
   test('should parse standard completion response', () => {
     const mockResponse = {
       choices: [{ message: { content: 'Hello!' } }],
-      usage: { total_tokens: 10 }
+      usage: { total_tokens: 10 },
     };
 
     assert.ok(mockResponse.choices);
@@ -194,7 +194,7 @@ describe('OpenAI Provider - Response Parsing', () => {
 
   test('should handle empty responses', () => {
     const emptyResponse = {
-      choices: [{ message: { content: '' } }]
+      choices: [{ message: { content: '' } }],
     };
 
     assert.strictEqual(emptyResponse.choices[0].message.content, '');
@@ -205,8 +205,8 @@ describe('OpenAI Provider - Response Parsing', () => {
       usage: {
         prompt_tokens: 5,
         completion_tokens: 10,
-        total_tokens: 15
-      }
+        total_tokens: 15,
+      },
     };
 
     assert.strictEqual(responseWithUsage.usage.total_tokens, 15);
@@ -224,7 +224,7 @@ describe('OpenAI Provider - Edge Cases', () => {
   test('should handle very short prompts', () => {
     const shortPrompts = ['a', 'hi', '?', '!'];
 
-    shortPrompts.forEach(prompt => {
+    shortPrompts.forEach((prompt) => {
       assert.ok(typeof prompt === 'string');
       assert.ok(prompt.length > 0);
     });
@@ -233,7 +233,7 @@ describe('OpenAI Provider - Edge Cases', () => {
   test('should handle unicode characters', () => {
     const unicodePrompts = ['日本語', 'العربية', '🎉', 'Ñoño'];
 
-    unicodePrompts.forEach(prompt => {
+    unicodePrompts.forEach((prompt) => {
       assert.ok(typeof prompt === 'string');
       assert.ok(prompt.length > 0);
     });
@@ -243,7 +243,7 @@ describe('OpenAI Provider - Edge Cases', () => {
     // Simulate multiple requests
     const requests = Array.from({ length: 5 }, (_, i) => ({
       id: i,
-      prompt: `Request ${i}`
+      prompt: `Request ${i}`,
     }));
 
     assert.strictEqual(requests.length, 5);

@@ -9,28 +9,33 @@ For a detailed system architecture diagram, see [System Architecture Diagram](./
 ## Core Components
 
 ### 1. CLI Core
+
 - 135+ commands for planning, execution, verification
 - Structured workflows to minimize drift
 - Auto-generated documentation available [here](../api/generated-cli-reference.md)
 
 ### 2. MCP Server
+
 - Exposes tools and resources for AI agents
 - Provides unified context + tool registry
 - Standardized protocols for AI interaction
 
 ### 3. Context Layer
+
 - `CONTEXT.md`, `IMPLEMENTATION-PLAN.md`, `ULTRA.md`
 - Memory tiers (hot/warm/cold)
 - Context pruning and summarization
 - RAG (Retrieval Augmented Generation) system
 
 ### 4. Multi-Agent System
+
 - Swarm orchestration modes
 - Meta-Orchestrator for agent routing
 - Per-agent health checks and metrics
 - Task distribution and coordination
 
 ### 5. Verification & Governance
+
 - 21-step verification protocol
 - Capability contracts for plugins
 - Audit/ledger for traceability
@@ -71,6 +76,7 @@ For a detailed system architecture diagram, see [System Architecture Diagram](./
 ## Integration Guides
 
 Detailed integration guides are available for popular services:
+
 - [GitHub Integration](../api/github-integration.md)
 - [Stripe Integration](../api/stripe-integration.md)
 - [General Integrations Guide](../api/integrations.md)

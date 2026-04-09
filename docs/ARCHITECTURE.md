@@ -46,18 +46,18 @@ flowchart TB
 
 ## Module Reference
 
-| Path | Responsibility | Key exports | Depends on |
-| --- | --- | --- | --- |
-| `src/core/index.js` | Top-level meta-layer facade and compatibility shims | `ultraDex`, `UltraDexMetaLayer` | orchestrator, memory, AI layer, health |
-| `src/core/orchestration/index.js` | Multi-agent execution runtime | `AgentOrchestrator`, `agentOrchestrator` | governance, memory, MCP, AI layer |
-| `src/core/orchestration/ultra-dex-core.js` | Programmatic core bootstrap used by the SDK | `UltraDexCore` | config, observability, memory, agent registry, MCP, provider router |
-| `src/core/ai/ai-meta-layer.js` | Provider abstraction, routing hints, cache, fallback | `AIMetaLayer`, `aiMetaLayer` | provider SDK packages, performance metrics |
-| `src/services/ai-providers/router.js` | Request routing, provider health, fallback chains | `AIProviderRouter` | registered provider instances |
-| `src/core/memory/unified-api.js` | Unified memory interface for relational, vector, and graph storage | `UnifiedMemory` | sqlite, chroma, neo4j drivers |
-| `src/core/agents/ralph-loop.js` | Autonomous reasoning loop used by Nexus execution | `RALPHLoop` | event emitter, orchestrator callbacks |
-| `src/core/governance/governance-manager.js` | Policy gating and audit persistence | `GovernanceManager`, `GovernanceDeniedException` | governance engine, audit DB |
-| `src/core/mcp/server-manager.js` | MCP server lifecycle plus in-process MCP tools | `MCPServerManager` | child processes, local MCP tool registry |
-| `packages/sdk/src/client.js` | Standalone npm-facing SDK entrypoint | `UltraDex`, `Agent`, `BaseProvider`, `PluginLoader` | local SDK runtime shims |
+| Path                                        | Responsibility                                                     | Key exports                                         | Depends on                                                          |
+| ------------------------------------------- | ------------------------------------------------------------------ | --------------------------------------------------- | ------------------------------------------------------------------- |
+| `src/core/index.js`                         | Top-level meta-layer facade and compatibility shims                | `ultraDex`, `UltraDexMetaLayer`                     | orchestrator, memory, AI layer, health                              |
+| `src/core/orchestration/index.js`           | Multi-agent execution runtime                                      | `AgentOrchestrator`, `agentOrchestrator`            | governance, memory, MCP, AI layer                                   |
+| `src/core/orchestration/ultra-dex-core.js`  | Programmatic core bootstrap used by the SDK                        | `UltraDexCore`                                      | config, observability, memory, agent registry, MCP, provider router |
+| `src/core/ai/ai-meta-layer.js`              | Provider abstraction, routing hints, cache, fallback               | `AIMetaLayer`, `aiMetaLayer`                        | provider SDK packages, performance metrics                          |
+| `src/services/ai-providers/router.js`       | Request routing, provider health, fallback chains                  | `AIProviderRouter`                                  | registered provider instances                                       |
+| `src/core/memory/unified-api.js`            | Unified memory interface for relational, vector, and graph storage | `UnifiedMemory`                                     | sqlite, chroma, neo4j drivers                                       |
+| `src/core/agents/ralph-loop.js`             | Autonomous reasoning loop used by Nexus execution                  | `RALPHLoop`                                         | event emitter, orchestrator callbacks                               |
+| `src/core/governance/governance-manager.js` | Policy gating and audit persistence                                | `GovernanceManager`, `GovernanceDeniedException`    | governance engine, audit DB                                         |
+| `src/core/mcp/server-manager.js`            | MCP server lifecycle plus in-process MCP tools                     | `MCPServerManager`                                  | child processes, local MCP tool registry                            |
+| `packages/sdk/src/client.js`                | Standalone npm-facing SDK entrypoint                               | `UltraDex`, `Agent`, `BaseProvider`, `PluginLoader` | local SDK runtime shims                                             |
 
 ## Data Flow
 

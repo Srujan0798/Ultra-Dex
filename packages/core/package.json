@@ -7,6 +7,11 @@
   "scripts": {
     "build": "echo 'Core package built'"
   },
-  "keywords": ["ultra-dex", "core", "agents", "orchestration"],
+  "keywords": [
+    "ultra-dex",
+    "core",
+    "agents",
+    "orchestration"
+  ],
   "license": "MIT"
 }

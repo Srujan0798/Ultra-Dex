@@ -34,7 +34,7 @@ export class SelfHealingOrchestrator extends EventEmitter {
     // Check circuit breaker
     if (circuitBreakerName && this.isCircuitOpen(circuitBreakerName)) {
       this.emit('circuit-open', { name: circuitBreakerName });
-      
+
       if (fallback) {
         return await fallback(new Error('Circuit breaker open'));
       }
@@ -50,15 +50,14 @@ export class SelfHealingOrchestrator extends EventEmitter {
         this.emit('retry-attempt', { attempt, maxRetries, operation: circuitBreakerName });
 
         const result = await operation();
-        
+
         // Success - reset failure count
         if (circuitBreakerName) {
           this.resetFailureCount(circuitBreakerName);
         }
-        
+
         this.emit('success', { attempt, operation: circuitBreakerName });
         return result;
-
       } catch (error) {
         lastError = error;
         this.emit('error', { error, attempt, operation: circuitBreakerName });
@@ -98,13 +97,13 @@ export class SelfHealingOrchestrator extends EventEmitter {
   isCircuitOpen(name) {
     const breaker = this.circuitBreakers.get(name);
     if (!breaker) return false;
-    
+
     // Check if circuit should reset
     if (breaker.openUntil && Date.now() > breaker.openUntil) {
       this.circuitBreakers.set(name, { state: 'closed', failures: 0 });
       return false;
     }
-    
+
     return breaker.state === 'open';
   }
 
@@ -138,7 +137,7 @@ export class SelfHealingOrchestrator extends EventEmitter {
 
   // Utility methods
   sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   // Health check

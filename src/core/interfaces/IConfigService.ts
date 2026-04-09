@@ -1,4 +1,10 @@
-export type ConfigValue = string | number | boolean | null | ConfigValue[] | { [key: string]: ConfigValue };
+export type ConfigValue =
+  | string
+  | number
+  | boolean
+  | null
+  | ConfigValue[]
+  | { [key: string]: ConfigValue };
 
 export interface IConfigService {
   get<T extends ConfigValue>(key: string, defaultValue?: T): T;

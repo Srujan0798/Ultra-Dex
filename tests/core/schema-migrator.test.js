@@ -91,7 +91,9 @@ describe('Schema migrator', () => {
   });
 
   test('sessionPersistence init ensures sqlite schema_version starts at v1', async () => {
-    const { createSessionPersistence } = await importFresh('../../apps/cli/lib/utils/sessionPersistence.js');
+    const { createSessionPersistence } = await importFresh(
+      '../../apps/cli/lib/utils/sessionPersistence.js'
+    );
     const persistence = createSessionPersistence('/tmp/ultra-dex-schema-version-test');
     const state = {
       execCalls: [],
@@ -115,12 +117,13 @@ describe('Schema migrator', () => {
 
     await persistence.init();
 
-    assert.ok(state.execCalls.some((sql) => sql.includes('CREATE TABLE IF NOT EXISTS schema_version')));
+    assert.ok(
+      state.execCalls.some((sql) => sql.includes('CREATE TABLE IF NOT EXISTS schema_version'))
+    );
     assert.ok(
       state.runCalls.some(
         ({ sql }) =>
-          sql.includes('INSERT OR IGNORE INTO schema_version') &&
-          sql.includes('VALUES (1, 1)')
+          sql.includes('INSERT OR IGNORE INTO schema_version') && sql.includes('VALUES (1, 1)')
       )
     );
   });

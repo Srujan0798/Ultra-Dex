@@ -7,11 +7,13 @@ Ultra-Dex ships with first‑class integrations. Each integration exposes a smal
 ## General Pattern
 
 Most integrations follow the same structure:
+
 - Create a client with config values
 - Validate required fields
 - Perform API calls with retries and rate‑limit handling
 
 Example:
+
 ```js
 import { SomeClient } from 'cli/lib/integrations/some.js';
 const client = new SomeClient({ apiKey: process.env.SOME_KEY });
@@ -25,6 +27,7 @@ const result = await client.list();
 **File:** `cli/lib/integrations/jira.js`  
 **Auth:** Email + API token  
 **Usage:**
+
 ```js
 const client = new JiraClient({ domain, email, apiToken });
 await client.createIssue({ projectKey: 'UDX', summary: 'Implement auth' });
@@ -37,6 +40,7 @@ await client.createIssue({ projectKey: 'UDX', summary: 'Implement auth' });
 **File:** `cli/lib/integrations/notion.js`  
 **Auth:** Notion integration token  
 **Usage:**
+
 ```js
 const client = new NotionClient(process.env.NOTION_API_KEY);
 await client.syncPlanToNotion(databaseId, planData);
@@ -49,6 +53,7 @@ await client.syncPlanToNotion(databaseId, planData);
 **File:** `cli/lib/integrations/trello.js`  
 **Auth:** API key + token  
 **Usage:**
+
 ```js
 const client = new TrelloClient(apiKey, token);
 const board = await client.createBoard('Ultra-Dex Roadmap');
@@ -133,11 +138,13 @@ ultra-dex integrate notion --db <databaseId>
 ## Configuration Validation
 
 Each integration validates:
+
 - Missing credentials
 - Improper API endpoints
 - Response errors / rate limits
 
 When API calls fail, Ultra‑Dex will:
+
 1. Retry with exponential backoff
 2. Provide a clear error message
 3. Offer a remediation hint

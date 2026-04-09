@@ -98,16 +98,19 @@ class MockProviderBase extends BaseProvider {
     let toolCalls = undefined;
     if (tools && tools.length > 0) {
       // Randomly decide if we should simulate a tool call
-      if (Math.random() > 0.7) { // 30% chance of tool call
+      if (Math.random() > 0.7) {
+        // 30% chance of tool call
         const randomTool = tools[Math.floor(Math.random() * tools.length)];
-        toolCalls = [{
-          id: `call_${Math.random().toString(36).substr(2, 9)}`,
-          type: 'function',
-          function: {
-            name: randomTool.function?.name || 'unknown_tool',
-            arguments: JSON.stringify(randomTool.function?.parameters || {})
-          }
-        }];
+        toolCalls = [
+          {
+            id: `call_${Math.random().toString(36).substr(2, 9)}`,
+            type: 'function',
+            function: {
+              name: randomTool.function?.name || 'unknown_tool',
+              arguments: JSON.stringify(randomTool.function?.parameters || {}),
+            },
+          },
+        ];
       }
     }
 

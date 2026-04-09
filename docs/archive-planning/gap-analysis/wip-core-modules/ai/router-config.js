@@ -12,10 +12,54 @@ import fsPromises from 'fs/promises';
 import path from 'path';
 
 export const STRATEGY_PROVIDER_PRIORITIES = {
-  cost: ['deepseek', 'groq', 'together', 'qwen', 'google', 'cohere', 'mistral', 'openai', 'anthropic', 'kimi'],
-  latency: ['groq', 'openai', 'google', 'mistral', 'together', 'cohere', 'deepseek', 'qwen', 'anthropic', 'kimi'],
-  quality: ['anthropic', 'openai', 'google', 'mistral', 'cohere', 'deepseek', 'qwen', 'together', 'groq', 'kimi'],
-  fallback: ['openai', 'anthropic', 'google', 'mistral', 'cohere', 'deepseek', 'groq', 'together', 'qwen', 'kimi'],
+  cost: [
+    'deepseek',
+    'groq',
+    'together',
+    'qwen',
+    'google',
+    'cohere',
+    'mistral',
+    'openai',
+    'anthropic',
+    'kimi',
+  ],
+  latency: [
+    'groq',
+    'openai',
+    'google',
+    'mistral',
+    'together',
+    'cohere',
+    'deepseek',
+    'qwen',
+    'anthropic',
+    'kimi',
+  ],
+  quality: [
+    'anthropic',
+    'openai',
+    'google',
+    'mistral',
+    'cohere',
+    'deepseek',
+    'qwen',
+    'together',
+    'groq',
+    'kimi',
+  ],
+  fallback: [
+    'openai',
+    'anthropic',
+    'google',
+    'mistral',
+    'cohere',
+    'deepseek',
+    'groq',
+    'together',
+    'qwen',
+    'kimi',
+  ],
 };
 
 // Updated provider priority configuration
@@ -40,7 +84,7 @@ export const MODEL_PROVIDER_MAP = {
   // OpenAI
   'gpt-4o': 'openai',
   'gpt-4.1': 'openai',
-  'o3': 'openai',
+  o3: 'openai',
   'gpt-4o-mini': 'openai',
 
   // Anthropic
@@ -185,7 +229,9 @@ export function mergeConfig(config = {}) {
 export function resolveOverrides(taskDescription, overrides = []) {
   if (!taskDescription) return null;
   const lower = taskDescription.toLowerCase();
-  return overrides.find((rule) => rule.keyword && lower.includes(String(rule.keyword).toLowerCase()));
+  return overrides.find(
+    (rule) => rule.keyword && lower.includes(String(rule.keyword).toLowerCase())
+  );
 }
 
 export default {

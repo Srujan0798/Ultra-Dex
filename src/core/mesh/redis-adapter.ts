@@ -3,17 +3,16 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { randomUUID } from "crypto";
+import { singleton } from 'tsyringe';
+import { randomUUID } from 'crypto';
 import MessageBus from './bus-interface.js';
 function normalizeEnvelope(channel, raw, nodeId) {
-  if (raw && typeof raw === "object" && raw.channel && raw.timestamp) {
+  if (raw && typeof raw === 'object' && raw.channel && raw.timestamp) {
     return raw;
   }
   return {
@@ -21,7 +20,7 @@ function normalizeEnvelope(channel, raw, nodeId) {
     channel,
     message: raw,
     nodeId,
-    timestamp: (/* @__PURE__ */ new Date()).toISOString()
+    timestamp: /* @__PURE__ */ new Date().toISOString(),
   };
 }
 let RedisMessageBus = class extends MessageBus {
@@ -37,30 +36,30 @@ let RedisMessageBus = class extends MessageBus {
     this.stats = {
       published: 0,
       delivered: 0,
-      errors: 0
+      errors: 0,
     };
   }
   async connect() {
     if (!this.publisher || !this.subscriber) {
-      const { default: Redis } = await import("ioredis");
-      const connection = this.config.url || this.config.redisUrl || "redis://127.0.0.1:6379";
+      const { default: Redis } = await import('ioredis');
+      const connection = this.config.url || this.config.redisUrl || 'redis://127.0.0.1:6379';
       this.publisher = new Redis(connection, this.config.redisOptions || {});
       this.subscriber = new Redis(connection, this.config.redisOptions || {});
       this.streamClient = this.streamClient || this.publisher;
     }
-    if (typeof this.publisher.connect === "function") {
+    if (typeof this.publisher.connect === 'function') {
       await this.publisher.connect();
     }
-    if (typeof this.subscriber.connect === "function" && this.subscriber !== this.publisher) {
+    if (typeof this.subscriber.connect === 'function' && this.subscriber !== this.publisher) {
       await this.subscriber.connect();
     }
-    if (typeof this.subscriber.on === "function") {
-      this.subscriber.on("message", (channel, payload) => {
+    if (typeof this.subscriber.on === 'function') {
+      this.subscriber.on('message', (channel, payload) => {
         const handler = this.messageHandlers.get(channel);
         if (!handler) {
           return;
         }
-        const parsed = typeof payload === "string" ? JSON.parse(payload) : payload;
+        const parsed = typeof payload === 'string' ? JSON.parse(payload) : payload;
         handler(normalizeEnvelope(channel, parsed, this.nodeId)).catch(() => {
           this.stats.errors++;
         });
@@ -69,27 +68,22 @@ let RedisMessageBus = class extends MessageBus {
     this.connected = true;
   }
   async disconnect() {
-    if (typeof this.publisher?.quit === "function") {
+    if (typeof this.publisher?.quit === 'function') {
       await this.publisher.quit();
     }
-    if (this.subscriber !== this.publisher && typeof this.subscriber?.quit === "function") {
+    if (this.subscriber !== this.publisher && typeof this.subscriber?.quit === 'function') {
       await this.subscriber.quit();
     }
     this.connected = false;
   }
   async publish(channel, message) {
     if (!this.connected) {
-      throw new Error("Message bus is not connected");
+      throw new Error('Message bus is not connected');
     }
     const envelope = normalizeEnvelope(channel, message, this.nodeId);
     const serialized = JSON.stringify(envelope);
-    if (typeof this.streamClient?.xadd === "function") {
-      await this.streamClient.xadd(
-        `stream:${channel}`,
-        "*",
-        "payload",
-        serialized
-      );
+    if (typeof this.streamClient?.xadd === 'function') {
+      await this.streamClient.xadd(`stream:${channel}`, '*', 'payload', serialized);
     }
     await this.publisher.publish(channel, serialized);
     this.stats.published++;
@@ -97,7 +91,7 @@ let RedisMessageBus = class extends MessageBus {
   }
   async subscribe(channel, handler) {
     if (!this.connected) {
-      throw new Error("Message bus is not connected");
+      throw new Error('Message bus is not connected');
     }
     this.messageHandlers.set(channel, async (envelope) => {
       this.stats.delivered++;
@@ -105,7 +99,7 @@ let RedisMessageBus = class extends MessageBus {
     });
     if (this.subscriber.subscribe.length >= 2) {
       await this.subscriber.subscribe(channel, async (payload) => {
-        const parsed = typeof payload === "string" ? JSON.parse(payload) : payload;
+        const parsed = typeof payload === 'string' ? JSON.parse(payload) : payload;
         await handler(normalizeEnvelope(channel, parsed, this.nodeId));
       });
     } else {
@@ -113,7 +107,7 @@ let RedisMessageBus = class extends MessageBus {
     }
     return async () => {
       this.messageHandlers.delete(channel);
-      if (typeof this.subscriber.unsubscribe === "function") {
+      if (typeof this.subscriber.unsubscribe === 'function') {
         await this.subscriber.unsubscribe(channel);
       }
     };
@@ -135,7 +129,7 @@ let RedisMessageBus = class extends MessageBus {
       await this.publish(channel, {
         ...message,
         requestId,
-        replyChannel
+        replyChannel,
       });
     });
   }
@@ -144,20 +138,15 @@ let RedisMessageBus = class extends MessageBus {
   }
   getStats() {
     return {
-      type: "redis",
+      type: 'redis',
       connected: this.connected,
       nodeId: this.nodeId,
       published: this.stats.published,
       delivered: this.stats.delivered,
-      errors: this.stats.errors
+      errors: this.stats.errors,
     };
   }
 };
-RedisMessageBus = __decorateClass([
-  singleton()
-], RedisMessageBus);
+RedisMessageBus = __decorateClass([singleton()], RedisMessageBus);
 var redis_adapter_default = RedisMessageBus;
-export {
-  RedisMessageBus,
-  redis_adapter_default as default
-};
+export { RedisMessageBus, redis_adapter_default as default };

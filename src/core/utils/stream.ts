@@ -3,37 +3,36 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { streamText } from "ai";
-import { createOpenAI } from "@ai-sdk/openai";
-import { createAnthropic } from "@ai-sdk/anthropic";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { singleton } from 'tsyringe';
+import { streamText } from 'ai';
+import { createOpenAI } from '@ai-sdk/openai';
+import { createAnthropic } from '@ai-sdk/anthropic';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { printWarning, printError } from '../utils/output.js';
-import chalk from "chalk";
-import ora from "ora";
+import chalk from 'chalk';
+import ora from 'ora';
 function getProvider(providerName, apiKey) {
   switch (providerName.toLowerCase()) {
-    case "openai":
+    case 'openai':
       return createOpenAI({
         apiKey,
-        baseURL: process.env.OPENAI_BASE_URL
+        baseURL: process.env.OPENAI_BASE_URL,
       });
-    case "anthropic":
+    case 'anthropic':
       return createAnthropic({
         apiKey,
-        baseURL: process.env.ANTHROPIC_BASE_URL
+        baseURL: process.env.ANTHROPIC_BASE_URL,
       });
-    case "google":
-    case "gemini":
+    case 'google':
+    case 'gemini':
       return createGoogleGenerativeAI({
         apiKey,
-        baseURL: process.env.GOOGLE_BASE_URL
+        baseURL: process.env.GOOGLE_BASE_URL,
       });
     default:
       throw new Error(`Unsupported provider: ${providerName}`);
@@ -41,15 +40,18 @@ function getProvider(providerName, apiKey) {
 }
 async function streamTextWithDisplay(options = {}) {
   const {
-    provider = "anthropic",
-    model = "claude-3-5-sonnet-20241022",
-    systemPrompt = "",
-    userPrompt = "",
-    apiKey = process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY || process.env.GOOGLE_API_KEY,
+    provider = 'anthropic',
+    model = 'claude-3-5-sonnet-20241022',
+    systemPrompt = '',
+    userPrompt = '',
+    apiKey = process.env.ANTHROPIC_API_KEY ||
+      process.env.OPENAI_API_KEY ||
+      process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
+      process.env.GOOGLE_API_KEY,
     onToken,
     onComplete,
     onError,
-    display = true
+    display = true,
   } = options;
   if (!apiKey) {
     throw new Error(`API key not provided and not found in environment variables for ${provider}`);
@@ -60,39 +62,39 @@ async function streamTextWithDisplay(options = {}) {
     const result = await streamText({
       model: selectedProvider(model),
       system: systemPrompt,
-      prompt: userPrompt
+      prompt: userPrompt,
     });
-    let fullResponse = "";
+    let fullResponse = '';
     let tokenCount = 0;
     if (display) {
       displaySpinner = ora({
-        text: chalk.blue("Streaming response..."),
-        spinner: "clock"
+        text: chalk.blue('Streaming response...'),
+        spinner: 'clock',
       }).start();
     }
     for await (const token of result.textStream) {
       fullResponse += token;
       tokenCount++;
       if (onToken) {
-        Promise.resolve().then(() => onToken(token, fullResponse, tokenCount)).catch((err) => {
-          if (onError)
-            onError(err);
-          else
-            printError(chalk.red(`Error in onToken callback: ${err.message}`));
-        });
+        Promise.resolve()
+          .then(() => onToken(token, fullResponse, tokenCount))
+          .catch((err) => {
+            if (onError) onError(err);
+            else printError(chalk.red(`Error in onToken callback: ${err.message}`));
+          });
       }
       if (display && tokenCount % 10 === 0) {
         displaySpinner.text = chalk.blue(`Streaming... (${tokenCount} tokens)`);
       }
     }
     if (displaySpinner) {
-      displaySpinner.succeed(chalk.green("Response complete!"));
+      displaySpinner.succeed(chalk.green('Response complete!'));
     }
     const finalResult = {
       text: fullResponse,
       usage: result.usage,
       response: result.response,
-      finishReason: result.finishReason
+      finishReason: result.finishReason,
     };
     if (onComplete) {
       await onComplete(finalResult);
@@ -100,7 +102,7 @@ async function streamTextWithDisplay(options = {}) {
     return finalResult;
   } catch (error) {
     if (displaySpinner) {
-      displaySpinner.fail(chalk.red("Stream failed"));
+      displaySpinner.fail(chalk.red('Stream failed'));
     }
     if (onError) {
       await onError(error);
@@ -110,19 +112,19 @@ async function streamTextWithDisplay(options = {}) {
 }
 async function streamWithProgressTracking(options = {}) {
   const {
-    provider = "anthropic",
-    model = "claude-3-5-sonnet-20241022",
-    systemPrompt = "",
-    userPrompt = "",
+    provider = 'anthropic',
+    model = 'claude-3-5-sonnet-20241022',
+    systemPrompt = '',
+    userPrompt = '',
     apiKey,
     onProgress,
-    onComplete
+    onComplete,
   } = options;
   let progressTracker = {
     tokensReceived: 0,
     charactersReceived: 0,
     startTime: Date.now(),
-    estimatedTotalTokens: null
+    estimatedTotalTokens: null,
   };
   const result = await streamTextWithDisplay({
     provider,
@@ -141,35 +143,36 @@ async function streamWithProgressTracking(options = {}) {
         await onProgress({
           ...progressTracker,
           tokensPerSecond: parseFloat(tokensPerSecond),
-          elapsedTime
+          elapsedTime,
         });
       }
     },
     onComplete: async (finalResult) => {
       const totalTime = Date.now() - progressTracker.startTime;
-      const tokensPerSecond = totalTime > 0 ? (progressTracker.tokensReceived / (totalTime / 1e3)).toFixed(2) : 0;
+      const tokensPerSecond =
+        totalTime > 0 ? (progressTracker.tokensReceived / (totalTime / 1e3)).toFixed(2) : 0;
       if (onComplete) {
         await onComplete({
           ...finalResult,
           totalTime,
           tokensPerSecond: parseFloat(tokensPerSecond),
-          ...progressTracker
+          ...progressTracker,
         });
       }
-    }
+    },
   });
   return result;
 }
 async function streamWithRetry(options = {}) {
   const {
-    provider = "anthropic",
-    model = "claude-3-5-sonnet-20241022",
-    systemPrompt = "",
-    userPrompt = "",
+    provider = 'anthropic',
+    model = 'claude-3-5-sonnet-20241022',
+    systemPrompt = '',
+    userPrompt = '',
     apiKey,
     maxRetries = 3,
     retryDelay = 1e3,
-    onRetry
+    onRetry,
   } = options;
   let lastError;
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -178,7 +181,9 @@ async function streamWithRetry(options = {}) {
         await onRetry(attempt, maxRetries, lastError);
       } else {
         printWarning(
-          chalk.yellow(`\u26A0\uFE0F  Retry ${attempt}/${maxRetries} after error: ${lastError?.message}`)
+          chalk.yellow(
+            `\u26A0\uFE0F  Retry ${attempt}/${maxRetries} after error: ${lastError?.message}`
+          )
         );
       }
       await new Promise((resolve) => setTimeout(resolve, retryDelay * attempt));
@@ -189,13 +194,15 @@ async function streamWithRetry(options = {}) {
         model,
         systemPrompt,
         userPrompt,
-        apiKey
+        apiKey,
       });
     } catch (error) {
       lastError = error;
       if (attempt === maxRetries) {
-        printError(chalk.red(`
-\u274C All retries failed. Last error: ${error.message}`));
+        printError(
+          chalk.red(`
+\u274C All retries failed. Last error: ${error.message}`)
+        );
         throw error;
       }
     }
@@ -208,49 +215,48 @@ let InterruptibleStream = class {
   }
   async stream(options = {}) {
     const {
-      provider = "anthropic",
-      model = "claude-3-5-sonnet-20241022",
-      systemPrompt = "",
-      userPrompt = "",
+      provider = 'anthropic',
+      model = 'claude-3-5-sonnet-20241022',
+      systemPrompt = '',
+      userPrompt = '',
       apiKey,
       onToken,
       onComplete,
-      onError
+      onError,
     } = options;
-    const originalSigint = process.listeners("SIGINT")[0] || (() => {
-    });
+    const originalSigint = process.listeners('SIGINT')[0] || (() => {});
     const interruptHandler = () => {
       this.interrupt();
     };
-    process.prependListener("SIGINT", interruptHandler);
+    process.prependListener('SIGINT', interruptHandler);
     try {
       const selectedProvider = getProvider(provider, apiKey);
       const result = await streamText({
         model: selectedProvider(model),
         system: systemPrompt,
         prompt: userPrompt,
-        abortSignal: this.abortController.signal
+        abortSignal: this.abortController.signal,
       });
-      let fullResponse = "";
+      let fullResponse = '';
       let tokenCount = 0;
       const spinner = ora({
-        text: chalk.blue("Streaming response... (Press Ctrl+C to interrupt)"),
-        spinner: "clock"
+        text: chalk.blue('Streaming response... (Press Ctrl+C to interrupt)'),
+        spinner: 'clock',
       }).start();
       for await (const token of result.textStream) {
         if (this.interrupted) {
-          spinner.warn(chalk.yellow("Stream interrupted by user"));
+          spinner.warn(chalk.yellow('Stream interrupted by user'));
           break;
         }
         fullResponse += token;
         tokenCount++;
         if (onToken) {
-          Promise.resolve().then(() => onToken(token, fullResponse, tokenCount)).catch((err) => {
-            if (onError)
-              onError(err);
-            else
-              printError(chalk.red(`Error in onToken callback: ${err.message}`));
-          });
+          Promise.resolve()
+            .then(() => onToken(token, fullResponse, tokenCount))
+            .catch((err) => {
+              if (onError) onError(err);
+              else printError(chalk.red(`Error in onToken callback: ${err.message}`));
+            });
         }
         if (tokenCount % 10 === 0) {
           spinner.text = chalk.blue(
@@ -259,21 +265,21 @@ let InterruptibleStream = class {
         }
       }
       if (!this.interrupted) {
-        spinner.succeed(chalk.green("Response complete!"));
+        spinner.succeed(chalk.green('Response complete!'));
       }
       const finalResult = {
         text: fullResponse,
         usage: result.usage,
         response: result.response,
-        finishReason: result.finishReason
+        finishReason: result.finishReason,
       };
       if (onComplete) {
         await onComplete(finalResult);
       }
       return finalResult;
     } catch (error) {
-      if (error.name === "AbortError") {
-        printWarning(chalk.yellow("Stream was aborted"));
+      if (error.name === 'AbortError') {
+        printWarning(chalk.yellow('Stream was aborted'));
       } else {
         if (onError) {
           await onError(error);
@@ -281,8 +287,8 @@ let InterruptibleStream = class {
         throw error;
       }
     } finally {
-      process.removeListener("SIGINT", interruptHandler);
-      process.prependListener("SIGINT", originalSigint);
+      process.removeListener('SIGINT', interruptHandler);
+      process.prependListener('SIGINT', originalSigint);
     }
   }
   interrupt() {
@@ -290,14 +296,12 @@ let InterruptibleStream = class {
     this.abortController.abort();
   }
 };
-InterruptibleStream = __decorateClass([
-  singleton()
-], InterruptibleStream);
-function formatStreamOutput(text, mode = "default") {
+InterruptibleStream = __decorateClass([singleton()], InterruptibleStream);
+function formatStreamOutput(text, mode = 'default') {
   switch (mode) {
-    case "typing":
+    case 'typing':
       return text;
-    case "chunked": {
+    case 'chunked': {
       const chunkSize = 50;
       const chunks = [];
       for (let i = 0; i < text.length; i += chunkSize) {
@@ -305,8 +309,11 @@ function formatStreamOutput(text, mode = "default") {
       }
       return chunks;
     }
-    case "annotated":
-      return text.replace(/\*\*(.*?)\*\*/g, chalk.bold("$1")).replace(/\*(.*?)\*/g, chalk.italic("$1")).replace(/`(.*?)`/g, chalk.bgGray("$1"));
+    case 'annotated':
+      return text
+        .replace(/\*\*(.*?)\*\*/g, chalk.bold('$1'))
+        .replace(/\*(.*?)\*/g, chalk.italic('$1'))
+        .replace(/`(.*?)`/g, chalk.bgGray('$1'));
     default:
       return text;
   }
@@ -316,7 +323,7 @@ var stream_default = {
   streamWithProgressTracking,
   streamWithRetry,
   InterruptibleStream,
-  formatStreamOutput
+  formatStreamOutput,
 };
 export {
   InterruptibleStream,
@@ -324,5 +331,5 @@ export {
   formatStreamOutput,
   streamTextWithDisplay,
   streamWithProgressTracking,
-  streamWithRetry
+  streamWithRetry,
 };

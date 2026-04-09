@@ -33,7 +33,7 @@ const DebugPage = () => {
             completedSteps: 3,
             totalSteps: 7,
             task: 'Create Express server with health endpoint',
-            progress: 43
+            progress: 43,
           },
           {
             id: 'exec-67890',
@@ -42,7 +42,7 @@ const DebugPage = () => {
             completedSteps: 7,
             totalSteps: 7,
             task: 'Implement user authentication system',
-            progress: 100
+            progress: 100,
           },
           {
             id: 'exec-54321',
@@ -51,7 +51,7 @@ const DebugPage = () => {
             completedSteps: 2,
             totalSteps: 7,
             task: 'Deploy application to production',
-            progress: 29
+            progress: 29,
           },
           {
             id: 'exec-98765',
@@ -60,8 +60,8 @@ const DebugPage = () => {
             completedSteps: 4,
             totalSteps: 7,
             task: 'Generate documentation for API',
-            progress: 57
-          }
+            progress: 57,
+          },
         ]);
         setLoading(false);
       }
@@ -75,17 +75,17 @@ const DebugPage = () => {
     };
   }, []);
 
-  const filteredExecutions = executions.filter(exec => {
+  const filteredExecutions = executions.filter((exec) => {
     if (filter === 'all') return true;
     return exec.status === filter;
   });
 
   const statusCounts = {
     all: executions.length,
-    running: executions.filter(e => e.status === 'running').length,
-    completed: executions.filter(e => e.status === 'completed').length,
-    error: executions.filter(e => e.status === 'error').length,
-    paused: executions.filter(e => e.status === 'paused').length,
+    running: executions.filter((e) => e.status === 'running').length,
+    completed: executions.filter((e) => e.status === 'completed').length,
+    error: executions.filter((e) => e.status === 'error').length,
+    paused: executions.filter((e) => e.status === 'paused').length,
   };
 
   return (
@@ -126,7 +126,7 @@ const DebugPage = () => {
           <div className="bg-white shadow rounded-lg overflow-hidden">
             <div className="p-6">
               <h2 className="text-lg font-medium text-gray-900 mb-4">Active Executions</h2>
-              
+
               {loading ? (
                 <div className="p-12 text-center">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
@@ -135,11 +135,11 @@ const DebugPage = () => {
               ) : (
                 <div className="space-y-4">
                   {filteredExecutions.map((execution) => (
-                    <div 
-                      key={execution.id} 
+                    <div
+                      key={execution.id}
                       className={`p-4 rounded-lg border cursor-pointer transition-all ${
-                        selectedExecution?.id === execution.id 
-                          ? 'border-indigo-500 bg-indigo-50' 
+                        selectedExecution?.id === execution.id
+                          ? 'border-indigo-500 bg-indigo-50'
                           : 'border-gray-200 hover:bg-gray-50'
                       }`}
                       onClick={() => setSelectedExecution(execution)}
@@ -148,27 +148,39 @@ const DebugPage = () => {
                         <div>
                           <div className="flex items-center">
                             <h3 className="font-medium text-gray-900">{execution.task}</h3>
-                            <span className={`ml-2 text-xs px-2 py-1 rounded-full ${
-                              execution.status === 'running' ? 'bg-blue-100 text-blue-800' :
-                              execution.status === 'completed' ? 'bg-green-100 text-green-800' :
-                              execution.status === 'error' ? 'bg-red-100 text-red-800' :
-                              execution.status === 'paused' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}>
+                            <span
+                              className={`ml-2 text-xs px-2 py-1 rounded-full ${
+                                execution.status === 'running'
+                                  ? 'bg-blue-100 text-blue-800'
+                                  : execution.status === 'completed'
+                                    ? 'bg-green-100 text-green-800'
+                                    : execution.status === 'error'
+                                      ? 'bg-red-100 text-red-800'
+                                      : execution.status === 'paused'
+                                        ? 'bg-yellow-100 text-yellow-800'
+                                        : 'bg-gray-100 text-gray-800'
+                              }`}
+                            >
                               {execution.status}
                             </span>
                           </div>
                           <p className="text-sm text-gray-500 mt-1">ID: {execution.id}</p>
-                          <p className="text-sm text-gray-500">Started: {new Date(execution.startedAt).toLocaleString()}</p>
+                          <p className="text-sm text-gray-500">
+                            Started: {new Date(execution.startedAt).toLocaleString()}
+                          </p>
                         </div>
                         <div className="text-right">
-                          <div className="text-sm font-medium text-gray-900">{execution.progress}%</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {execution.progress}%
+                          </div>
                           <div className="w-16 bg-gray-200 rounded-full h-2 mt-1">
-                            <div 
+                            <div
                               className={`h-2 rounded-full ${
-                                execution.status === 'error' ? 'bg-red-500' :
-                                execution.status === 'completed' ? 'bg-green-500' :
-                                'bg-indigo-500'
+                                execution.status === 'error'
+                                  ? 'bg-red-500'
+                                  : execution.status === 'completed'
+                                    ? 'bg-green-500'
+                                    : 'bg-indigo-500'
                               }`}
                               style={{ width: `${execution.progress}%` }}
                             ></div>
@@ -182,8 +194,18 @@ const DebugPage = () => {
 
               {filteredExecutions.length === 0 && !loading && (
                 <div className="text-center py-12">
-                  <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  <svg
+                    className="mx-auto h-12 w-12 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    />
                   </svg>
                   <h3 className="mt-2 text-sm font-medium text-gray-900">No executions found</h3>
                   <p className="mt-1 text-sm text-gray-500">
@@ -198,105 +220,204 @@ const DebugPage = () => {
           <div className="bg-white shadow rounded-lg overflow-hidden">
             <div className="p-6">
               <h2 className="text-lg font-medium text-gray-900 mb-4">Execution Flow</h2>
-              
+
               {selectedExecution ? (
-                <ExecutionFlow executionData={{
-                  id: selectedExecution.id,
-                  status: selectedExecution.status,
-                  startedAt: selectedExecution.startedAt,
-                  completedSteps: selectedExecution.completedSteps,
-                  totalSteps: selectedExecution.totalSteps,
-                  steps: [
-                    {
-                      id: 'step-1',
-                      name: 'Task Analysis',
-                      status: selectedExecution.completedSteps >= 1 ? 'completed' : selectedExecution.status === 'running' ? 'running' : 'pending',
-                      duration: selectedExecution.completedSteps >= 1 ? 1200 : null,
-                      startedAt: new Date(selectedExecution.startedAt.getTime() - 300000),
-                      completedAt: selectedExecution.completedSteps >= 1 ? new Date(selectedExecution.startedAt.getTime() - 298800) : null,
-                      agent: 'planner',
-                      input: selectedExecution.task,
-                      output: selectedExecution.completedSteps >= 1 ? 'Task broken down into subtasks' : null,
-                      metadata: { tokens: 45, model: 'gpt-4o' }
-                    },
-                    {
-                      id: 'step-2',
-                      name: 'Architecture Design',
-                      status: selectedExecution.completedSteps >= 2 ? 'completed' : selectedExecution.status === 'running' && selectedExecution.completedSteps >= 1 ? 'running' : 'pending',
-                      duration: selectedExecution.completedSteps >= 2 ? 2100 : null,
-                      startedAt: selectedExecution.completedSteps >= 2 ? new Date(selectedExecution.startedAt.getTime() - 298000) : null,
-                      completedAt: selectedExecution.completedSteps >= 2 ? new Date(selectedExecution.startedAt.getTime() - 295900) : null,
-                      agent: 'architect',
-                      input: 'Design system architecture',
-                      output: selectedExecution.completedSteps >= 2 ? 'Proposed architecture' : null,
-                      metadata: { tokens: 120, model: 'claude-3-5-sonnet' }
-                    },
-                    {
-                      id: 'step-3',
-                      name: 'Code Generation',
-                      status: selectedExecution.completedSteps >= 3 ? 'completed' : selectedExecution.status === 'running' && selectedExecution.completedSteps >= 2 ? 'running' : 'pending',
-                      duration: selectedExecution.completedSteps >= 3 ? 3500 : null,
-                      startedAt: selectedExecution.completedSteps >= 3 ? new Date(selectedExecution.startedAt.getTime() - 295000) : null,
-                      completedAt: selectedExecution.completedSteps >= 3 ? new Date(selectedExecution.startedAt.getTime() - 291500) : null,
-                      agent: 'backend',
-                      input: 'Generate code',
-                      output: selectedExecution.completedSteps >= 3 ? 'Generated code' : null,
-                      metadata: { tokens: 210, model: 'gpt-4o' }
-                    },
-                    {
-                      id: 'step-4',
-                      name: 'Code Review',
-                      status: selectedExecution.completedSteps >= 4 ? 'completed' : selectedExecution.status === 'running' && selectedExecution.completedSteps >= 3 ? 'running' : 'pending',
-                      duration: selectedExecution.completedSteps >= 4 ? 1800 : null,
-                      startedAt: selectedExecution.completedSteps >= 4 ? new Date(selectedExecution.startedAt.getTime() - 290000) : null,
-                      completedAt: selectedExecution.completedSteps >= 4 ? new Date(selectedExecution.startedAt.getTime() - 288200) : null,
-                      agent: 'reviewer',
-                      input: 'Review generated code',
-                      output: selectedExecution.completedSteps >= 4 ? 'Code review completed' : null,
-                      metadata: { tokens: 95, model: 'gpt-4o' }
-                    },
-                    {
-                      id: 'step-5',
-                      name: 'Testing',
-                      status: selectedExecution.completedSteps >= 5 ? 'completed' : selectedExecution.status === 'running' && selectedExecution.completedSteps >= 4 ? 'running' : 'pending',
-                      duration: selectedExecution.completedSteps >= 5 ? 4200 : null,
-                      startedAt: selectedExecution.completedSteps >= 5 ? new Date(selectedExecution.startedAt.getTime() - 285000) : null,
-                      completedAt: selectedExecution.completedSteps >= 5 ? new Date(selectedExecution.startedAt.getTime() - 280800) : null,
-                      agent: 'tester',
-                      input: 'Write and run tests',
-                      output: selectedExecution.completedSteps >= 5 ? 'Tests passed' : null,
-                      metadata: { tokens: 150, model: 'gpt-4o' }
-                    },
-                    {
-                      id: 'step-6',
-                      name: 'Documentation',
-                      status: selectedExecution.completedSteps >= 6 ? 'completed' : selectedExecution.status === 'running' && selectedExecution.completedSteps >= 5 ? 'running' : 'pending',
-                      duration: selectedExecution.completedSteps >= 6 ? 2800 : null,
-                      startedAt: selectedExecution.completedSteps >= 6 ? new Date(selectedExecution.startedAt.getTime() - 278000) : null,
-                      completedAt: selectedExecution.completedSteps >= 6 ? new Date(selectedExecution.startedAt.getTime() - 275200) : null,
-                      agent: 'documenter',
-                      input: 'Generate documentation',
-                      output: selectedExecution.completedSteps >= 6 ? 'Documentation generated' : null,
-                      metadata: { tokens: 80, model: 'gpt-4o' }
-                    },
-                    {
-                      id: 'step-7',
-                      name: 'Deployment',
-                      status: selectedExecution.completedSteps >= 7 ? 'completed' : selectedExecution.status === 'running' && selectedExecution.completedSteps >= 6 ? 'running' : 'pending',
-                      duration: selectedExecution.completedSteps >= 7 ? 5600 : null,
-                      startedAt: selectedExecution.completedSteps >= 7 ? new Date(selectedExecution.startedAt.getTime() - 270000) : null,
-                      completedAt: selectedExecution.completedSteps >= 7 ? new Date(selectedExecution.startedAt.getTime() - 264400) : null,
-                      agent: 'deployer',
-                      input: 'Deploy to production',
-                      output: selectedExecution.completedSteps >= 7 ? 'Successfully deployed' : null,
-                      metadata: { tokens: 120, model: 'gpt-4o' }
-                    }
-                  ]
-                }} />
+                <ExecutionFlow
+                  executionData={{
+                    id: selectedExecution.id,
+                    status: selectedExecution.status,
+                    startedAt: selectedExecution.startedAt,
+                    completedSteps: selectedExecution.completedSteps,
+                    totalSteps: selectedExecution.totalSteps,
+                    steps: [
+                      {
+                        id: 'step-1',
+                        name: 'Task Analysis',
+                        status:
+                          selectedExecution.completedSteps >= 1
+                            ? 'completed'
+                            : selectedExecution.status === 'running'
+                              ? 'running'
+                              : 'pending',
+                        duration: selectedExecution.completedSteps >= 1 ? 1200 : null,
+                        startedAt: new Date(selectedExecution.startedAt.getTime() - 300000),
+                        completedAt:
+                          selectedExecution.completedSteps >= 1
+                            ? new Date(selectedExecution.startedAt.getTime() - 298800)
+                            : null,
+                        agent: 'planner',
+                        input: selectedExecution.task,
+                        output:
+                          selectedExecution.completedSteps >= 1
+                            ? 'Task broken down into subtasks'
+                            : null,
+                        metadata: { tokens: 45, model: 'gpt-4o' },
+                      },
+                      {
+                        id: 'step-2',
+                        name: 'Architecture Design',
+                        status:
+                          selectedExecution.completedSteps >= 2
+                            ? 'completed'
+                            : selectedExecution.status === 'running' &&
+                                selectedExecution.completedSteps >= 1
+                              ? 'running'
+                              : 'pending',
+                        duration: selectedExecution.completedSteps >= 2 ? 2100 : null,
+                        startedAt:
+                          selectedExecution.completedSteps >= 2
+                            ? new Date(selectedExecution.startedAt.getTime() - 298000)
+                            : null,
+                        completedAt:
+                          selectedExecution.completedSteps >= 2
+                            ? new Date(selectedExecution.startedAt.getTime() - 295900)
+                            : null,
+                        agent: 'architect',
+                        input: 'Design system architecture',
+                        output:
+                          selectedExecution.completedSteps >= 2 ? 'Proposed architecture' : null,
+                        metadata: { tokens: 120, model: 'claude-3-5-sonnet' },
+                      },
+                      {
+                        id: 'step-3',
+                        name: 'Code Generation',
+                        status:
+                          selectedExecution.completedSteps >= 3
+                            ? 'completed'
+                            : selectedExecution.status === 'running' &&
+                                selectedExecution.completedSteps >= 2
+                              ? 'running'
+                              : 'pending',
+                        duration: selectedExecution.completedSteps >= 3 ? 3500 : null,
+                        startedAt:
+                          selectedExecution.completedSteps >= 3
+                            ? new Date(selectedExecution.startedAt.getTime() - 295000)
+                            : null,
+                        completedAt:
+                          selectedExecution.completedSteps >= 3
+                            ? new Date(selectedExecution.startedAt.getTime() - 291500)
+                            : null,
+                        agent: 'backend',
+                        input: 'Generate code',
+                        output: selectedExecution.completedSteps >= 3 ? 'Generated code' : null,
+                        metadata: { tokens: 210, model: 'gpt-4o' },
+                      },
+                      {
+                        id: 'step-4',
+                        name: 'Code Review',
+                        status:
+                          selectedExecution.completedSteps >= 4
+                            ? 'completed'
+                            : selectedExecution.status === 'running' &&
+                                selectedExecution.completedSteps >= 3
+                              ? 'running'
+                              : 'pending',
+                        duration: selectedExecution.completedSteps >= 4 ? 1800 : null,
+                        startedAt:
+                          selectedExecution.completedSteps >= 4
+                            ? new Date(selectedExecution.startedAt.getTime() - 290000)
+                            : null,
+                        completedAt:
+                          selectedExecution.completedSteps >= 4
+                            ? new Date(selectedExecution.startedAt.getTime() - 288200)
+                            : null,
+                        agent: 'reviewer',
+                        input: 'Review generated code',
+                        output:
+                          selectedExecution.completedSteps >= 4 ? 'Code review completed' : null,
+                        metadata: { tokens: 95, model: 'gpt-4o' },
+                      },
+                      {
+                        id: 'step-5',
+                        name: 'Testing',
+                        status:
+                          selectedExecution.completedSteps >= 5
+                            ? 'completed'
+                            : selectedExecution.status === 'running' &&
+                                selectedExecution.completedSteps >= 4
+                              ? 'running'
+                              : 'pending',
+                        duration: selectedExecution.completedSteps >= 5 ? 4200 : null,
+                        startedAt:
+                          selectedExecution.completedSteps >= 5
+                            ? new Date(selectedExecution.startedAt.getTime() - 285000)
+                            : null,
+                        completedAt:
+                          selectedExecution.completedSteps >= 5
+                            ? new Date(selectedExecution.startedAt.getTime() - 280800)
+                            : null,
+                        agent: 'tester',
+                        input: 'Write and run tests',
+                        output: selectedExecution.completedSteps >= 5 ? 'Tests passed' : null,
+                        metadata: { tokens: 150, model: 'gpt-4o' },
+                      },
+                      {
+                        id: 'step-6',
+                        name: 'Documentation',
+                        status:
+                          selectedExecution.completedSteps >= 6
+                            ? 'completed'
+                            : selectedExecution.status === 'running' &&
+                                selectedExecution.completedSteps >= 5
+                              ? 'running'
+                              : 'pending',
+                        duration: selectedExecution.completedSteps >= 6 ? 2800 : null,
+                        startedAt:
+                          selectedExecution.completedSteps >= 6
+                            ? new Date(selectedExecution.startedAt.getTime() - 278000)
+                            : null,
+                        completedAt:
+                          selectedExecution.completedSteps >= 6
+                            ? new Date(selectedExecution.startedAt.getTime() - 275200)
+                            : null,
+                        agent: 'documenter',
+                        input: 'Generate documentation',
+                        output:
+                          selectedExecution.completedSteps >= 6 ? 'Documentation generated' : null,
+                        metadata: { tokens: 80, model: 'gpt-4o' },
+                      },
+                      {
+                        id: 'step-7',
+                        name: 'Deployment',
+                        status:
+                          selectedExecution.completedSteps >= 7
+                            ? 'completed'
+                            : selectedExecution.status === 'running' &&
+                                selectedExecution.completedSteps >= 6
+                              ? 'running'
+                              : 'pending',
+                        duration: selectedExecution.completedSteps >= 7 ? 5600 : null,
+                        startedAt:
+                          selectedExecution.completedSteps >= 7
+                            ? new Date(selectedExecution.startedAt.getTime() - 270000)
+                            : null,
+                        completedAt:
+                          selectedExecution.completedSteps >= 7
+                            ? new Date(selectedExecution.startedAt.getTime() - 264400)
+                            : null,
+                        agent: 'deployer',
+                        input: 'Deploy to production',
+                        output:
+                          selectedExecution.completedSteps >= 7 ? 'Successfully deployed' : null,
+                        metadata: { tokens: 120, model: 'gpt-4o' },
+                      },
+                    ],
+                  }}
+                />
               ) : (
                 <div className="text-center py-12">
-                  <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  <svg
+                    className="mx-auto h-12 w-12 text-gray-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
                   </svg>
                   <h3 className="mt-2 text-sm font-medium text-gray-900">Select an execution</h3>
                   <p className="mt-1 text-sm text-gray-500">

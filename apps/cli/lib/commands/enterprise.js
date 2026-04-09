@@ -5,7 +5,6 @@
  * @module commands/enterprise
  */
 
-
 import { enterpriseFeatures } from '../enterprise/features.js';
 import { agentSecurityPolicies } from '../enterprise/security-policies.js';
 import { complianceMonitor } from '../enterprise/compliance-monitor.js';

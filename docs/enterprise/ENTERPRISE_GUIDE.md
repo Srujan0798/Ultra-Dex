@@ -1,6 +1,7 @@
 # Ultra-Dex Enterprise Documentation
 
 ## Table of Contents
+
 1. [Overview](#overview)
 2. [Architecture](#architecture)
 3. [Security](#security)
@@ -14,6 +15,7 @@
 Ultra-Dex Enterprise is a production-ready AI orchestration platform designed for Fortune 500 companies. It provides secure, scalable, and compliant AI agent coordination with advanced governance and monitoring capabilities.
 
 ### Key Features
+
 - **Multi-tenant Architecture**: Complete isolation between organizations
 - **Enterprise SSO**: SAML 2.0 and OIDC integration
 - **Advanced Security**: Encryption at rest and in transit, audit logging
@@ -59,18 +61,21 @@ Ultra-Dex Enterprise is a production-ready AI orchestration platform designed fo
 ### Deployment Models
 
 #### 1. On-Premises
+
 - Full control over data and infrastructure
 - Air-gapped deployment options
 - Custom security policies
 - Integration with existing enterprise systems
 
 #### 2. Private Cloud
+
 - Dedicated cloud resources
 - Enhanced security controls
 - Custom compliance requirements
 - Enterprise-grade SLA
 
 #### 3. Hybrid Cloud
+
 - On-premises control with cloud scalability
 - Data residency compliance
 - Burst capacity to public cloud
@@ -81,12 +86,15 @@ Ultra-Dex Enterprise is a production-ready AI orchestration platform designed fo
 ### Authentication & Authorization
 
 #### SSO Integration
+
 Ultra-Dex supports enterprise SSO with:
+
 - **SAML 2.0**: For existing SAML-based identity providers
 - **OIDC**: For modern OIDC-compliant providers
 - **SCIM**: For automated user provisioning/deprovisioning
 
 #### Role-Based Access Control (RBAC)
+
 ```yaml
 roles:
   owner:
@@ -117,12 +125,14 @@ roles:
 ### Data Protection
 
 #### Encryption Standards
+
 - **At Rest**: AES-256-GCM with HSM-backed key management
 - **In Transit**: TLS 1.3 with perfect forward secrecy
 - **Key Rotation**: Automated monthly key rotation
 - **Zero-Knowledge**: Customer data is encrypted with customer-owned keys
 
 #### Data Isolation
+
 - **Logical Isolation**: Database schemas per organization
 - **Physical Isolation**: Optional dedicated database instances
 - **Network Isolation**: VPC/VNet segmentation
@@ -131,12 +141,14 @@ roles:
 ### Network Security
 
 #### Infrastructure Security
+
 - **DDoS Protection**: Cloudflare or AWS Shield integration
 - **WAF**: Web Application Firewall for common attacks
 - **Firewall**: Network-level access controls
 - **VPN**: Site-to-site VPN for private connectivity
 
 #### API Security
+
 - **Rate Limiting**: Per-user and per-organization limits
 - **Authentication**: JWT tokens with short expiry
 - **Authorization**: Fine-grained permission checks
@@ -147,6 +159,7 @@ roles:
 ### SOC 2 Type II Controls
 
 #### Security Controls
+
 - **CC5.2**: Continuous monitoring of security controls
 - **CC6.1**: Logical access security implementation
 - **CC6.3**: Access authorization and modification
@@ -154,11 +167,13 @@ roles:
 - **CC7.2**: System change management
 
 #### Availability Controls
+
 - **A1.1**: Capacity monitoring and management
 - **A1.2**: Capacity demand and growth management
 - **A1.3**: System availability monitoring
 
 #### Confidentiality Controls
+
 - **C1.1**: Confidential information identification
 - **C1.2**: Confidential information maintenance
 - **C1.3**: Confidential information disclosure
@@ -166,6 +181,7 @@ roles:
 ### GDPR Compliance
 
 #### Data Subject Rights
+
 - **Right to Access**: Data export functionality
 - **Right to Rectification**: Data correction procedures
 - **Right to Erasure**: Data deletion capabilities
@@ -173,6 +189,7 @@ roles:
 - **Right to Restriction**: Data processing limitation
 
 #### Technical Measures
+
 - **Pseudonymization**: Data is pseudonymized where possible
 - **Encryption**: All personal data is encrypted
 - **Access Controls**: Strict access controls on personal data
@@ -182,17 +199,20 @@ roles:
 ### HIPAA Compliance (When Applicable)
 
 #### Administrative Safeguards
+
 - **Security Management**: Risk analysis and management
 - **Assigned Security Responsibility**: Designated security officer
 - **Workforce Security**: Authorization and clearance procedures
 - **Information Access Management**: Access authorization procedures
 
 #### Physical Safeguards
+
 - **Facility Access**: Physical access controls
 - **Workstation Security**: Workstation use and security
 - **Device and Media Controls**: Device and media management
 
 #### Technical Safeguards
+
 - **Access Control**: Unique user identification
 - **Audit Controls**: Information system activity review
 - **Integrity Controls**: Data integrity mechanisms
@@ -203,12 +223,14 @@ roles:
 ### Prerequisites
 
 #### Infrastructure Requirements
+
 - **Compute**: 8+ CPU cores, 32GB+ RAM (16 cores, 64GB RAM recommended for production)
 - **Storage**: 500GB+ SSD (1TB+ recommended for production)
 - **Network**: High-speed network with low latency
 - **OS**: Ubuntu 22.04 LTS, RHEL 8+, or Windows Server 2022
 
 #### Security Prerequisites
+
 - **SSL Certificate**: Valid SSL certificate for HTTPS
 - **Identity Provider**: SAML 2.0 or OIDC compliant identity provider
 - **Network Security**: Firewall rules allowing necessary ports
@@ -217,6 +239,7 @@ roles:
 ### Configuration
 
 #### Environment Variables
+
 ```bash
 # Security Configuration
 JWT_SECRET=your-super-secret-jwt-key-change-in-production
@@ -248,6 +271,7 @@ GOOGLE_API_KEY=your-google-key
 ```
 
 #### Enterprise Configuration File
+
 ```json
 {
   "security": {
@@ -316,6 +340,7 @@ GOOGLE_API_KEY=your-google-key
 ### Monitoring & Observability
 
 #### Key Metrics
+
 ```prometheus
 # System Health
 ultra_dex_system_health_score{component="agent_orchestrator"} 98.5
@@ -338,33 +363,36 @@ ultra_dex_cost_usd_total 125.67
 ```
 
 #### Alerting Rules
+
 ```yaml
 alerts:
   - name: HighErrorRate
     condition: rate(api_requests_total{status=~"5.."}[5m]) > 0.1
     severity: critical
-    description: "More than 10% of requests are failing"
+    description: 'More than 10% of requests are failing'
 
   - name: HighLatency
     condition: histogram_quantile(0.95, api_request_duration_seconds_bucket) > 2
     severity: warning
-    description: "95th percentile latency is above 2 seconds"
+    description: '95th percentile latency is above 2 seconds'
 
   - name: SecurityIncident
     condition: security_incidents_total > 0
     severity: critical
-    description: "Security incident detected"
+    description: 'Security incident detected'
 ```
 
 ### Backup & Recovery
 
 #### Backup Strategy
+
 - **Hot Backup**: Continuous backup of active data
 - **Warm Backup**: Daily full backups with transaction logs
 - **Cold Backup**: Weekly archival backups
 - **Geo-Redundant**: Cross-region backup replication
 
 #### Recovery Procedures
+
 ```bash
 # Emergency recovery procedure
 1. Assess impact and scope
@@ -381,14 +409,17 @@ alerts:
 ### Common Issues & Solutions
 
 #### 1. Performance Degradation
+
 **Symptoms**: Slow response times, high latency
-**Causes**: 
+**Causes**:
+
 - Database query performance
 - Memory pressure
 - Network congestion
 - AI provider rate limits
 
 **Solutions**:
+
 ```bash
 # Check database performance
 EXPLAIN ANALYZE SELECT * FROM agents WHERE status = 'active';
@@ -403,14 +434,17 @@ curl -s https://status.openai.com/api/v2/status.json
 ```
 
 #### 2. Authentication Failures
+
 **Symptoms**: Users unable to log in, API errors
 **Causes**:
+
 - SSO configuration issues
 - Certificate expiration
 - Network connectivity problems
 - Identity provider downtime
 
 **Solutions**:
+
 ```bash
 # Verify SSO configuration
 ultra-dex config verify --sso
@@ -423,14 +457,17 @@ curl -v https://your-idp.com/health
 ```
 
 #### 3. Security Alerts
+
 **Symptoms**: Security incidents in audit logs
 **Causes**:
+
 - Suspicious access patterns
 - Policy violations
 - Configuration drift
 - Malware detection
 
 **Solutions**:
+
 ```bash
 # Review audit logs
 tail -f /var/log/ultra-dex/audit.log
@@ -443,6 +480,7 @@ ultra-dex security scan
 ```
 
 ### Diagnostic Commands
+
 ```bash
 # System health check
 ultra-dex doctor
@@ -466,6 +504,7 @@ ultra-dex debug database
 ## Best Practices
 
 ### Security Best Practices
+
 - Enable MFA for all administrative accounts
 - Use short-lived API keys with rotation
 - Implement network segmentation
@@ -473,6 +512,7 @@ ultra-dex debug database
 - Monitor for anomalous access patterns
 
 ### Performance Best Practices
+
 - Use CDN for static assets
 - Implement caching strategies
 - Optimize database queries
@@ -480,6 +520,7 @@ ultra-dex debug database
 - Plan for capacity growth
 
 ### Operational Best Practices
+
 - Implement comprehensive backup strategies
 - Establish incident response procedures
 - Regular system updates and patching

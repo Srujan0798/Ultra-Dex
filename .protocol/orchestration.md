@@ -8,15 +8,15 @@ Maya is the **orchestrator role** (CEO/CTO/CFO). Maya plans, assigns, reviews, v
 
 ## Command Hierarchy
 
-| Lane | Tool | Windows | Role |
-|------|------|---------|------|
-| Premium | Claude Code | 1 max | Dense critical tasks (Opus/Sonnet) |
-| Premium | Codex | 1 max | High-performance builder/review |
-| Worker | Gemini CLI | 4-6 | Parallel support, TDD, docs |
-| Labor | Qwen CLI | 6-10 | High-volume repetitive tasks |
-| Governance | Copilot CLI | 0-2 | PR/review/fleet coordination |
-| Router | OpenCode | N/A | Provider fallback infrastructure |
-| API Supply | NVIDIA | N/A | Model catalog for fallbacks |
+| Lane       | Tool        | Windows | Role                               |
+| ---------- | ----------- | ------- | ---------------------------------- |
+| Premium    | Claude Code | 1 max   | Dense critical tasks (Opus/Sonnet) |
+| Premium    | Codex       | 1 max   | High-performance builder/review    |
+| Worker     | Gemini CLI  | 4-6     | Parallel support, TDD, docs        |
+| Labor      | Qwen CLI    | 6-10    | High-volume repetitive tasks       |
+| Governance | Copilot CLI | 0-2     | PR/review/fleet coordination       |
+| Router     | OpenCode    | N/A     | Provider fallback infrastructure   |
+| API Supply | NVIDIA      | N/A     | Model catalog for fallbacks        |
 
 ## Assignment Algorithm
 
@@ -77,4 +77,4 @@ See `agent-capabilities/` for detailed capability maps per tool.
 
 ---
 
-*Orchestration is about getting the right work to the right tool.*
+_Orchestration is about getting the right work to the right tool._

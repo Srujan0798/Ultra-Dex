@@ -110,9 +110,8 @@ export class OpenAIProvider extends BaseProvider {
         const data = await response.json();
 
         // Handle NVIDIA Nemotron models that return reasoning_content instead of content
-        const messageContent = data.choices[0]?.message?.content 
-          || data.choices[0]?.message?.reasoning_content 
-          || '';
+        const messageContent =
+          data.choices[0]?.message?.content || data.choices[0]?.message?.reasoning_content || '';
 
         return {
           content: messageContent,
@@ -227,8 +226,8 @@ export class OpenAIProvider extends BaseProvider {
                         type: toolCallDelta.type || 'function',
                         function: {
                           name: toolCallDelta.function?.name || '',
-                          arguments: toolCallDelta.function?.arguments || ''
-                        }
+                          arguments: toolCallDelta.function?.arguments || '',
+                        },
                       };
                     } else {
                       // Append to existing tool call
@@ -261,7 +260,7 @@ export class OpenAIProvider extends BaseProvider {
               usage,
               toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
               partial: true,
-              error: streamError
+              error: streamError,
             };
           }
           throw streamError;
@@ -270,7 +269,7 @@ export class OpenAIProvider extends BaseProvider {
         return {
           content: fullContent,
           usage,
-          toolCalls: toolCalls.length > 0 ? toolCalls : undefined
+          toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
         };
       } catch (error) {
         lastError = error;

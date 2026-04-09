@@ -78,14 +78,14 @@ Owner (Full Access)
 
 Each role has specific permissions:
 
-| Role | Agents | Memory | Projects | Config | Audit | Security |
-|------|--------|--------|----------|---------|-------|----------|
-| Owner | CRUD | CRUD | CRUD | CRUD | Full | Full |
-| Admin | CRUD | CRUD | CRUD | Read/Write | Full | Full |
-| Manager | Read/Write | Read/Write | Read/Write | Read/Write | Limited | Read |
-| Developer | Read/Write | Read/Write | Read/Write | Read | Limited | Read |
-| Viewer | Read | Read | Read | Read | Read | Read |
-| Guest | Read | Read | Read | Read | None | None |
+| Role      | Agents     | Memory     | Projects   | Config     | Audit   | Security |
+| --------- | ---------- | ---------- | ---------- | ---------- | ------- | -------- |
+| Owner     | CRUD       | CRUD       | CRUD       | CRUD       | Full    | Full     |
+| Admin     | CRUD       | CRUD       | CRUD       | Read/Write | Full    | Full     |
+| Manager   | Read/Write | Read/Write | Read/Write | Read/Write | Limited | Read     |
+| Developer | Read/Write | Read/Write | Read/Write | Read       | Limited | Read     |
+| Viewer    | Read       | Read       | Read       | Read       | Read    | Read     |
+| Guest     | Read       | Read       | Read       | Read       | None    | None     |
 
 ### 2.3 SSO Implementation
 
@@ -98,7 +98,7 @@ const samlConfig = {
   issuer: 'ultra-dex-saml',
   cert: '-----BEGIN CERTIFICATE-----...',
   callbackUrl: 'https://your-domain.com/auth/saml/callback',
-  signatureAlgorithm: 'sha256'
+  signatureAlgorithm: 'sha256',
 };
 
 // OIDC Configuration
@@ -107,7 +107,7 @@ const oidcConfig = {
   clientId: 'your-client-id',
   clientSecret: 'your-client-secret',
   redirectUri: 'https://your-domain.com/auth/oidc/callback',
-  scopes: ['openid', 'profile', 'email']
+  scopes: ['openid', 'profile', 'email'],
 };
 ```
 
@@ -125,12 +125,12 @@ Ultra-Dex implements industry-standard encryption:
 
 Data is classified into tiers with appropriate protection:
 
-| Tier | Classification | Retention | Protection |
-|------|----------------|-----------|------------|
-| Hot | Operational | 1 hour | Encrypted, frequent backup |
-| Warm | Important | 24 hours | Encrypted, daily backup |
-| Cold | Historical | 30 days | Encrypted, weekly backup |
-| Archive | Compliance | 7 years | Encrypted, immutable |
+| Tier    | Classification | Retention | Protection                 |
+| ------- | -------------- | --------- | -------------------------- |
+| Hot     | Operational    | 1 hour    | Encrypted, frequent backup |
+| Warm    | Important      | 24 hours  | Encrypted, daily backup    |
+| Cold    | Historical     | 30 days   | Encrypted, weekly backup   |
+| Archive | Compliance     | 7 years   | Encrypted, immutable       |
 
 ### 3.3 Data Loss Prevention
 
@@ -146,6 +146,7 @@ Data is classified into tiers with appropriate protection:
 Ultra-Dex implements comprehensive SOC 2 controls:
 
 #### Security Category
+
 - **CC5.2**: Continuous monitoring of security controls
 - **CC6.1**: Logical access security implementation
 - **CC6.3**: Access authorization and modification
@@ -153,15 +154,18 @@ Ultra-Dex implements comprehensive SOC 2 controls:
 - **CC7.2**: System change management
 
 #### Availability Category
+
 - **A1.1**: Capacity monitoring and management
 - **A1.2**: Capacity demand and growth management
 - **A1.3**: System availability monitoring
 
 #### Confidentiality Category
+
 - **C1.2**: Information identification and maintenance
 - **C1.3**: Information disclosure
 
 #### Processing Integrity Category
+
 - **PI1.4**: Processing error prevention and correction
 
 ### 4.2 GDPR Compliance
@@ -241,12 +245,12 @@ Automated generation of compliance reports:
 
 ### 7.1 Security Event Classification
 
-| Level | Description | Response Time |
-|-------|-------------|---------------|
-| Critical | Data breach, system compromise | < 15 minutes |
-| High | Suspicious activity, policy violation | < 1 hour |
-| Medium | Security warning, configuration issue | < 4 hours |
-| Low | Informational, routine security event | < 24 hours |
+| Level    | Description                           | Response Time |
+| -------- | ------------------------------------- | ------------- |
+| Critical | Data breach, system compromise        | < 15 minutes  |
+| High     | Suspicious activity, policy violation | < 1 hour      |
+| Medium   | Security warning, configuration issue | < 4 hours     |
+| Low      | Informational, routine security event | < 24 hours    |
 
 ### 7.2 Incident Response Process
 

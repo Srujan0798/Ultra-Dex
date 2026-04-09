@@ -3,8 +3,6 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-
-
 /**
  * Risk Register Module
  * Track and mitigate project-level threats
@@ -19,7 +17,7 @@ export class RiskRegister {
     risks.push({
       id: Date.now().toString(36),
       timestamp: new Date().toISOString(),
-      ...risk
+      ...risk,
     });
     await this.saveRisks(risks);
     await this.generateReport(risks);
@@ -44,8 +42,8 @@ export class RiskRegister {
     let md = '# 🛡️ Project Risk Register\n\n';
     md += '| ID | Risk | Probability | Impact | Mitigation | Status |\n';
     md += '| :--- | :--- | :--- | :--- | :--- | :--- |\n';
-    
-    risks.forEach(r => {
+
+    risks.forEach((r) => {
       md += `| ${r.id} | ${r.description} | ${r.probability} | ${r.impact} | ${r.mitigation} | ${r.status || 'Active'} |\n`;
     });
 

@@ -37,19 +37,13 @@ class ContextSnapshots {
       ...metadata,
       createdAt: new Date().toISOString(),
     };
-    fs.writeFileSync(
-      path.join(snapshotPath, 'metadata.json'),
-      JSON.stringify(meta, null, 2)
-    );
+    fs.writeFileSync(path.join(snapshotPath, 'metadata.json'), JSON.stringify(meta, null, 2));
 
     // If in a git repo, save current commit hash
     try {
       const commitHash = execSync('git rev-parse HEAD', { encoding: 'utf8' }).trim();
       meta.gitCommit = commitHash;
-      fs.writeFileSync(
-        path.join(snapshotPath, 'metadata.json'),
-        JSON.stringify(meta, null, 2)
-      );
+      fs.writeFileSync(path.join(snapshotPath, 'metadata.json'), JSON.stringify(meta, null, 2));
     } catch {
       // Not a git repo, skip
     }
@@ -60,17 +54,20 @@ class ContextSnapshots {
   async list() {
     if (!fs.existsSync(this.snapshotsDir)) return [];
 
-    const snapshots = fs.readdirSync(this.snapshotsDir).map((name) => {
-      const metaPath = path.join(this.snapshotsDir, name, 'metadata.json');
-      if (!fs.existsSync(metaPath)) return null;
+    const snapshots = fs
+      .readdirSync(this.snapshotsDir)
+      .map((name) => {
+        const metaPath = path.join(this.snapshotsDir, name, 'metadata.json');
+        if (!fs.existsSync(metaPath)) return null;
 
-      try {
-        const metadata = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
-        return { name, ...metadata };
-      } catch {
-        return null;
-      }
-    }).filter(Boolean);
+        try {
+          const metadata = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
+          return { name, ...metadata };
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean);
 
     return snapshots.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }

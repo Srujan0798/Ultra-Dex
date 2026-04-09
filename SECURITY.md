@@ -24,6 +24,7 @@ To report a security vulnerability, please contact us at [INSERT EMAIL ADDRESS].
 We will acknowledge your report within 48 hours and work on addressing the issue.
 
 Please provide the following information when reporting a vulnerability:
+
 - Description of the vulnerability
 - Steps to reproduce the issue
 - Potential impact

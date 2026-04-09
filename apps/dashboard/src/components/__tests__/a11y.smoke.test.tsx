@@ -20,9 +20,7 @@ describe('dashboard accessibility smoke checks', () => {
   });
 
   it('agent card has no critical accessibility violations', async () => {
-    const { container } = render(
-      <AgentCard agent={sampleAgent} onAction={() => undefined} />
-    );
+    const { container } = render(<AgentCard agent={sampleAgent} onAction={() => undefined} />);
     const results = await axe(container);
     expect(results.violations).toHaveLength(0);
   });

@@ -13,7 +13,7 @@ export class AgentMemoryManager {
     this.config = {
       maxContextTokens: config.maxContextTokens || 8192,
       pruneThreshold: config.pruneThreshold || 0.8,
-      ...config
+      ...config,
     };
   }
 
@@ -34,7 +34,7 @@ export class AgentMemoryManager {
     const priorityMap = {
       hot: 'high',
       warm: 'normal',
-      cold: 'low'
+      cold: 'low',
     };
 
     const text = typeof value === 'string' ? value : JSON.stringify(value);
@@ -47,14 +47,14 @@ export class AgentMemoryManager {
         key,
         tier,
         originalValue: value,
-        ...options.metadata
-      }
+        ...options.metadata,
+      },
     };
 
     const result = await this.memory.store(context, {
       priority: priorityMap[tier] || 'normal',
       tags: [tier, ...(options.tags || [])],
-      ...options
+      ...options,
     });
 
     // Auto-prune if needed after storing in hot tier
@@ -95,20 +95,20 @@ export class AgentMemoryManager {
    */
   async prune(fromTier, toTier, options = {}) {
     const { force = false, amount = 0.2 } = options;
-    
+
     // 1. Get stats to see if we actually need to prune
     const stats = await this.getTierStats();
     const threshold = this.config.maxContextTokens * this.config.pruneThreshold;
-    
+
     if (!force && stats[fromTier].tokens <= threshold) {
       return false;
     }
 
     // 2. Retrieve items from fromTier (oldest first)
-    const items = await this.retrieve('', { 
-      tags: [fromTier], 
+    const items = await this.retrieve('', {
+      tags: [fromTier],
       limit: 1000,
-      sort: 'created_at_asc'
+      sort: 'created_at_asc',
     });
 
     if (items.items.length === 0) return false;
@@ -120,13 +120,13 @@ export class AgentMemoryManager {
     const priorityMap = {
       hot: 'high',
       warm: 'normal',
-      cold: 'low'
+      cold: 'low',
     };
 
     for (const item of itemsToMove) {
       await this.memory.update(item.id, {
         priority: priorityMap[toTier] || 'normal',
-        tags: [toTier]
+        tags: [toTier],
       });
     }
 
@@ -146,7 +146,7 @@ export class AgentMemoryManager {
       const tokens = items.items.reduce((sum, item) => sum + (item.content.tokens || 0), 0);
       result[tier] = {
         count: items.items.length,
-        tokens
+        tokens,
       };
     }
 
@@ -161,7 +161,7 @@ export class AgentMemoryManager {
     return await this.retrieve(query, {
       priority: 'high',
       tags: ['hot'],
-      limit: 5
+      limit: 5,
     });
   }
 
@@ -173,7 +173,7 @@ export class AgentMemoryManager {
     return await this.retrieve(query, {
       priority: 'normal',
       tags: ['warm'],
-      limit: 10
+      limit: 10,
     });
   }
 
@@ -185,7 +185,7 @@ export class AgentMemoryManager {
     return await this.retrieve(query, {
       priority: 'low',
       tags: ['cold'],
-      limit: 20
+      limit: 20,
     });
   }
 
@@ -197,12 +197,12 @@ export class AgentMemoryManager {
   async promote(id, newTier) {
     const priorityMap = {
       hot: 'high',
-      warm: 'normal'
+      warm: 'normal',
     };
 
     return await this.memory.update(id, {
       priority: priorityMap[newTier],
-      tags: [newTier]
+      tags: [newTier],
     });
   }
 
@@ -214,12 +214,12 @@ export class AgentMemoryManager {
   async demote(id, newTier) {
     const priorityMap = {
       warm: 'normal',
-      cold: 'low'
+      cold: 'low',
     };
 
     return await this.memory.update(id, {
       priority: priorityMap[newTier],
-      tags: [newTier]
+      tags: [newTier],
     });
   }
 

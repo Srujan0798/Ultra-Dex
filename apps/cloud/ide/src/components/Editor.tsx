@@ -14,8 +14,19 @@ export function metaLayer() {
 `);
 
   return (
-    <div className="panel" style={{ height: '70%', display: 'flex', flexDirection: 'column', padding: 0 }}>
-      <div style={{ background: '#1e293b', padding: '4px 12px', fontSize: '12px', color: '#94a3b8', borderBottom: '1px solid #334155' }}>
+    <div
+      className="panel"
+      style={{ height: '70%', display: 'flex', flexDirection: 'column', padding: 0 }}
+    >
+      <div
+        style={{
+          background: '#1e293b',
+          padding: '4px 12px',
+          fontSize: '12px',
+          color: '#94a3b8',
+          borderBottom: '1px solid #334155',
+        }}
+      >
         main.ts
       </div>
       <textarea
@@ -31,7 +42,7 @@ export function metaLayer() {
           padding: '16px',
           border: 'none',
           outline: 'none',
-          resize: 'none'
+          resize: 'none',
         }}
       />
     </div>

@@ -26,5 +26,5 @@ export default {
   activate(nexus) {
     console.log('✅ Docker Specialist Plugin Active');
   },
-  Agent: DockerSpecialist
+  Agent: DockerSpecialist,
 };

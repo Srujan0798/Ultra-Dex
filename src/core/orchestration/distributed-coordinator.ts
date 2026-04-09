@@ -3,17 +3,16 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { EventEmitter } from "events";
-import WebSocket from "ws";
-import http from "http";
-import express from "express";
+import { singleton } from 'tsyringe';
+import { EventEmitter } from 'events';
+import WebSocket from 'ws';
+import http from 'http';
+import express from 'express';
 import { createLogger } from '../../utils/logging.js';
 import { SystemHealthChecker } from '../system/health-checker.js';
 import { AgentCoordinationProtocol } from '../protocols/coordination.js';
@@ -23,9 +22,10 @@ let DistributedCoordinator = class extends EventEmitter {
   constructor(options = {}) {
     super();
     this.options = {
-      instanceId: options.instanceId || `instance_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      instanceId:
+        options.instanceId || `instance_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       port: options.port || 8080,
-      host: options.host || "localhost",
+      host: options.host || 'localhost',
       discoveryUrls: options.discoveryUrls || [],
       heartbeatInterval: options.heartbeatInterval || 3e4,
       // 30 seconds
@@ -40,9 +40,9 @@ let DistributedCoordinator = class extends EventEmitter {
       enableFailover: options.enableFailover !== false,
       enableLoadBalancing: options.enableLoadBalancing !== false,
       enablePerformanceMetrics: options.enablePerformanceMetrics !== false,
-      ...options
+      ...options,
     };
-    this.logger = createLogger("DistributedCoordinator");
+    this.logger = createLogger('DistributedCoordinator');
     this.healthChecker = new SystemHealthChecker();
     this.coordinationProtocol = new AgentCoordinationProtocol();
     this.commBus = new AgentCommunicationBus();
@@ -51,7 +51,7 @@ let DistributedCoordinator = class extends EventEmitter {
     this.executionEngine = options.executionEngine;
     this.performanceMetrics = options.performanceMetrics || null;
     this.instanceId = this.options.instanceId;
-    this.status = "initializing";
+    this.status = 'initializing';
     this.lastHeartbeat = Date.now();
     this.peers = /* @__PURE__ */ new Map();
     this.taskQueue = [];
@@ -71,7 +71,7 @@ let DistributedCoordinator = class extends EventEmitter {
       loadBalancingEvents: 0,
       failoverEvents: 0,
       discoveryEvents: 0,
-      avgResponseTime: 0
+      avgResponseTime: 0,
     };
   }
   /**
@@ -79,12 +79,15 @@ let DistributedCoordinator = class extends EventEmitter {
    */
   async initialize() {
     try {
-      this.status = "initializing";
-      this.logger.info("Initializing DistributedCoordinator", { instanceId: this.instanceId });
+      this.status = 'initializing';
+      this.logger.info('Initializing DistributedCoordinator', { instanceId: this.instanceId });
       await this.coordinationProtocol.initialize();
       await this.commBus.initialize();
       await this.registry.initialize();
-      if (this.performanceMetrics && typeof this.performanceMetrics.startCollection === "function") {
+      if (
+        this.performanceMetrics &&
+        typeof this.performanceMetrics.startCollection === 'function'
+      ) {
         this.performanceMetrics.startCollection();
       }
       this.setupHealthChecks();
@@ -99,8 +102,8 @@ let DistributedCoordinator = class extends EventEmitter {
       if (this.options.enableDiscovery) {
         this.startDiscovery();
       }
-      this.status = "active";
-      this.logger.info("DistributedCoordinator initialized successfully", {
+      this.status = 'active';
+      this.logger.info('DistributedCoordinator initialized successfully', {
         instanceId: this.instanceId,
         port: this.options.port,
         features: {
@@ -108,14 +111,14 @@ let DistributedCoordinator = class extends EventEmitter {
           httpApi: this.options.enableHttpApi,
           discovery: this.options.enableDiscovery,
           failover: this.options.enableFailover,
-          loadBalancing: this.options.enableLoadBalancing
-        }
+          loadBalancing: this.options.enableLoadBalancing,
+        },
       });
-      this.emit("initialized", { instanceId: this.instanceId });
+      this.emit('initialized', { instanceId: this.instanceId });
       return this;
     } catch (error) {
-      this.status = "failed";
-      this.logger.error("Failed to initialize DistributedCoordinator", { error: error.message });
+      this.status = 'failed';
+      this.logger.error('Failed to initialize DistributedCoordinator', { error: error.message });
       throw error;
     }
   }
@@ -123,39 +126,41 @@ let DistributedCoordinator = class extends EventEmitter {
    * Setup health checks for distributed coordination
    */
   setupHealthChecks() {
-    this.healthChecker.registerCheck("peer_connectivity", async () => {
-      const connectedPeers = Array.from(this.peers.values()).filter((peer) => peer.status === "connected");
+    this.healthChecker.registerCheck('peer_connectivity', async () => {
+      const connectedPeers = Array.from(this.peers.values()).filter(
+        (peer) => peer.status === 'connected'
+      );
       const totalPeers = this.peers.size;
       return {
-        status: totalPeers === 0 || connectedPeers.length > 0 ? "healthy" : "warning",
+        status: totalPeers === 0 || connectedPeers.length > 0 ? 'healthy' : 'warning',
         details: {
           totalPeers,
           connectedPeers: connectedPeers.length,
-          disconnectedPeers: totalPeers - connectedPeers.length
-        }
+          disconnectedPeers: totalPeers - connectedPeers.length,
+        },
       };
     });
-    this.healthChecker.registerCheck("instance_load", async () => {
+    this.healthChecker.registerCheck('instance_load', async () => {
       const currentLoad = this.activeTasks.size / this.options.maxConcurrentTasks;
       const utilization = Math.min(currentLoad, 1);
       return {
-        status: utilization < this.options.loadBalanceThreshold ? "healthy" : "warning",
+        status: utilization < this.options.loadBalanceThreshold ? 'healthy' : 'warning',
         details: {
           activeTasks: this.activeTasks.size,
           maxConcurrentTasks: this.options.maxConcurrentTasks,
-          utilization: (utilization * 100).toFixed(2) + "%"
-        }
+          utilization: (utilization * 100).toFixed(2) + '%',
+        },
       };
     });
-    this.healthChecker.registerCheck("task_queue", async () => {
+    this.healthChecker.registerCheck('task_queue', async () => {
       const queueLength = this.taskQueue.length;
       const isHealthy = queueLength < this.options.maxConcurrentTasks * 2;
       return {
-        status: isHealthy ? "healthy" : "warning",
+        status: isHealthy ? 'healthy' : 'warning',
         details: {
           queueLength,
-          processingCapacity: this.options.maxConcurrentTasks
-        }
+          processingCapacity: this.options.maxConcurrentTasks,
+        },
       };
     });
   }
@@ -165,25 +170,23 @@ let DistributedCoordinator = class extends EventEmitter {
   async setupHttpApi() {
     this.expressApp = express();
     this.expressApp.use(express.json());
-    this.expressApp.get("/health", this.healthChecker.healthHandler.bind(this.healthChecker));
-    this.expressApp.get("/ready", this.healthChecker.readyHandler.bind(this.healthChecker));
-    this.expressApp.get("/metrics", this.healthChecker.metricsHandler.bind(this.healthChecker));
-    this.expressApp.get("/api/v1/status", this.handleStatusRequest.bind(this));
-    this.expressApp.post("/api/v1/task", this.handleTaskDelegation.bind(this));
-    this.expressApp.get("/api/v1/peers", this.handlePeersRequest.bind(this));
-    this.expressApp.post("/api/v1/heartbeat", this.handleHeartbeat.bind(this));
+    this.expressApp.get('/health', this.healthChecker.healthHandler.bind(this.healthChecker));
+    this.expressApp.get('/ready', this.healthChecker.readyHandler.bind(this.healthChecker));
+    this.expressApp.get('/metrics', this.healthChecker.metricsHandler.bind(this.healthChecker));
+    this.expressApp.get('/api/v1/status', this.handleStatusRequest.bind(this));
+    this.expressApp.post('/api/v1/task', this.handleTaskDelegation.bind(this));
+    this.expressApp.get('/api/v1/peers', this.handlePeersRequest.bind(this));
+    this.expressApp.post('/api/v1/heartbeat', this.handleHeartbeat.bind(this));
     this.httpServer = http.createServer(this.expressApp);
     await new Promise((resolve, reject) => {
       this.httpServer.listen(this.options.port, this.options.host, (err) => {
-        if (err)
-          reject(err);
-        else
-          resolve();
+        if (err) reject(err);
+        else resolve();
       });
     });
-    this.logger.info("HTTP API server started", {
+    this.logger.info('HTTP API server started', {
       host: this.options.host,
-      port: this.options.port
+      port: this.options.port,
     });
   }
   /**
@@ -191,31 +194,33 @@ let DistributedCoordinator = class extends EventEmitter {
    */
   async setupWebSocketServer() {
     this.wsServer = new WebSocket.Server({ server: this.httpServer });
-    this.wsServer.on("connection", (ws, req) => {
-      const peerId = req.headers["x-peer-id"] || `peer_${Date.now()}`;
+    this.wsServer.on('connection', (ws, req) => {
+      const peerId = req.headers['x-peer-id'] || `peer_${Date.now()}`;
       this.wsClients.set(peerId, ws);
-      ws.on("message", (data) => {
+      ws.on('message', (data) => {
         try {
           const message = JSON.parse(data.toString());
           this.handleWebSocketMessage(peerId, message);
         } catch (error) {
-          this.logger.warn("Invalid WebSocket message received", { peerId, error: error.message });
+          this.logger.warn('Invalid WebSocket message received', { peerId, error: error.message });
         }
       });
-      ws.on("close", () => {
+      ws.on('close', () => {
         this.wsClients.delete(peerId);
-        this.updatePeerStatus(peerId, "disconnected");
+        this.updatePeerStatus(peerId, 'disconnected');
       });
-      ws.on("error", (error) => {
-        this.logger.warn("WebSocket error", { peerId, error: error.message });
+      ws.on('error', (error) => {
+        this.logger.warn('WebSocket error', { peerId, error: error.message });
       });
-      ws.send(JSON.stringify({
-        type: "handshake",
-        instanceId: this.instanceId,
-        timestamp: Date.now()
-      }));
+      ws.send(
+        JSON.stringify({
+          type: 'handshake',
+          instanceId: this.instanceId,
+          timestamp: Date.now(),
+        })
+      );
     });
-    this.logger.info("WebSocket server started");
+    this.logger.info('WebSocket server started');
   }
   /**
    * Handle WebSocket messages
@@ -223,29 +228,33 @@ let DistributedCoordinator = class extends EventEmitter {
   async handleWebSocketMessage(peerId, message) {
     try {
       switch (message.type) {
-        case "handshake":
+        case 'handshake':
           await this.handlePeerHandshake(peerId, message);
           break;
-        case "heartbeat":
+        case 'heartbeat':
           await this.handlePeerHeartbeat(peerId, message);
           break;
-        case "task_request":
+        case 'task_request':
           await this.handleTaskRequest(peerId, message);
           break;
-        case "task_response":
+        case 'task_response':
           await this.handleTaskResponse(peerId, message);
           break;
-        case "load_update":
+        case 'load_update':
           await this.handleLoadUpdate(peerId, message);
           break;
-        case "peer_discovery":
+        case 'peer_discovery':
           await this.handlePeerDiscovery(peerId, message);
           break;
         default:
-          this.logger.warn("Unknown WebSocket message type", { peerId, type: message.type });
+          this.logger.warn('Unknown WebSocket message type', { peerId, type: message.type });
       }
     } catch (error) {
-      this.logger.error("Error handling WebSocket message", { peerId, message, error: error.message });
+      this.logger.error('Error handling WebSocket message', {
+        peerId,
+        message,
+        error: error.message,
+      });
     }
   }
   /**
@@ -254,25 +263,27 @@ let DistributedCoordinator = class extends EventEmitter {
   async handlePeerHandshake(peerId, message) {
     const peer = {
       id: message.instanceId,
-      url: message.url || `ws://${message.host || "localhost"}:${message.port || 8080}`,
-      status: "connected",
+      url: message.url || `ws://${message.host || 'localhost'}:${message.port || 8080}`,
+      status: 'connected',
       lastSeen: Date.now(),
       capabilities: message.capabilities || [],
       load: message.load || 0,
-      version: message.version || "1.0.0"
+      version: message.version || '1.0.0',
     };
     this.peers.set(peerId, peer);
-    this.emit("peer:connected", peer);
-    this.logger.info("Peer connected", { peerId: peer.id, capabilities: peer.capabilities });
+    this.emit('peer:connected', peer);
+    this.logger.info('Peer connected', { peerId: peer.id, capabilities: peer.capabilities });
     const ws = this.wsClients.get(peerId);
     if (ws) {
-      ws.send(JSON.stringify({
-        type: "handshake_ack",
-        instanceId: this.instanceId,
-        capabilities: await this.getInstanceCapabilities(),
-        load: this.getCurrentLoad(),
-        timestamp: Date.now()
-      }));
+      ws.send(
+        JSON.stringify({
+          type: 'handshake_ack',
+          instanceId: this.instanceId,
+          capabilities: await this.getInstanceCapabilities(),
+          load: this.getCurrentLoad(),
+          timestamp: Date.now(),
+        })
+      );
     }
   }
   /**
@@ -283,7 +294,7 @@ let DistributedCoordinator = class extends EventEmitter {
     if (peer) {
       peer.lastSeen = Date.now();
       peer.load = message.load || 0;
-      peer.status = "connected";
+      peer.status = 'connected';
     }
   }
   /**
@@ -294,12 +305,14 @@ let DistributedCoordinator = class extends EventEmitter {
     if (this.activeTasks.size >= this.options.maxConcurrentTasks) {
       const ws2 = this.wsClients.get(peerId);
       if (ws2) {
-        ws2.send(JSON.stringify({
-          type: "task_rejected",
-          taskId,
-          reason: "at_capacity",
-          timestamp: Date.now()
-        }));
+        ws2.send(
+          JSON.stringify({
+            type: 'task_rejected',
+            taskId,
+            reason: 'at_capacity',
+            timestamp: Date.now(),
+          })
+        );
       }
       return;
     }
@@ -308,17 +321,23 @@ let DistributedCoordinator = class extends EventEmitter {
       task,
       priority,
       sourcePeer: peerId,
-      queuedAt: Date.now()
+      queuedAt: Date.now(),
     });
     this.taskQueue.sort((a, b) => b.priority - a.priority);
-    this.logger.info("Task queued from peer", { taskId, peerId, queueLength: this.taskQueue.length });
+    this.logger.info('Task queued from peer', {
+      taskId,
+      peerId,
+      queueLength: this.taskQueue.length,
+    });
     const ws = this.wsClients.get(peerId);
     if (ws) {
-      ws.send(JSON.stringify({
-        type: "task_accepted",
-        taskId,
-        timestamp: Date.now()
-      }));
+      ws.send(
+        JSON.stringify({
+          type: 'task_accepted',
+          taskId,
+          timestamp: Date.now(),
+        })
+      );
     }
     this.processTaskQueue();
   }
@@ -332,14 +351,14 @@ let DistributedCoordinator = class extends EventEmitter {
       this.activeTasks.delete(taskId);
       if (success) {
         this.metrics.tasksProcessed++;
-        this.emit("task:completed", { taskId, result, peerId });
+        this.emit('task:completed', { taskId, result, peerId });
       } else {
         this.metrics.tasksFailed++;
-        this.emit("task:failed", { taskId, error, peerId });
+        this.emit('task:failed', { taskId, error, peerId });
       }
       const responseTime = Date.now() - task.startedAt;
       this.updateAverageResponseTime(responseTime);
-      this.logger.info("Task completed by peer", { taskId, peerId, success, responseTime });
+      this.logger.info('Task completed by peer', { taskId, peerId, success, responseTime });
     }
     this.processTaskQueue();
   }
@@ -380,17 +399,17 @@ let DistributedCoordinator = class extends EventEmitter {
         id: peer.id,
         status: peer.status,
         load: peer.load,
-        lastSeen: peer.lastSeen
+        lastSeen: peer.lastSeen,
       })),
       metrics: this.metrics,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
     res.json(status);
   }
   async handleTaskDelegation(req, res) {
     const { task, priority = 1, timeout = 3e4 } = req.body;
     if (!task) {
-      return res.status(400).json({ error: "Task is required" });
+      return res.status(400).json({ error: 'Task is required' });
     }
     const taskId = `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const targetPeer = this.selectPeerForTask(task);
@@ -400,15 +419,15 @@ let DistributedCoordinator = class extends EventEmitter {
         this.metrics.tasksDelegated++;
         res.json({
           taskId,
-          status: "delegated",
+          status: 'delegated',
           targetPeer: targetPeer.id,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
       } catch (error) {
-        res.status(500).json({ error: "Failed to delegate task", details: error.message });
+        res.status(500).json({ error: 'Failed to delegate task', details: error.message });
       }
     } else {
-      res.status(503).json({ error: "No available peers for task delegation" });
+      res.status(503).json({ error: 'No available peers for task delegation' });
     }
   }
   async handlePeersRequest(req, res) {
@@ -418,7 +437,7 @@ let DistributedCoordinator = class extends EventEmitter {
       status: peer.status,
       load: peer.load,
       lastSeen: peer.lastSeen,
-      capabilities: peer.capabilities
+      capabilities: peer.capabilities,
     }));
     res.json({ peers, instanceId: this.instanceId });
   }
@@ -429,16 +448,15 @@ let DistributedCoordinator = class extends EventEmitter {
       if (peer) {
         peer.lastSeen = Date.now();
         peer.load = load || 0;
-        if (capabilities)
-          peer.capabilities = capabilities;
-        peer.status = "connected";
+        if (capabilities) peer.capabilities = capabilities;
+        peer.status = 'connected';
       }
     }
     res.json({
       instanceId: this.instanceId,
       load: this.getCurrentLoad(),
       capabilities: await this.getInstanceCapabilities(),
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
   /**
@@ -454,28 +472,31 @@ let DistributedCoordinator = class extends EventEmitter {
    */
   async sendHeartbeat() {
     const heartbeat = {
-      type: "heartbeat",
+      type: 'heartbeat',
       instanceId: this.instanceId,
       load: this.getCurrentLoad(),
       capabilities: await this.getInstanceCapabilities(),
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
     for (const [peerId, ws] of this.wsClients) {
       try {
         ws.send(JSON.stringify(heartbeat));
       } catch (error) {
-        this.logger.warn("Failed to send heartbeat to peer", { peerId, error: error.message });
+        this.logger.warn('Failed to send heartbeat to peer', { peerId, error: error.message });
         this.wsClients.delete(peerId);
-        this.updatePeerStatus(peerId, "disconnected");
+        this.updatePeerStatus(peerId, 'disconnected');
       }
     }
     for (const [peerId, peer] of this.peers) {
-      if (peer.status === "connected" && peer.url.startsWith("http")) {
+      if (peer.status === 'connected' && peer.url.startsWith('http')) {
         try {
           await this.sendHttpHeartbeat(peer);
         } catch (error) {
-          this.logger.warn("Failed to send HTTP heartbeat to peer", { peerId, error: error.message });
-          this.updatePeerStatus(peerId, "disconnected");
+          this.logger.warn('Failed to send HTTP heartbeat to peer', {
+            peerId,
+            error: error.message,
+          });
+          this.updatePeerStatus(peerId, 'disconnected');
         }
       }
     }
@@ -485,14 +506,18 @@ let DistributedCoordinator = class extends EventEmitter {
    * Send HTTP heartbeat to a peer
    */
   async sendHttpHeartbeat(peer) {
-    const axios = (await import("axios")).default;
-    await axios.post(`${peer.url}/api/v1/heartbeat`, {
-      peerId: this.instanceId,
-      load: this.getCurrentLoad(),
-      capabilities: await this.getInstanceCapabilities()
-    }, {
-      timeout: 5e3
-    });
+    const axios = (await import('axios')).default;
+    await axios.post(
+      `${peer.url}/api/v1/heartbeat`,
+      {
+        peerId: this.instanceId,
+        load: this.getCurrentLoad(),
+        capabilities: await this.getInstanceCapabilities(),
+      },
+      {
+        timeout: 5e3,
+      }
+    );
   }
   /**
    * Start health checks
@@ -510,8 +535,8 @@ let DistributedCoordinator = class extends EventEmitter {
     const timeoutThreshold = this.options.heartbeatInterval * 3;
     for (const [peerId, peer] of this.peers) {
       if (now - peer.lastSeen > timeoutThreshold) {
-        this.updatePeerStatus(peerId, "disconnected");
-        this.logger.warn("Peer health check failed - marking as disconnected", { peerId });
+        this.updatePeerStatus(peerId, 'disconnected');
+        this.logger.warn('Peer health check failed - marking as disconnected', { peerId });
       }
     }
   }
@@ -530,7 +555,7 @@ let DistributedCoordinator = class extends EventEmitter {
     if (!this.options.discoveryUrls || this.options.discoveryUrls.length === 0) {
       return;
     }
-    const axios = (await import("axios")).default;
+    const axios = (await import('axios')).default;
     for (const discoveryUrl of this.options.discoveryUrls) {
       try {
         const response = await axios.get(`${discoveryUrl}/api/v1/peers`, { timeout: 5e3 });
@@ -541,12 +566,12 @@ let DistributedCoordinator = class extends EventEmitter {
             this.metrics.discoveryEvents++;
           }
         }
-        this.logger.info("Peer discovery completed", {
+        this.logger.info('Peer discovery completed', {
           discoveryUrl,
-          discoveredPeers: peers.length
+          discoveredPeers: peers.length,
         });
       } catch (error) {
-        this.logger.warn("Peer discovery failed", { discoveryUrl, error: error.message });
+        this.logger.warn('Peer discovery failed', { discoveryUrl, error: error.message });
       }
     }
   }
@@ -555,17 +580,17 @@ let DistributedCoordinator = class extends EventEmitter {
    */
   async connectToPeer(peerInfo) {
     try {
-      if (peerInfo.url.startsWith("ws://") || peerInfo.url.startsWith("wss://")) {
+      if (peerInfo.url.startsWith('ws://') || peerInfo.url.startsWith('wss://')) {
         await this.connectWebSocketPeer(peerInfo);
-      } else if (peerInfo.url.startsWith("http://") || peerInfo.url.startsWith("https://")) {
+      } else if (peerInfo.url.startsWith('http://') || peerInfo.url.startsWith('https://')) {
         this.peers.set(peerInfo.id, {
           ...peerInfo,
-          status: "connected",
-          lastSeen: Date.now()
+          status: 'connected',
+          lastSeen: Date.now(),
         });
       }
     } catch (error) {
-      this.logger.warn("Failed to connect to peer", { peerId: peerInfo.id, error: error.message });
+      this.logger.warn('Failed to connect to peer', { peerId: peerInfo.id, error: error.message });
     }
   }
   /**
@@ -575,47 +600,55 @@ let DistributedCoordinator = class extends EventEmitter {
     return new Promise((resolve, reject) => {
       const ws = new WebSocket(peerInfo.url, {
         headers: {
-          "x-peer-id": this.instanceId
-        }
+          'x-peer-id': this.instanceId,
+        },
       });
-      ws.on("open", () => {
+      ws.on('open', () => {
         this.wsClients.set(peerInfo.id, ws);
         this.peers.set(peerInfo.id, {
           ...peerInfo,
-          status: "connected",
-          lastSeen: Date.now()
+          status: 'connected',
+          lastSeen: Date.now(),
         });
-        ws.send(JSON.stringify({
-          type: "handshake",
-          instanceId: this.instanceId,
-          host: this.options.host,
-          port: this.options.port,
-          url: `ws://${this.options.host}:${this.options.port}`,
-          capabilities: [],
-          load: this.getCurrentLoad(),
-          timestamp: Date.now()
-        }));
-        this.logger.info("Connected to WebSocket peer", { peerId: peerInfo.id });
+        ws.send(
+          JSON.stringify({
+            type: 'handshake',
+            instanceId: this.instanceId,
+            host: this.options.host,
+            port: this.options.port,
+            url: `ws://${this.options.host}:${this.options.port}`,
+            capabilities: [],
+            load: this.getCurrentLoad(),
+            timestamp: Date.now(),
+          })
+        );
+        this.logger.info('Connected to WebSocket peer', { peerId: peerInfo.id });
         resolve();
       });
-      ws.on("message", (data) => {
+      ws.on('message', (data) => {
         try {
           const message = JSON.parse(data.toString());
           this.handleWebSocketMessage(peerInfo.id, message);
         } catch (error) {
-          this.logger.warn("Invalid message from peer", { peerId: peerInfo.id, error: error.message });
+          this.logger.warn('Invalid message from peer', {
+            peerId: peerInfo.id,
+            error: error.message,
+          });
         }
       });
-      ws.on("close", () => {
+      ws.on('close', () => {
         this.wsClients.delete(peerInfo.id);
-        this.updatePeerStatus(peerInfo.id, "disconnected");
+        this.updatePeerStatus(peerInfo.id, 'disconnected');
       });
-      ws.on("error", (error) => {
-        this.logger.warn("WebSocket peer connection error", { peerId: peerInfo.id, error: error.message });
+      ws.on('error', (error) => {
+        this.logger.warn('WebSocket peer connection error', {
+          peerId: peerInfo.id,
+          error: error.message,
+        });
         reject(error);
       });
       setTimeout(() => {
-        reject(new Error("Connection timeout"));
+        reject(new Error('Connection timeout'));
       }, 1e4);
     });
   }
@@ -628,9 +661,9 @@ let DistributedCoordinator = class extends EventEmitter {
       const oldStatus = peer.status;
       peer.status = status;
       if (oldStatus !== status) {
-        this.emit("peer:status_changed", { peerId, oldStatus, newStatus: status });
-        this.logger.info("Peer status changed", { peerId, oldStatus, newStatus: status });
-        if (status === "disconnected" && this.options.enableFailover) {
+        this.emit('peer:status_changed', { peerId, oldStatus, newStatus: status });
+        this.logger.info('Peer status changed', { peerId, oldStatus, newStatus: status });
+        if (status === 'disconnected' && this.options.enableFailover) {
           this.handlePeerFailure(peerId);
         }
       }
@@ -641,15 +674,17 @@ let DistributedCoordinator = class extends EventEmitter {
    */
   async handlePeerFailure(peerId) {
     this.metrics.failoverEvents++;
-    this.logger.warn("Handling peer failure", { peerId });
-    const failedTasks = Array.from(this.activeTasks.values()).filter((task) => task.assignedPeer === peerId);
+    this.logger.warn('Handling peer failure', { peerId });
+    const failedTasks = Array.from(this.activeTasks.values()).filter(
+      (task) => task.assignedPeer === peerId
+    );
     for (const task of failedTasks) {
       this.activeTasks.delete(task.id);
       this.taskQueue.unshift(task);
-      this.logger.info("Task redistributed due to peer failure", { taskId: task.id, peerId });
+      this.logger.info('Task redistributed due to peer failure', { taskId: task.id, peerId });
     }
     this.processTaskQueue();
-    this.emit("peer:failed", { peerId, redistributedTasks: failedTasks.length });
+    this.emit('peer:failed', { peerId, redistributedTasks: failedTasks.length });
   }
   /**
    * Process task queue
@@ -666,17 +701,20 @@ let DistributedCoordinator = class extends EventEmitter {
           await this.delegateTaskToPeer(targetPeer.id, {
             taskId: task.id,
             task: task.task,
-            priority: task.priority
+            priority: task.priority,
           });
           this.activeTasks.set(task.id, {
             ...task,
             assignedPeer: targetPeer.id,
-            startedAt: Date.now()
+            startedAt: Date.now(),
           });
           this.metrics.tasksDelegated++;
-          this.logger.info("Task delegated to peer", { taskId: task.id, peerId: targetPeer.id });
+          this.logger.info('Task delegated to peer', { taskId: task.id, peerId: targetPeer.id });
         } catch (error) {
-          this.logger.warn("Failed to delegate task, re-queuing", { taskId: task.id, error: error.message });
+          this.logger.warn('Failed to delegate task, re-queuing', {
+            taskId: task.id,
+            error: error.message,
+          });
           this.taskQueue.unshift(task);
         }
       } else {
@@ -695,7 +733,9 @@ let DistributedCoordinator = class extends EventEmitter {
    * Select best peer for task delegation
    */
   selectPeerForTask(task) {
-    const availablePeers = Array.from(this.peers.values()).filter((peer) => peer.status === "connected").sort((a, b) => a.load - b.load);
+    const availablePeers = Array.from(this.peers.values())
+      .filter((peer) => peer.status === 'connected')
+      .sort((a, b) => a.load - b.load);
     if (availablePeers.length === 0) {
       return null;
     }
@@ -709,19 +749,21 @@ let DistributedCoordinator = class extends EventEmitter {
     if (!peer) {
       throw new Error(`Peer ${peerId} not found`);
     }
-    if (peer.url.startsWith("ws://") || peer.url.startsWith("wss://")) {
+    if (peer.url.startsWith('ws://') || peer.url.startsWith('wss://')) {
       const ws = this.wsClients.get(peerId);
       if (ws) {
-        ws.send(JSON.stringify({
-          type: "task_request",
-          ...taskData,
-          timestamp: Date.now()
-        }));
+        ws.send(
+          JSON.stringify({
+            type: 'task_request',
+            ...taskData,
+            timestamp: Date.now(),
+          })
+        );
       } else {
         throw new Error(`WebSocket connection to peer ${peerId} not available`);
       }
-    } else if (peer.url.startsWith("http://") || peer.url.startsWith("https://")) {
-      const axios = (await import("axios")).default;
+    } else if (peer.url.startsWith('http://') || peer.url.startsWith('https://')) {
+      const axios = (await import('axios')).default;
       await axios.post(`${peer.url}/api/v1/task`, taskData, { timeout: 5e3 });
     } else {
       throw new Error(`Unsupported peer URL scheme for ${peerId}`);
@@ -741,7 +783,7 @@ let DistributedCoordinator = class extends EventEmitter {
       const agents = this.registry.getAllAgents();
       return agents.map((agent) => agent.capabilities || []).flat();
     } catch (_error) {
-      return ["general"];
+      return ['general'];
     }
   }
   /**
@@ -750,7 +792,8 @@ let DistributedCoordinator = class extends EventEmitter {
   updateAverageResponseTime(responseTime) {
     const totalTasks = this.metrics.tasksProcessed + this.metrics.tasksFailed;
     if (totalTasks > 0) {
-      this.metrics.avgResponseTime = (this.metrics.avgResponseTime * (totalTasks - 1) + responseTime) / totalTasks;
+      this.metrics.avgResponseTime =
+        (this.metrics.avgResponseTime * (totalTasks - 1) + responseTime) / totalTasks;
     } else {
       this.metrics.avgResponseTime = responseTime;
     }
@@ -762,14 +805,14 @@ let DistributedCoordinator = class extends EventEmitter {
     const taskId = `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const submitStartTime = Date.now();
     if (this.performanceMetrics) {
-      this.performanceMetrics.recordMetric("coordinator.tasks_submitted", 1);
+      this.performanceMetrics.recordMetric('coordinator.tasks_submitted', 1);
     }
     if (this.activeTasks.size < this.options.maxConcurrentTasks) {
       this.activeTasks.set(taskId, {
         id: taskId,
         task,
         startedAt: Date.now(),
-        local: true
+        local: true,
       });
       try {
         const result = await this.executeTaskLocally(task, options);
@@ -778,11 +821,11 @@ let DistributedCoordinator = class extends EventEmitter {
         const responseTime = Date.now() - this.activeTasks.get(taskId)?.startedAt || 0;
         this.updateAverageResponseTime(responseTime);
         if (this.performanceMetrics) {
-          this.performanceMetrics.recordLatency("coordinator.local_execution", responseTime, {
+          this.performanceMetrics.recordLatency('coordinator.local_execution', responseTime, {
             taskId,
-            success: true
+            success: true,
           });
-          this.performanceMetrics.recordMetric("coordinator.tasks_completed_locally", 1);
+          this.performanceMetrics.recordMetric('coordinator.tasks_completed_locally', 1);
         }
         return { taskId, result, success: true };
       } catch (error) {
@@ -790,12 +833,12 @@ let DistributedCoordinator = class extends EventEmitter {
         this.metrics.tasksFailed++;
         if (this.performanceMetrics) {
           const responseTime = Date.now() - submitStartTime;
-          this.performanceMetrics.recordLatency("coordinator.local_execution", responseTime, {
+          this.performanceMetrics.recordLatency('coordinator.local_execution', responseTime, {
             taskId,
             success: false,
-            error: error.message.substring(0, 100)
+            error: error.message.substring(0, 100),
           });
-          this.performanceMetrics.recordMetric("coordinator.tasks_failed_locally", 1);
+          this.performanceMetrics.recordMetric('coordinator.tasks_failed_locally', 1);
         }
         throw error;
       }
@@ -803,25 +846,29 @@ let DistributedCoordinator = class extends EventEmitter {
       const targetPeer = this.selectPeerForTask(task);
       if (targetPeer) {
         const delegationStartTime = Date.now();
-        await this.delegateTaskToPeer(targetPeer.id, { taskId, task, priority: options.priority || 1 });
+        await this.delegateTaskToPeer(targetPeer.id, {
+          taskId,
+          task,
+          priority: options.priority || 1,
+        });
         this.activeTasks.set(taskId, {
           id: taskId,
           task,
           assignedPeer: targetPeer.id,
-          startedAt: Date.now()
+          startedAt: Date.now(),
         });
         if (this.performanceMetrics) {
           const delegationTime = Date.now() - delegationStartTime;
-          this.performanceMetrics.recordLatency("coordinator.task_delegation", delegationTime, {
+          this.performanceMetrics.recordLatency('coordinator.task_delegation', delegationTime, {
             taskId,
-            targetPeer: targetPeer.id
+            targetPeer: targetPeer.id,
           });
-          this.performanceMetrics.recordMetric("coordinator.tasks_delegated", 1);
+          this.performanceMetrics.recordMetric('coordinator.tasks_delegated', 1);
         }
         return new Promise((resolve, reject) => {
           const timeout = setTimeout(() => {
             this.activeTasks.delete(taskId);
-            reject(new Error("Task delegation timeout"));
+            reject(new Error('Task delegation timeout'));
           }, options.timeout || 3e4);
           this.once(`task:completed:${taskId}`, (result) => {
             clearTimeout(timeout);
@@ -838,19 +885,25 @@ let DistributedCoordinator = class extends EventEmitter {
       id: taskId,
       task,
       priority: options.priority || 1,
-      queuedAt: Date.now()
+      queuedAt: Date.now(),
     });
-    return { taskId, status: "queued" };
+    return { taskId, status: 'queued' };
   }
   /**
    * Execute task locally (integrate with existing Orchestrator/ExecutionEngine)
    */
   async executeTaskLocally(task, options = {}) {
-    this.logger.info("Executing task locally via Orchestrator/ExecutionEngine", { task: task.substring(0, 100) });
+    this.logger.info('Executing task locally via Orchestrator/ExecutionEngine', {
+      task: task.substring(0, 100),
+    });
     if (!this.orchestrator || !this.executionEngine) {
-      throw new Error("Orchestrator and ExecutionEngine not provided to DistributedCoordinator");
+      throw new Error('Orchestrator and ExecutionEngine not provided to DistributedCoordinator');
     }
-    const executionTask = await this.orchestrator.orchestrate(task, options.mode || "simple", options);
+    const executionTask = await this.orchestrator.orchestrate(
+      task,
+      options.mode || 'simple',
+      options
+    );
     const result = await this.executionEngine.execute(executionTask);
     return result;
   }
@@ -859,11 +912,17 @@ let DistributedCoordinator = class extends EventEmitter {
    */
   async *executeTaskLocallyStream(task, options = {}) {
     const { onProgress } = options;
-    this.logger.info("Executing task locally with streaming via Orchestrator/ExecutionEngine", { task: task.substring(0, 100) });
+    this.logger.info('Executing task locally with streaming via Orchestrator/ExecutionEngine', {
+      task: task.substring(0, 100),
+    });
     if (!this.orchestrator || !this.executionEngine) {
-      throw new Error("Orchestrator and ExecutionEngine not provided to DistributedCoordinator");
+      throw new Error('Orchestrator and ExecutionEngine not provided to DistributedCoordinator');
     }
-    const executionTask = await this.orchestrator.orchestrate(task, options.mode || "simple", options);
+    const executionTask = await this.orchestrator.orchestrate(
+      task,
+      options.mode || 'simple',
+      options
+    );
     yield* this.executionEngine.executeStream(executionTask, { onProgress });
   }
   /**
@@ -876,29 +935,27 @@ let DistributedCoordinator = class extends EventEmitter {
       status: this.status,
       activeTasks: this.activeTasks.size,
       queuedTasks: this.taskQueue.length,
-      connectedPeers: Array.from(this.peers.values()).filter((p) => p.status === "connected").length,
+      connectedPeers: Array.from(this.peers.values()).filter((p) => p.status === 'connected')
+        .length,
       totalPeers: this.peers.size,
       load: this.getCurrentLoad(),
-      uptime: process.uptime()
+      uptime: process.uptime(),
     };
   }
   /**
    * Shutdown the coordinator
    */
   async shutdown() {
-    this.status = "shutting_down";
-    this.logger.info("Shutting down DistributedCoordinator");
-    if (this.heartbeatTimer)
-      clearInterval(this.heartbeatTimer);
-    if (this.healthCheckTimer)
-      clearInterval(this.healthCheckTimer);
-    if (this.discoveryTimer)
-      clearInterval(this.discoveryTimer);
+    this.status = 'shutting_down';
+    this.logger.info('Shutting down DistributedCoordinator');
+    if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
+    if (this.healthCheckTimer) clearInterval(this.healthCheckTimer);
+    if (this.discoveryTimer) clearInterval(this.discoveryTimer);
     for (const [peerId, ws] of this.wsClients) {
       try {
         ws.close();
       } catch (error) {
-        this.logger.warn("Error closing WebSocket connection", { peerId, error: error.message });
+        this.logger.warn('Error closing WebSocket connection', { peerId, error: error.message });
       }
     }
     this.wsClients.clear();
@@ -908,18 +965,13 @@ let DistributedCoordinator = class extends EventEmitter {
       });
     }
     for (const [peerId] of this.peers) {
-      this.updatePeerStatus(peerId, "disconnected");
+      this.updatePeerStatus(peerId, 'disconnected');
     }
-    this.status = "shutdown";
-    this.logger.info("DistributedCoordinator shutdown complete");
-    this.emit("shutdown", { instanceId: this.instanceId });
+    this.status = 'shutdown';
+    this.logger.info('DistributedCoordinator shutdown complete');
+    this.emit('shutdown', { instanceId: this.instanceId });
   }
 };
-DistributedCoordinator = __decorateClass([
-  singleton()
-], DistributedCoordinator);
+DistributedCoordinator = __decorateClass([singleton()], DistributedCoordinator);
 var distributed_coordinator_default = DistributedCoordinator;
-export {
-  DistributedCoordinator,
-  distributed_coordinator_default as default
-};
+export { DistributedCoordinator, distributed_coordinator_default as default };

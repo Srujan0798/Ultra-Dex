@@ -28,15 +28,15 @@ try {
     encoding: 'utf8',
     timeout: 180000,
   });
-  
+
   const passMatch = testOutput.match(/# pass (\d+)/);
   const failMatch = testOutput.match(/# fail (\d+)/);
   const passCount = passMatch ? parseInt(passMatch[1]) : 0;
   const failCount = failMatch ? parseInt(failMatch[1]) : 0;
-  
+
   results.tests.status = failCount === 0 ? 'PASS' : 'FAIL';
   results.tests.details = `${passCount} pass, ${failCount} fail`;
-  
+
   console.log(`   ${failCount === 0 ? '✅' : '❌'} Tests: ${passCount} pass, ${failCount} fail\n`);
 } catch (e) {
   results.tests.status = 'FAIL';
@@ -53,14 +53,16 @@ try {
     encoding: 'utf8',
     timeout: 90000,
   });
-  
+
   const hasSuccess = mockOutput.includes('success') || mockOutput.includes('Result');
   const hasError = mockOutput.includes('Error') && !mockOutput.includes('401');
-  
+
   results.execution.status = hasSuccess && !hasError ? 'PASS' : 'REVIEW';
   results.execution.details = hasSuccess ? 'Completed' : 'Issues found';
-  
-  console.log(`   ${hasSuccess && !hasError ? '✅' : '⚠️'} Mock execution: ${hasSuccess ? 'Success' : 'Issues'}\n`);
+
+  console.log(
+    `   ${hasSuccess && !hasError ? '✅' : '⚠️'} Mock execution: ${hasSuccess ? 'Success' : 'Issues'}\n`
+  );
 } catch (e) {
   results.execution.status = 'FAIL';
   results.execution.details = e.message.split('\n')[0];
@@ -71,24 +73,31 @@ try {
 console.log('3️⃣  Running: npx ultra-dex run planner -t "real test" --provider nvidia\n');
 
 try {
-  const nvidiaOutput = execSync('npx ultra-dex run planner -t "real test" --provider nvidia 2>&1 | tail -20', {
-    cwd: process.cwd(),
-    encoding: 'utf8',
-    timeout: 90000,
-  });
-  
+  const nvidiaOutput = execSync(
+    'npx ultra-dex run planner -t "real test" --provider nvidia 2>&1 | tail -20',
+    {
+      cwd: process.cwd(),
+      encoding: 'utf8',
+      timeout: 90000,
+    }
+  );
+
   const has401 = nvidiaOutput.includes('401');
   const hasSuccess = nvidiaOutput.includes('success') || nvidiaOutput.includes('Result');
   const hasArtifacts = nvidiaOutput.includes('.ultra-dex/runs');
-  
+
   // 401 is expected with placeholder keys - still counts as working
   const apiWorking = hasArtifacts || hasSuccess;
-  
+
   results.api.status = apiWorking ? 'PASS' : 'FAIL';
   results.api.details = has401 ? '401 (placeholder keys)' : apiWorking ? 'Working' : 'Failed';
-  
-  console.log(`   ${apiWorking ? '✅' : '❌'} API: ${has401 ? '401 (expected)' : apiWorking ? 'Working' : 'Failed'}`);
-  console.log(`   ${hasArtifacts ? '✅' : '❌'} Artifacts: ${hasArtifacts ? 'Generated' : 'Missing'}\n`);
+
+  console.log(
+    `   ${apiWorking ? '✅' : '❌'} API: ${has401 ? '401 (expected)' : apiWorking ? 'Working' : 'Failed'}`
+  );
+  console.log(
+    `   ${hasArtifacts ? '✅' : '❌'} Artifacts: ${hasArtifacts ? 'Generated' : 'Missing'}\n`
+  );
 } catch (e) {
   results.api.status = 'FAIL';
   results.api.details = e.message.split('\n')[0];
@@ -104,9 +113,9 @@ try {
     encoding: 'utf8',
     timeout: 60000,
   });
-  
+
   const hasAgents = agentsOutput.includes('@') || agentsOutput.includes('agent');
-  
+
   console.log(`   ${hasAgents ? '✅' : 'ℹ️'} Agents: ${hasAgents ? 'Listed' : 'Unknown'}\n`);
 } catch (e) {
   console.log(`   ℹ️  Agents: ${e.message.split('\n')[0]}\n`);
@@ -124,7 +133,7 @@ const reports = [
 
 const reportStatus = {};
 
-reports.forEach(report => {
+reports.forEach((report) => {
   try {
     const reportPath = path.join(process.cwd(), report.file);
     const content = fs.readFileSync(reportPath, 'utf8');
@@ -140,7 +149,7 @@ reports.forEach(report => {
 console.log('');
 
 // Determine system status
-const allPass = 
+const allPass =
   results.tests.status === 'PASS' &&
   (results.execution.status === 'PASS' || results.execution.status === 'REVIEW') &&
   results.api.status === 'PASS';
@@ -168,17 +177,27 @@ console.log('');
 
 // Write final report
 const finalReportPath = path.join(process.cwd(), '.ultra-dex/final-validation-report.json');
-fs.writeFileSync(finalReportPath, JSON.stringify({
-  timestamp: new Date().toISOString(),
-  results,
-  reportStatus,
-  finalStatus: {
-    execution: results.execution.status === 'PASS' || results.execution.status === 'REVIEW' ? 'PASS' : 'FAIL',
-    api: results.api.status === 'PASS' ? 'PASS' : 'FAIL',
-    system: results.system.status,
-    readyForV2: allPass ? 'YES' : 'NO',
-  },
-}, null, 2));
+fs.writeFileSync(
+  finalReportPath,
+  JSON.stringify(
+    {
+      timestamp: new Date().toISOString(),
+      results,
+      reportStatus,
+      finalStatus: {
+        execution:
+          results.execution.status === 'PASS' || results.execution.status === 'REVIEW'
+            ? 'PASS'
+            : 'FAIL',
+        api: results.api.status === 'PASS' ? 'PASS' : 'FAIL',
+        system: results.system.status,
+        readyForV2: allPass ? 'YES' : 'NO',
+      },
+    },
+    null,
+    2
+  )
+);
 
 console.log(`📄 Final report saved to: ${finalReportPath}\n`);
 
@@ -202,4 +221,3 @@ if (allPass) {
   console.log('  ❌ DO NOT CLOSE SESSION');
   console.log('  → Fix remaining issues before v2.0\n');
 }
-

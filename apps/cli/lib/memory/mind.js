@@ -19,8 +19,8 @@ export class ProjectMind {
     // In production, this would call ChromaDB/Pinecone
     return {
       knowledgeNodes: await this.getRelatedGraphNodes(text),
-      contextSnippet: "Project foundation established using v6.0 architecture.",
-      relevanceScore: 0.95
+      contextSnippet: 'Project foundation established using v6.0 architecture.',
+      relevanceScore: 0.95,
     };
   }
 
@@ -28,7 +28,7 @@ export class ProjectMind {
     try {
       await projectGraph.scan();
       const summary = projectGraph.getSummary();
-      return summary.files.filter(f => f.toLowerCase().includes(text.toLowerCase()));
+      return summary.files.filter((f) => f.toLowerCase().includes(text.toLowerCase()));
     } catch {
       return [];
     }
@@ -38,7 +38,7 @@ export class ProjectMind {
     const memory = await this.loadMemory();
     memory.push({
       timestamp: new Date().toISOString(),
-      ...data
+      ...data,
     });
     await this.saveMemory(memory);
   }

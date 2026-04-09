@@ -37,23 +37,51 @@ console.log('💎 CHECKING 6 PILLARS');
 console.log('────────────────────────────────────────');
 check('Foundation: DI tokens exist', existsSync(join(rootDir, 'src/core/di/tokens.ts')));
 check('Foundation: DI container exists', existsSync(join(rootDir, 'src/core/di/container.ts')));
-check('Intelligence: Semantic router exists', existsSync(join(rootDir, 'src/core/routing/semantic-router.ts')));
-check('Intelligence: Agent profiles exist', existsSync(join(rootDir, 'src/core/routing/agent-profiles.ts')));
-check('Safety: IsolatedVM sandbox exists', existsSync(join(rootDir, 'src/core/sandbox/isolated-vm-sandbox.ts')));
+check(
+  'Intelligence: Semantic router exists',
+  existsSync(join(rootDir, 'src/core/routing/semantic-router.ts'))
+);
+check(
+  'Intelligence: Agent profiles exist',
+  existsSync(join(rootDir, 'src/core/routing/agent-profiles.ts'))
+);
+check(
+  'Safety: IsolatedVM sandbox exists',
+  existsSync(join(rootDir, 'src/core/sandbox/isolated-vm-sandbox.ts'))
+);
 check('Safety: Virtual FS exists', existsSync(join(rootDir, 'src/core/sandbox/virtual-fs.ts')));
-check('Autonomy: Alert manager exists', existsSync(join(rootDir, 'src/core/monitoring/alert-manager.ts')));
-check('Autonomy: Site reliability agent exists', existsSync(join(rootDir, 'src/core/reliability/site-reliability-agent.ts')));
-check('Observability: Telemetry service exists', existsSync(join(rootDir, 'src/core/telemetry/telemetry-service.ts')));
-check('Scale: Distributed mesh exists', existsSync(join(rootDir, 'src/core/mesh/distributed-mesh.ts')));
-check('Scale: Streaming service exists', existsSync(join(rootDir, 'src/core/streaming/agent-stream.ts')));
+check(
+  'Autonomy: Alert manager exists',
+  existsSync(join(rootDir, 'src/core/monitoring/alert-manager.ts'))
+);
+check(
+  'Autonomy: Site reliability agent exists',
+  existsSync(join(rootDir, 'src/core/reliability/site-reliability-agent.ts'))
+);
+check(
+  'Observability: Telemetry service exists',
+  existsSync(join(rootDir, 'src/core/telemetry/telemetry-service.ts'))
+);
+check(
+  'Scale: Distributed mesh exists',
+  existsSync(join(rootDir, 'src/core/mesh/distributed-mesh.ts'))
+);
+check(
+  'Scale: Streaming service exists',
+  existsSync(join(rootDir, 'src/core/streaming/agent-stream.ts'))
+);
 check('Scale: App store exists', existsSync(join(rootDir, 'src/core/mcp/app-store.ts')));
 
 // 2. Check interfaces
 console.log('\n📋 CHECKING INTERFACES');
 console.log('────────────────────────────────────────');
 const interfaces = [
-  'IAgentOrchestrator', 'IExecutionEngine', 'ITelemetryService',
-  'IMemoryManager', 'IAIMetaLayer', 'IAgentRegistry'
+  'IAgentOrchestrator',
+  'IExecutionEngine',
+  'ITelemetryService',
+  'IMemoryManager',
+  'IAIMetaLayer',
+  'IAgentRegistry',
 ];
 const interfacesContent = readFileSync(join(rootDir, 'src/core/interfaces/index.ts'), 'utf-8');
 for (const iface of interfaces) {
@@ -65,8 +93,12 @@ console.log('\n🔑 CHECKING DI TOKENS');
 console.log('────────────────────────────────────────');
 const tokensContent = readFileSync(join(rootDir, 'src/core/di/tokens.ts'), 'utf-8');
 const expectedTokens = [
-  'AgentOrchestrator', 'ExecutionEngine', 'MemoryManager',
-  'AIMetaLayer', 'AgentRegistry', 'SemanticRouter'
+  'AgentOrchestrator',
+  'ExecutionEngine',
+  'MemoryManager',
+  'AIMetaLayer',
+  'AgentRegistry',
+  'SemanticRouter',
 ];
 for (const token of expectedTokens) {
   check(`Token: ${token}`, tokensContent.includes(token));
@@ -96,10 +128,12 @@ check('Completion report exists', existsSync(join(rootDir, 'DIAMOND_STATE_COMPLE
 // 7. Count files
 console.log('\n📊 FILE STATISTICS');
 console.log('────────────────────────────────────────');
-const tsFiles = readdirSync(join(rootDir, 'src/core'), { recursive: true })
-  .filter(f => f.endsWith('.ts') && !f.includes('node_modules')).length;
-const jsFiles = readdirSync(join(rootDir, 'src/core'), { recursive: true })
-  .filter(f => f.endsWith('.js') && !f.includes('node_modules') && !f.includes('.test.')).length;
+const tsFiles = readdirSync(join(rootDir, 'src/core'), { recursive: true }).filter(
+  (f) => f.endsWith('.ts') && !f.includes('node_modules')
+).length;
+const jsFiles = readdirSync(join(rootDir, 'src/core'), { recursive: true }).filter(
+  (f) => f.endsWith('.js') && !f.includes('node_modules') && !f.includes('.test.')
+).length;
 
 console.log(`TypeScript files: ${tsFiles}`);
 console.log(`JavaScript files: ${jsFiles}`);

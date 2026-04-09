@@ -24,33 +24,33 @@ export class ConfigLoader {
       metaLayer: {
         version: '6.0.0',
         name: 'Ultra-Dex',
-        mode: process.env.NODE_ENV || 'development'
+        mode: process.env.NODE_ENV || 'development',
       },
       aiProviders: {
         openai: {
           enabled: !!process.env.OPENAI_API_KEY,
           defaultModel: 'gpt-4o-2024-11-20',
           temperature: 0.7,
-          maxTokens: 4096
+          maxTokens: 4096,
         },
         anthropic: {
           enabled: !!process.env.ANTHROPIC_API_KEY,
           defaultModel: 'claude-3-5-sonnet-20241022',
           temperature: 0.7,
-          maxTokens: 4096
+          maxTokens: 4096,
         },
         google: {
           enabled: !!process.env.GOOGLE_API_KEY,
           defaultModel: 'gemini-2.0-flash-exp',
           temperature: 0.7,
-          maxOutputTokens: 2048
+          maxOutputTokens: 2048,
         },
         ollama: {
           enabled: false,
           baseUrl: 'http://localhost:11434',
           defaultModel: 'llama3.2',
-          temperature: 0.7
-        }
+          temperature: 0.7,
+        },
       },
       orchestration: {
         maxConcurrentAgents: 8,
@@ -58,17 +58,17 @@ export class ConfigLoader {
         retryPolicy: {
           maxRetries: 3,
           backoffMultiplier: 2,
-          initialDelay: 1000
+          initialDelay: 1000,
         },
         circuitBreaker: {
           threshold: 5,
-          timeout: 60000
+          timeout: 60000,
         },
         workflow: {
           enableParallelExecution: true,
           maxWorkflowDepth: 10,
-          enableDynamicRouting: true
-        }
+          enableDynamicRouting: true,
+        },
       },
       memory: {
         storage: 'sqlite',
@@ -76,7 +76,7 @@ export class ConfigLoader {
         maxSize: 2048,
         enableCompression: true,
         enableEncryption: false,
-        retentionPeriod: 30
+        retentionPeriod: 30,
       },
       security: {
         enableSandbox: true,
@@ -84,18 +84,18 @@ export class ConfigLoader {
         rateLimiting: {
           enabled: true,
           windowMs: 900000,
-          maxRequests: 100
+          maxRequests: 100,
         },
         enableAuditLogging: true,
         enableInputValidation: true,
-        enableOutputSanitization: true
+        enableOutputSanitization: true,
       },
       monitoring: {
         enableMetrics: true,
         enableTracing: true,
         samplingRate: 1.0,
         enablePerformanceProfiling: true,
-        enableAnomalyDetection: true
+        enableAnomalyDetection: true,
       },
       features: {
         enableAgentSwarm: true,
@@ -104,8 +104,8 @@ export class ConfigLoader {
         enableCodeGeneration: true,
         enableCodeReview: true,
         enableSecurityScanning: true,
-        enablePerformanceOptimization: true
-      }
+        enablePerformanceOptimization: true,
+      },
     };
   }
 
@@ -216,7 +216,7 @@ export class ConfigLoader {
       path.join(process.cwd(), 'config/profiles/default.json'),
       path.join(__dirname, '..', '..', 'config', 'profiles', 'default.json'),
       path.join(process.cwd(), '.ultra-dex', 'config.json'),
-      path.join(process.cwd(), '.config', 'ultra-dex.json')
+      path.join(process.cwd(), '.config', 'ultra-dex.json'),
     ];
 
     for (const configPath of configPaths) {
@@ -275,7 +275,8 @@ export class ConfigLoader {
     }
 
     // Validate memory settings
-    if (this.config.memory.ttl < 300) { // Minimum 5 minutes
+    if (this.config.memory.ttl < 300) {
+      // Minimum 5 minutes
       errors.push('memory TTL must be at least 300 seconds (5 minutes)');
     }
 

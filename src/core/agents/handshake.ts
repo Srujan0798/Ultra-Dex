@@ -3,21 +3,20 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { EventEmitter } from "events";
+import { singleton } from 'tsyringe';
+import { EventEmitter } from 'events';
 let Handshake = class extends EventEmitter {
   constructor(options = {}) {
     super();
     this.config = {
       timeout: options.timeout || 1e4,
       retryAttempts: options.retryAttempts || 3,
-      ...options
+      ...options,
     };
     this.activeHandshakes = /* @__PURE__ */ new Map();
     this.agreements = /* @__PURE__ */ new Map();
@@ -31,20 +30,20 @@ let Handshake = class extends EventEmitter {
       id: handshakeId,
       initiator: agentId,
       target: targetId,
-      status: "pending",
+      status: 'pending',
       createdAt: Date.now(),
       config,
       capabilities: [],
-      agreements: {}
+      agreements: {},
     };
     this.activeHandshakes.set(handshakeId, handshake);
-    this.emit("handshake.initiated", { handshakeId, initiator: agentId, target: targetId });
+    this.emit('handshake.initiated', { handshakeId, initiator: agentId, target: targetId });
     try {
       const result = await this.performHandshake(handshake);
       return result;
     } catch (error) {
-      handshake.status = "failed";
-      this.emit("handshake.failed", { handshakeId, error });
+      handshake.status = 'failed';
+      this.emit('handshake.failed', { handshakeId, error });
       throw error;
     }
   }
@@ -52,14 +51,14 @@ let Handshake = class extends EventEmitter {
    * Perform handshake protocol
    */
   async performHandshake(handshake) {
-    handshake.status = "in-progress";
+    handshake.status = 'in-progress';
     const capabilities = await this.exchangeCapabilities(handshake);
     handshake.capabilities = capabilities;
     const agreement = await this.negotiateAgreement(handshake);
     handshake.agreements = agreement;
-    handshake.status = "completed";
+    handshake.status = 'completed';
     this.agreements.set(handshake.id, agreement);
-    this.emit("handshake.completed", { handshakeId: handshake.id, agreement });
+    this.emit('handshake.completed', { handshakeId: handshake.id, agreement });
     return { success: true, agreement };
   }
   /**
@@ -68,7 +67,7 @@ let Handshake = class extends EventEmitter {
   async exchangeCapabilities(handshake) {
     return {
       initiatorCapabilities: handshake.config.capabilities || [],
-      targetCapabilities: []
+      targetCapabilities: [],
       // Would be fetched from target agent
     };
   }
@@ -77,14 +76,14 @@ let Handshake = class extends EventEmitter {
    */
   async negotiateAgreement(handshake) {
     return {
-      protocolVersion: "1.0",
-      communicationStyle: "async",
+      protocolVersion: '1.0',
+      communicationStyle: 'async',
       retryPolicy: {
         maxRetries: this.config.retryAttempts,
-        backoffMultiplier: 2
+        backoffMultiplier: 2,
       },
       timeout: this.config.timeout,
-      agreeTime: Date.now()
+      agreeTime: Date.now(),
     };
   }
   /**
@@ -95,21 +94,20 @@ let Handshake = class extends EventEmitter {
     if (!handshake) {
       throw new Error(`Handshake ${handshakeId} not found`);
     }
-    handshake.status = "accepted";
+    handshake.status = 'accepted';
     handshake.config = { ...handshake.config, ...config };
-    this.emit("handshake.accepted", { handshakeId });
+    this.emit('handshake.accepted', { handshakeId });
     return handshake;
   }
   /**
    * Reject handshake
    */
-  rejectHandshake(handshakeId, reason = "") {
+  rejectHandshake(handshakeId, reason = '') {
     const handshake = this.activeHandshakes.get(handshakeId);
-    if (!handshake)
-      return false;
-    handshake.status = "rejected";
+    if (!handshake) return false;
+    handshake.status = 'rejected';
     handshake.rejectReason = reason;
-    this.emit("handshake.rejected", { handshakeId, reason });
+    this.emit('handshake.rejected', { handshakeId, reason });
     return true;
   }
   /**
@@ -117,11 +115,10 @@ let Handshake = class extends EventEmitter {
    */
   completeHandshake(handshakeId) {
     const handshake = this.activeHandshakes.get(handshakeId);
-    if (!handshake)
-      return false;
-    handshake.status = "completed";
+    if (!handshake) return false;
+    handshake.status = 'completed';
     handshake.completedAt = Date.now();
-    this.emit("handshake.finalized", { handshakeId });
+    this.emit('handshake.finalized', { handshakeId });
     return true;
   }
   /**
@@ -134,7 +131,7 @@ let Handshake = class extends EventEmitter {
    * List active handshakes
    */
   listActiveHandshakes() {
-    return Array.from(this.activeHandshakes.values()).filter((h) => h.status === "in-progress");
+    return Array.from(this.activeHandshakes.values()).filter((h) => h.status === 'in-progress');
   }
   /**
    * Get agreement
@@ -148,15 +145,10 @@ let Handshake = class extends EventEmitter {
   validateAgreement(agreement) {
     return {
       valid: agreement && agreement.protocolVersion && agreement.timeout,
-      agreement
+      agreement,
     };
   }
 };
-Handshake = __decorateClass([
-  singleton()
-], Handshake);
+Handshake = __decorateClass([singleton()], Handshake);
 var handshake_default = Handshake;
-export {
-  Handshake,
-  handshake_default as default
-};
+export { Handshake, handshake_default as default };

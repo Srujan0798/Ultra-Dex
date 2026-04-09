@@ -12,7 +12,7 @@ import chalk from 'chalk';
 
 async function run() {
   console.log(chalk.bold('🛡️  Ultra-Dex Pre-commit Governance Check...'));
-  
+
   try {
     const result = await auditGovernance('.');
     if (!result.ok) {

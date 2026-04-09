@@ -181,7 +181,7 @@ export function registerHostTools(server) {
  * Provides object-oriented interface for the daemon
  */
 export class MCPHost {
-  constructor() { }
+  constructor() {}
 
   async init(options = {}) {
     return initializeMcpHost(options);
@@ -189,10 +189,10 @@ export class MCPHost {
 
   async getStatus() {
     const status = mcpHub.getStatus();
-    const connected = Object.values(status).some(s => s.connected);
+    const connected = Object.values(status).some((s) => s.connected);
     return {
       connected,
-      servers: status
+      servers: status,
     };
   }
 }

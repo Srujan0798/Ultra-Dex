@@ -4384,7 +4384,7 @@ export async function handler(req, res) {
 
 | Resource     | Provider                    | Pricing Model            | Estimated Cost |
 | ------------ | --------------------------- | ------------------------ | -------------- |
-| Web Server   | [Vercel/Render/AWS]        | [Per request / Per hour] | $[X]/month     |
+| Web Server   | [Vercel/Render/AWS]         | [Per request / Per hour] | $[X]/month     |
 | API Server   | [Same or different]         | [Compute hours]          | $[X]/month     |
 | Database     | [Supabase/PlanetScale/RDS]  | [Storage + Connections]  | $[X]/month     |
 | Cache Layer  | [Upstash Redis/ElastiCache] | [Commands + Storage]     | $[X]/month     |

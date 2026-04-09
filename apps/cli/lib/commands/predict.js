@@ -1,7 +1,6 @@
 // Copyright (c) 2026 Ultra-Dex
 // Predictive Debugging CLI Command
 
-
 import ora from '../utils/ora.js';
 import path from 'path';
 import { glob } from 'glob';

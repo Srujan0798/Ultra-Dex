@@ -21,11 +21,13 @@ declare module 'ai' {
 
   export interface Message {
     role: 'system' | 'user' | 'assistant' | 'tool';
-    content: string | Array<{
-      type: 'text' | 'image';
-      text?: string;
-      image?: Uint8Array | string;
-    }>;
+    content:
+      | string
+      | Array<{
+          type: 'text' | 'image';
+          text?: string;
+          image?: Uint8Array | string;
+        }>;
     toolInvocations?: Array<{
       state: 'result' | 'call';
       toolName: string;
@@ -257,12 +259,4 @@ export interface UltraDexConfig {
 }
 
 // Export all types
-export type {
-  LanguageModel,
-  CoreTool,
-  ToolCall,
-  Message,
-  CallSettings,
-  ModelSettings,
-  Provider
-};
+export type { LanguageModel, CoreTool, ToolCall, Message, CallSettings, ModelSettings, Provider };

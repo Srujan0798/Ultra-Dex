@@ -14,7 +14,8 @@ function normalizeAnthropicMessages(messages = []) {
     .filter((message) => message.role !== 'system')
     .map((message) => ({
       role: message.role === 'assistant' ? 'assistant' : 'user',
-      content: typeof message.content === 'string' ? message.content : JSON.stringify(message.content),
+      content:
+        typeof message.content === 'string' ? message.content : JSON.stringify(message.content),
     }));
 }
 

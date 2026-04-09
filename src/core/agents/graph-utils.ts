@@ -3,13 +3,12 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
+import { singleton } from 'tsyringe';
 let GraphUtils = class {
   /**
    * Create a directed graph
@@ -18,7 +17,7 @@ let GraphUtils = class {
     return {
       nodes: /* @__PURE__ */ new Map(),
       edges: /* @__PURE__ */ new Map(),
-      metadata: {}
+      metadata: {},
     };
   }
   /**
@@ -32,7 +31,7 @@ let GraphUtils = class {
       id: nodeId,
       data,
       incoming: /* @__PURE__ */ new Set(),
-      outgoing: /* @__PURE__ */ new Set()
+      outgoing: /* @__PURE__ */ new Set(),
     });
     return graph;
   }
@@ -54,7 +53,7 @@ let GraphUtils = class {
       id: edgeId,
       from: fromId,
       to: toId,
-      metadata
+      metadata,
     });
     graph.nodes.get(fromId).outgoing.add(toId);
     graph.nodes.get(toId).incoming.add(fromId);
@@ -71,8 +70,7 @@ let GraphUtils = class {
    */
   static getOutgoing(graph, nodeId) {
     const node = graph.nodes.get(nodeId);
-    if (!node)
-      return [];
+    if (!node) return [];
     return Array.from(node.outgoing).map((id) => graph.nodes.get(id));
   }
   /**
@@ -80,8 +78,7 @@ let GraphUtils = class {
    */
   static getIncoming(graph, nodeId) {
     const node = graph.nodes.get(nodeId);
-    if (!node)
-      return [];
+    if (!node) return [];
     return Array.from(node.incoming).map((id) => graph.nodes.get(id));
   }
   /**
@@ -91,8 +88,7 @@ let GraphUtils = class {
     const visited = /* @__PURE__ */ new Set();
     const stack = [];
     const visit = (nodeId) => {
-      if (visited.has(nodeId))
-        return;
+      if (visited.has(nodeId)) return;
       visited.add(nodeId);
       const node = graph.nodes.get(nodeId);
       for (const targetId of node.outgoing) {
@@ -162,8 +158,7 @@ let GraphUtils = class {
   static allPaths(graph, startId, endId, maxDepth = 10) {
     const paths = [];
     const dfs = (current, target, path, visited, depth) => {
-      if (depth > maxDepth)
-        return;
+      if (depth > maxDepth) return;
       if (current === target) {
         paths.push(path);
         return;
@@ -240,14 +235,14 @@ let GraphUtils = class {
     return JSON.stringify({
       nodes: Array.from(graph.nodes.entries()).map(([id, node]) => ({
         id,
-        data: node.data
+        data: node.data,
       })),
       edges: Array.from(graph.edges.entries()).map(([id, edge]) => ({
         from: edge.from,
         to: edge.to,
-        metadata: edge.metadata
+        metadata: edge.metadata,
       })),
-      metadata: graph.metadata
+      metadata: graph.metadata,
     });
   }
   /**
@@ -269,25 +264,20 @@ let GraphUtils = class {
    * Visualize graph (text representation)
    */
   static visualize(graph) {
-    let output = "Graph Visualization:\n";
-    output += "=".repeat(50) + "\n";
+    let output = 'Graph Visualization:\n';
+    output += '='.repeat(50) + '\n';
     for (const [nodeId, node] of graph.nodes) {
       output += `Node: ${nodeId}
 `;
       if (node.outgoing.size > 0) {
-        output += `  -> [${Array.from(node.outgoing).join(", ")}]
+        output += `  -> [${Array.from(node.outgoing).join(', ')}]
 `;
       }
     }
-    output += "=".repeat(50) + "\n";
+    output += '='.repeat(50) + '\n';
     return output;
   }
 };
-GraphUtils = __decorateClass([
-  singleton()
-], GraphUtils);
+GraphUtils = __decorateClass([singleton()], GraphUtils);
 var graph_utils_default = GraphUtils;
-export {
-  GraphUtils,
-  graph_utils_default as default
-};
+export { GraphUtils, graph_utils_default as default };

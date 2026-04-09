@@ -28,6 +28,7 @@ agents/
 ## Using Prompts
 
 ### Option 1: Copy & Paste
+
 ```bash
 # Copy agent prompt to clipboard
 cat agents/prompts/backend.md | pbcopy
@@ -36,6 +37,7 @@ cat agents/prompts/backend.md | pbcopy
 ```
 
 ### Option 2: Ultra-Dex CLI
+
 ```bash
 # List available agents
 ultra-dex agents
@@ -45,6 +47,7 @@ ultra-dex run backend -t "Create REST API for users"
 ```
 
 ### Option 3: Fast Path
+
 ```bash
 # Generate complete project
 ultra-dex generate "Task management SaaS"
@@ -53,6 +56,7 @@ ultra-dex generate "Task management SaaS"
 ## Agent Philosophy
 
 Agents are **orchestrators, not executors**. They:
+
 - ✅ Provide structured thinking frameworks
 - ✅ Ensure no critical steps are missed
 - ✅ Maintain quality standards
@@ -68,4 +72,4 @@ Agents are **orchestrators, not executors**. They:
 
 ---
 
-*Agents exist to help users ship. If an agent doesn't help, improve it.*
+_Agents exist to help users ship. If an agent doesn't help, improve it._

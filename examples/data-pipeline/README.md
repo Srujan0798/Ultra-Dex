@@ -21,12 +21,14 @@ This example demonstrates how to create an AI-managed data processing pipeline u
 ## Setup
 
 1. **Install Dependencies**:
+
    ```bash
    # This example uses the UltraDex library
    ```
 
 2. **Environment Variables**:
    Create a `.env` file with the following:
+
    ```env
    ULTRA_DEX_API_KEY=your_ultra_dex_api_key
    ULTRA_DEX_ENDPOINT=https://api.ultra-dex.ai
@@ -55,33 +57,33 @@ The data pipeline can process data from various sources:
 const dataPipeline = new DataPipeline({
   ultraDex: {
     apiKey: process.env.ULTRA_DEX_API_KEY,
-    endpoint: process.env.ULTRA_DEX_ENDPOINT || 'https://api.ultra-dex.ai'
+    endpoint: process.env.ULTRA_DEX_ENDPOINT || 'https://api.ultra-dex.ai',
   },
   dataSources: [
     {
       id: 'source-1',
       type: 'file',
       path: './data/input.csv',
-      format: 'csv'
-    }
+      format: 'csv',
+    },
   ],
   destinations: [
     {
       id: 'dest-1',
       type: 'file',
       path: './data/output.json',
-      format: 'json'
-    }
+      format: 'json',
+    },
   ],
   transformations: [
     {
       type: 'field_mapping',
       mappings: {
-        'old_field': 'new_field',
-        'another_old': 'another_new'
-      }
-    }
-  ]
+        old_field: 'new_field',
+        another_old: 'another_new',
+      },
+    },
+  ],
 });
 
 // Process data through the pipeline
@@ -89,17 +91,17 @@ const job = await dataPipeline.processData(
   {
     type: 'file',
     path: './data/input.csv',
-    format: 'csv'
+    format: 'csv',
   },
   {
     type: 'file',
     path: './data/output.json',
-    format: 'json'
+    format: 'json',
   },
   {
     batchSize: 500,
     validationLevel: 'strict',
-    errorHandling: 'continue-on-error'
+    errorHandling: 'continue-on-error',
   }
 );
 
@@ -115,16 +117,14 @@ const optimization = await dataPipeline.optimizePipeline({
   performanceGoals: {
     throughput: 'maximize',
     latency: 'minimize',
-    cost: 'optimize'
-  }
+    cost: 'optimize',
+  },
 });
 
 // Handle schema evolution
-const evolutionPlan = await dataPipeline.handleSchemaEvolution(
-  currentSchema,
-  newSchema,
-  { compatibilityMode: 'backward' }
-);
+const evolutionPlan = await dataPipeline.handleSchemaEvolution(currentSchema, newSchema, {
+  compatibilityMode: 'backward',
+});
 ```
 
 ## Supported Data Sources

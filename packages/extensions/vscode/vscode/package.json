@@ -7,7 +7,10 @@
   "engines": {
     "vscode": "^1.85.0"
   },
-  "categories": ["Other", "Productivity"],
+  "categories": [
+    "Other",
+    "Productivity"
+  ],
   "activationEvents": [
     "onCommand:ultra-dex.openContext",
     "onCommand:ultra-dex.generate",
@@ -16,8 +19,14 @@
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
-      { "command": "ultra-dex.openContext", "title": "Ultra-Dex: Open CONTEXT.md" },
-      { "command": "ultra-dex.generate", "title": "Ultra-Dex: Generate Plan" }
+      {
+        "command": "ultra-dex.openContext",
+        "title": "Ultra-Dex: Open CONTEXT.md"
+      },
+      {
+        "command": "ultra-dex.generate",
+        "title": "Ultra-Dex: Generate Plan"
+      }
     ],
     "views": {
       "explorer": [

@@ -79,7 +79,9 @@ class ContextDatabase {
     );
 
     if (entry.tags && entry.tags.length > 0) {
-      const tagStmt = this.db.prepare('INSERT OR IGNORE INTO context_tags (context_id, tag) VALUES (?, ?)');
+      const tagStmt = this.db.prepare(
+        'INSERT OR IGNORE INTO context_tags (context_id, tag) VALUES (?, ?)'
+      );
       const insertTags = this.db.transaction((tags) => {
         for (const tag of tags) {
           tagStmt.run(id, tag);

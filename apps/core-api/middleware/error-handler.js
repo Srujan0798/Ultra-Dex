@@ -10,18 +10,18 @@ export const errorHandler = (err, req, res, next) => {
     url: req.url,
     method: req.method,
     ip: req.ip,
-    userAgent: req.get('User-Agent')
+    userAgent: req.get('User-Agent'),
   });
 
   // Determine status code
   const statusCode = err.status || err.statusCode || 500;
-  
+
   // Prepare error response
   const errorResponse = {
     error: err.message || 'Internal server error',
     code: err.code || 'INTERNAL_ERROR',
     errorId,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
 
   // Add stack trace in development

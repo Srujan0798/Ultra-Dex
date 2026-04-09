@@ -22,16 +22,19 @@ tests/
 ## 🧪 Test Categories
 
 ### Core Tests
+
 - **Ultra-Dex Meta-Layer**: Tests the main orchestration system
 - **Agent Orchestration**: Validates agent registration, selection, and execution
 - **AI Meta-Layer**: Ensures AI provider abstraction works correctly
 - **Context Management**: Verifies memory storage, retrieval, and management
 
 ### Integration Tests
+
 - **End-to-End Workflows**: Full system integration tests
 - **Multi-Component Interactions**: Tests how different components work together
 
 ### CLI Tests
+
 - **Command Validation**: Ensures CLI commands work as expected
 - **Help Systems**: Validates help and documentation systems
 - **Agent Commands**: Tests agent-related CLI functionality
@@ -39,11 +42,13 @@ tests/
 ## 🚀 Running Tests
 
 ### Run All Tests
+
 ```bash
 npm test
 ```
 
 ### Run Specific Test Suite
+
 ```bash
 # Core tests
 node --test tests/core/ultra-dex-core.test.js
@@ -56,11 +61,13 @@ node --test tests/cli/cli-commands.test.js
 ```
 
 ### Run with Coverage
+
 ```bash
 npm run test:coverage
 ```
 
 ### Run Test Suite Runner
+
 ```bash
 node tests/test-suite-runner.js
 ```
@@ -79,16 +86,19 @@ Our tests follow these principles:
 ## 🎯 Test Types
 
 ### Unit Tests
+
 - Test individual functions and methods
 - Fast execution with minimal dependencies
 - Focus on logic correctness
 
 ### Integration Tests
+
 - Test component interactions
 - Validate data flow between systems
 - Ensure API contracts are maintained
 
 ### End-to-End Tests
+
 - Simulate real user workflows
 - Validate complete system functionality
 - Test error recovery and resilience
@@ -119,6 +129,7 @@ Given Ultra-Dex's focus on AI orchestration, we have special considerations:
 ## 📈 Continuous Integration
 
 The test suite is designed to run in CI/CD pipelines:
+
 - Fast unit tests run on every commit
 - Integration tests run on pull requests
 - Performance tests run nightly

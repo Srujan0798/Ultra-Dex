@@ -1,10 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import {
-  WebhookEndpoint,
-  WebhookManager,
-} from '../../src/core/infrastructure/webhook-manager.js';
+import { WebhookEndpoint, WebhookManager } from '../../src/core/infrastructure/webhook-manager.js';
 
 function createResponse(status, body = 'ok') {
   return {

@@ -1,6 +1,21 @@
 import inquirer from 'inquirer';
-import { createSpinner, showSuccess, showInfo, showWarning, showError, withLoading, runTaskSuite } from './spinner.js';
-import { colors, gradients, formatMessage, formatTitle, formatSection, formatListItem } from './colors.js';
+import {
+  createSpinner,
+  showSuccess,
+  showInfo,
+  showWarning,
+  showError,
+  withLoading,
+  runTaskSuite,
+} from './spinner.js';
+import {
+  colors,
+  gradients,
+  formatMessage,
+  formatTitle,
+  formatSection,
+  formatListItem,
+} from './colors.js';
 import { performance } from 'perf_hooks';
 import chalk from 'chalk';
 
@@ -16,14 +31,18 @@ export class InteractiveCLI {
    * Show a welcome message with Ultra-Dex branding
    */
   showWelcome() {
-    console.log('\n' + gradients.brand(`
+    console.log(
+      '\n' +
+        gradients.brand(`
    __  ____  __               ____            
   / / / / / / /__________ _  / __ \\___  _  __ 
  / / / / / / / ___/ __ \`/ / / / / / _ \\| |/_/ 
 / /_/ / /_/ / /  / /_/ / / / /_/ /  __/>  <   
 \\____/\\____/_/   \\__,_/_/ /_____/\\___/_/|_|   
                                               
-    `) + '\n');
+    `) +
+        '\n'
+    );
     console.log(`  ${colors.brand('AI Orchestration Meta-Layer for SaaS Development')}`);
     console.log(`  ${chalk.dim('Version 6.0.0 | Enterprise Ready')}\n`);
   }
@@ -40,12 +59,12 @@ export class InteractiveCLI {
       type: 'list',
       name: 'selection',
       message: chalk.cyan(message),
-      choices: choices.map(choice => ({
+      choices: choices.map((choice) => ({
         name: choice.name,
         value: choice.value,
-        short: choice.short || choice.name
+        short: choice.short || choice.name,
       })),
-      default: defaultChoice
+      default: defaultChoice,
     };
 
     const result = await inquirer.prompt([question]);
@@ -63,11 +82,11 @@ export class InteractiveCLI {
       type: 'checkbox',
       name: 'selections',
       message: chalk.cyan(message),
-      choices: choices.map(choice => ({
+      choices: choices.map((choice) => ({
         name: choice.name,
         value: choice.value,
-        checked: choice.checked || false
-      }))
+        checked: choice.checked || false,
+      })),
     };
 
     const result = await inquirer.prompt([question]);
@@ -86,7 +105,7 @@ export class InteractiveCLI {
       type: 'input',
       name: 'input',
       message: chalk.cyan(message),
-      default: defaultValue
+      default: defaultValue,
     };
 
     if (validateFn) {
@@ -107,7 +126,7 @@ export class InteractiveCLI {
       type: 'password',
       name: 'password',
       message: chalk.cyan(message),
-      mask: '*'
+      mask: '*',
     };
 
     const result = await inquirer.prompt([question]);
@@ -125,7 +144,7 @@ export class InteractiveCLI {
       type: 'confirm',
       name: 'confirmed',
       message: chalk.yellow(message),
-      default: defaultAnswer
+      default: defaultAnswer,
     };
 
     const result = await inquirer.prompt([question]);
@@ -168,23 +187,34 @@ export class InteractiveCLI {
     const { default: Table } = await import('cli-table3');
 
     const table = new Table({
-      head: headers.map(h => chalk.bold(h)),
+      head: headers.map((h) => chalk.bold(h)),
       chars: {
-        'top': '━', 'top-mid': '┳', 'top-left': '┏', 'top-right': '┓',
-        'bottom': '━', 'bottom-mid': '┻', 'bottom-left': '┗', 'bottom-right': '┛',
-        'left': '┃', 'left-mid': '┣', 'mid': '━', 'mid-mid': '╋',
-        'right': '┃', 'right-mid': '┫', 'middle': '┃'
+        top: '━',
+        'top-mid': '┳',
+        'top-left': '┏',
+        'top-right': '┓',
+        bottom: '━',
+        'bottom-mid': '┻',
+        'bottom-left': '┗',
+        'bottom-right': '┛',
+        left: '┃',
+        'left-mid': '┣',
+        mid: '━',
+        'mid-mid': '╋',
+        right: '┃',
+        'right-mid': '┫',
+        middle: '┃',
       },
       style: {
         head: [], // Disable default colors to use our own
-        border: ['dim']
-      }
+        border: ['dim'],
+      },
     });
 
     // Colorize headers
-    table.options.head = headers.map(h => gradients.info(h));
+    table.options.head = headers.map((h) => gradients.info(h));
 
-    rows.forEach(row => {
+    rows.forEach((row) => {
       table.push(row);
     });
 
@@ -210,13 +240,13 @@ export class InteractiveCLI {
       const result = await fn();
       const end = performance.now();
       const duration = Math.round(end - start);
-      
+
       showInfo(`${operation} completed in ${chalk.bold(duration + 'ms')}`);
       return result;
     } catch (error) {
       const end = performance.now();
       const duration = Math.round(end - start);
-      
+
       showError(`${operation} failed after ${duration}ms: ${error.message}`);
       throw error;
     }
@@ -265,12 +295,4 @@ export class InteractiveCLI {
 export const interactiveCLI = new InteractiveCLI();
 
 // Export individual utilities
-export {
-  createSpinner,
-  showSuccess,
-  showInfo,
-  showWarning,
-  showError,
-  withLoading,
-  runTaskSuite
-};
+export { createSpinner, showSuccess, showInfo, showWarning, showError, withLoading, runTaskSuite };

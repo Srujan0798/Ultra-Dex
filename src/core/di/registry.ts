@@ -30,7 +30,7 @@ import { WorkerPool } from '../mesh/worker-pool.js';
 import { LoadBalancer } from '../mesh/load-balancer.js';
 class DIRegistry {
   static registerAll() {
-    console.log("[DIRegistry] Registering Diamond State services...");
+    console.log('[DIRegistry] Registering Diamond State services...');
     container.registerSingleton(DI_TOKENS.MemoryManager, () => new MemoryManager());
     container.registerSingleton(DI_TOKENS.UnifiedMemory, () => new UnifiedMemory());
     container.registerSingleton(DI_TOKENS.VectorStore, () => new VectorStore());
@@ -46,7 +46,10 @@ class DIRegistry {
     container.registerSingleton(DI_TOKENS.AgentRegistry, () => new AgentRegistry());
     container.registerSingleton(DI_TOKENS.AgentStateManager, () => new AgentStateManager());
     container.registerSingleton(DI_TOKENS.CommunicationBus, () => new CommunicationBus());
-    container.registerSingleton(DI_TOKENS.DistributedCoordinator, () => new DistributedCoordinator());
+    container.registerSingleton(
+      DI_TOKENS.DistributedCoordinator,
+      () => new DistributedCoordinator()
+    );
     container.registerSingleton(DI_TOKENS.TaskScheduler, () => new TaskScheduler());
     container.registerSingleton(DI_TOKENS.UltraDexCore, () => new UltraDexCore());
     container.registerSingleton(DI_TOKENS.PluginManager, () => new PluginManager());
@@ -59,7 +62,7 @@ class DIRegistry {
     container.registerSingleton(DI_TOKENS.KafkaAdapter, () => new KafkaAdapter());
     container.registerSingleton(DI_TOKENS.WorkerPool, () => new WorkerPool());
     container.registerSingleton(DI_TOKENS.LoadBalancer, () => new LoadBalancer());
-    console.log("[DIRegistry] Registration complete");
+    console.log('[DIRegistry] Registration complete');
   }
   static getServiceStatus() {
     return {
@@ -81,10 +84,8 @@ class DIRegistry {
       RedisAdapter: container.isRegistered(DI_TOKENS.RedisAdapter),
       KafkaAdapter: container.isRegistered(DI_TOKENS.KafkaAdapter),
       WorkerPool: container.isRegistered(DI_TOKENS.WorkerPool),
-      LoadBalancer: container.isRegistered(DI_TOKENS.LoadBalancer)
+      LoadBalancer: container.isRegistered(DI_TOKENS.LoadBalancer),
     };
   }
 }
-export {
-  DIRegistry
-};
+export { DIRegistry };

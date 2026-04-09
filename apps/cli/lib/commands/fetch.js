@@ -66,7 +66,9 @@ export function registerFetchCommand(program) {
             printInfo(content);
           }
           if (options.extract) {
-            printInfo(chalk.gray('Extract requested (legacy mode): extraction is not implemented.'));
+            printInfo(
+              chalk.gray('Extract requested (legacy mode): extraction is not implemented.')
+            );
           }
           if (options.cache === false) {
             printInfo(chalk.gray('Cache disabled for this fetch.'));
@@ -80,9 +82,13 @@ export function registerFetchCommand(program) {
 
       if (!options.assets && !options.agents && !options.rules && !options.docs) {
         printWarning(
-          chalk.yellow('URL argument required for remote fetch. Use --assets/--agents/--rules/--docs for asset mode.')
+          chalk.yellow(
+            'URL argument required for remote fetch. Use --assets/--agents/--rules/--docs for asset mode.'
+          )
         );
-        printInfo(chalk.gray('Example: ultra-dex fetch https://example.com/data.json --output data.json'));
+        printInfo(
+          chalk.gray('Example: ultra-dex fetch https://example.com/data.json --output data.json')
+        );
         return;
       }
 

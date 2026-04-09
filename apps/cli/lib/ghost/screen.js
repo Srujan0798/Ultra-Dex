@@ -29,11 +29,7 @@ function assertScreenshotDependency() {
 export class ScreenSystem {
   async capture(options = {}) {
     assertScreenshotDependency();
-    const {
-      format = 'png',
-      screen,
-      filename,
-    } = options;
+    const { format = 'png', screen, filename } = options;
 
     const image = await screenshot({
       format,
@@ -59,10 +55,7 @@ export class ScreenSystem {
   }
 
   async captureToTempFile(prefix = 'ultra-dex-ghost') {
-    const tempPath = path.join(
-      os.tmpdir(),
-      `${prefix}-${Date.now()}.png`
-    );
+    const tempPath = path.join(os.tmpdir(), `${prefix}-${Date.now()}.png`);
     await this.capture({ filename: tempPath });
     return tempPath;
   }

@@ -561,7 +561,10 @@ describe('edge cases', () => {
  */
 function handleError(error) {
   try {
-    console.error('[extended-commands.test]', error instanceof Error ? error.message : String(error));
+    console.error(
+      '[extended-commands.test]',
+      error instanceof Error ? error.message : String(error)
+    );
   } catch (_) {
     // Fail silently
   }

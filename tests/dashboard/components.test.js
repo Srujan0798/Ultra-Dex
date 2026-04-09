@@ -15,12 +15,12 @@ describe('Dashboard Components Tests', () => {
         status: 'running',
         lastExecution: new Date().toISOString(),
         successRate: 0.95,
-        description: 'A test agent for verification'
+        description: 'A test agent for verification',
       };
 
       // Mock Vue component mount
       const wrapper = mountComponent(AgentCard, { props: { agent } });
-      
+
       expect(wrapper.text()).toContain('Test Agent');
       expect(wrapper.classes()).toContain('status-running');
       expect(wrapper.text()).toContain('95% success rate');
@@ -33,11 +33,11 @@ describe('Dashboard Components Tests', () => {
         status: 'idle',
         lastExecution: new Date().toISOString(),
         successRate: 0.85,
-        description: 'A test agent for verification'
+        description: 'A test agent for verification',
       };
 
       const wrapper = mountComponent(AgentCard, { props: { agent } });
-      
+
       // Check for status indicator
       const statusIndicator = wrapper.querySelector('.status-indicator');
       expect(statusIndicator).toBeTruthy();
@@ -50,12 +50,12 @@ describe('Dashboard Components Tests', () => {
         name: 'Test Agent',
         status: 'error',
         lastExecution: new Date().toISOString(),
-        successRate: 0.10,
-        description: 'A test agent for verification'
+        successRate: 0.1,
+        description: 'A test agent for verification',
       };
 
       const wrapper = mountComponent(AgentCard, { props: { agent } });
-      
+
       expect(wrapper.classes()).toContain('status-error');
       expect(wrapper.text()).toContain('10% success rate');
     });
@@ -66,12 +66,12 @@ describe('Dashboard Components Tests', () => {
         name: 'Test Agent',
         status: 'stopped',
         lastExecution: new Date().toISOString(),
-        successRate: 0.90,
-        description: 'A test agent for verification'
+        successRate: 0.9,
+        description: 'A test agent for verification',
       };
 
       const wrapper = mountComponent(AgentCard, { props: { agent } });
-      
+
       const actionButtons = wrapper.querySelectorAll('.quick-action');
       expect(actionButtons).toHaveLength(2); // start and logs buttons
     });
@@ -82,11 +82,11 @@ describe('Dashboard Components Tests', () => {
       const logs = [
         { timestamp: new Date().toISOString(), level: 'info', message: 'Agent started' },
         { timestamp: new Date().toISOString(), level: 'error', message: 'Connection failed' },
-        { timestamp: new Date().toISOString(), level: 'debug', message: 'Debug info' }
+        { timestamp: new Date().toISOString(), level: 'debug', message: 'Debug info' },
       ];
 
       const wrapper = mountComponent(LogViewer, { props: { logs } });
-      
+
       expect(wrapper.findAll('.log-entry')).toHaveLength(3);
       expect(wrapper.text()).toContain('Agent started');
       expect(wrapper.text()).toContain('Connection failed');
@@ -97,16 +97,16 @@ describe('Dashboard Components Tests', () => {
       const logs = [
         { timestamp: new Date().toISOString(), level: 'info', message: 'Info message' },
         { timestamp: new Date().toISOString(), level: 'error', message: 'Error message' },
-        { timestamp: new Date().toISOString(), level: 'warn', message: 'Warning message' }
+        { timestamp: new Date().toISOString(), level: 'warn', message: 'Warning message' },
       ];
 
-      const wrapper = mountComponent(LogViewer, { 
-        props: { 
+      const wrapper = mountComponent(LogViewer, {
+        props: {
           logs,
-          filterLevel: 'error'
-        } 
+          filterLevel: 'error',
+        },
       });
-      
+
       // Should only show error logs
       const displayedLogs = wrapper.findAll('.log-entry');
       expect(displayedLogs).toHaveLength(1);
@@ -116,17 +116,21 @@ describe('Dashboard Components Tests', () => {
     it('searches logs by content', async () => {
       const logs = [
         { timestamp: new Date().toISOString(), level: 'info', message: 'User login successful' },
-        { timestamp: new Date().toISOString(), level: 'error', message: 'Database connection failed' },
-        { timestamp: new Date().toISOString(), level: 'info', message: 'Processing user request' }
+        {
+          timestamp: new Date().toISOString(),
+          level: 'error',
+          message: 'Database connection failed',
+        },
+        { timestamp: new Date().toISOString(), level: 'info', message: 'Processing user request' },
       ];
 
-      const wrapper = mountComponent(LogViewer, { 
-        props: { 
+      const wrapper = mountComponent(LogViewer, {
+        props: {
           logs,
-          searchTerm: 'user'
-        } 
+          searchTerm: 'user',
+        },
       });
-      
+
       // Should only show logs containing 'user'
       const displayedLogs = wrapper.findAll('.log-entry');
       expect(displayedLogs).toHaveLength(2);
@@ -135,12 +139,10 @@ describe('Dashboard Components Tests', () => {
     });
 
     it('exports logs correctly', async () => {
-      const logs = [
-        { timestamp: new Date().toISOString(), level: 'info', message: 'Test log' }
-      ];
+      const logs = [{ timestamp: new Date().toISOString(), level: 'info', message: 'Test log' }];
 
       const wrapper = mountComponent(LogViewer, { props: { logs } });
-      
+
       // Mock the export functionality
       const exportButton = wrapper.querySelector('.export-button');
       expect(exportButton).toBeTruthy();
@@ -156,13 +158,13 @@ describe('Dashboard Components Tests', () => {
         providerHealth: {
           openai: 'healthy',
           anthropic: 'degraded',
-          google: 'healthy'
+          google: 'healthy',
         },
-        requestRate: 45 // req/s
+        requestRate: 45, // req/s
       };
 
       const wrapper = mountComponent(MetricsPanel, { props: { metrics } });
-      
+
       expect(wrapper.text()).toContain('150ms');
       expect(wrapper.text()).toContain('65%');
       expect(wrapper.text()).toContain('12 agents');
@@ -174,21 +176,21 @@ describe('Dashboard Components Tests', () => {
         latency: 100,
         memoryUsage: 50,
         activeAgents: 5,
-        providerHealth: { openai: 'healthy' }
+        providerHealth: { openai: 'healthy' },
       };
 
       const updatedMetrics = {
         latency: 200,
         memoryUsage: 75,
         activeAgents: 8,
-        providerHealth: { openai: 'degraded' }
+        providerHealth: { openai: 'degraded' },
       };
 
       const wrapper = mountComponent(MetricsPanel, { props: { metrics: initialMetrics } });
-      
+
       // Simulate metrics update
       await wrapper.setProps({ metrics: updatedMetrics });
-      
+
       expect(wrapper.text()).toContain('200ms');
       expect(wrapper.text()).toContain('75%');
       expect(wrapper.text()).toContain('8 agents');
@@ -203,12 +205,12 @@ describe('Dashboard Components Tests', () => {
           openai: 'healthy',
           anthropic: 'degraded',
           google: 'error',
-          mistral: 'healthy'
-        }
+          mistral: 'healthy',
+        },
       };
 
       const wrapper = mountComponent(MetricsPanel, { props: { metrics } });
-      
+
       expect(wrapper.text()).toContain('OpenAI: Healthy');
       expect(wrapper.text()).toContain('Anthropic: Degraded');
       expect(wrapper.text()).toContain('Google: Error');
@@ -219,21 +221,19 @@ describe('Dashboard Components Tests', () => {
   describe('CostDashboard Component', () => {
     it('displays cost metrics correctly', async () => {
       const costs = {
-        daily: 12.50,
-        monthly: 375.00,
-        projected: 450.00,
-        alerts: [
-          { threshold: 400, triggered: true, message: 'Monthly budget approaching' }
-        ],
+        daily: 12.5,
+        monthly: 375.0,
+        projected: 450.0,
+        alerts: [{ threshold: 400, triggered: true, message: 'Monthly budget approaching' }],
         breakdown: {
-          openai: 150.00,
-          anthropic: 125.00,
-          google: 100.00
-        }
+          openai: 150.0,
+          anthropic: 125.0,
+          google: 100.0,
+        },
       };
 
       const wrapper = mountComponent(CostDashboard, { props: { costs } });
-      
+
       expect(wrapper.text()).toContain('$375.00');
       expect(wrapper.text()).toContain('$450.00 projected');
       expect(wrapper.text()).toContain('Monthly budget approaching');
@@ -241,38 +241,36 @@ describe('Dashboard Components Tests', () => {
 
     it('exports cost data to CSV', async () => {
       const costs = {
-        daily: 10.00,
-        monthly: 300.00,
-        projected: 350.00,
+        daily: 10.0,
+        monthly: 300.0,
+        projected: 350.0,
         alerts: [],
         breakdown: {
-          openai: 150.00,
-          anthropic: 150.00
-        }
+          openai: 150.0,
+          anthropic: 150.0,
+        },
       };
 
       const wrapper = mountComponent(CostDashboard, { props: { costs } });
-      
+
       const exportButton = wrapper.querySelector('.export-csv');
       expect(exportButton).toBeTruthy();
     });
 
     it('shows budget alerts', async () => {
       const costs = {
-        daily: 15.00,
-        monthly: 450.00,
-        projected: 500.00,
-        alerts: [
-          { threshold: 400, triggered: true, message: 'Monthly budget exceeded' }
-        ],
+        daily: 15.0,
+        monthly: 450.0,
+        projected: 500.0,
+        alerts: [{ threshold: 400, triggered: true, message: 'Monthly budget exceeded' }],
         breakdown: {
-          openai: 250.00,
-          anthropic: 200.00
-        }
+          openai: 250.0,
+          anthropic: 200.0,
+        },
       };
 
       const wrapper = mountComponent(CostDashboard, { props: { costs } });
-      
+
       expect(wrapper.text()).toContain('Monthly budget exceeded');
       expect(wrapper.classes()).toContain('alert-active');
     });
@@ -284,16 +282,16 @@ describe('Dashboard Components Tests', () => {
         nodes: [
           { id: 'memory-1', label: 'User Authentication', type: 'concept' },
           { id: 'memory-2', label: 'Database Schema', type: 'data' },
-          { id: 'memory-3', label: 'API Endpoints', type: 'function' }
+          { id: 'memory-3', label: 'API Endpoints', type: 'function' },
         ],
         edges: [
           { source: 'memory-1', target: 'memory-2', relation: 'uses' },
-          { source: 'memory-2', target: 'memory-3', relation: 'supports' }
-        ]
+          { source: 'memory-2', target: 'memory-3', relation: 'supports' },
+        ],
       };
 
       const wrapper = mountComponent(MemoryGraph, { props: { graphData } });
-      
+
       expect(wrapper.findAll('.node')).toHaveLength(3);
       expect(wrapper.findAll('.edge')).toHaveLength(2);
     });
@@ -302,20 +300,18 @@ describe('Dashboard Components Tests', () => {
       const graphData = {
         nodes: [
           { id: 'memory-1', label: 'User Authentication', type: 'concept' },
-          { id: 'memory-2', label: 'Database Schema', type: 'data' }
+          { id: 'memory-2', label: 'Database Schema', type: 'data' },
         ],
-        edges: [
-          { source: 'memory-1', target: 'memory-2', relation: 'uses' }
-        ]
+        edges: [{ source: 'memory-1', target: 'memory-2', relation: 'uses' }],
       };
 
-      const wrapper = mountComponent(MemoryGraph, { 
-        props: { 
+      const wrapper = mountComponent(MemoryGraph, {
+        props: {
           graphData,
-          searchTerm: 'Authentication'
-        } 
+          searchTerm: 'Authentication',
+        },
       });
-      
+
       // Should highlight the matching node
       const highlightedNodes = wrapper.querySelectorAll('.node.highlighted');
       expect(highlightedNodes).toHaveLength(1);
@@ -325,20 +321,18 @@ describe('Dashboard Components Tests', () => {
       const graphData = {
         nodes: [
           { id: 'memory-1', label: 'Initial Concept', type: 'concept', timestamp: '2026-01-01' },
-          { id: 'memory-2', label: 'Implementation', type: 'data', timestamp: '2026-01-15' }
+          { id: 'memory-2', label: 'Implementation', type: 'data', timestamp: '2026-01-15' },
         ],
-        edges: [
-          { source: 'memory-1', target: 'memory-2', relation: 'evolves_to' }
-        ]
+        edges: [{ source: 'memory-1', target: 'memory-2', relation: 'evolves_to' }],
       };
 
-      const wrapper = mountComponent(MemoryGraph, { 
-        props: { 
+      const wrapper = mountComponent(MemoryGraph, {
+        props: {
           graphData,
-          viewMode: 'timeline'
-        } 
+          viewMode: 'timeline',
+        },
       });
-      
+
       expect(wrapper.classes()).toContain('timeline-view');
     });
   });
@@ -350,19 +344,29 @@ function mountComponent(Component, options = {}) {
   return {
     text: () => {
       if (options.props?.agent?.name) return options.props.agent.name;
-      if (options.props?.logs) return options.props.logs.map(l => l.message).join(' ');
-      if (options.props?.metrics?.activeAgents) return `${options.props.metrics.activeAgents} agents`;
+      if (options.props?.logs) return options.props.logs.map((l) => l.message).join(' ');
+      if (options.props?.metrics?.activeAgents)
+        return `${options.props.metrics.activeAgents} agents`;
       if (options.props?.costs?.monthly) return `$${options.props.costs.monthly}`;
       if (options.props?.graphData?.nodes) return `${options.props.graphData.nodes.length} nodes`;
       return 'Mock component';
     },
-    classes: () => ['status-running', 'status-idle', 'status-error', 'alert-active', 'timeline-view'],
+    classes: () => [
+      'status-running',
+      'status-idle',
+      'status-error',
+      'alert-active',
+      'timeline-view',
+    ],
     findAll: (selector) => {
       if (selector === '.log-entry') {
         return options.props?.logs?.map(() => ({ text: () => 'Mock log entry' })) || [];
       }
       if (selector === '.node') {
-        return options.props?.graphData?.nodes?.map(() => ({ classList: { contains: () => true } })) || [];
+        return (
+          options.props?.graphData?.nodes?.map(() => ({ classList: { contains: () => true } })) ||
+          []
+        );
       }
       if (selector === '.edge') {
         return options.props?.graphData?.edges?.map(() => ({})) || [];
@@ -390,7 +394,7 @@ function mountComponent(Component, options = {}) {
     setProps: async (newProps) => {
       // Simulate prop update
       return Promise.resolve();
-    }
+    },
   };
 }
 

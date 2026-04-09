@@ -3,14 +3,13 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
 var __decorateParam = (index, decorator) => (target, key) => decorator(target, key, index);
-import { singleton, inject } from "tsyringe";
+import { singleton, inject } from 'tsyringe';
 import { DI_TOKENS } from '../di/tokens.js';
 let PluginSandbox = class {
   constructor(logger, config) {
@@ -18,32 +17,32 @@ let PluginSandbox = class {
     this.config = config;
   }
   allowedBuiltins = /* @__PURE__ */ new Set([
-    "assert",
-    "buffer",
-    "crypto",
-    "events",
-    "path",
-    "querystring",
-    "stream",
-    "string_decoder",
-    "timers",
-    "url",
-    "util",
-    "zlib"
+    'assert',
+    'buffer',
+    'crypto',
+    'events',
+    'path',
+    'querystring',
+    'stream',
+    'string_decoder',
+    'timers',
+    'url',
+    'util',
+    'zlib',
   ]);
   dangerousModules = /* @__PURE__ */ new Set([
-    "child_process",
-    "cluster",
-    "dgram",
-    "dns",
-    "http",
-    "https",
-    "net",
-    "os",
-    "repl",
-    "tls",
-    "v8",
-    "vm"
+    'child_process',
+    'cluster',
+    'dgram',
+    'dns',
+    'http',
+    'https',
+    'net',
+    'os',
+    'repl',
+    'tls',
+    'v8',
+    'vm',
   ]);
   /**
    * Execute plugin code in sandbox
@@ -59,7 +58,7 @@ let PluginSandbox = class {
         success: true,
         result,
         executionTime,
-        memoryUsed
+        memoryUsed,
       };
     } catch (error) {
       const executionTime = Date.now() - startTime;
@@ -68,7 +67,7 @@ let PluginSandbox = class {
         success: false,
         error: this.sanitizeError(error),
         executionTime,
-        memoryUsed
+        memoryUsed,
       };
     }
   }
@@ -79,7 +78,10 @@ let PluginSandbox = class {
     const startTime = Date.now();
     const timeoutMs = context.timeout || 5e3;
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error(`Plugin execution timeout after ${timeoutMs}ms`)), timeoutMs);
+      setTimeout(
+        () => reject(new Error(`Plugin execution timeout after ${timeoutMs}ms`)),
+        timeoutMs
+      );
     });
     try {
       const result = await Promise.race([fn(...args), timeoutPromise]);
@@ -87,7 +89,7 @@ let PluginSandbox = class {
         success: true,
         result,
         executionTime: Date.now() - startTime,
-        memoryUsed: 0
+        memoryUsed: 0,
         // Would need more sophisticated tracking
       };
     } catch (error) {
@@ -95,7 +97,7 @@ let PluginSandbox = class {
         success: false,
         error: this.sanitizeError(error),
         executionTime: Date.now() - startTime,
-        memoryUsed: 0
+        memoryUsed: 0,
       };
     }
   }
@@ -106,35 +108,35 @@ let PluginSandbox = class {
     const violations = [];
     if (/\beval\s*\(/i.test(code) || /new\s+Function\s*\(/i.test(code)) {
       violations.push({
-        type: "eval",
-        message: "Plugin uses eval() or new Function() which is not allowed"
+        type: 'eval',
+        message: 'Plugin uses eval() or new Function() which is not allowed',
       });
     }
     this.dangerousModules.forEach((mod) => {
-      const regex = new RegExp(`require\\s*\\(\\s*['"]${mod}['"]\\s*\\)`, "i");
+      const regex = new RegExp(`require\\s*\\(\\s*['"]${mod}['"]\\s*\\)`, 'i');
       if (regex.test(code)) {
         violations.push({
-          type: "module",
-          message: `Plugin imports dangerous module: ${mod}`
+          type: 'module',
+          message: `Plugin imports dangerous module: ${mod}`,
         });
       }
     });
     if (/\bprocess\s*\.\s*(env|exit|kill|chdir|umask)/i.test(code)) {
       violations.push({
-        type: "process",
-        message: "Plugin accesses restricted process properties"
+        type: 'process',
+        message: 'Plugin accesses restricted process properties',
       });
     }
     if (/\bfs\s*\.\s*(write|append|unlink|rmdir|chmod)/i.test(code)) {
       violations.push({
-        type: "filesystem",
-        message: "Plugin performs filesystem write operations without permission"
+        type: 'filesystem',
+        message: 'Plugin performs filesystem write operations without permission',
       });
     }
     if (/\bhttp\s*\.\s*request|\bhttps\s*\.\s*request|fetch\s*\(/i.test(code)) {
       violations.push({
-        type: "network",
-        message: "Plugin makes network requests without permission"
+        type: 'network',
+        message: 'Plugin makes network requests without permission',
       });
     }
     return violations;
@@ -150,7 +152,7 @@ let PluginSandbox = class {
       try {
         return require(moduleName);
       } catch (error) {
-        this.logger.error("Sandbox module load error", error);
+        this.logger.error('Sandbox module load error', error);
         throw error;
       }
     };
@@ -162,35 +164,35 @@ let PluginSandbox = class {
     const prefix = `[Plugin:${context.pluginId}]`;
     return {
       ...console,
-      log: (...args) => this.logger.info(`${prefix} ${args.join(" ")}`),
-      error: (...args) => this.logger.error(`${prefix} ${args.join(" ")}`),
-      warn: (...args) => this.logger.warn(`${prefix} ${args.join(" ")}`),
-      info: (...args) => this.logger.info(`${prefix} ${args.join(" ")}`),
-      debug: (...args) => this.logger.debug(`${prefix} ${args.join(" ")}`)
+      log: (...args) => this.logger.info(`${prefix} ${args.join(' ')}`),
+      error: (...args) => this.logger.error(`${prefix} ${args.join(' ')}`),
+      warn: (...args) => this.logger.warn(`${prefix} ${args.join(' ')}`),
+      info: (...args) => this.logger.info(`${prefix} ${args.join(' ')}`),
+      debug: (...args) => this.logger.debug(`${prefix} ${args.join(' ')}`),
     };
   }
   async runInVM2(code, context) {
     try {
-      const { VM } = await import("vm2");
+      const { VM } = await import('vm2');
       const vm = new VM({
         timeout: context.timeout || 5e3,
         sandbox: {
           console: this.createSandboxedConsole(context),
           require: this.createSandboxedRequire(context),
           Buffer,
-          process: this.createSandboxedProcess(context)
-        }
+          process: this.createSandboxedProcess(context),
+        },
       });
       return vm.run(code);
     } catch (error) {
-      if (error.message.includes("vm2")) {
+      if (error.message.includes('vm2')) {
         return this.runInNodeVM(code, context);
       }
       throw error;
     }
   }
   async runInNodeVM(code, context) {
-    const { runInNewContext } = await import("vm");
+    const { runInNewContext } = await import('vm');
     const sandbox = {
       console: this.createSandboxedConsole(context),
       require: this.createSandboxedRequire(context),
@@ -215,11 +217,11 @@ let PluginSandbox = class {
       WeakMap,
       WeakSet,
       RegExp,
-      DateConstructor: Date
+      DateConstructor: Date,
     };
     return runInNewContext(code, sandbox, {
       timeout: context.timeout || 5e3,
-      displayErrors: true
+      displayErrors: true,
     });
   }
   createSandboxedProcess(context) {
@@ -227,7 +229,7 @@ let PluginSandbox = class {
       // Limited process info
       version: process.version,
       platform: process.platform,
-      arch: process.arch
+      arch: process.arch,
       // No access to env, exit, etc.
     };
   }
@@ -238,13 +240,16 @@ let PluginSandbox = class {
     if (this.allowedBuiltins.has(moduleName)) {
       return true;
     }
-    if (moduleName.startsWith("./") || moduleName.startsWith("../")) {
+    if (moduleName.startsWith('./') || moduleName.startsWith('../')) {
       return true;
     }
-    if (moduleName === "fs" && context.permissions?.includes("filesystem:read")) {
+    if (moduleName === 'fs' && context.permissions?.includes('filesystem:read')) {
       return true;
     }
-    if ((moduleName === "http" || moduleName === "https") && context.permissions?.includes("network")) {
+    if (
+      (moduleName === 'http' || moduleName === 'https') &&
+      context.permissions?.includes('network')
+    ) {
       return true;
     }
     return false;
@@ -254,11 +259,12 @@ let PluginSandbox = class {
     return sanitized;
   }
 };
-PluginSandbox = __decorateClass([
-  singleton(),
-  __decorateParam(0, inject(DI_TOKENS.Logger)),
-  __decorateParam(1, inject(DI_TOKENS.ConfigService))
-], PluginSandbox);
-export {
+PluginSandbox = __decorateClass(
+  [
+    singleton(),
+    __decorateParam(0, inject(DI_TOKENS.Logger)),
+    __decorateParam(1, inject(DI_TOKENS.ConfigService)),
+  ],
   PluginSandbox
-};
+);
+export { PluginSandbox };

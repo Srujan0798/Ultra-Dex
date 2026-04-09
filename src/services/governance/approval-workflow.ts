@@ -307,7 +307,7 @@ export class ApprovalWorkflowManager {
 
     // Retrieve request from memory
     const request = this.inMemoryRequests.get(requestId);
-    
+
     if (!request) {
       throw errorHandler.createError(
         'RESOURCE_NOT_FOUND',
@@ -475,7 +475,7 @@ export class ApprovalWorkflowManager {
     await this.initialize();
 
     const request = this.inMemoryRequests.get(requestId);
-    
+
     if (!request) {
       throw errorHandler.createError(
         'RESOURCE_NOT_FOUND',
@@ -547,7 +547,7 @@ export class ApprovalWorkflowManager {
     await this.initialize();
 
     const cutoff = new Date(Date.now() - timeWindowDays * 86400000);
-    
+
     let total = 0;
     let approved = 0;
     let rejected = 0;

@@ -297,9 +297,9 @@ function extractAgentMetadata(content) {
   const prompt = promptMatch ? promptMatch[1].trim() : null;
   const tags = expertiseMatch
     ? expertiseMatch[1]
-      .split(/[,\\n]/)
-      .map((tag) => tag.trim())
-      .filter(Boolean)
+        .split(/[,\\n]/)
+        .map((tag) => tag.trim())
+        .filter(Boolean)
     : [];
 
   return { name, description, version, prompt, tags };

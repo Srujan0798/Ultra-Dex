@@ -9,7 +9,6 @@ import fs from 'fs/promises';
 import path from 'path';
 import { glob } from 'glob';
 
-
 // Knowledge graph representation
 class RepoKnowledgeGraph {
   constructor() {

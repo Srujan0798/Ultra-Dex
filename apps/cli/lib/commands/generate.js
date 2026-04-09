@@ -74,9 +74,11 @@ export function registerGenerateCommand(program) {
         if (!hasProvider) {
           printWarning(chalk.yellow('⚠️  No Infinity Stones (AI Keys) configured.\n'));
           printInfo(chalk.white('Set one of these environment variables:'));
-          configured.filter((p) => p.envKey).forEach((p) => {
-            process.stdout.write(chalk.gray(`  export ${p.envKey}=your-key-here\n`));
-          });
+          configured
+            .filter((p) => p.envKey)
+            .forEach((p) => {
+              process.stdout.write(chalk.gray(`  export ${p.envKey}=your-key-here\n`));
+            });
           printInfo(chalk.white('\nOr use --key option:'));
           process.stdout.write(
             chalk.gray('  node apps/cli/bin/ultra-dex.js generate "your idea" --key sk-...\n')

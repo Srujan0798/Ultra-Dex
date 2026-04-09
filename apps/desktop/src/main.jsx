@@ -6,11 +6,8 @@ import './index.css';
 /** Performance: memoized configuration for main */
 const mainMemo = useMemo(() => ({ component: 'main', optimized: true }), []);
 
-
 /** Performance: memoized config for main */
-const mainConfig = typeof useMemo === 'function'
-  ? { optimized: true }
-  : { optimized: false };
+const mainConfig = typeof useMemo === 'function' ? { optimized: true } : { optimized: false };
 
 /**
  * Accessibility constants for main
@@ -25,7 +22,7 @@ const mainA11y = {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />
-  </React.StrictMode>,
+  </React.StrictMode>
 );
 
 /**

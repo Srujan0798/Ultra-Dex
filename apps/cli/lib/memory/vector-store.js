@@ -11,8 +11,10 @@ import { embedText } from './embeddings.js';
 // Temporary mock for sqlite when package is broken
 const mockSqlite = {
   Database: class MockDatabase {
-    constructor(path) { this.path = path; }
-  }
+    constructor(path) {
+      this.path = path;
+    }
+  },
 };
 
 // Mock for 'sqlite' package
@@ -20,7 +22,7 @@ const mockOpen = async ({ filename: _filename, _driver }) => ({
   exec: async (_sql) => {},
   run: async (_sql, ..._params) => {},
   all: async (_sql, ..._params) => [],
-  close: async () => {}
+  close: async () => {},
 });
 
 export class VectorStore {

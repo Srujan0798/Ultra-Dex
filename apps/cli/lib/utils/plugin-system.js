@@ -163,7 +163,7 @@ export class PluginManager {
     ) {
       await execAsync(`git clone --depth=1 ${source} ${tempDir}`);
       pluginSourceDir = tempDir;
-    } else if (await exists(source) && source.endsWith('.tgz')) {
+    } else if ((await exists(source)) && source.endsWith('.tgz')) {
       await execAsync(`tar -xzf ${source} -C ${tempDir}`);
       pluginSourceDir = path.join(tempDir, 'package');
     } else {

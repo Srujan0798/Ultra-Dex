@@ -11,6 +11,7 @@ ultra-dex cicd init --platform github --advanced
 ```
 
 This generates:
+
 - `templates/cicd/github-actions.yml`
 - Quality checks: lint, tests, verify
 
@@ -53,6 +54,7 @@ ultra-dex cicd init --platform jenkins
 ## PR Review Workflow
 
 Enable PR review checks:
+
 ```bash
 ultra-dex cicd init --pr-review
 ```

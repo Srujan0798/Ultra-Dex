@@ -94,7 +94,7 @@ export async function streamWithProvider({
         usage: response.usage ?? null,
         model: modelName,
         partial: true,
-        error
+        error,
       };
     }
     throw error;

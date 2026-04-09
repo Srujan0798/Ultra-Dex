@@ -19,7 +19,9 @@ function safeCleanup(filePath) {
     if (fs.existsSync(filePath)) {
       fs.rmSync(filePath, { force: true });
     }
-  } catch { /* ignore cleanup errors */ }
+  } catch {
+    /* ignore cleanup errors */
+  }
 }
 
 describe('Governance Audit Persistence', () => {
@@ -59,9 +61,30 @@ describe('Governance Audit Persistence', () => {
     // Act: Record multiple audit entries with explicit timestamps to ensure stable ordering
     const now = Date.now();
     const entries = [
-      { agentId: 'agent-1', action: 'read', task: 'file1.txt', outcome: 'allowed', details: {}, timestamp: now - 2000 },
-      { agentId: 'agent-2', action: 'write', task: 'file2.txt', outcome: 'blocked', details: { reason: 'policy' }, timestamp: now - 1000 },
-      { agentId: 'agent-1', action: 'execute', task: 'script.js', outcome: 'allowed', details: {}, timestamp: now },
+      {
+        agentId: 'agent-1',
+        action: 'read',
+        task: 'file1.txt',
+        outcome: 'allowed',
+        details: {},
+        timestamp: now - 2000,
+      },
+      {
+        agentId: 'agent-2',
+        action: 'write',
+        task: 'file2.txt',
+        outcome: 'blocked',
+        details: { reason: 'policy' },
+        timestamp: now - 1000,
+      },
+      {
+        agentId: 'agent-1',
+        action: 'execute',
+        task: 'script.js',
+        outcome: 'allowed',
+        details: {},
+        timestamp: now,
+      },
     ];
 
     for (const entry of entries) {
@@ -131,10 +154,30 @@ describe('Governance Audit Persistence', () => {
     // Arrange: Create governance manager and add entries
     const governance = new GovernanceManager({ auditDbPath: TEST_DB_PATH });
 
-    await governance.audit.record({ agentId: 'agent-a', action: 'read', task: 'file1', outcome: 'allowed' });
-    await governance.audit.record({ agentId: 'agent-b', action: 'write', task: 'file2', outcome: 'blocked' });
-    await governance.audit.record({ agentId: 'agent-a', action: 'write', task: 'file3', outcome: 'allowed' });
-    await governance.audit.record({ agentId: 'agent-a', action: 'read', task: 'file4', outcome: 'allowed' });
+    await governance.audit.record({
+      agentId: 'agent-a',
+      action: 'read',
+      task: 'file1',
+      outcome: 'allowed',
+    });
+    await governance.audit.record({
+      agentId: 'agent-b',
+      action: 'write',
+      task: 'file2',
+      outcome: 'blocked',
+    });
+    await governance.audit.record({
+      agentId: 'agent-a',
+      action: 'write',
+      task: 'file3',
+      outcome: 'allowed',
+    });
+    await governance.audit.record({
+      agentId: 'agent-a',
+      action: 'read',
+      task: 'file4',
+      outcome: 'allowed',
+    });
 
     // Act & Assert: Query by agentId
     const agentAEntries = await governance.audit.query({ agentId: 'agent-a', limit: 10 });

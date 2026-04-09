@@ -1,5 +1,5 @@
-import { EventEmitter } from "events";
-import crypto from "crypto";
+import { EventEmitter } from 'events';
+import crypto from 'crypto';
 class TokenOptimizer extends EventEmitter {
   constructor(config = {}) {
     super();
@@ -13,7 +13,7 @@ class TokenOptimizer extends EventEmitter {
       // Daily budget in USD
       warnThreshold: config.warnThreshold || 0.8,
       // Warn at 80% of budget
-      ...config
+      ...config,
     };
     this.cache = /* @__PURE__ */ new Map();
     this.usageStats = {
@@ -21,7 +21,7 @@ class TokenOptimizer extends EventEmitter {
       totalCost: 0,
       dailyTokens: /* @__PURE__ */ new Map(),
       dailyCost: /* @__PURE__ */ new Map(),
-      providerUsage: /* @__PURE__ */ new Map()
+      providerUsage: /* @__PURE__ */ new Map(),
     };
     this.compressionCache = /* @__PURE__ */ new Map();
     this.dedupIndex = /* @__PURE__ */ new Map();
@@ -34,7 +34,7 @@ class TokenOptimizer extends EventEmitter {
     this._startCleanupJob();
     this._scheduleDailyReset();
     this.initialized = true;
-    this.emit("initialized");
+    this.emit('initialized');
     return true;
   }
   /**
@@ -45,18 +45,17 @@ class TokenOptimizer extends EventEmitter {
   checkCache(request) {
     const hash = this._hashRequest(request);
     const cached = this.cache.get(hash);
-    if (!cached)
-      return null;
+    if (!cached) return null;
     if (Date.now() - cached.timestamp > this.config.cacheTTL) {
       this.cache.delete(hash);
       return null;
     }
-    this.emit("cache:hit", { hash, savings: cached.tokens });
+    this.emit('cache:hit', { hash, savings: cached.tokens });
     return {
       result: cached.result,
       tokens: cached.tokens,
       cost: cached.cost,
-      fromCache: true
+      fromCache: true,
     };
   }
   /**
@@ -75,9 +74,9 @@ class TokenOptimizer extends EventEmitter {
       result: this._cloneResult(result),
       tokens: metrics.tokens || 0,
       cost: metrics.cost || 0,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
-    this.emit("cache:store", { hash, tokens: metrics.tokens });
+    this.emit('cache:store', { hash, tokens: metrics.tokens });
   }
   /**
    * Compress context to reduce token usage
@@ -86,13 +85,12 @@ class TokenOptimizer extends EventEmitter {
    * @returns {Array<Object>} Compressed messages
    */
   compressContext(messages, options = {}) {
-    if (!this.config.compressionEnabled)
-      return messages;
+    if (!this.config.compressionEnabled) return messages;
     const {
       maxTokens = 4e3,
       preserveRecent = 3,
       // Keep N most recent messages uncompressed
-      compressionLevel = "medium"
+      compressionLevel = 'medium',
       // 'low', 'medium', 'high'
     } = options;
     let totalTokens = this._estimateTokens(messages);
@@ -104,17 +102,17 @@ class TokenOptimizer extends EventEmitter {
     const compressed = this._compressMessages(toCompress, compressionLevel);
     const result = [
       {
-        role: "system",
+        role: 'system',
         content: `[Previous ${toCompress.length} messages compressed]
-${compressed.summary}`
+${compressed.summary}`,
       },
-      ...recent
+      ...recent,
     ];
     const savings = totalTokens - this._estimateTokens(result);
-    this.emit("compression:applied", {
+    this.emit('compression:applied', {
       original: totalTokens,
       compressed: this._estimateTokens(result),
-      savings
+      savings,
     });
     return result;
   }
@@ -124,13 +122,14 @@ ${compressed.summary}`
    * @returns {Object|null} Similar cached request
    */
   checkDuplicate(request) {
-    if (!this.config.dedupEnabled)
-      return null;
+    if (!this.config.dedupEnabled) return null;
     const hash = this._hashRequest(request);
-    const recent = Array.from(this.cache.entries()).filter(([_, v]) => Date.now() - v.timestamp < 6e4).map(([k, v]) => ({ hash: k, ...v }));
+    const recent = Array.from(this.cache.entries())
+      .filter(([_, v]) => Date.now() - v.timestamp < 6e4)
+      .map(([k, v]) => ({ hash: k, ...v }));
     const duplicate = recent.find((r) => r.hash === hash);
     if (duplicate) {
-      this.emit("dedup:found", { hash, savings: duplicate.tokens });
+      this.emit('dedup:found', { hash, savings: duplicate.tokens });
       return duplicate;
     }
     return null;
@@ -141,11 +140,10 @@ ${compressed.summary}`
    */
   trackUsage(metrics) {
     const { tokens, cost, provider, model, cached = false } = metrics;
-    if (cached)
-      return;
+    if (cached) return;
     this.usageStats.totalTokens += tokens;
     this.usageStats.totalCost += cost;
-    const today = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
+    const today = /* @__PURE__ */ new Date().toISOString().split('T')[0];
     const dailyTokens = this.usageStats.dailyTokens.get(today) || 0;
     this.usageStats.dailyTokens.set(today, dailyTokens + tokens);
     const dailyCost = this.usageStats.dailyCost.get(today) || 0;
@@ -160,19 +158,19 @@ ${compressed.summary}`
     if (this.config.budgetLimit) {
       const budgetUsed = (dailyCost + cost) / this.config.budgetLimit;
       if (budgetUsed >= 1) {
-        this.emit("budget:exceeded", {
-          dailyCost: dailyCost + cost,
-          limit: this.config.budgetLimit
-        });
-      } else if (budgetUsed >= this.config.warnThreshold) {
-        this.emit("budget:warning", {
+        this.emit('budget:exceeded', {
           dailyCost: dailyCost + cost,
           limit: this.config.budgetLimit,
-          threshold: this.config.warnThreshold
+        });
+      } else if (budgetUsed >= this.config.warnThreshold) {
+        this.emit('budget:warning', {
+          dailyCost: dailyCost + cost,
+          limit: this.config.budgetLimit,
+          threshold: this.config.warnThreshold,
         });
       }
     }
-    this.emit("usage:tracked", { tokens, cost, provider });
+    this.emit('usage:tracked', { tokens, cost, provider });
   }
   /**
    * Get optimization suggestions
@@ -183,20 +181,20 @@ ${compressed.summary}`
     const stats = this.getStats();
     if (stats.cacheHitRate < 0.1) {
       suggestions.push({
-        type: "cache",
-        priority: "medium",
-        message: "Low cache hit rate. Consider increasing cache TTL or adjusting request patterns.",
-        impact: "high"
+        type: 'cache',
+        priority: 'medium',
+        message: 'Low cache hit rate. Consider increasing cache TTL or adjusting request patterns.',
+        impact: 'high',
       });
     }
     for (const [provider, usage] of this.usageStats.providerUsage) {
       const avgCostPerRequest = usage.cost / usage.requests;
       if (avgCostPerRequest > 0.05) {
         suggestions.push({
-          type: "cost",
-          priority: "high",
+          type: 'cost',
+          priority: 'high',
           message: `${provider} has high average cost ($${avgCostPerRequest.toFixed(4)} per request). Consider using cheaper alternatives for similar quality.`,
-          impact: "high"
+          impact: 'high',
         });
       }
     }
@@ -206,10 +204,10 @@ ${compressed.summary}`
       const lastDay = dailyCosts[dailyCosts.length - 1];
       if (lastDay > avgCost * 1.5) {
         suggestions.push({
-          type: "usage",
-          priority: "medium",
+          type: 'usage',
+          priority: 'medium',
           message: `Yesterday's cost ($${lastDay.toFixed(2)}) was 50% above average ($${avgCost.toFixed(2)}).`,
-          impact: "medium"
+          impact: 'medium',
         });
       }
     }
@@ -220,7 +218,7 @@ ${compressed.summary}`
    * @returns {Object} Statistics
    */
   getStats() {
-    const today = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
+    const today = /* @__PURE__ */ new Date().toISOString().split('T')[0];
     const cacheHits = Array.from(this.cache.values()).filter(
       (v) => Date.now() - v.timestamp < 36e5
     ).length;
@@ -233,7 +231,9 @@ ${compressed.summary}`
       cacheHits,
       cacheHitRate: this.usageStats.totalTokens > 0 ? cacheHits / this.usageStats.totalTokens : 0,
       providerBreakdown: Object.fromEntries(this.usageStats.providerUsage),
-      budgetRemaining: this.config.budgetLimit ? this.config.budgetLimit - (this.usageStats.dailyCost.get(today) || 0) : null
+      budgetRemaining: this.config.budgetLimit
+        ? this.config.budgetLimit - (this.usageStats.dailyCost.get(today) || 0)
+        : null,
     };
   }
   /**
@@ -241,7 +241,7 @@ ${compressed.summary}`
    */
   clearCache() {
     this.cache.clear();
-    this.emit("cache:cleared");
+    this.emit('cache:cleared');
   }
   /**
    * Get cost estimate for request
@@ -255,16 +255,16 @@ ${compressed.summary}`
       openai: { input: 0.01, output: 0.03 },
       anthropic: { input: 8e-3, output: 0.024 },
       google: { input: 5e-3, output: 0.015 },
-      groq: { input: 1e-3, output: 2e-3 }
+      groq: { input: 1e-3, output: 2e-3 },
     };
     const providerCost = costs[provider] || costs.openai;
-    const inputCost = tokens * 0.7 / 1e3 * providerCost.input;
-    const outputCost = tokens * 0.3 / 1e3 * providerCost.output;
+    const inputCost = ((tokens * 0.7) / 1e3) * providerCost.input;
+    const outputCost = ((tokens * 0.3) / 1e3) * providerCost.output;
     return {
       tokens,
       inputCost,
       outputCost,
-      totalCost: inputCost + outputCost
+      totalCost: inputCost + outputCost,
     };
   }
   // Private methods
@@ -272,9 +272,9 @@ ${compressed.summary}`
     const str = JSON.stringify({
       messages: request.messages,
       model: request.model,
-      temperature: request.temperature
+      temperature: request.temperature,
     });
-    return crypto.createHash("md5").update(str).digest("hex");
+    return crypto.createHash('md5').update(str).digest('hex');
   }
   _cloneResult(result) {
     return JSON.parse(JSON.stringify(result));
@@ -285,21 +285,26 @@ ${compressed.summary}`
   }
   _compressMessages(messages, level) {
     switch (level) {
-      case "low":
+      case 'low':
         return {
-          summary: messages.filter((m) => m.role !== "system").map((m) => `${m.role}: ${m.content?.substring(0, 100)}...`).join("\n")
+          summary: messages
+            .filter((m) => m.role !== 'system')
+            .map((m) => `${m.role}: ${m.content?.substring(0, 100)}...`)
+            .join('\n'),
         };
-      case "medium":
+      case 'medium':
         const roles = {};
         messages.forEach((m) => {
           roles[m.role] = (roles[m.role] || 0) + 1;
         });
         return {
-          summary: `Conversation with ${messages.length} messages (${Object.entries(roles).map(([r, c]) => `${c} ${r}`).join(", ")})`
+          summary: `Conversation with ${messages.length} messages (${Object.entries(roles)
+            .map(([r, c]) => `${c} ${r}`)
+            .join(', ')})`,
         };
-      case "high":
+      case 'high':
         return {
-          summary: `${messages.length} messages in conversation history`
+          summary: `${messages.length} messages in conversation history`,
         };
       default:
         return { summary: `${messages.length} messages` };
@@ -335,7 +340,4 @@ ${compressed.summary}`
   }
 }
 var token_optimizer_default = TokenOptimizer;
-export {
-  TokenOptimizer,
-  token_optimizer_default as default
-};
+export { TokenOptimizer, token_optimizer_default as default };

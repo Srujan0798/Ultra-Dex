@@ -1,5 +1,5 @@
-import fs from "fs/promises";
-async function readWithFallback(primaryPath, fallbackPath, encoding = "utf-8") {
+import fs from 'fs/promises';
+async function readWithFallback(primaryPath, fallbackPath, encoding = 'utf-8') {
   try {
     return await fs.readFile(primaryPath, encoding);
   } catch (primaryError) {
@@ -12,13 +12,13 @@ async function readWithFallback(primaryPath, fallbackPath, encoding = "utf-8") {
 async function copyWithFallback(primaryPath, fallbackPath, destinationPath) {
   try {
     await fs.copyFile(primaryPath, destinationPath);
-    return "primary";
+    return 'primary';
   } catch (primaryError) {
     if (!fallbackPath) {
       throw primaryError;
     }
     await fs.copyFile(fallbackPath, destinationPath);
-    return "fallback";
+    return 'fallback';
   }
 }
 async function listWithFallback(primaryPath, fallbackPath) {
@@ -33,8 +33,4 @@ async function listWithFallback(primaryPath, fallbackPath) {
     return { files, sourcePath: fallbackPath };
   }
 }
-export {
-  copyWithFallback,
-  listWithFallback,
-  readWithFallback
-};
+export { copyWithFallback, listWithFallback, readWithFallback };

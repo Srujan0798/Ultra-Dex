@@ -77,9 +77,7 @@ export async function createMedia(
       throw new MediaValidationError('Media size must be greater than 0');
     }
     if (data.size > getMaxMediaSize()) {
-      throw new MediaValidationError(
-        `Media exceeds max size of ${getMaxMediaSize()} bytes`
-      );
+      throw new MediaValidationError(`Media exceeds max size of ${getMaxMediaSize()} bytes`);
     }
   }
 
@@ -182,9 +180,7 @@ export function prepareUpload(
   }
 
   if (typeof options.size === 'number' && options.size > getMaxMediaSize()) {
-    throw new MediaValidationError(
-      `Media exceeds max size of ${getMaxMediaSize()} bytes`
-    );
+    throw new MediaValidationError(`Media exceeds max size of ${getMaxMediaSize()} bytes`);
   }
 
   const base = process.env.MEDIA_UPLOAD_BASE_URL || 'https://uploads.example.com';

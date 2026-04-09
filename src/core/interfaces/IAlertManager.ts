@@ -2,7 +2,7 @@ export enum AlertSeverity {
   LOW = 1,
   MEDIUM = 2,
   HIGH = 3,
-  CRITICAL = 4
+  CRITICAL = 4,
 }
 
 export interface SystemAlert {
@@ -27,5 +27,8 @@ export interface IAlertManager {
   emitAlert(alert: SystemAlert): void;
   getHistory(filter?: AlertFilter): SystemAlert[];
   subscribe(callback: (alert: SystemAlert) => void): () => void;
-  on(event: 'alert' | 'auto-heal:trigger' | 'pager-duty:escalate', callback: (alert: SystemAlert) => void): void;
+  on(
+    event: 'alert' | 'auto-heal:trigger' | 'pager-duty:escalate',
+    callback: (alert: SystemAlert) => void
+  ): void;
 }

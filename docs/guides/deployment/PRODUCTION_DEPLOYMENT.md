@@ -5,6 +5,7 @@
 This guide provides comprehensive instructions for deploying Ultra-Dex v4.3.0 in production environments with all enhanced features.
 
 ### **Architecture Components**
+
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   AI Clients    │    │   MCP Server    │    │   Ultra-Dex     │
@@ -20,11 +21,12 @@ This guide provides comprehensive instructions for deploying Ultra-Dex v4.3.0 in
 ## 🛠️ **PREREQUISITES**
 
 ### **System Requirements**
+
 ```bash
 # Node.js (v18+ required)
 node --version  # Should be >= 18.0.0
 
-# npm (v8+ required) 
+# npm (v8+ required)
 npm --version   # Should be >= 8.0.0
 
 # Docker (for sandbox execution)
@@ -35,6 +37,7 @@ git --version     # Required for context management
 ```
 
 ### **Infrastructure Requirements**
+
 - **CPU**: 4+ cores (8+ recommended)
 - **Memory**: 8GB+ RAM (16GB+ for production)
 - **Storage**: 50GB+ available space
@@ -44,6 +47,7 @@ git --version     # Required for context management
 ## 📦 **INSTALLATION METHODS**
 
 ### **Method 1: Global Installation (Recommended)**
+
 ```bash
 # Install globally
 npm install -g ultra-dex@4.3.0
@@ -54,6 +58,7 @@ ultra-dex --help     # Verify all commands available
 ```
 
 ### **Method 2: Docker Deployment**
+
 ```dockerfile
 # Dockerfile for production
 FROM node:18-alpine
@@ -108,6 +113,7 @@ docker run -d --name ultra-dex \
 ```
 
 ### **Method 3: Kubernetes Deployment**
+
 ```yaml
 # k8s-deployment.yaml
 apiVersion: apps/v1
@@ -127,40 +133,40 @@ spec:
         app: ultra-dex
     spec:
       containers:
-      - name: ultra-dex
-        image: ultra-dex:4.3.0
-        ports:
-        - containerPort: 8866
-        env:
-        - name: OPENAI_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: ultra-dex-secrets
-              key: openai-api-key
-        - name: ANTHROPIC_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: ultra-dex-secrets
-              key: anthropic-api-key
-        resources:
-          requests:
-            memory: "1Gi"
-            cpu: "500m"
-          limits:
-            memory: "2Gi"
-            cpu: "1000m"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8866
-          initialDelaySeconds: 60
-          periodSeconds: 30
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 8866
-          initialDelaySeconds: 30
-          periodSeconds: 10
+        - name: ultra-dex
+          image: ultra-dex:4.3.0
+          ports:
+            - containerPort: 8866
+          env:
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ultra-dex-secrets
+                  key: openai-api-key
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ultra-dex-secrets
+                  key: anthropic-api-key
+          resources:
+            requests:
+              memory: '1Gi'
+              cpu: '500m'
+            limits:
+              memory: '2Gi'
+              cpu: '1000m'
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8866
+            initialDelaySeconds: 60
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8866
+            initialDelaySeconds: 30
+            periodSeconds: 10
 
 ---
 apiVersion: v1
@@ -180,6 +186,7 @@ spec:
 ## 🔐 **SECURITY CONFIGURATION**
 
 ### **API Key Management**
+
 ```bash
 # Create secure .env file
 cat > .env << EOF
@@ -204,26 +211,27 @@ chmod 600 .env
 ```
 
 ### **MCP Server Security**
+
 ```javascript
 // ultra-dex.config.js
 export default {
   mcp: {
     server: {
       port: 8866,
-      host: '0.0.0.0',  // Bind to all interfaces in production
+      host: '0.0.0.0', // Bind to all interfaces in production
       cors: {
-        origin: ['https://your-domain.com'],  // Restrict origins
-        credentials: true
+        origin: ['https://your-domain.com'], // Restrict origins
+        credentials: true,
       },
       auth: {
         enabled: true,
-        apiKey: process.env.ULTRA_DEX_MCP_API_KEY
+        apiKey: process.env.ULTRA_DEX_MCP_API_KEY,
       },
       rateLimit: {
         windowMs: 15 * 60 * 1000, // 15 minutes
-        max: 100 // Limit each IP to 100 requests per windowMs
-      }
-    }
+        max: 100, // Limit each IP to 100 requests per windowMs
+      },
+    },
   },
   security: {
     sandbox: {
@@ -232,21 +240,22 @@ export default {
         enabled: true,
         timeout: 300000, // 5 minutes
         memoryLimit: '1g',
-        cpuLimit: '1.0'
-      }
+        cpuLimit: '1.0',
+      },
     },
     validation: {
       enabled: true,
       inputSanitization: true,
-      outputFiltering: true
-    }
-  }
+      outputFiltering: true,
+    },
+  },
 };
 ```
 
 ## ⚙️ **CONFIGURATION MANAGEMENT**
 
 ### **Production Configuration**
+
 ```json
 {
   "ultra-dex": {
@@ -303,6 +312,7 @@ export default {
 ## 🚀 **DEPLOYMENT WORKFLOW**
 
 ### **1. Environment Setup**
+
 ```bash
 # Clone repository (if needed)
 git clone https://github.com/Srujan0798/Ultra-Dex.git
@@ -317,6 +327,7 @@ npx ultra-dex health check
 ```
 
 ### **2. Configuration**
+
 ```bash
 # Create production config
 npx ultra-dex config init --environment production
@@ -328,6 +339,7 @@ npx ultra-dex config set performance.maxWorkers 8
 ```
 
 ### **3. Database Initialization**
+
 ```bash
 # Initialize databases (if using persistent storage)
 npx ultra-dex db:init
@@ -335,6 +347,7 @@ npx ultra-dex migrate:latest
 ```
 
 ### **4. MCP Server Deployment**
+
 ```bash
 # Start MCP server in production mode
 npx ultra-dex serve --port 8866 --production
@@ -364,6 +377,7 @@ sudo systemctl start ultra-dex
 ```
 
 ### **5. Health Checks**
+
 ```bash
 # Verify MCP server is running
 curl http://localhost:8866/health
@@ -378,6 +392,7 @@ npx ultra-dex performance monitor
 ## 📊 **MONITORING & OBSERVABILITY**
 
 ### **Metrics Collection**
+
 ```bash
 # Enable metrics
 npx ultra-dex config set monitoring.enabled true
@@ -388,6 +403,7 @@ curl http://localhost:8866/metrics
 ```
 
 ### **Logging Configuration**
+
 ```javascript
 // logging.config.js
 export const loggingConfig = {
@@ -398,18 +414,19 @@ export const loggingConfig = {
       type: 'file',
       filename: '/var/log/ultra-dex/app.log',
       maxsize: 5242880, // 5MB
-      maxFiles: 5
+      maxFiles: 5,
     },
     {
       type: 'console',
-      format: '{timestamp} {level} {message}'
-    }
+      format: '{timestamp} {level} {message}',
+    },
   ],
-  silent: false
+  silent: false,
 };
 ```
 
 ### **Alerting Setup**
+
 ```bash
 # Set up alerts for critical metrics
 npx ultra-dex alerts configure --provider slack --webhook YOUR_WEBHOOK_URL
@@ -420,6 +437,7 @@ npx ultra-dex alerts add --metric error-rate --threshold 5 --action notify
 ## 🔧 **TROUBLESHOOTING**
 
 ### **Common Issues**
+
 ```bash
 # MCP server not starting
 npx ultra-dex doctor
@@ -439,6 +457,7 @@ npx ultra-dex verify --full
 ```
 
 ### **Diagnostic Commands**
+
 ```bash
 # Comprehensive system check
 npx ultra-dex diagnostics run
@@ -456,6 +475,7 @@ npx ultra-dex config validate --all
 ## 🔄 **UPGRADE PROCEDURES**
 
 ### **From Previous Versions**
+
 ```bash
 # Backup current configuration
 npx ultra-dex backup create --destination ./backup/
@@ -474,6 +494,7 @@ npx ultra-dex health check
 ## 📋 **VERIFICATION CHECKLIST**
 
 ### **Pre-Deployment**
+
 - [ ] All tests passing (`npm test`)
 - [ ] Security scan passed
 - [ ] Performance benchmarks met
@@ -481,6 +502,7 @@ npx ultra-dex health check
 - [ ] Backup created
 
 ### **Post-Deployment**
+
 - [ ] MCP server accessible
 - [ ] Health checks passing
 - [ ] Context synchronization working
@@ -491,12 +513,14 @@ npx ultra-dex health check
 ## 🆘 **SUPPORT & MAINTENANCE**
 
 ### **Support Channels**
+
 - **Documentation**: https://ultra-dex.github.io/docs
 - **GitHub Issues**: https://github.com/Srujan0798/Ultra-Dex/issues
 - **Community Forum**: [Coming Soon]
 - **Enterprise Support**: [Contact Information]
 
 ### **Maintenance Schedule**
+
 - **Daily**: Health checks and log rotation
 - **Weekly**: Security scans and performance review
 - **Monthly**: Backup verification and updates

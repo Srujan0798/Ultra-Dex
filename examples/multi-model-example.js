@@ -1,7 +1,7 @@
 /**
  * NVIDIA Multi-Model Example
  * Use ONE API key to access ALL models in NVIDIA's catalog
- * 
+ *
  * Usage: node multi-model-example.js
  */
 
@@ -49,7 +49,7 @@ async function testModel(modelId, prompt) {
   try {
     console.log(`\n📝 Testing: ${modelId}`);
     console.log('─'.repeat(50));
-    
+
     const response = await client.chat.completions.create({
       model: modelId,
       messages: [{ role: 'user', content: prompt }],
@@ -67,14 +67,14 @@ async function testModel(modelId, prompt) {
 async function main() {
   console.log('🚀 NVIDIA API - Multi-Model Test');
   console.log('One API Key, Multiple Models!\n');
-  
+
   const prompt = 'Say hello in one sentence';
-  
+
   // Test a few models (comment/uncomment as needed)
   await testModel(MODELS.nemotron, prompt);
   await testModel(MODELS.llama, prompt);
   await testModel(MODELS.mistral, prompt);
-  
+
   console.log('✅ Done! Try other models by uncommenting in the code.');
   console.log('\n📚 Full model list: https://build.nvidia.com/explore/discover');
 }

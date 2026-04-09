@@ -26,11 +26,11 @@ describe('MCP Server - Initialization', () => {
     const validPorts = [3000, 8080, 3002, 8000];
     const invalidPorts = [-1, 0, 70000, 100000];
 
-    validPorts.forEach(port => {
+    validPorts.forEach((port) => {
       assert.ok(port > 0 && port < 65536);
     });
 
-    invalidPorts.forEach(port => {
+    invalidPorts.forEach((port) => {
       assert.ok(port <= 0 || port >= 65536);
     });
   });
@@ -48,7 +48,7 @@ describe('MCP Server - Resources', () => {
     const contextResource = {
       uri: 'ultradex://context',
       name: 'Project Context',
-      mimeType: 'text/markdown'
+      mimeType: 'text/markdown',
     };
 
     assert.ok(contextResource.uri.startsWith('ultradex://'));
@@ -59,7 +59,7 @@ describe('MCP Server - Resources', () => {
     const planResource = {
       uri: 'ultradex://plan',
       name: 'Implementation Plan',
-      mimeType: 'text/markdown'
+      mimeType: 'text/markdown',
     };
 
     assert.ok(planResource.uri.includes('plan'));
@@ -69,7 +69,7 @@ describe('MCP Server - Resources', () => {
     const stateResource = {
       uri: 'ultradex://state',
       name: 'Machine State',
-      mimeType: 'application/json'
+      mimeType: 'application/json',
     };
 
     assert.strictEqual(stateResource.mimeType, 'application/json');
@@ -79,7 +79,7 @@ describe('MCP Server - Resources', () => {
     const graphResource = {
       uri: 'ultradex://graph',
       name: 'Code Property Graph',
-      mimeType: 'application/json'
+      mimeType: 'application/json',
     };
 
     assert.ok(graphResource.uri.includes('graph'));
@@ -94,10 +94,10 @@ describe('MCP Server - Tools', () => {
       inputSchema: {
         type: 'object',
         properties: {
-          command: { type: 'string' }
+          command: { type: 'string' },
         },
-        required: ['command']
-      }
+        required: ['command'],
+      },
     };
 
     assert.strictEqual(tool.name, 'ultra-dex');
@@ -108,9 +108,9 @@ describe('MCP Server - Tools', () => {
     const schema = {
       type: 'object',
       properties: {
-        command: { type: 'string' }
+        command: { type: 'string' },
       },
-      required: ['command']
+      required: ['command'],
     };
 
     assert.strictEqual(schema.type, 'object');
@@ -121,7 +121,7 @@ describe('MCP Server - Tools', () => {
   test('should handle tool errors', () => {
     const toolError = {
       isError: true,
-      content: [{ type: 'text', text: 'Tool execution failed' }]
+      content: [{ type: 'text', text: 'Tool execution failed' }],
     };
 
     assert.strictEqual(toolError.isError, true);
@@ -136,9 +136,9 @@ describe('MCP Server - Protocol', () => {
         protocolVersion: '2024-11-05',
         clientInfo: {
           name: 'test-client',
-          version: '1.0.0'
-        }
-      }
+          version: '1.0.0',
+        },
+      },
     };
 
     assert.strictEqual(initRequest.method, 'initialize');
@@ -151,12 +151,12 @@ describe('MCP Server - Protocol', () => {
       capabilities: {
         resources: true,
         tools: true,
-        prompts: false
+        prompts: false,
       },
       serverInfo: {
         name: 'ultra-dex-mcp',
-        version: '4.0.0'
-      }
+        version: '4.0.0',
+      },
     };
 
     assert.ok(initResponse.capabilities.resources);
@@ -165,7 +165,7 @@ describe('MCP Server - Protocol', () => {
 
   test('should support list resources method', () => {
     const listResourcesRequest = {
-      method: 'resources/list'
+      method: 'resources/list',
     };
 
     assert.ok(listResourcesRequest.method.includes('resources'));
@@ -175,8 +175,8 @@ describe('MCP Server - Protocol', () => {
     const readResourceRequest = {
       method: 'resources/read',
       params: {
-        uri: 'ultradex://context'
-      }
+        uri: 'ultradex://context',
+      },
     };
 
     assert.ok(readResourceRequest.params.uri.startsWith('ultradex://'));
@@ -188,7 +188,7 @@ describe('MCP Server - HTTP/WebSocket', () => {
     const httpConfig = {
       transport: 'http',
       port: 3002,
-      host: 'localhost'
+      host: 'localhost',
     };
 
     assert.strictEqual(httpConfig.transport, 'http');
@@ -198,7 +198,7 @@ describe('MCP Server - HTTP/WebSocket', () => {
   test('should support WebSocket transport', () => {
     const wsConfig = {
       transport: 'websocket',
-      port: 3002
+      port: 3002,
     };
 
     assert.strictEqual(wsConfig.transport, 'websocket');
@@ -209,8 +209,8 @@ describe('MCP Server - HTTP/WebSocket', () => {
       method: 'POST',
       path: '/mcp',
       headers: {
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     };
 
     assert.strictEqual(httpRequest.method, 'POST');
@@ -221,7 +221,7 @@ describe('MCP Server - HTTP/WebSocket', () => {
     const wsMessage = {
       type: 'request',
       id: 1,
-      method: 'resources/list'
+      method: 'resources/list',
     };
 
     assert.strictEqual(wsMessage.type, 'request');
@@ -233,7 +233,7 @@ describe('MCP Server - Error Handling', () => {
   test('should handle invalid protocol version', () => {
     const error = {
       code: -32602,
-      message: 'Unsupported protocol version'
+      message: 'Unsupported protocol version',
     };
 
     assert.ok(error.code < 0);
@@ -243,7 +243,7 @@ describe('MCP Server - Error Handling', () => {
   test('should handle method not found', () => {
     const error = {
       code: -32601,
-      message: 'Method not found'
+      message: 'Method not found',
     };
 
     assert.strictEqual(error.code, -32601);
@@ -252,7 +252,7 @@ describe('MCP Server - Error Handling', () => {
   test('should handle invalid params', () => {
     const error = {
       code: -32602,
-      message: 'Invalid params'
+      message: 'Invalid params',
     };
 
     assert.strictEqual(error.code, -32602);
@@ -261,7 +261,7 @@ describe('MCP Server - Error Handling', () => {
   test('should handle internal errors', () => {
     const error = {
       code: -32603,
-      message: 'Internal error'
+      message: 'Internal error',
     };
 
     assert.strictEqual(error.code, -32603);
@@ -275,9 +275,9 @@ describe('MCP Server - Resource Content', () => {
         {
           uri: 'ultradex://context',
           mimeType: 'text/markdown',
-          text: '# Project Context\n...'
-        }
-      ]
+          text: '# Project Context\n...',
+        },
+      ],
     };
 
     assert.ok(contextContent.contents[0].text.startsWith('#'));
@@ -289,9 +289,9 @@ describe('MCP Server - Resource Content', () => {
         {
           uri: 'ultradex://state',
           mimeType: 'application/json',
-          text: '{"phase": "planning"}'
-        }
-      ]
+          text: '{"phase": "planning"}',
+        },
+      ],
     };
 
     const parsed = JSON.parse(stateContent.contents[0].text);
@@ -304,9 +304,9 @@ describe('MCP Server - Resource Content', () => {
         {
           uri: 'ultradex://context',
           mimeType: 'text/markdown',
-          text: '_No CONTEXT.md found._'
-        }
-      ]
+          text: '_No CONTEXT.md found._',
+        },
+      ],
     };
 
     assert.ok(missingContent.contents[0].text.includes('No'));
@@ -318,8 +318,8 @@ describe('MCP Server - Tool Execution', () => {
     const toolCall = {
       name: 'ultra-dex',
       arguments: {
-        command: 'check'
-      }
+        command: 'check',
+      },
     };
 
     assert.strictEqual(toolCall.name, 'ultra-dex');
@@ -331,9 +331,9 @@ describe('MCP Server - Tool Execution', () => {
       content: [
         {
           type: 'text',
-          text: 'Command executed successfully'
-        }
-      ]
+          text: 'Command executed successfully',
+        },
+      ],
     };
 
     assert.ok(Array.isArray(toolResult.content));
@@ -346,9 +346,9 @@ describe('MCP Server - Tool Execution', () => {
       content: [
         {
           type: 'text',
-          text: 'Error: Command failed'
-        }
-      ]
+          text: 'Error: Command failed',
+        },
+      ],
     };
 
     assert.strictEqual(failureResult.isError, true);
@@ -371,7 +371,7 @@ describe('MCP Server - Edge Cases', () => {
   test('should handle concurrent requests', () => {
     const requests = Array.from({ length: 10 }, (_, i) => ({
       id: i,
-      method: 'resources/list'
+      method: 'resources/list',
     }));
 
     assert.strictEqual(requests.length, 10);

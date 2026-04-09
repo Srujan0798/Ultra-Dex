@@ -33,8 +33,13 @@ export class PerformanceMonitor {
 
     // Update metric counters
     const metricKey = `${requestInfo.method}:${requestInfo.endpoint}`;
-    const existing = this.metrics.get(metricKey) || { count: 0, totalMs: 0, minMs: Infinity, maxMs: 0 };
-    
+    const existing = this.metrics.get(metricKey) || {
+      count: 0,
+      totalMs: 0,
+      minMs: Infinity,
+      maxMs: 0,
+    };
+
     this.metrics.set(metricKey, {
       count: existing.count + 1,
       totalMs: existing.totalMs + durationMs,
@@ -96,8 +101,8 @@ export class PerformanceMonitor {
     };
 
     if (this.requests.length > 0) {
-      const durations = this.requests.map(r => r.durationMs).sort((a, b) => a - b);
-      
+      const durations = this.requests.map((r) => r.durationMs).sort((a, b) => a - b);
+
       summary.avgDurationMs = durations.reduce((a, b) => a + b, 0) / durations.length;
       summary.p50Ms = durations[Math.floor(durations.length * 0.5)] || 0;
       summary.p95Ms = durations[Math.floor(durations.length * 0.95)] || 0;
@@ -127,12 +132,12 @@ export class PerformanceMonitor {
 
   // Get slow requests
   getSlowRequests(thresholdMs = 1000) {
-    return this.requests.filter(r => r.durationMs > thresholdMs);
+    return this.requests.filter((r) => r.durationMs > thresholdMs);
   }
 
   // Get error requests
   getErrorRequests() {
-    return this.requests.filter(r => r.statusCode >= 400);
+    return this.requests.filter((r) => r.statusCode >= 400);
   }
 
   // Clear history
@@ -143,7 +148,7 @@ export class PerformanceMonitor {
 
   // Get request by time range
   getRequestsByTimeRange(startMs, endMs) {
-    return this.requests.filter(r => r.timestamp >= startMs && r.timestamp <= endMs);
+    return this.requests.filter((r) => r.timestamp >= startMs && r.timestamp <= endMs);
   }
 }
 

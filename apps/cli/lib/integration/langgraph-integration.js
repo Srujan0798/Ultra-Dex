@@ -1,34 +1,51 @@
 // Mock LangChain imports when packages are corrupted
 class MockStateGraph {
-  constructor() { this.nodes = new Map(); }
-  addNode(name, fn) { this.nodes.set(name, fn); return this; }
-  compile() { return { invoke: async () => ({}) }; }
+  constructor() {
+    this.nodes = new Map();
+  }
+  addNode(name, fn) {
+    this.nodes.set(name, fn);
+    return this;
+  }
+  compile() {
+    return { invoke: async () => ({}) };
+  }
 }
 
 class MockChatOpenAI {
-  constructor(config) { this.config = config; }
-  async invoke() { return { content: "Mock response" }; }
+  constructor(config) {
+    this.config = config;
+  }
+  async invoke() {
+    return { content: 'Mock response' };
+  }
 }
 
 class MockChatAnthropic {
-  constructor(config) { this.config = config; }
-  async invoke() { return { content: "Mock response" }; }
+  constructor(config) {
+    this.config = config;
+  }
+  async invoke() {
+    return { content: 'Mock response' };
+  }
 }
 
 class MockMessage {
-  constructor(content) { this.content = content; }
+  constructor(content) {
+    this.content = content;
+  }
 }
 
 // Use mocks
 const StateGraph = MockStateGraph;
-const START = "START";
-const END = "END";
+const START = 'START';
+const END = 'END';
 const ChatOpenAI = MockChatOpenAI;
 const ChatAnthropic = MockChatAnthropic;
 const HumanMessage = MockMessage;
 const SystemMessage = MockMessage;
-import axios from "axios";
-import fs from "fs";
+import axios from 'axios';
+import fs from 'fs';
 class LangGraphIntegration {
   graph;
   nodes;
@@ -39,12 +56,12 @@ class LangGraphIntegration {
     this.nodes = /* @__PURE__ */ new Map();
     this.edges = [];
     this.state = {
-      input: "",
-      output: "",
+      input: '',
+      output: '',
       context: {},
       errors: [],
       completedNodes: [],
-      currentStep: ""
+      currentStep: '',
     };
     this.llmProviders = /* @__PURE__ */ new Map();
   }
@@ -53,16 +70,22 @@ class LangGraphIntegration {
    */
   async initializeProviders(config) {
     if (config.openai) {
-      this.llmProviders.set("openai", new ChatOpenAI({
-        apiKey: config.openai,
-        modelName: "gpt-4"
-      }));
+      this.llmProviders.set(
+        'openai',
+        new ChatOpenAI({
+          apiKey: config.openai,
+          modelName: 'gpt-4',
+        })
+      );
     }
     if (config.anthropic) {
-      this.llmProviders.set("anthropic", new ChatAnthropic({
-        apiKey: config.anthropic,
-        modelName: "claude-3-opus-20240229"
-      }));
+      this.llmProviders.set(
+        'anthropic',
+        new ChatAnthropic({
+          apiKey: config.anthropic,
+          modelName: 'claude-3-opus-20240229',
+        })
+      );
     }
   }
   /**
@@ -83,9 +106,9 @@ class LangGraphIntegration {
   createPlannerNode(id, config) {
     return {
       id,
-      type: "planner",
+      type: 'planner',
       config: config || {},
-      dependencies: []
+      dependencies: [],
     };
   }
   /**
@@ -94,9 +117,9 @@ class LangGraphIntegration {
   createExecutorNode(id, config) {
     return {
       id,
-      type: "executor",
+      type: 'executor',
       config: config || {},
-      dependencies: []
+      dependencies: [],
     };
   }
   /**
@@ -105,9 +128,9 @@ class LangGraphIntegration {
   createReviewerNode(id, config) {
     return {
       id,
-      type: "reviewer",
+      type: 'reviewer',
       config: config || {},
-      dependencies: []
+      dependencies: [],
     };
   }
   /**
@@ -116,9 +139,9 @@ class LangGraphIntegration {
   createDebuggerNode(id, config) {
     return {
       id,
-      type: "debugger",
+      type: 'debugger',
       config: config || {},
-      dependencies: []
+      dependencies: [],
     };
   }
   /**
@@ -127,9 +150,9 @@ class LangGraphIntegration {
   createArchitectNode(id, config) {
     return {
       id,
-      type: "architect",
+      type: 'architect',
       config: config || {},
-      dependencies: []
+      dependencies: [],
     };
   }
   /**
@@ -137,13 +160,13 @@ class LangGraphIntegration {
    */
   async executePlannerNode(node, state) {
     try {
-      const llm = this.llmProviders.get(node.config.provider || "openai");
+      const llm = this.llmProviders.get(node.config.provider || 'openai');
       if (!llm) {
         throw new Error(`No LLM provider configured for node ${node.id}`);
       }
       const messages = [
         new SystemMessage(`You are a project planner. Create a detailed plan for: ${state.input}`),
-        new HumanMessage(state.input)
+        new HumanMessage(state.input),
       ];
       const response = await llm.invoke(messages);
       state.context.plan = response.content;
@@ -160,13 +183,13 @@ class LangGraphIntegration {
    */
   async executeExecutorNode(node, state) {
     try {
-      const llm = this.llmProviders.get(node.config.provider || "openai");
+      const llm = this.llmProviders.get(node.config.provider || 'openai');
       if (!llm) {
         throw new Error(`No LLM provider configured for node ${node.id}`);
       }
       const messages = [
         new SystemMessage(`You are a code executor. Implement the plan: ${state.context.plan}`),
-        new HumanMessage(`Execute this plan and return the code: ${state.context.plan}`)
+        new HumanMessage(`Execute this plan and return the code: ${state.context.plan}`),
       ];
       const response = await llm.invoke(messages);
       state.output = response.content;
@@ -183,13 +206,13 @@ class LangGraphIntegration {
    */
   async executeReviewerNode(node, state) {
     try {
-      const llm = this.llmProviders.get(node.config.provider || "openai");
+      const llm = this.llmProviders.get(node.config.provider || 'openai');
       if (!llm) {
         throw new Error(`No LLM provider configured for node ${node.id}`);
       }
       const messages = [
         new SystemMessage(`You are a code reviewer. Review the following code: ${state.output}`),
-        new HumanMessage(`Review this code and provide feedback: ${state.output}`)
+        new HumanMessage(`Review this code and provide feedback: ${state.output}`),
       ];
       const response = await llm.invoke(messages);
       state.context.review = response.content;
@@ -206,13 +229,15 @@ class LangGraphIntegration {
    */
   async executeDebuggerNode(node, state) {
     try {
-      const llm = this.llmProviders.get(node.config.provider || "openai");
+      const llm = this.llmProviders.get(node.config.provider || 'openai');
       if (!llm) {
         throw new Error(`No LLM provider configured for node ${node.id}`);
       }
       const messages = [
-        new SystemMessage(`You are a debugger. Find and fix issues in the following code: ${state.output}`),
-        new HumanMessage(`Debug this code and return fixes: ${state.output}`)
+        new SystemMessage(
+          `You are a debugger. Find and fix issues in the following code: ${state.output}`
+        ),
+        new HumanMessage(`Debug this code and return fixes: ${state.output}`),
       ];
       const response = await llm.invoke(messages);
       state.output = response.content;
@@ -229,13 +254,15 @@ class LangGraphIntegration {
    */
   async executeArchitectNode(node, state) {
     try {
-      const llm = this.llmProviders.get(node.config.provider || "openai");
+      const llm = this.llmProviders.get(node.config.provider || 'openai');
       if (!llm) {
         throw new Error(`No LLM provider configured for node ${node.id}`);
       }
       const messages = [
-        new SystemMessage(`You are a system architect. Design the architecture for: ${state.input}`),
-        new HumanMessage(`Create architecture for: ${state.input}`)
+        new SystemMessage(
+          `You are a system architect. Design the architecture for: ${state.input}`
+        ),
+        new HumanMessage(`Create architecture for: ${state.input}`),
       ];
       const response = await llm.invoke(messages);
       state.context.architecture = response.content;
@@ -275,30 +302,30 @@ class LangGraphIntegration {
     for (const nodeId of sortedNodes) {
       const node = this.nodes.get(nodeId);
       if (!node) continue;
-      const dependenciesSatisfied = node.dependencies.every(
-        (dep) => this.state.completedNodes.includes(dep)
+      const dependenciesSatisfied = node.dependencies.every((dep) =>
+        this.state.completedNodes.includes(dep)
       );
       if (!dependenciesSatisfied) {
         this.state.errors.push(`Dependencies not satisfied for node ${nodeId}`);
         continue;
       }
       switch (node.type) {
-        case "planner":
+        case 'planner':
           this.state = await this.executePlannerNode(node, this.state);
           break;
-        case "executor":
+        case 'executor':
           this.state = await this.executeExecutorNode(node, this.state);
           break;
-        case "reviewer":
+        case 'reviewer':
           this.state = await this.executeReviewerNode(node, this.state);
           break;
-        case "debugger":
+        case 'debugger':
           this.state = await this.executeDebuggerNode(node, this.state);
           break;
-        case "architect":
+        case 'architect':
           this.state = await this.executeArchitectNode(node, this.state);
           break;
-        case "custom":
+        case 'custom':
           this.state = await this.executeCustomNode(node, this.state);
           break;
         default:
@@ -320,7 +347,7 @@ class LangGraphIntegration {
     const temp = /* @__PURE__ */ new Set();
     const visit = (nodeId) => {
       if (visited.has(nodeId)) return;
-      if (temp.has(nodeId)) throw new Error("Circular dependency detected");
+      if (temp.has(nodeId)) throw new Error('Circular dependency detected');
       temp.add(nodeId);
       const node = this.nodes.get(nodeId);
       if (node) {
@@ -362,24 +389,24 @@ class LangGraphIntegration {
         context: null,
         errors: null,
         completedNodes: null,
-        currentStep: null
-      }
+        currentStep: null,
+      },
     });
     for (const node of nodes) {
       workflow.addNode(node.id, async (state) => {
         const currentState = { ...state };
         switch (node.type) {
-          case "planner":
+          case 'planner':
             return await this.executePlannerNode(node, currentState);
-          case "executor":
+          case 'executor':
             return await this.executeExecutorNode(node, currentState);
-          case "reviewer":
+          case 'reviewer':
             return await this.executeReviewerNode(node, currentState);
-          case "debugger":
+          case 'debugger':
             return await this.executeDebuggerNode(node, currentState);
-          case "architect":
+          case 'architect':
             return await this.executeArchitectNode(node, currentState);
-          case "custom":
+          case 'custom':
             return await this.executeCustomNode(node, currentState);
           default:
             return currentState;
@@ -389,8 +416,8 @@ class LangGraphIntegration {
     for (const edge of edges) {
       workflow.addEdge(edge.from, edge.to);
     }
-    workflow.addEdge(START, nodes[0]?.id || "start");
-    workflow.addEdge(nodes[nodes.length - 1]?.id || "end", END);
+    workflow.addEdge(START, nodes[0]?.id || 'start');
+    workflow.addEdge(nodes[nodes.length - 1]?.id || 'end', END);
     return workflow.compile();
   }
   /**
@@ -399,11 +426,11 @@ class LangGraphIntegration {
   async executeWorkflow(input, workflowConfig) {
     const initialState = {
       input,
-      output: "",
+      output: '',
       context: {},
       errors: [],
       completedNodes: [],
-      currentStep: "start"
+      currentStep: 'start',
     };
     const graph = await this.createStateGraph(workflowConfig.nodes, workflowConfig.edges);
     const result = await graph.invoke(initialState);
@@ -417,10 +444,10 @@ class LangGraphIntegration {
       nodes: Array.from(this.nodes.values()).map((node) => ({
         id: node.id,
         type: node.type,
-        completed: this.state.completedNodes.includes(node.id)
+        completed: this.state.completedNodes.includes(node.id),
       })),
       edges: this.edges,
-      state: this.state
+      state: this.state,
     };
   }
   /**
@@ -430,7 +457,7 @@ class LangGraphIntegration {
     const graphData = {
       nodes: Array.from(this.nodes.values()),
       edges: this.edges,
-      state: this.state
+      state: this.state,
     };
     fs.writeFileSync(filePath, JSON.stringify(graphData, null, 2));
   }
@@ -438,7 +465,7 @@ class LangGraphIntegration {
    * Load graph from file
    */
   loadGraph(filePath) {
-    const graphData = JSON.parse(fs.readFileSync(filePath, "utf8"));
+    const graphData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     this.nodes.clear();
     for (const node of graphData.nodes) {
       this.nodes.set(node.id, node);
@@ -448,7 +475,4 @@ class LangGraphIntegration {
   }
 }
 var langgraph_integration_default = LangGraphIntegration;
-export {
-  LangGraphIntegration,
-  langgraph_integration_default as default
-};
+export { LangGraphIntegration, langgraph_integration_default as default };

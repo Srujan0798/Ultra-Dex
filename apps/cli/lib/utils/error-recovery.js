@@ -24,7 +24,8 @@ const RECOVERY_STRATEGIES = {
 };
 
 function emitRecoveryEvent(type, level, message, payload = {}) {
-  const writer = typeof logger[level] === 'function' ? logger[level].bind(logger) : logger.info.bind(logger);
+  const writer =
+    typeof logger[level] === 'function' ? logger[level].bind(logger) : logger.info.bind(logger);
   writer(type, {
     run_id: process.env.ULTRA_DEX_RUN_ID,
     module: 'error-recovery',
@@ -49,15 +50,25 @@ class CircuitBreaker {
     if (this.state === CIRCUIT_STATES.OPEN) {
       if (Date.now() >= this.nextAttemptTime) {
         this.state = CIRCUIT_STATES.HALF_OPEN;
-        emitRecoveryEvent('recovery.circuit', 'info', `Circuit breaker ${this.name} entering half-open state`, {
-          circuit: this.name,
-          state: this.state,
-        });
+        emitRecoveryEvent(
+          'recovery.circuit',
+          'info',
+          `Circuit breaker ${this.name} entering half-open state`,
+          {
+            circuit: this.name,
+            state: this.state,
+          }
+        );
       } else {
-        emitRecoveryEvent('recovery.circuit', 'warn', `Circuit breaker ${this.name} is open, rejecting request`, {
-          circuit: this.name,
-          state: this.state,
-        });
+        emitRecoveryEvent(
+          'recovery.circuit',
+          'warn',
+          `Circuit breaker ${this.name} is open, rejecting request`,
+          {
+            circuit: this.name,
+            state: this.state,
+          }
+        );
         throw new Error(`Circuit breaker ${this.name} is open`);
       }
     }
@@ -67,10 +78,15 @@ class CircuitBreaker {
 
       if (this.state === CIRCUIT_STATES.HALF_OPEN) {
         this.close(); // Success in half-open state closes the circuit
-        emitRecoveryEvent('recovery.circuit', 'info', `Circuit breaker ${this.name} closed after successful call`, {
-          circuit: this.name,
-          state: this.state,
-        });
+        emitRecoveryEvent(
+          'recovery.circuit',
+          'info',
+          `Circuit breaker ${this.name} closed after successful call`,
+          {
+            circuit: this.name,
+            state: this.state,
+          }
+        );
       }
 
       return result;
@@ -86,12 +102,17 @@ class CircuitBreaker {
 
     if (this.failureCount >= this.failureThreshold) {
       this.open();
-      emitRecoveryEvent('recovery.circuit', 'error', `Circuit breaker ${this.name} opened due to failures`, {
-        circuit: this.name,
-        state: this.state,
-        failureCount: this.failureCount,
-        error: error.message,
-      });
+      emitRecoveryEvent(
+        'recovery.circuit',
+        'error',
+        `Circuit breaker ${this.name} opened due to failures`,
+        {
+          circuit: this.name,
+          state: this.state,
+          failureCount: this.failureCount,
+          error: error.message,
+        }
+      );
     }
   }
 
@@ -194,11 +215,16 @@ class ErrorRecoveryManager {
     if (recoveryOptions.circuitBreaker) {
       const circuitBreaker = this.getCircuitBreaker(serviceName);
       if (circuitBreaker && circuitBreaker.getStatus().state === CIRCUIT_STATES.OPEN) {
-        emitRecoveryEvent('recovery.operation', 'warn', `Operation blocked by open circuit breaker: ${serviceName}`, {
-          service: serviceName,
-          strategy: recoveryOptions.strategy,
-          status: 'blocked',
-        });
+        emitRecoveryEvent(
+          'recovery.operation',
+          'warn',
+          `Operation blocked by open circuit breaker: ${serviceName}`,
+          {
+            service: serviceName,
+            strategy: recoveryOptions.strategy,
+            status: 'blocked',
+          }
+        );
 
         // Try fallback if available
         const fallback = this.fallbackHandlers.get(serviceName) || recoveryOptions.fallback;
@@ -281,17 +307,27 @@ class ErrorRecoveryManager {
     if (fallback) {
       try {
         const result = await fallback();
-        emitRecoveryEvent('recovery.fallback', 'info', `Fallback executed after retries failed: ${serviceName}`, {
-          service: serviceName,
-          retries: retryCount - 1,
-        });
+        emitRecoveryEvent(
+          'recovery.fallback',
+          'info',
+          `Fallback executed after retries failed: ${serviceName}`,
+          {
+            service: serviceName,
+            retries: retryCount - 1,
+          }
+        );
         return result;
       } catch (fallbackError) {
-        emitRecoveryEvent('recovery.fallback', 'error', `Both operation and fallback failed: ${serviceName}`, {
-          service: serviceName,
-          originalError: lastError.message,
-          fallbackError: fallbackError.message,
-        });
+        emitRecoveryEvent(
+          'recovery.fallback',
+          'error',
+          `Both operation and fallback failed: ${serviceName}`,
+          {
+            service: serviceName,
+            originalError: lastError.message,
+            fallbackError: fallbackError.message,
+          }
+        );
       }
     }
 
@@ -309,10 +345,15 @@ class ErrorRecoveryManager {
         fallback: degradedOperation,
       });
     } catch (error) {
-      emitRecoveryEvent('recovery.degraded_mode', 'error', `Degraded mode operation failed: ${serviceName}`, {
-        service: serviceName,
-        error: error.message,
-      });
+      emitRecoveryEvent(
+        'recovery.degraded_mode',
+        'error',
+        `Degraded mode operation failed: ${serviceName}`,
+        {
+          service: serviceName,
+          error: error.message,
+        }
+      );
       throw error;
     }
   }
@@ -354,14 +395,24 @@ class ErrorRecoveryManager {
   setDegradedMode(serviceName, degraded = true) {
     if (degraded) {
       this.degradedServices.add(serviceName);
-      emitRecoveryEvent('recovery.degraded_mode', 'warn', `Service set to degraded mode: ${serviceName}`, {
-        service: serviceName,
-      });
+      emitRecoveryEvent(
+        'recovery.degraded_mode',
+        'warn',
+        `Service set to degraded mode: ${serviceName}`,
+        {
+          service: serviceName,
+        }
+      );
     } else {
       this.degradedServices.delete(serviceName);
-      emitRecoveryEvent('recovery.degraded_mode', 'info', `Service restored from degraded mode: ${serviceName}`, {
-        service: serviceName,
-      });
+      emitRecoveryEvent(
+        'recovery.degraded_mode',
+        'info',
+        `Service restored from degraded mode: ${serviceName}`,
+        {
+          service: serviceName,
+        }
+      );
     }
   }
 
@@ -391,12 +442,17 @@ class ErrorRecoveryManager {
       this.errorHistory = this.errorHistory.slice(-this.maxErrorHistory);
     }
 
-    emitRecoveryEvent('recovery.operation', status === 'failure' ? 'error' : 'info', `Recovery operation ${status}: ${serviceName}`, {
-      serviceName,
-      status,
-      duration,
-      error: error ? error.message : null,
-    });
+    emitRecoveryEvent(
+      'recovery.operation',
+      status === 'failure' ? 'error' : 'info',
+      `Recovery operation ${status}: ${serviceName}`,
+      {
+        serviceName,
+        status,
+        duration,
+        error: error ? error.message : null,
+      }
+    );
   }
 
   /**

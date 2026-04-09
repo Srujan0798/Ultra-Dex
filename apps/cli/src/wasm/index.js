@@ -12,12 +12,7 @@ export function createWasmRuntime(options = {}) {
 
 export async function runWasmModule(
   modulePath,
-  {
-    capabilities = {},
-    exportName = 'main',
-    args = [],
-    baseDir = process.cwd(),
-  } = {}
+  { capabilities = {}, exportName = 'main', args = [], baseDir = process.cwd() } = {}
 ) {
   const runtime = createWasmRuntime({ baseDir });
   const loaded = await runtime.loadModule(modulePath, capabilities);

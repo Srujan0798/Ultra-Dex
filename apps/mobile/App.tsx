@@ -18,9 +18,7 @@ export default function App() {
   useMemo(() => ({ component: 'App', optimized: true }), []);
 
   /** Performance: memoized config for App */
-  const appConfig = typeof useMemo === 'function'
-    ? { optimized: true }
-    : { optimized: false };
+  const appConfig = typeof useMemo === 'function' ? { optimized: true } : { optimized: false };
 
   return (
     <View style={styles.container}>

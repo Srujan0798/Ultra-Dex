@@ -74,10 +74,10 @@ async function main() {
     // Mandatory governance gate
     // Check if file exists before running to avoid crash if path is wrong or checked out partially
     if (fs.existsSync('gitFail/compliance/check-governance-files.js')) {
-        run('node gitFail/compliance/check-governance-files.js');
-        results.push({ check: 'governance', status: 'passed' });
+      run('node gitFail/compliance/check-governance-files.js');
+      results.push({ check: 'governance', status: 'passed' });
     } else {
-        console.log('::warning::Governance check skipped (script not found)');
+      console.log('::warning::Governance check skipped (script not found)');
     }
 
     for (const agent of agents) {
@@ -99,26 +99,26 @@ async function main() {
 
       if (agent === 'code-reviewer') {
         try {
-            // Ensure dependencies are installed before testing
-            // Using --legacy-peer-deps because this environment might be strict
-            // But usually this action runs AFTER install.
-            // If not, we might fail. Assuming installed.
-            run('npm run -s test:push:smoke');
-            results.push({ agent, status: 'passed', summary: 'Push smoke suite passed' });
+          // Ensure dependencies are installed before testing
+          // Using --legacy-peer-deps because this environment might be strict
+          // But usually this action runs AFTER install.
+          // If not, we might fail. Assuming installed.
+          run('npm run -s test:push:smoke');
+          results.push({ agent, status: 'passed', summary: 'Push smoke suite passed' });
         } catch (e) {
-             passed = false;
-             results.push({ agent, status: 'failed', summary: 'Push smoke suite failed' });
+          passed = false;
+          results.push({ agent, status: 'failed', summary: 'Push smoke suite failed' });
         }
         continue;
       }
 
       if (agent === 'test-generator') {
         try {
-            run('npm run -s test:cli');
-            results.push({ agent, status: 'passed', summary: 'CLI suite passed' });
+          run('npm run -s test:cli');
+          results.push({ agent, status: 'passed', summary: 'CLI suite passed' });
         } catch (e) {
-            passed = false;
-            results.push({ agent, status: 'failed', summary: 'CLI suite failed' });
+          passed = false;
+          results.push({ agent, status: 'failed', summary: 'CLI suite failed' });
         }
         continue;
       }

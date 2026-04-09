@@ -1,17 +1,17 @@
-import { EventEmitter } from "events";
-import fs from "fs/promises";
-import path from "path";
-import { logger } from '../utils/logging.js';
+import { EventEmitter } from 'events';
+import fs from 'fs/promises';
+import path from 'path';
+import { logger } from '../../utils/logging.js';
 class ObservabilitySystem extends EventEmitter {
   constructor(config = {}) {
     super();
     this.config = {
-      logPath: config.logPath || "./data/observability",
+      logPath: config.logPath || './data/observability',
       maxTraces: config.maxTraces || 1e4,
       retentionDays: config.retentionDays || 30,
       sampleRate: config.sampleRate || 1,
       enableConsole: config.enableConsole !== false,
-      ...config
+      ...config,
     };
     this.traces = [];
     this.spans = /* @__PURE__ */ new Map();
@@ -21,7 +21,7 @@ class ObservabilitySystem extends EventEmitter {
       requests: 0,
       errors: 0,
       latency: [],
-      activeSessions: 0
+      activeSessions: 0,
     };
     this.initialized = false;
   }
@@ -33,7 +33,7 @@ class ObservabilitySystem extends EventEmitter {
     this._startMetricsCollection();
     this._startCleanupJob();
     this.initialized = true;
-    this.emit("initialized");
+    this.emit('initialized');
     return true;
   }
   /**
@@ -51,14 +51,14 @@ class ObservabilitySystem extends EventEmitter {
       context,
       startedAt: Date.now(),
       spans: [],
-      status: "running",
-      tags: context.tags || {}
+      status: 'running',
+      tags: context.tags || {},
     };
     this.traces.push(trace);
     if (this.traces.length > this.config.maxTraces) {
       this.traces = this.traces.slice(-this.config.maxTraces);
     }
-    this.emit("trace:started", { traceId, name });
+    this.emit('trace:started', { traceId, name });
     return trace;
   }
   /**
@@ -70,8 +70,7 @@ class ObservabilitySystem extends EventEmitter {
    */
   startSpan(traceId, name, context = {}) {
     const trace = this.traces.find((t) => t.id === traceId);
-    if (!trace)
-      return null;
+    if (!trace) return null;
     const spanId = this._generateSpanId();
     const span = {
       id: spanId,
@@ -81,9 +80,9 @@ class ObservabilitySystem extends EventEmitter {
       startedAt: Date.now(),
       endedAt: null,
       duration: null,
-      status: "running",
+      status: 'running',
       events: [],
-      tags: context.tags || {}
+      tags: context.tags || {},
     };
     this.spans.set(spanId, span);
     trace.spans.push(span);
@@ -96,14 +95,13 @@ class ObservabilitySystem extends EventEmitter {
    */
   endSpan(spanId, result = {}) {
     const span = this.spans.get(spanId);
-    if (!span)
-      return;
+    if (!span) return;
     span.endedAt = Date.now();
     span.duration = span.endedAt - span.startedAt;
-    span.status = result.error ? "error" : "success";
+    span.status = result.error ? 'error' : 'success';
     span.result = result;
     this.spans.delete(spanId);
-    this.emit("span:ended", { spanId, duration: span.duration });
+    this.emit('span:ended', { spanId, duration: span.duration });
   }
   /**
    * End a trace
@@ -112,21 +110,19 @@ class ObservabilitySystem extends EventEmitter {
    */
   async endTrace(traceId, result = {}) {
     const trace = this.traces.find((t) => t.id === traceId);
-    if (!trace)
-      return;
+    if (!trace) return;
     trace.endedAt = Date.now();
     trace.duration = trace.endedAt - trace.startedAt;
-    trace.status = result.error ? "error" : "success";
+    trace.status = result.error ? 'error' : 'success';
     trace.result = result;
     this.dashboard.requests++;
     this.dashboard.latency.push(trace.duration);
-    if (result.error)
-      this.dashboard.errors++;
+    if (result.error) this.dashboard.errors++;
     if (this.dashboard.latency.length > 1e3) {
       this.dashboard.latency = this.dashboard.latency.slice(-1e3);
     }
     await this._persistTrace(trace);
-    this.emit("trace:ended", { traceId, duration: trace.duration });
+    this.emit('trace:ended', { traceId, duration: trace.duration });
   }
   /**
    * Add event to span
@@ -136,12 +132,11 @@ class ObservabilitySystem extends EventEmitter {
    */
   addEvent(spanId, name, data = {}) {
     const span = this.spans.get(spanId);
-    if (!span)
-      return;
+    if (!span) return;
     span.events.push({
       name,
       timestamp: Date.now(),
-      data
+      data,
     });
   }
   /**
@@ -160,7 +155,7 @@ class ObservabilitySystem extends EventEmitter {
         count: 0,
         sum: 0,
         min: Infinity,
-        max: -Infinity
+        max: -Infinity,
       });
     }
     const metric = this.metrics.get(key);
@@ -181,24 +176,24 @@ class ObservabilitySystem extends EventEmitter {
    */
   log(level, message, context = {}) {
     const entry = {
-      timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
       level,
       message,
       context,
-      service: context.service || "ultra-dex"
+      service: context.service || 'ultra-dex',
     };
     if (this.config.enableConsole) {
       const colors = {
-        debug: "\x1B[36m",
-        info: "\x1B[32m",
-        warn: "\x1B[33m",
-        error: "\x1B[31m"
+        debug: '\x1B[36m',
+        info: '\x1B[32m',
+        warn: '\x1B[33m',
+        error: '\x1B[31m',
       };
       logger.log(
-        `${colors[level] || ""}[${entry.timestamp}] ${level.toUpperCase()}: ${message}\x1B[0m`
+        `${colors[level] || ''}[${entry.timestamp}] ${level.toUpperCase()}: ${message}\x1B[0m`
       );
     }
-    this.emit("log", entry);
+    this.emit('log', entry);
   }
   /**
    * Create an alert
@@ -213,14 +208,14 @@ class ObservabilitySystem extends EventEmitter {
       severity,
       // 'critical', 'high', 'medium', 'low'
       data,
-      createdAt: (/* @__PURE__ */ new Date()).toISOString(),
-      acknowledged: false
+      createdAt: /* @__PURE__ */ new Date().toISOString(),
+      acknowledged: false,
     };
     this.alerts.push(alert);
     if (this.alerts.length > 1e3) {
       this.alerts = this.alerts.slice(-1e3);
     }
-    this.emit("alert", alert);
+    this.emit('alert', alert);
     return alert;
   }
   /**
@@ -256,15 +251,14 @@ class ObservabilitySystem extends EventEmitter {
   getMetricStats(name, tags = {}) {
     const key = this._metricKey(name, tags);
     const metric = this.metrics.get(key);
-    if (!metric)
-      return null;
+    if (!metric) return null;
     return {
       name: metric.name,
       count: metric.count,
       average: metric.sum / metric.count,
       min: metric.min,
       max: metric.max,
-      tags: metric.tags
+      tags: metric.tags,
     };
   }
   /**
@@ -273,17 +267,24 @@ class ObservabilitySystem extends EventEmitter {
    */
   getDashboard() {
     const latencies = this.dashboard.latency;
-    const avgLatency = latencies.length > 0 ? latencies.reduce((a, b) => a + b, 0) / latencies.length : 0;
-    const p95Latency = latencies.length > 0 ? latencies.sort((a, b) => a - b)[Math.floor(latencies.length * 0.95)] : 0;
-    const errorRate = this.dashboard.requests > 0 ? (this.dashboard.errors / this.dashboard.requests * 100).toFixed(2) : 0;
+    const avgLatency =
+      latencies.length > 0 ? latencies.reduce((a, b) => a + b, 0) / latencies.length : 0;
+    const p95Latency =
+      latencies.length > 0
+        ? latencies.sort((a, b) => a - b)[Math.floor(latencies.length * 0.95)]
+        : 0;
+    const errorRate =
+      this.dashboard.requests > 0
+        ? ((this.dashboard.errors / this.dashboard.requests) * 100).toFixed(2)
+        : 0;
     return {
       ...this.dashboard,
       averageLatency: Math.round(avgLatency),
       p95Latency,
       errorRate: `${errorRate}%`,
-      activeTraces: this.traces.filter((t) => t.status === "running").length,
+      activeTraces: this.traces.filter((t) => t.status === 'running').length,
       activeSpans: this.spans.size,
-      unacknowledgedAlerts: this.alerts.filter((a) => !a.acknowledged).length
+      unacknowledgedAlerts: this.alerts.filter((a) => !a.acknowledged).length,
     };
   }
   /**
@@ -309,7 +310,7 @@ class ObservabilitySystem extends EventEmitter {
     const alert = this.alerts.find((a) => a.id === alertId);
     if (alert) {
       alert.acknowledged = true;
-      alert.acknowledgedAt = (/* @__PURE__ */ new Date()).toISOString();
+      alert.acknowledgedAt = /* @__PURE__ */ new Date().toISOString();
     }
   }
   /**
@@ -319,8 +320,7 @@ class ObservabilitySystem extends EventEmitter {
    */
   generateReport(traceId) {
     const trace = this.getTrace(traceId);
-    if (!trace)
-      return null;
+    if (!trace) return null;
     return {
       traceId: trace.id,
       name: trace.name,
@@ -331,20 +331,20 @@ class ObservabilitySystem extends EventEmitter {
         name: span.name,
         duration: span.duration,
         status: span.status,
-        eventCount: span.events.length
+        eventCount: span.events.length,
       })),
-      events: trace.spans.flatMap(
-        (s) => s.events.map((e) => ({
+      events: trace.spans.flatMap((s) =>
+        s.events.map((e) => ({
           span: s.name,
-          ...e
+          ...e,
         }))
-      )
+      ),
     };
   }
   // Private methods
   _ensureInitialized() {
     if (!this.initialized) {
-      throw new Error("Observability not initialized. Call initialize() first.");
+      throw new Error('Observability not initialized. Call initialize() first.');
     }
   }
   async _persistTrace(trace) {
@@ -354,13 +354,13 @@ class ObservabilitySystem extends EventEmitter {
   _startMetricsCollection() {
     setInterval(() => {
       const memUsage = process.memoryUsage();
-      this.recordMetric("system.memory.heapUsed", memUsage.heapUsed);
-      this.recordMetric("system.memory.heapTotal", memUsage.heapTotal);
-      this.recordMetric("system.memory.rss", memUsage.rss);
+      this.recordMetric('system.memory.heapUsed', memUsage.heapUsed);
+      this.recordMetric('system.memory.heapTotal', memUsage.heapTotal);
+      this.recordMetric('system.memory.rss', memUsage.rss);
       if (memUsage.heapUsed > 1024 * 1024 * 1024) {
-        this.createAlert("High Memory Usage", "high", {
+        this.createAlert('High Memory Usage', 'high', {
           heapUsed: memUsage.heapUsed,
-          threshold: 1024 * 1024 * 1024
+          threshold: 1024 * 1024 * 1024,
         });
       }
     }, 6e4);
@@ -373,7 +373,7 @@ class ObservabilitySystem extends EventEmitter {
         try {
           const files = await fs.readdir(this.config.logPath);
           for (const file of files) {
-            if (file.startsWith("trace-")) {
+            if (file.startsWith('trace-')) {
               const filePath = path.join(this.config.logPath, file);
               const stats = await fs.stat(filePath);
               if (stats.mtime.getTime() < cutoff) {
@@ -381,14 +381,16 @@ class ObservabilitySystem extends EventEmitter {
               }
             }
           }
-        } catch (_error) {
-        }
+        } catch (_error) {}
       },
       24 * 60 * 60 * 1e3
     );
   }
   _metricKey(name, tags) {
-    const tagString = Object.entries(tags).sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => `${k}=${v}`).join(",");
+    const tagString = Object.entries(tags)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([k, v]) => `${k}=${v}`)
+      .join(',');
     return tagString ? `${name}:${tagString}` : name;
   }
   _generateTraceId() {
@@ -402,7 +404,4 @@ class ObservabilitySystem extends EventEmitter {
   }
 }
 var observability_default = ObservabilitySystem;
-export {
-  ObservabilitySystem,
-  observability_default as default
-};
+export { ObservabilitySystem, observability_default as default };

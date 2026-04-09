@@ -33,8 +33,12 @@ export class DatabaseOptimizer {
     }
 
     // Check for missing WHERE clause on large tables
-    if ((normalized.includes('SELECT') || normalized.includes('UPDATE') || normalized.includes('DELETE')) && 
-        !normalized.includes('WHERE')) {
+    if (
+      (normalized.includes('SELECT') ||
+        normalized.includes('UPDATE') ||
+        normalized.includes('DELETE')) &&
+      !normalized.includes('WHERE')
+    ) {
       analysis.suggestions.push({
         type: 'safety',
         appliesTo: 'missingWhere',
@@ -131,8 +135,8 @@ export class DatabaseOptimizer {
     if (normalized.includes('LIMIT')) cost *= 0.5;
     if (normalized.includes('INDEX')) cost *= 0.8;
 
-    const warningCount = suggestions.filter(s => s.severity === 'warning').length;
-    cost *= (1 + warningCount * 0.2);
+    const warningCount = suggestions.filter((s) => s.severity === 'warning').length;
+    cost *= 1 + warningCount * 0.2;
 
     if (cost < 1) return 'low';
     if (cost < 3) return 'medium';
@@ -157,7 +161,7 @@ export class DatabaseOptimizer {
   // Create a tracked query wrapper
   createQueryWithTracking(queryFn) {
     const self = this;
-    return async function(...args) {
+    return async function (...args) {
       const startTime = Date.now();
       try {
         const result = await queryFn(...args);

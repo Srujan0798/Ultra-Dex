@@ -3,14 +3,13 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { EventEmitter } from "events";
+import { singleton } from 'tsyringe';
+import { EventEmitter } from 'events';
 let RALPHLoop = class extends EventEmitter {
   constructor(options = {}) {
     super();
@@ -21,20 +20,22 @@ let RALPHLoop = class extends EventEmitter {
       feedbackThreshold: options.feedbackThreshold || 0.7,
       maxExecutionTimeMs: options.maxExecutionTimeMs || 3e5,
       // 5 minutes default
-      ...options
+      ...options,
     };
     this.iterations = [];
     this.learnings = [];
-    this.state = "idle";
+    this.state = 'idle';
   }
   /**
    * Execute RALPH loop with timeout protection
    */
   async executeRALPHLoop(problem, context = {}) {
-    this.state = "executing";
+    this.state = 'executing';
     let iteration = 0;
     let currentHypothesis = null;
-    const initialContext = Array.isArray(context.initialContext) ? context.initialContext : this.initialContext;
+    const initialContext = Array.isArray(context.initialContext)
+      ? context.initialContext
+      : this.initialContext;
     if (initialContext.length > 0) {
       const hydrationStartedAt = Date.now();
       context.prefetchedMemory = initialContext;
@@ -43,57 +44,59 @@ let RALPHLoop = class extends EventEmitter {
       const payload = {
         count: initialContext.length,
         durationMs,
-        context: initialContext
+        context: initialContext,
       };
       process.stdout.write(
         `Context pre-hydrated with ${initialContext.length} memories in ${durationMs}ms
 `
       );
-      this.emit("ralph.context-prehydrated", payload);
+      this.emit('ralph.context-prehydrated', payload);
     }
-    this.emit("ralph-loop.started", { problem });
+    this.emit('ralph-loop.started', { problem });
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => {
-        const timeoutError = new Error(`RALPHLoop timeout after ${this.config.maxExecutionTimeMs}ms`);
+        const timeoutError = new Error(
+          `RALPHLoop timeout after ${this.config.maxExecutionTimeMs}ms`
+        );
         reject(timeoutError);
       }, this.config.maxExecutionTimeMs);
     });
     const loopPromise = (async () => {
       while (iteration < this.config.maxIterations) {
         iteration++;
-        let activePhase = "reasoning";
+        let activePhase = 'reasoning';
         const step = {
           iteration,
           timestamp: Date.now(),
-          results: {}
+          results: {},
         };
         try {
-          activePhase = "reasoning";
+          activePhase = 'reasoning';
           const reasoning = await this.reason(problem, context, currentHypothesis);
           step.results.reasoning = reasoning;
-          this.emit("ralph.reasoning", { iteration, reasoning });
-          activePhase = "analysis";
+          this.emit('ralph.reasoning', { iteration, reasoning });
+          activePhase = 'analysis';
           const analysis = await this.analyze(reasoning, context);
           step.results.analysis = analysis;
-          this.emit("ralph.analysis", { iteration, analysis });
-          activePhase = "planning";
+          this.emit('ralph.analysis', { iteration, analysis });
+          activePhase = 'planning';
           const plan = await this.plan(analysis, context);
           step.results.plan = plan;
-          this.emit("ralph.planning", { iteration, plan });
-          activePhase = "hypothesis";
+          this.emit('ralph.planning', { iteration, plan });
+          activePhase = 'hypothesis';
           currentHypothesis = await this.formHypothesis(plan, context);
           step.results.hypothesis = currentHypothesis;
-          this.emit("ralph.hypothesis", { iteration, hypothesis: currentHypothesis });
-          activePhase = "learning";
+          this.emit('ralph.hypothesis', { iteration, hypothesis: currentHypothesis });
+          activePhase = 'learning';
           const learning = await this.learn(step, context);
           step.results.learning = learning;
-          this.emit("ralph.learning", { iteration, learning });
+          this.emit('ralph.learning', { iteration, learning });
           this.iterations.push(step);
           this.learnings.push(learning);
           if (currentHypothesis.confidence >= this.config.feedbackThreshold) {
-            this.emit("ralph-loop.solution-found", {
+            this.emit('ralph-loop.solution-found', {
               iteration,
-              hypothesis: currentHypothesis
+              hypothesis: currentHypothesis,
             });
             break;
           }
@@ -103,32 +106,32 @@ let RALPHLoop = class extends EventEmitter {
             iteration,
             phase: activePhase,
             problem,
-            partialResults: Object.keys(step.results)
+            partialResults: Object.keys(step.results),
           });
           if (recovery) {
             step.recovery = recovery;
-            this.emit("agent.recovery", { iteration, phase: activePhase, recovery, error });
+            this.emit('agent.recovery', { iteration, phase: activePhase, recovery, error });
           }
-          this.emit("ralph-loop.error", { iteration, error, recovery });
+          this.emit('ralph-loop.error', { iteration, error, recovery });
           this.iterations.push(step);
           break;
         }
       }
-      this.state = "completed";
-      this.emit("ralph-loop.completed", { iterations: iteration });
+      this.state = 'completed';
+      this.emit('ralph-loop.completed', { iterations: iteration });
       return {
         finalHypothesis: currentHypothesis,
         iterations: this.iterations.length,
-        learnings: this.learnings
+        learnings: this.learnings,
       };
     })();
     try {
       return await Promise.race([loopPromise, timeoutPromise]);
     } catch (error) {
-      if (error.message.includes("RALPHLoop timeout")) {
-        this.emit("ralph.timeout", {
+      if (error.message.includes('RALPHLoop timeout')) {
+        this.emit('ralph.timeout', {
           maxExecutionTimeMs: this.config.maxExecutionTimeMs,
-          iterationsCompleted: iteration
+          iterationsCompleted: iteration,
         });
       }
       throw error;
@@ -139,9 +142,9 @@ let RALPHLoop = class extends EventEmitter {
       return this.selfHealing;
     }
     try {
-      const { SelfHealingOrchestrator } = await import("../reliability/self-healing.js");
+      const { SelfHealingOrchestrator } = await import('../reliability/self-healing.js');
       this.selfHealing = new SelfHealingOrchestrator();
-      if (typeof this.selfHealing.initialize === "function" && !this.selfHealing.initialized) {
+      if (typeof this.selfHealing.initialize === 'function' && !this.selfHealing.initialized) {
         await this.selfHealing.initialize();
       }
     } catch {
@@ -155,20 +158,20 @@ let RALPHLoop = class extends EventEmitter {
       return null;
     }
     try {
-      return await selfHealing.recoverAgentFailure("ralph-loop", error, details);
+      return await selfHealing.recoverAgentFailure('ralph-loop', error, details);
     } catch (recoveryError) {
       return {
-        agentId: "ralph-loop",
+        agentId: 'ralph-loop',
         recovered: false,
-        strategy: "unavailable",
-        timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+        strategy: 'unavailable',
+        timestamp: /* @__PURE__ */ new Date().toISOString(),
         diagnostics: {
           ...details,
           error: {
-            name: recoveryError?.name || "Error",
-            message: recoveryError?.message || String(recoveryError)
-          }
-        }
+            name: recoveryError?.name || 'Error',
+            message: recoveryError?.message || String(recoveryError),
+          },
+        },
       };
     }
   }
@@ -179,8 +182,8 @@ let RALPHLoop = class extends EventEmitter {
     return {
       problem,
       previousFindings: previousHypothesis ? previousHypothesis.findings : [],
-      reasoning: "Analyzing the problem systematically...",
-      insights: []
+      reasoning: 'Analyzing the problem systematically...',
+      insights: [],
     };
   }
   /**
@@ -191,7 +194,7 @@ let RALPHLoop = class extends EventEmitter {
       dataPoints: [],
       patterns: [],
       anomalies: [],
-      conclusion: "Analysis suggests..."
+      conclusion: 'Analysis suggests...',
     };
   }
   /**
@@ -199,13 +202,13 @@ let RALPHLoop = class extends EventEmitter {
    */
   async plan(analysis, context) {
     return {
-      strategy: "experiment",
+      strategy: 'experiment',
       steps: [
-        { step: 1, action: "Observe" },
-        { step: 2, action: "Test" },
-        { step: 3, action: "Verify" }
+        { step: 1, action: 'Observe' },
+        { step: 2, action: 'Test' },
+        { step: 3, action: 'Verify' },
       ],
-      expectedOutcome: "Test should confirm hypothesis"
+      expectedOutcome: 'Test should confirm hypothesis',
     };
   }
   /**
@@ -213,11 +216,11 @@ let RALPHLoop = class extends EventEmitter {
    */
   async formHypothesis(plan, context) {
     return {
-      hypothesis: "Based on analysis, the solution is...",
+      hypothesis: 'Based on analysis, the solution is...',
       confidence: 0.75,
       reasoning: [],
       findings: [],
-      nextSteps: []
+      nextSteps: [],
     };
   }
   /**
@@ -225,13 +228,10 @@ let RALPHLoop = class extends EventEmitter {
    */
   async learn(step, context) {
     return {
-      keyLearnings: [
-        "Observation 1",
-        "Observation 2"
-      ],
+      keyLearnings: ['Observation 1', 'Observation 2'],
       skillsAcquired: [],
       improvementsForNextIteration: [],
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
   }
   /**
@@ -250,32 +250,33 @@ let RALPHLoop = class extends EventEmitter {
    * Get current hypothesis
    */
   getCurrentHypothesis() {
-    return this.iterations.length > 0 ? this.iterations[this.iterations.length - 1].results.hypothesis : null;
+    return this.iterations.length > 0
+      ? this.iterations[this.iterations.length - 1].results.hypothesis
+      : null;
   }
 };
-RALPHLoop = __decorateClass([
-  singleton()
-], RALPHLoop);
-async function runAutonomousTask(objective, options = {}, orchestrator = null, executionContext = null) {
+RALPHLoop = __decorateClass([singleton()], RALPHLoop);
+async function runAutonomousTask(
+  objective,
+  options = {},
+  orchestrator = null,
+  executionContext = null
+) {
   const loop = new RALPHLoop({
     ...options,
     initialContext: options.context?.initialContext || options.initialContext || [],
-    selfHealing: options.selfHealing || orchestrator?.selfHealing || null
+    selfHealing: options.selfHealing || orchestrator?.selfHealing || null,
   });
   const result = await loop.executeRALPHLoop(objective, {
     ...options.context,
     executionContext,
-    orchestrator
+    orchestrator,
   });
   return {
-    status: "completed",
+    status: 'completed',
     objective,
-    ...result
+    ...result,
   };
 }
 var ralph_loop_default = RALPHLoop;
-export {
-  RALPHLoop,
-  ralph_loop_default as default,
-  runAutonomousTask
-};
+export { RALPHLoop, ralph_loop_default as default, runAutonomousTask };

@@ -37,7 +37,7 @@
 | Database | PostgreSQL / Supabase / MongoDB / \_\_\_ |
 | Auth     | NextAuth / Clerk / Auth0 / \_\_\_        |
 | Payments | Stripe / Lemonsqueezy / \_\_\_           |
-| Hosting  | Vercel / Render / Fly.io / \_\_\_       |
+| Hosting  | Vercel / Render / Fly.io / \_\_\_        |
 
 ---
 

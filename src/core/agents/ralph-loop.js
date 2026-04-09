@@ -16,7 +16,7 @@ export class RALPHLoop extends EventEmitter {
       maxIterations: options.maxIterations || 10,
       feedbackThreshold: options.feedbackThreshold || 0.7,
       maxExecutionTimeMs: options.maxExecutionTimeMs || 300000, // 5 minutes default
-      ...options
+      ...options,
     };
     this.iterations = [];
     this.learnings = [];
@@ -55,7 +55,9 @@ export class RALPHLoop extends EventEmitter {
     // Create timeout promise
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => {
-        const timeoutError = new Error(`RALPHLoop timeout after ${this.config.maxExecutionTimeMs}ms`);
+        const timeoutError = new Error(
+          `RALPHLoop timeout after ${this.config.maxExecutionTimeMs}ms`
+        );
         reject(timeoutError);
       }, this.config.maxExecutionTimeMs);
     });
@@ -69,7 +71,7 @@ export class RALPHLoop extends EventEmitter {
         const step = {
           iteration,
           timestamp: Date.now(),
-          results: {}
+          results: {},
         };
 
         try {
@@ -111,7 +113,7 @@ export class RALPHLoop extends EventEmitter {
           if (currentHypothesis.confidence >= this.config.feedbackThreshold) {
             this.emit('ralph-loop.solution-found', {
               iteration,
-              hypothesis: currentHypothesis
+              hypothesis: currentHypothesis,
             });
             break;
           }
@@ -139,7 +141,7 @@ export class RALPHLoop extends EventEmitter {
       return {
         finalHypothesis: currentHypothesis,
         iterations: this.iterations.length,
-        learnings: this.learnings
+        learnings: this.learnings,
       };
     })();
 
@@ -148,9 +150,9 @@ export class RALPHLoop extends EventEmitter {
       return await Promise.race([loopPromise, timeoutPromise]);
     } catch (error) {
       if (error.message.includes('RALPHLoop timeout')) {
-        this.emit('ralph.timeout', { 
+        this.emit('ralph.timeout', {
           maxExecutionTimeMs: this.config.maxExecutionTimeMs,
-          iterationsCompleted: iteration 
+          iterationsCompleted: iteration,
         });
       }
       throw error;
@@ -208,7 +210,7 @@ export class RALPHLoop extends EventEmitter {
       problem,
       previousFindings: previousHypothesis ? previousHypothesis.findings : [],
       reasoning: 'Analyzing the problem systematically...',
-      insights: []
+      insights: [],
     };
   }
 
@@ -220,7 +222,7 @@ export class RALPHLoop extends EventEmitter {
       dataPoints: [],
       patterns: [],
       anomalies: [],
-      conclusion: 'Analysis suggests...'
+      conclusion: 'Analysis suggests...',
     };
   }
 
@@ -233,9 +235,9 @@ export class RALPHLoop extends EventEmitter {
       steps: [
         { step: 1, action: 'Observe' },
         { step: 2, action: 'Test' },
-        { step: 3, action: 'Verify' }
+        { step: 3, action: 'Verify' },
       ],
-      expectedOutcome: 'Test should confirm hypothesis'
+      expectedOutcome: 'Test should confirm hypothesis',
     };
   }
 
@@ -248,7 +250,7 @@ export class RALPHLoop extends EventEmitter {
       confidence: 0.75,
       reasoning: [],
       findings: [],
-      nextSteps: []
+      nextSteps: [],
     };
   }
 
@@ -257,13 +259,10 @@ export class RALPHLoop extends EventEmitter {
    */
   async learn(step, context) {
     return {
-      keyLearnings: [
-        'Observation 1',
-        'Observation 2'
-      ],
+      keyLearnings: ['Observation 1', 'Observation 2'],
       skillsAcquired: [],
       improvementsForNextIteration: [],
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
   }
 

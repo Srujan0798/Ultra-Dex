@@ -1,6 +1,7 @@
 # Ultra-Dex Series B Pitch Deck
 
 ## Slide 1: Title Slide
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    ULTRA-DEX SERIES B                          │
@@ -14,6 +15,7 @@
 ```
 
 ## Slide 2: The Problem
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        THE PROBLEM                             │
@@ -38,6 +40,7 @@
 ```
 
 ## Slide 3: The Solution
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                       THE SOLUTION                             │
@@ -69,6 +72,7 @@
 ```
 
 ## Slide 4: Market Size
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        MARKET SIZE                             │
@@ -99,6 +103,7 @@
 ```
 
 ## Slide 5: Product Demo
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        PRODUCT DEMO                            │
@@ -135,6 +140,7 @@
 ```
 
 ## Slide 6: Traction & Metrics
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        TRACTION & METRICS                      │
@@ -170,6 +176,7 @@
 ```
 
 ## Slide 7: Business Model
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                       BUSINESS MODEL                           │
@@ -230,6 +237,7 @@
 ```
 
 ## Slide 8: Competition
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        COMPETITION                             │
@@ -279,6 +287,7 @@
 ```
 
 ## Slide 9: Team & Advisors
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        TEAM & ADVISORS                         │
@@ -323,6 +332,7 @@
 ```
 
 ## Slide 10: Financials
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        FINANCIALS                              │
@@ -373,6 +383,7 @@
 ```
 
 ## Slide 11: Use of Funds
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                       USE OF FUNDS                              │
@@ -447,6 +458,7 @@
 ```
 
 ## Slide 12: Market Opportunity & Timing
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                   MARKET OPPORTUNITY & TIMING                  │
@@ -493,6 +505,7 @@
 ```
 
 ## Slide 13: Competitive Moat
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                      COMPETITIVE MOAT                          │
@@ -544,6 +557,7 @@
 ```
 
 ## Slide 14: Growth Strategy
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                       GROWTH STRATEGY                          │
@@ -595,6 +609,7 @@
 ```
 
 ## Slide 15: Milestones & Timeline
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                     MILESTONES & TIMELINE                      │
@@ -653,6 +668,7 @@
 ```
 
 ## Slide 16: Ask & Next Steps
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        ASK & NEXT STEPS                        │
@@ -704,6 +720,7 @@
 ## Appendix: Financial Models
 
 ### Detailed Financial Projections
+
 ```javascript
 // Financial model for Series B pitch
 const financialModel = {
@@ -713,9 +730,9 @@ const financialModel = {
     churnRate: 0.035,
     ltvCacRatio: 12.5,
     grossMargin: 0.85,
-    monthlyGrowth: 1.5
+    monthlyGrowth: 1.5,
   },
-  
+
   projections: {
     year1: {
       mrr: 700000, // $700K MRR
@@ -724,7 +741,7 @@ const financialModel = {
       churnRate: 0.03,
       ltvCacRatio: 15,
       grossMargin: 0.88,
-      nrr: 1.4
+      nrr: 1.4,
     },
     year2: {
       mrr: 2900000, // $2.9M MRR
@@ -732,8 +749,8 @@ const financialModel = {
       arr: 35000000, // $35M ARR
       churnRate: 0.025,
       ltvCacRatio: 20,
-      grossMargin: 0.90,
-      nrr: 1.45
+      grossMargin: 0.9,
+      nrr: 1.45,
     },
     year3: {
       mrr: 10000000, // $10M MRR
@@ -742,49 +759,49 @@ const financialModel = {
       churnRate: 0.02,
       ltvCacRatio: 25,
       grossMargin: 0.92,
-      nrr: 1.5
-    }
+      nrr: 1.5,
+    },
   },
-  
+
   unitEconomics: {
     cac: {
       current: 1200,
       year1: 1000,
       year2: 800,
-      year3: 700
+      year3: 700,
     },
     ltv: {
       current: 15000,
       year1: 25000,
       year2: 45000,
-      year3: 65000
+      year3: 65000,
     },
     payback: {
       current: 3.2, // months
       year1: 2.8,
       year2: 2.1,
-      year3: 1.8
-    }
+      year3: 1.8,
+    },
   },
-  
+
   fundingRequirements: {
     seriesB: 15000000,
     useOfFunds: {
       engineering: 6750000, // 45%
       salesMarketing: 3750000, // 25%
       operations: 3000000, // 20%
-      workingCapital: 1500000 // 10%
-    }
+      workingCapital: 1500000, // 10%
+    },
   },
-  
+
   pathToProfitability: {
     breakeven: 18, // month when breakeven expected
     positiveCashFlow: 24, // month when positive cash flow expected
     ebitdaMargin: {
       year2: 0.05, // 5% in year 2
-      year3: 0.25 // 25% in year 3
-    }
-  }
+      year3: 0.25, // 25% in year 3
+    },
+  },
 };
 
 export default financialModel;
@@ -795,6 +812,7 @@ export default financialModel;
 ## Investment Highlights
 
 ### Key Investment Highlights
+
 1. **Market Leadership**: Category creator in AI orchestration with differentiated features
 2. **Exceptional Traction**: 150% MoM growth, $200K+ MRR, 800+ customers
 3. **Superior Unit Economics**: 12.5x LTV/CAC ratio, 3.2-month payback

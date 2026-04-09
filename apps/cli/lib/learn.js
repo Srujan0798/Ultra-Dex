@@ -4,7 +4,6 @@ import readline from 'readline';
 import { spawn } from 'child_process';
 import { logger } from './utils/logger.js';
 
-
 const tutorialData = JSON.parse(
   fs.readFileSync(new URL('./tutorial-data.json', import.meta.url), 'utf8')
 );

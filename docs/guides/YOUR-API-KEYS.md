@@ -2,29 +2,32 @@
 
 ## 🔑 Keys Loaded (4 Total)
 
-| # | Key Name | Masked Key | Priority | Status |
-|---|----------|------------|----------|--------|
-| 1 | Primary | `nvapi-ZeBh...` | Highest | ✅ Active |
-| 2 | Secondary-1 | `nvapi-6D3r...` | High | ✅ Active |
-| 3 | Secondary-2 | `nvapi-thXB...` | Medium | ✅ Active |
-| 4 | Secondary-3 | `nvapi-WxLb...` | Standard | ✅ Active |
+| #   | Key Name    | Masked Key      | Priority | Status    |
+| --- | ----------- | --------------- | -------- | --------- |
+| 1   | Primary     | `nvapi-ZeBh...` | Highest  | ✅ Active |
+| 2   | Secondary-1 | `nvapi-6D3r...` | High     | ✅ Active |
+| 3   | Secondary-2 | `nvapi-thXB...` | Medium   | ✅ Active |
+| 4   | Secondary-3 | `nvapi-WxLb...` | Standard | ✅ Active |
 
 ---
 
 ## 🎯 What This Gives You
 
 ### **Rate Limit Protection**
+
 - Each free tier key: ~60 requests/minute
 - **With 4 keys**: ~240 requests/minute total capacity
 - Automatic rotation prevents hitting limits
 
 ### **Failover Protection**
+
 - If Key 1 fails → Auto-switch to Key 2
 - If Key 2 fails → Auto-switch to Key 3
 - If Key 3 fails → Auto-switch to Key 4
 - **Zero downtime!**
 
 ### **Load Balancing**
+
 - Requests distributed across all 4 keys
 - No single key gets overloaded
 - Better performance for concurrent requests
@@ -57,12 +60,12 @@ Key 3 fails → Auto-retry with Key 4
 
 ## 📊 Expected Performance
 
-| Metric | Single Key | 4 Keys | Improvement |
-|--------|------------|--------|-------------|
-| **Requests/minute** | 60 | 240 | **4x** |
-| **Failure rate** | ~5% | ~0.5% | **10x better** |
-| **Concurrent requests** | 5-10 | 20-40 | **4x** |
-| **Uptime** | ~95% | ~99.5% | **Better** |
+| Metric                  | Single Key | 4 Keys | Improvement    |
+| ----------------------- | ---------- | ------ | -------------- |
+| **Requests/minute**     | 60         | 240    | **4x**         |
+| **Failure rate**        | ~5%        | ~0.5%  | **10x better** |
+| **Concurrent requests** | 5-10       | 20-40  | **4x**         |
+| **Uptime**              | ~95%       | ~99.5% | **Better**     |
 
 ---
 
@@ -136,14 +139,17 @@ import { keyManager } from './src/services/ai-providers/nvidia-key-manager.js';
 
 function printDashboard() {
   const stats = keyManager.getUsageStats();
-  
+
   console.log('\n=== NVIDIA API Key Dashboard ===\n');
-  
-  stats.forEach(stat => {
+
+  stats.forEach((stat) => {
     const usagePercent = ((stat.usage / stat.rateLimit) * 100).toFixed(0);
-    const bar = '█'.repeat(Math.floor(usagePercent / 5)) + '░'.repeat(20 - Math.floor(usagePercent / 5));
-    
-    console.log(`${stat.name.padEnd(15)} [${bar}] ${usagePercent}% (${stat.usage}/${stat.rateLimit})`);
+    const bar =
+      '█'.repeat(Math.floor(usagePercent / 5)) + '░'.repeat(20 - Math.floor(usagePercent / 5));
+
+    console.log(
+      `${stat.name.padEnd(15)} [${bar}] ${usagePercent}% (${stat.usage}/${stat.rateLimit})`
+    );
     console.log(`  Failures: ${stat.failures}`);
   });
 }
@@ -177,16 +183,19 @@ setInterval(() => {
 ## ⚠️ Important Notes
 
 ### Security
+
 - ✅ Keys stored in `.env.local` (not in git)
 - ✅ Never commit keys to version control
 - ✅ Rotate keys every 30-90 days
 
 ### Rate Limits
+
 - Free tier: ~60 requests/minute per key
 - With 4 keys: ~240 requests/minute total
 - Limits reset every minute
 
 ### Best Practices
+
 1. Use `initNVIDIAKeys()` at app startup
 2. Use `createRotatingClient()` for automatic rotation
 3. Monitor usage with `getUsageStats()`
@@ -199,7 +208,7 @@ setInterval(() => {
 **Total Keys**: 4  
 **Total Capacity**: ~240 requests/minute  
 **Failover**: Automatic  
-**Load Balancing**: Enabled  
+**Load Balancing**: Enabled
 
 ### Next Steps:
 
@@ -212,12 +221,14 @@ setInterval(() => {
 ## 🆘 Troubleshooting
 
 ### "No API keys found"
+
 ```bash
 # Verify .env.local has all keys
 cat .env.local | grep NVIDIA_API_KEY
 ```
 
 ### Key not working
+
 ```javascript
 // Check which key is being used
 const { keyName } = createRotatingClient('nvidia/nemotron-3-super-120b-a12b');
@@ -225,6 +236,7 @@ console.log(`Using: ${keyName}`);
 ```
 
 ### Rate limit errors
+
 - Wait 1 minute (limits reset)
 - Add more keys (get from https://build.nvidia.com/)
 - Check usage: `keyManager.getUsageStats()`

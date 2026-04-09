@@ -1,6 +1,9 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { listCheckpoints as listNamedCheckpoints, loadCheckpoint as loadNamedCheckpoint } from './checkpoint.js';
+import {
+  listCheckpoints as listNamedCheckpoints,
+  loadCheckpoint as loadNamedCheckpoint,
+} from './checkpoint.js';
 import { printInfo, printSuccess, printWarning } from '../utils/output.js';
 
 const LEGACY_CHECKPOINT = path.join(process.cwd(), '.ultra-dex', 'swarm-checkpoint.json');

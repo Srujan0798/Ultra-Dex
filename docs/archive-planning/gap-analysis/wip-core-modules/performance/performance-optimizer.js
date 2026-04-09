@@ -22,25 +22,25 @@ export class PerformanceOptimizer {
       maxWorkerThreads: Math.min(cpus().length, options.maxWorkerThreads || 8),
       cacheTTL: options.cacheTTL || 300000, // 5 minutes
       maxCacheSize: options.maxCacheSize || 1000, // Max cache entries
-      
+
       // Performance thresholds
       slowOperationThreshold: options.slowOperationThreshold || 1000, // 1 second
       highMemoryThreshold: options.highMemoryThreshold || 0.8, // 80% of available memory
       highCpuThreshold: options.highCpuThreshold || 0.8, // 80% CPU usage
-      
+
       // Resource management
       enableResourcePooling: options.enableResourcePooling !== false,
       enableLazyLoading: options.enableLazyLoading !== false,
       enablePreloading: options.enablePreloading || false,
-      
-      ...options
+
+      ...options,
     };
 
     // Performance caches
     this.operationCache = new Map();
     this.resultCache = new Map();
     this.functionCache = new Map();
-    
+
     // Performance metrics
     this.metrics = {
       totalOperations: 0,
@@ -52,13 +52,13 @@ export class PerformanceOptimizer {
       cacheHitRate: 0,
       slowOperations: 0,
       operationsPerSecond: 0,
-      startTime: Date.now()
+      startTime: Date.now(),
     };
 
     // Resource pools
     this.workerPool = [];
     this.connectionPool = new Map();
-    
+
     // Initialize performance systems
     this.initialize();
   }
@@ -69,7 +69,7 @@ export class PerformanceOptimizer {
   async initialize() {
     logger.info('🚀 Initializing Ultra-Dex Performance Optimizer...', {
       version: '6.0.0',
-      config: this.config
+      config: this.config,
     });
 
     // Initialize worker pool if parallelization is enabled
@@ -89,14 +89,14 @@ export class PerformanceOptimizer {
   async initializeWorkerPool() {
     for (let i = 0; i < this.config.maxWorkerThreads; i++) {
       const worker = new Worker(__filename, {
-        workerData: { id: i, mode: 'worker' }
+        workerData: { id: i, mode: 'worker' },
       });
-      
+
       this.workerPool.push({
         worker,
         id: i,
         busy: false,
-        queue: []
+        queue: [],
       });
     }
   }
@@ -137,11 +137,12 @@ export class PerformanceOptimizer {
         const cached = this.resultCache.get(fullKey);
         if (Date.now() - cached.timestamp < ttl) {
           this.metrics.cachedOperations++;
-          this.metrics.cacheHitRate = (this.metrics.cachedOperations / this.metrics.totalOperations) * 100;
-          
+          this.metrics.cacheHitRate =
+            (this.metrics.cachedOperations / this.metrics.totalOperations) * 100;
+
           const executionTime = performance.now() - startTime;
           this.updateAvgExecutionTime(executionTime);
-          
+
           return cached.result;
         } else {
           // Remove expired cache entry
@@ -170,17 +171,20 @@ export class PerformanceOptimizer {
           this.resultCache.set(fullKey, {
             result,
             timestamp: Date.now(),
-            executionTime
+            executionTime,
           });
         }
 
         // Log slow operations
         if (executionTime > this.config.slowOperationThreshold) {
           this.metrics.slowOperations++;
-          logger.warning(`🐌 Slow operation detected: ${cacheKey} took ${Math.round(executionTime)}ms`, {
-            executionTime: Math.round(executionTime),
-            args: args.length > 0 ? args[0] : 'no args'
-          });
+          logger.warning(
+            `🐌 Slow operation detected: ${cacheKey} took ${Math.round(executionTime)}ms`,
+            {
+              executionTime: Math.round(executionTime),
+              args: args.length > 0 ? args[0] : 'no args',
+            }
+          );
         }
 
         return result;
@@ -189,9 +193,9 @@ export class PerformanceOptimizer {
         logger.error(`💥 Operation failed: ${cacheKey} took ${Math.round(executionTime)}ms`, {
           error: error.message,
           executionTime: Math.round(executionTime),
-          args: args.length > 0 ? args[0] : 'no args'
+          args: args.length > 0 ? args[0] : 'no args',
         });
-        
+
         throw error;
       }
     };
@@ -217,12 +221,14 @@ export class PerformanceOptimizer {
     // Process tasks in batches
     for (let i = 0; i < tasks.length; i += concurrency) {
       const batch = tasks.slice(i, i + concurrency);
-      const batchPromises = batch.map((task, idx) => 
-        task().catch(err => { errors[i + idx] = err; })
+      const batchPromises = batch.map((task, idx) =>
+        task().catch((err) => {
+          errors[i + idx] = err;
+        })
       );
 
       const batchResults = await Promise.allSettled(batchPromises);
-      
+
       for (let j = 0; j < batchResults.length; j++) {
         const result = batchResults[j];
         if (result.status === 'fulfilled') {
@@ -234,9 +240,14 @@ export class PerformanceOptimizer {
     }
 
     // Throw error if any failed
-    const hasErrors = errors.some(err => err);
+    const hasErrors = errors.some((err) => err);
     if (hasErrors) {
-      throw new Error(`Parallel execution failed: ${errors.filter(err => err).map(err => err.message).join('; ')}`);
+      throw new Error(
+        `Parallel execution failed: ${errors
+          .filter((err) => err)
+          .map((err) => err.message)
+          .join('; ')}`
+      );
     }
 
     return results;
@@ -252,7 +263,7 @@ export class PerformanceOptimizer {
     for (let i = 0; i < items.length; i += batchSize) {
       const batch = items.slice(i, i + batchSize);
       const batchResults = await this.parallelize(
-        batch.map(item => () => processor(item)),
+        batch.map((item) => () => processor(item)),
         { concurrency: options.concurrency || 3 }
       );
       results.push(...batchResults);
@@ -266,23 +277,23 @@ export class PerformanceOptimizer {
    */
   memoize(fn, resolver) {
     const cache = new Map();
-    
+
     return function (...args) {
       const key = resolver ? resolver.apply(this, args) : JSON.stringify(args);
-      
+
       if (cache.has(key)) {
         return cache.get(key);
       }
-      
+
       const result = fn.apply(this, args);
       cache.set(key, result);
-      
+
       // Trim cache if too large
       if (cache.size > this.config.maxCacheSize) {
         const firstKey = cache.keys().next().value;
         cache.delete(firstKey);
       }
-      
+
       return result;
     };
   }
@@ -292,18 +303,18 @@ export class PerformanceOptimizer {
    */
   debounce(func, wait, immediate = false) {
     let timeout;
-    
+
     return function executedFunction(...args) {
       const later = () => {
         timeout = null;
         if (!immediate) func.apply(this, args);
       };
-      
+
       const callNow = immediate && !timeout;
-      
+
       clearTimeout(timeout);
       timeout = setTimeout(later, wait);
-      
+
       if (callNow) func.apply(this, args);
     };
   }
@@ -313,12 +324,12 @@ export class PerformanceOptimizer {
    */
   throttle(func, limit) {
     let inThrottle;
-    
+
     return function (...args) {
       if (!inThrottle) {
         func.apply(this, args);
         inThrottle = true;
-        setTimeout(() => inThrottle = false, limit);
+        setTimeout(() => (inThrottle = false), limit);
       }
     };
   }
@@ -333,7 +344,7 @@ export class PerformanceOptimizer {
 
     this.metrics.memoryUsage = currentMemory.heapUsed / currentMemory.heapTotal;
     this.metrics.operationsPerSecond = opsPerSecond;
-    
+
     // Log performance metrics periodically
     if (this.metrics.totalOperations > 0) {
       logger.info('📊 Performance Metrics', {
@@ -343,7 +354,7 @@ export class PerformanceOptimizer {
         cacheHitRate: Math.round(this.metrics.cacheHitRate * 100) / 100,
         slowOperations: this.metrics.slowOperations,
         memoryUsage: `${Math.round(this.metrics.memoryUsage * 100)}%`,
-        uptime: `${Math.round(uptime)}s`
+        uptime: `${Math.round(uptime)}s`,
       });
     }
   }
@@ -354,10 +365,13 @@ export class PerformanceOptimizer {
   checkForSlowOperations() {
     // This is handled in the optimize function, but we can add additional checks here
     if (this.metrics.slowOperations > 0) {
-      logger.warning(`⚠️  Performance Alert: ${this.metrics.slowOperations} slow operations detected`, {
-        threshold: `${this.config.slowOperationThreshold}ms`,
-        totalOperations: this.metrics.totalOperations
-      });
+      logger.warning(
+        `⚠️  Performance Alert: ${this.metrics.slowOperations} slow operations detected`,
+        {
+          threshold: `${this.config.slowOperationThreshold}ms`,
+          totalOperations: this.metrics.totalOperations,
+        }
+      );
     }
   }
 
@@ -365,8 +379,8 @@ export class PerformanceOptimizer {
    * Update average execution time
    */
   updateAvgExecutionTime(executionTime) {
-    this.metrics.avgExecutionTime = 
-      ((this.metrics.avgExecutionTime * (this.metrics.totalOperations - 1)) + executionTime) / 
+    this.metrics.avgExecutionTime =
+      (this.metrics.avgExecutionTime * (this.metrics.totalOperations - 1) + executionTime) /
       this.metrics.totalOperations;
   }
 
@@ -386,7 +400,7 @@ export class PerformanceOptimizer {
       maxSize: this.config.maxCacheSize,
       hitRate: this.metrics.cacheHitRate,
       totalOperations: this.metrics.totalOperations,
-      cachedOperations: this.metrics.cachedOperations
+      cachedOperations: this.metrics.cachedOperations,
     };
   }
 
@@ -397,7 +411,7 @@ export class PerformanceOptimizer {
     this.operationCache.clear();
     this.resultCache.clear();
     this.functionCache.clear();
-    
+
     logger.info('🗑️  Performance caches cleared');
   }
 
@@ -412,39 +426,39 @@ export class PerformanceOptimizer {
         this.config.enableParallelization = true;
         this.config.cacheTTL = this.config.cacheTTL * 2; // Longer cache for CPU-intensive ops
         break;
-        
+
       case 'io-intensive':
         // Optimize for I/O-bound tasks
         this.config.enableCaching = true;
         this.config.enableCompression = true;
         this.config.maxWorkerThreads = Math.max(1, cpus().length / 2);
         break;
-        
+
       case 'memory-sensitive':
         // Optimize for memory-sensitive tasks
         this.config.maxCacheSize = Math.floor(this.config.maxCacheSize / 2);
         this.config.cacheTTL = Math.floor(this.config.cacheTTL / 2);
         this.config.enableCompression = true;
         break;
-        
+
       case 'latency-critical':
         // Optimize for low-latency tasks
         this.config.cacheTTL = Math.floor(this.config.cacheTTL / 2);
         this.config.enablePreloading = true;
         this.config.slowOperationThreshold = Math.floor(this.config.slowOperationThreshold / 2);
         break;
-        
+
       default:
         // Use default configuration
         break;
     }
-    
+
     logger.info(`⚙️  Optimized for ${workloadType} workload`, {
       config: {
         maxWorkerThreads: this.config.maxWorkerThreads,
         enableCaching: this.config.enableCaching,
-        maxCacheSize: this.config.maxCacheSize
-      }
+        maxCacheSize: this.config.maxCacheSize,
+      },
     });
   }
 
@@ -454,7 +468,7 @@ export class PerformanceOptimizer {
   async runBenchmark(tasks = [], options = {}) {
     const benchmarkStart = performance.now();
     const taskCount = tasks.length;
-    
+
     logger.info(`🏃 Running performance benchmark with ${taskCount} tasks...`);
 
     const results = {
@@ -465,7 +479,7 @@ export class PerformanceOptimizer {
       avgTime: 0,
       minTime: Infinity,
       maxTime: 0,
-      opsPerSecond: 0
+      opsPerSecond: 0,
     };
 
     for (let i = 0; i < tasks.length; i++) {
@@ -473,26 +487,26 @@ export class PerformanceOptimizer {
       try {
         const result = await tasks[i]();
         const taskTime = performance.now() - taskStart;
-        
+
         results.results.push({
           index: i,
           success: true,
           result,
           executionTime: Math.round(taskTime),
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
-        
+
         results.minTime = Math.min(results.minTime, taskTime);
         results.maxTime = Math.max(results.maxTime, taskTime);
       } catch (error) {
         const taskTime = performance.now() - taskStart;
-        
+
         results.results.push({
           index: i,
           success: false,
           error: error.message,
           executionTime: Math.round(taskTime),
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
       }
     }
@@ -504,7 +518,7 @@ export class PerformanceOptimizer {
     logger.success(`✅ Benchmark completed in ${Math.round(results.totalTime)}ms`, {
       avgTime: Math.round(results.avgTime),
       opsPerSecond: Math.round(results.opsPerSecond),
-      successRate: `${Math.round((results.results.filter(r => r.success).length / tasks.length) * 100)}%`
+      successRate: `${Math.round((results.results.filter((r) => r.success).length / tasks.length) * 100)}%`,
     });
 
     return results;

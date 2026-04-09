@@ -3,31 +3,30 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { EventEmitter } from "events";
-import crypto from "crypto";
+import { singleton } from 'tsyringe';
+import { EventEmitter } from 'events';
+import crypto from 'crypto';
 let WebhookEndpoint = class {
-  constructor({ id = null, url, events = ["*"], secret = null, active = true, metadata = {} }) {
+  constructor({ id = null, url, events = ['*'], secret = null, active = true, metadata = {} }) {
     this.id = id || `wh-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     this.url = url;
     this.events = events;
-    this.secret = secret || crypto.randomBytes(32).toString("hex");
+    this.secret = secret || crypto.randomBytes(32).toString('hex');
     this.active = active;
     this.metadata = metadata;
     this.stats = { delivered: 0, failed: 0, retried: 0, lastDelivery: null };
     this.createdAt = Date.now();
   }
   matchesEvent(eventType) {
-    return this.events.includes("*") || this.events.includes(eventType);
+    return this.events.includes('*') || this.events.includes(eventType);
   }
   sign(payload) {
-    return crypto.createHmac("sha256", this.secret).update(JSON.stringify(payload)).digest("hex");
+    return crypto.createHmac('sha256', this.secret).update(JSON.stringify(payload)).digest('hex');
   }
   toJSON() {
     return {
@@ -36,20 +35,18 @@ let WebhookEndpoint = class {
       events: this.events,
       active: this.active,
       stats: { ...this.stats },
-      createdAt: this.createdAt
+      createdAt: this.createdAt,
     };
   }
 };
-WebhookEndpoint = __decorateClass([
-  singleton()
-], WebhookEndpoint);
+WebhookEndpoint = __decorateClass([singleton()], WebhookEndpoint);
 let WebhookDelivery = class {
   constructor({ endpointId, event, payload }) {
     this.id = `del-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
     this.endpointId = endpointId;
     this.event = event;
     this.payload = payload;
-    this.status = "pending";
+    this.status = 'pending';
     this.attempts = 0;
     this.maxRetries = 3;
     this.lastAttempt = null;
@@ -61,23 +58,21 @@ let WebhookDelivery = class {
     this.attempts++;
     this.lastAttempt = Date.now();
     if (success) {
-      this.status = "delivered";
+      this.status = 'delivered';
       this.response = response;
     } else {
       this.error = error;
-      this.status = this.attempts >= this.maxRetries ? "failed" : "retrying";
+      this.status = this.attempts >= this.maxRetries ? 'failed' : 'retrying';
     }
   }
   canRetry() {
-    return this.status === "retrying" && this.attempts < this.maxRetries;
+    return this.status === 'retrying' && this.attempts < this.maxRetries;
   }
   getRetryDelay() {
     return Math.pow(this.attempts, 2) * 1e3;
   }
 };
-WebhookDelivery = __decorateClass([
-  singleton()
-], WebhookDelivery);
+WebhookDelivery = __decorateClass([singleton()], WebhookDelivery);
 let WebhookManager = class extends EventEmitter {
   constructor({ maxRetries = 3, deliveryTimeout = 1e4, maxDeliveries = 5e3 } = {}) {
     super();
@@ -95,7 +90,7 @@ let WebhookManager = class extends EventEmitter {
   register(config) {
     const endpoint = config instanceof WebhookEndpoint ? config : new WebhookEndpoint(config);
     this.endpoints.set(endpoint.id, endpoint);
-    this.emit("endpoint:registered", { id: endpoint.id, url: endpoint.url });
+    this.emit('endpoint:registered', { id: endpoint.id, url: endpoint.url });
     return endpoint;
   }
   /**
@@ -103,10 +98,9 @@ let WebhookManager = class extends EventEmitter {
    */
   unregister(endpointId) {
     const endpoint = this.endpoints.get(endpointId);
-    if (!endpoint)
-      return false;
+    if (!endpoint) return false;
     this.endpoints.delete(endpointId);
-    this.emit("endpoint:unregistered", { id: endpointId });
+    this.emit('endpoint:unregistered', { id: endpointId });
     return true;
   }
   /**
@@ -125,15 +119,16 @@ let WebhookManager = class extends EventEmitter {
    * Dispatch an event to all matching endpoints
    */
   async dispatch(eventType, payload) {
-    const matchingEndpoints = [...this.endpoints.values()].filter((e) => e.active && e.matchesEvent(eventType));
-    if (matchingEndpoints.length === 0)
-      return [];
+    const matchingEndpoints = [...this.endpoints.values()].filter(
+      (e) => e.active && e.matchesEvent(eventType)
+    );
+    if (matchingEndpoints.length === 0) return [];
     const results = [];
     for (const endpoint of matchingEndpoints) {
       const delivery = new WebhookDelivery({
         endpointId: endpoint.id,
         event: eventType,
-        payload
+        payload,
       });
       delivery.maxRetries = this.maxRetries;
       this.deliveries.push(delivery);
@@ -141,7 +136,7 @@ let WebhookManager = class extends EventEmitter {
       const result = await this._deliver(endpoint, delivery);
       results.push(result);
     }
-    this.emit("dispatch:complete", { event: eventType, results: results.length });
+    this.emit('dispatch:complete', { event: eventType, results: results.length });
     return results;
   }
   /**
@@ -151,37 +146,49 @@ let WebhookManager = class extends EventEmitter {
     this.stats.totalSent++;
     const signature = endpoint.sign(delivery.payload);
     const headers = {
-      "Content-Type": "application/json",
-      "X-Webhook-ID": delivery.id,
-      "X-Webhook-Event": delivery.event,
-      "X-Webhook-Signature": `sha256=${signature}`,
-      "X-Webhook-Timestamp": Date.now().toString()
+      'Content-Type': 'application/json',
+      'X-Webhook-ID': delivery.id,
+      'X-Webhook-Event': delivery.event,
+      'X-Webhook-Signature': `sha256=${signature}`,
+      'X-Webhook-Timestamp': Date.now().toString(),
     };
     try {
-      const response = await this._simulateDelivery(endpoint.url, {
-        event: delivery.event,
-        payload: delivery.payload,
-        timestamp: Date.now()
-      }, headers);
+      const response = await this._simulateDelivery(
+        endpoint.url,
+        {
+          event: delivery.event,
+          payload: delivery.payload,
+          timestamp: Date.now(),
+        },
+        headers
+      );
       delivery.recordAttempt(true, response);
       endpoint.stats.delivered++;
       endpoint.stats.lastDelivery = Date.now();
       this.stats.totalDelivered++;
-      this.emit("delivery:success", { deliveryId: delivery.id, endpointId: endpoint.id });
-      return { deliveryId: delivery.id, status: "delivered" };
+      this.emit('delivery:success', { deliveryId: delivery.id, endpointId: endpoint.id });
+      return { deliveryId: delivery.id, status: 'delivered' };
     } catch (error) {
       delivery.recordAttempt(false, null, error.message);
       if (delivery.canRetry()) {
         this.stats.totalRetried++;
         endpoint.stats.retried++;
-        this.retryQueue.push({ delivery, endpoint, retryAt: Date.now() + delivery.getRetryDelay() });
-        this.emit("delivery:retry", { deliveryId: delivery.id, attempt: delivery.attempts });
-        return { deliveryId: delivery.id, status: "retrying", nextRetryMs: delivery.getRetryDelay() };
+        this.retryQueue.push({
+          delivery,
+          endpoint,
+          retryAt: Date.now() + delivery.getRetryDelay(),
+        });
+        this.emit('delivery:retry', { deliveryId: delivery.id, attempt: delivery.attempts });
+        return {
+          deliveryId: delivery.id,
+          status: 'retrying',
+          nextRetryMs: delivery.getRetryDelay(),
+        };
       } else {
         endpoint.stats.failed++;
         this.stats.totalFailed++;
-        this.emit("delivery:failed", { deliveryId: delivery.id, error: error.message });
-        return { deliveryId: delivery.id, status: "failed", error: error.message };
+        this.emit('delivery:failed', { deliveryId: delivery.id, error: error.message });
+        return { deliveryId: delivery.id, status: 'failed', error: error.message };
       }
     }
   }
@@ -204,20 +211,18 @@ let WebhookManager = class extends EventEmitter {
    */
   async _simulateDelivery(url, body, headers) {
     await new Promise((r) => setTimeout(r, Math.random() * 50));
-    if (url.includes("fail")) {
-      throw new Error("Connection refused");
+    if (url.includes('fail')) {
+      throw new Error('Connection refused');
     }
-    return { status: 200, body: "OK" };
+    return { status: 200, body: 'OK' };
   }
   /**
    * Get delivery history
    */
   getDeliveries({ endpointId = null, status = null, limit = 50 } = {}) {
     let results = [...this.deliveries];
-    if (endpointId)
-      results = results.filter((d) => d.endpointId === endpointId);
-    if (status)
-      results = results.filter((d) => d.status === status);
+    if (endpointId) results = results.filter((d) => d.endpointId === endpointId);
+    if (status) results = results.filter((d) => d.status === status);
     return results.slice(-limit);
   }
   /**
@@ -232,9 +237,9 @@ let WebhookManager = class extends EventEmitter {
         id: d.id,
         event: d.event,
         status: d.status,
-        attempts: d.attempts
+        attempts: d.attempts,
       })),
-      stats: { ...this.stats }
+      stats: { ...this.stats },
     };
   }
   _evictOldDeliveries() {
@@ -243,13 +248,6 @@ let WebhookManager = class extends EventEmitter {
     }
   }
 };
-WebhookManager = __decorateClass([
-  singleton()
-], WebhookManager);
+WebhookManager = __decorateClass([singleton()], WebhookManager);
 var webhook_manager_default = WebhookManager;
-export {
-  WebhookDelivery,
-  WebhookEndpoint,
-  WebhookManager,
-  webhook_manager_default as default
-};
+export { WebhookDelivery, WebhookEndpoint, WebhookManager, webhook_manager_default as default };

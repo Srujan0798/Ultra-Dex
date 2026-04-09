@@ -35,6 +35,7 @@ This guide walks you through deploying Ultra-Dex with Better Stack logging, Cler
 ### 1.2 Configure
 
 Add to `.env.production`:
+
 ```env
 BETTER_STACK_SOURCE_TOKEN=bttr_xxxxxxxxxxxxxxxx
 LOG_LEVEL=info
@@ -43,6 +44,7 @@ LOG_LEVEL=info
 ### 1.3 Verify
 
 After deployment, make an API call:
+
 ```bash
 curl https://your-app.onrender.com/health
 ```
@@ -72,6 +74,7 @@ Check https://logs.betterstack.com/ - you should see the request within 60 secon
 ### 2.3 Configure
 
 Add to `.env.production`:
+
 ```env
 CLERK_PUBLISHABLE_KEY=pk_live_xxxxxxxxxxxxxxxx
 CLERK_SECRET_KEY=sk_live_xxxxxxxxxxxxxxxx
@@ -80,6 +83,7 @@ CLERK_SECRET_KEY=sk_live_xxxxxxxxxxxxxxxx
 ### 2.4 Test
 
 Register a user:
+
 ```bash
 curl -X POST https://your-app.onrender.com/api/auth/register \
   -H "Content-Type: application/json" \
@@ -91,6 +95,7 @@ curl -X POST https://your-app.onrender.com/api/auth/register \
 ```
 
 Response:
+
 ```json
 {
   "user": {
@@ -108,6 +113,7 @@ Response:
 ```
 
 Verify in:
+
 - ✅ Clerk Dashboard → Users (new user appears)
 - ✅ Better Stack Logs (user_signup event)
 
@@ -121,6 +127,7 @@ Verify in:
 2. Click **Add Product**
 
 **Product 1: Pro**
+
 - Name: `Ultra-Dex Pro`
 - Description: `Professional tier with 10K requests/month`
 - Pricing: `$29.00 USD / month`
@@ -128,6 +135,7 @@ Verify in:
 - Copy **Price ID** (e.g., `price_1ABC...`)
 
 **Product 2: Enterprise**
+
 - Name: `Ultra-Dex Enterprise`
 - Description: `Enterprise tier with unlimited requests`
 - Pricing: `$99.00 USD / month`
@@ -159,6 +167,7 @@ Verify in:
 ### 3.4 Environment Variables
 
 Add to `.env.production`:
+
 ```env
 # Stripe Keys
 STRIPE_SECRET_KEY=sk_live_xxxxxxxxxxxxxxxx
@@ -173,6 +182,7 @@ STRIPE_PRICE_ENTERPRISE=price_1DEF...
 ### 3.5 Test Subscription Flow
 
 **3.5.1 Login:**
+
 ```bash
 TOKEN=$(curl -X POST https://your-app.onrender.com/api/auth/login \
   -H "Content-Type: application/json" \
@@ -181,6 +191,7 @@ TOKEN=$(curl -X POST https://your-app.onrender.com/api/auth/login \
 ```
 
 **3.5.2 Subscribe to Pro:**
+
 ```bash
 curl -X POST https://your-app.onrender.com/api/billing/subscribe \
   -H "Authorization: Bearer $TOKEN" \
@@ -189,6 +200,7 @@ curl -X POST https://your-app.onrender.com/api/billing/subscribe \
 ```
 
 Response:
+
 ```json
 {
   "subscription": {
@@ -202,6 +214,7 @@ Response:
 ```
 
 **3.5.3 Verify:**
+
 - ✅ Stripe Dashboard → Subscriptions (new subscription)
 - ✅ Better Stack Logs (subscription_created event)
 - ✅ Stripe webhook logs (all events received)
@@ -226,6 +239,7 @@ Response:
 
 3. **Environment Variables:**
    Click **Environment** and add all variables from `.env.production`:
+
    ```
    NODE_ENV=production
    PORT=3000
@@ -284,12 +298,15 @@ heroku logs --tail
 ## ✅ Step 5: Verification
 
 ### 5.1 Health Check
+
 ```bash
 curl https://your-app.onrender.com/health
 ```
+
 Expected: `{"status":"ok","version":"3.0.0",...}`
 
 ### 5.2 Authentication
+
 ```bash
 # Register
 curl -X POST https://your-app.onrender.com/api/auth/register \
@@ -298,10 +315,12 @@ curl -X POST https://your-app.onrender.com/api/auth/register \
 ```
 
 Check:
+
 - ✅ Clerk Dashboard → Users (new user)
 - ✅ Better Stack → `user_signup` event
 
 ### 5.3 Billing
+
 ```bash
 # Login first
 TOKEN=...
@@ -317,12 +336,15 @@ curl -X POST https://your-app.onrender.com/api/billing/subscribe \
 ```
 
 Check:
+
 - ✅ Stripe Dashboard → Subscriptions (new subscription)
 - ✅ Better Stack → `subscription_created` event
 - ✅ Stripe webhook logs (events received)
 
 ### 5.4 Monitoring
+
 Go to https://logs.betterstack.com/ and verify events:
+
 - ✅ `http_request` - API calls
 - ✅ `user_signup` - New users
 - ✅ `user_login` - User logins
@@ -362,6 +384,7 @@ Go to https://logs.betterstack.com/ and verify events:
 ## 🔍 Troubleshooting
 
 ### Logs not appearing in Better Stack
+
 ```bash
 # Check environment variable
 echo $BETTER_STACK_SOURCE_TOKEN
@@ -376,6 +399,7 @@ curl http://localhost:3000/health
 ```
 
 ### Clerk authentication errors
+
 ```bash
 # Verify keys
 curl https://api.clerk.com/v1/users \
@@ -385,6 +409,7 @@ curl https://api.clerk.com/v1/users \
 ```
 
 ### Stripe webhook failures
+
 ```bash
 # Test webhook locally with Stripe CLI
 stripe listen --forward-to localhost:3000/api/billing/webhook

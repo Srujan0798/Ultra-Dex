@@ -3,6 +3,7 @@
 ## 🎯 **QUICK START**
 
 ### **Installation**
+
 ```bash
 # Install globally (recommended)
 npm install -g ultra-dex@4.3.0
@@ -13,6 +14,7 @@ ultra-dex --help     # See all available commands
 ```
 
 ### **Initial Setup**
+
 ```bash
 # Configure your AI provider keys
 ultra-dex setup
@@ -23,6 +25,7 @@ export ANTHROPIC_API_KEY=your-anthropic-key
 ```
 
 ### **Hello World Example**
+
 ```bash
 # Create a new project
 mkdir my-project && cd my-project
@@ -41,6 +44,7 @@ ultra-dex verify --full
 ## 🏗️ **CORE CONCEPTS**
 
 ### **1. The Meta-Layer Architecture**
+
 Ultra-Dex operates as a **meta-orchestration layer** that sits between you and your AI tools:
 
 ```
@@ -56,6 +60,7 @@ Ultra-Dex operates as a **meta-orchestration layer** that sits between you and y
 ```
 
 ### **2. Persistent Context (The Memory Solution)**
+
 Unlike other tools that "forget" after each session, Ultra-Dex maintains persistent context:
 
 - **CONTEXT.md**: Lives in your project root, survives AI session amnesia
@@ -63,17 +68,19 @@ Unlike other tools that "forget" after each session, Ultra-Dex maintains persist
 - **Multi-tool**: Shared across all AI tools via MCP
 
 ### **3. 21-Step Verification (Quality Assurance)**
+
 Every implementation goes through rigorous verification:
 
 1. Requirements validation
-2. Architecture alignment  
+2. Architecture alignment
 3. Security pattern application
 4. ...continues for 21 steps...
-21. Final verification checklist
+5. Final verification checklist
 
 ## 🛠️ **ESSENTIAL COMMANDS**
 
 ### **Project Management**
+
 ```bash
 # Initialize new project
 ultra-dex init
@@ -92,6 +99,7 @@ ultra-dex check --p0-only
 ```
 
 ### **Agent Orchestration**
+
 ```bash
 # Start agent swarm for complex tasks
 ultra-dex swarm start IMPLEMENTATION_PLAN.md
@@ -107,6 +115,7 @@ ultra-dex agents status
 ```
 
 ### **Context Management**
+
 ```bash
 # View current context
 ultra-dex context show
@@ -122,6 +131,7 @@ ultra-dex watch
 ```
 
 ### **MCP Integration (Meta-Layer Magic)**
+
 ```bash
 # Start MCP server (connects to Claude Desktop, Cursor, etc.)
 ultra-dex serve
@@ -131,6 +141,7 @@ ultra-dex serve
 ```
 
 ### **Quality Assurance**
+
 ```bash
 # Run 21-step verification
 ultra-dex verify --full
@@ -148,6 +159,7 @@ ultra-dex security audit
 ## 🎨 **ADVANCED FEATURES**
 
 ### **Multi-Agent Swarms**
+
 Coordinate multiple specialized agents for complex tasks:
 
 ```bash
@@ -160,7 +172,7 @@ cat > complex-task.md << EOF
 - Design database schema
 - Plan security measures
 
-## Phase 2: Implementation  
+## Phase 2: Implementation
 - Create user model
 - Implement registration/login
 - Add password hashing
@@ -182,6 +194,7 @@ ultra-dex swarm start complex-task.md --parallel 3
 ```
 
 ### **Persistent Memory System**
+
 Ultra-Dex remembers everything across sessions:
 
 ```bash
@@ -196,6 +209,7 @@ ultra-dex memory prune
 ```
 
 ### **Template Generation**
+
 Create complete project templates instantly:
 
 ```bash
@@ -210,6 +224,7 @@ ultra-dex template list
 ```
 
 ### **Integration Commands**
+
 Connect with your favorite tools:
 
 ```bash
@@ -229,6 +244,7 @@ ultra-dex k8s generate
 ## 🚀 **WORKFLOW EXAMPLES**
 
 ### **Complete SaaS Development**
+
 ```bash
 # 1. Initialize project
 mkdir my-saas && cd my-saas
@@ -254,6 +270,7 @@ ultra-dex deploy --provider vercel
 ```
 
 ### **AI Tool Integration**
+
 ```bash
 # Start MCP server
 ultra-dex serve
@@ -264,6 +281,7 @@ ultra-dex serve
 ```
 
 ### **Quality-First Development**
+
 ```bash
 # 1. Plan with quality in mind
 ultra-dex plan "Build feature" --quality-focused
@@ -282,6 +300,7 @@ ultra-dex production-ready
 ## 🔧 **TROUBLESHOOTING**
 
 ### **Common Issues**
+
 ```bash
 # MCP server not connecting
 ultra-dex doctor
@@ -300,6 +319,7 @@ ultra-dex config set performance.maxWorkers 4
 ```
 
 ### **Diagnostic Commands**
+
 ```bash
 # Comprehensive system check
 ultra-dex diagnostics run
@@ -317,18 +337,21 @@ ultra-dex setup verify
 ## 📚 **LEARNING PATHS**
 
 ### **For Beginners**
+
 1. Start with `ultra-dex init` and `ultra-dex plan`
 2. Practice with simple features first
 3. Learn the verification process with `ultra-dex verify`
 4. Try MCP integration with Claude Desktop
 
 ### **For Advanced Users**
+
 1. Master agent swarms with `ultra-dex swarm`
 2. Use templates for rapid prototyping
 3. Integrate with your existing tools
 4. Set up automated quality gates
 
 ### **For Enterprise**
+
 1. Configure security and compliance settings
 2. Set up team collaboration features
 3. Implement governance policies
@@ -337,24 +360,28 @@ ultra-dex setup verify
 ## 🎯 **BEST PRACTICES**
 
 ### **Planning**
+
 - Be specific in your requirements
 - Break large tasks into smaller chunks
 - Use the 34-section template for complex projects
 - Validate plans before execution
 
 ### **Execution**
+
 - Use agent swarms for complex tasks
 - Monitor progress with `ultra-dex watch`
 - Verify frequently with `ultra-dex verify`
 - Keep context updated with `ultra-dex context update`
 
 ### **Quality**
+
 - Always run 21-step verification
 - Use production readiness checks
 - Implement security audits
 - Monitor performance metrics
 
 ### **Collaboration**
+
 - Share CONTEXT.md with team members
 - Use MCP for real-time collaboration
 - Maintain ADRs for architectural decisions
@@ -363,6 +390,7 @@ ultra-dex setup verify
 ## 🚀 **NEXT STEPS**
 
 ### **Immediate Actions**
+
 1. ✅ Install Ultra-Dex: `npm install -g ultra-dex`
 2. ✅ Run setup: `ultra-dex setup`
 3. ✅ Try the Hello World example above
@@ -370,12 +398,14 @@ ultra-dex setup verify
 5. ✅ Connect your AI tools to the context bus
 
 ### **Learning Resources**
+
 - [Documentation](https://ultra-dex.github.io/docs) - Complete API reference
 - [Examples](https://github.com/Srujan0798/Ultra-Dex/examples) - Real-world use cases
 - [Community](https://github.com/Srujan0798/Ultra-Dex/discussions) - Get help and share ideas
 - [GitHub](https://github.com/Srujan0798/Ultra-Dex) - Star us if you love it!
 
 ### **Advanced Topics**
+
 - MCP Protocol integration
 - Custom agent development
 - Enterprise deployment

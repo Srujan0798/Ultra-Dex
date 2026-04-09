@@ -1,4 +1,3 @@
-
 import fs from 'fs';
 import path from 'path';
 
@@ -11,7 +10,11 @@ function checkFileForUsageTracking(filepath) {
       process.exit(1);
     }
     const content = fs.readFileSync(filepath, 'utf8');
-    if (content.includes('logUsage') || content.includes('recordSpend') || content.includes('recordUsage')) {
+    if (
+      content.includes('logUsage') ||
+      content.includes('recordSpend') ||
+      content.includes('recordUsage')
+    ) {
       console.log(`[INFO] ${path.basename(filepath)} contains usage tracking keywords.`);
       return true;
     }
@@ -27,14 +30,16 @@ console.log('Checking for usage tracking integration...');
 const files = ['openai.js', 'claude.js', 'gemini.js', 'index.js'];
 let found = false;
 
-files.forEach(file => {
+files.forEach((file) => {
   if (checkFileForUsageTracking(path.join(providersPath, file))) {
     found = true;
   }
 });
 
 if (!found) {
-  console.log('✅ PASS: No usage tracking calls found in provider implementations (Quota accounting disconnected).');
+  console.log(
+    '✅ PASS: No usage tracking calls found in provider implementations (Quota accounting disconnected).'
+  );
 } else {
   console.log('❌ FAIL: Usage tracking found (Need to verify if it is connected correctly).');
 }

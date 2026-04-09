@@ -10,7 +10,7 @@ const Dashboard = () => {
     agents: [],
     memory: { hot: 0, warm: 0, cold: 0 },
     costs: { today: 0, month: 0 },
-    logs: []
+    logs: [],
   });
   const [connected, setConnected] = useState(false);
 
@@ -31,37 +31,37 @@ const Dashboard = () => {
 
     // Listen for system updates
     newSocket.on('system-update', (data) => {
-      setSystemStatus(prev => ({
+      setSystemStatus((prev) => ({
         ...prev,
-        ...data
+        ...data,
       }));
     });
 
     newSocket.on('agent-status', (agents) => {
-      setSystemStatus(prev => ({
+      setSystemStatus((prev) => ({
         ...prev,
-        agents
+        agents,
       }));
     });
 
     newSocket.on('memory-update', (memory) => {
-      setSystemStatus(prev => ({
+      setSystemStatus((prev) => ({
         ...prev,
-        memory
+        memory,
       }));
     });
 
     newSocket.on('cost-update', (costs) => {
-      setSystemStatus(prev => ({
+      setSystemStatus((prev) => ({
         ...prev,
-        costs
+        costs,
       }));
     });
 
     newSocket.on('log-entry', (log) => {
-      setSystemStatus(prev => ({
+      setSystemStatus((prev) => ({
         ...prev,
-        logs: [...prev.logs.slice(-49), log] // Keep last 50 logs
+        logs: [...prev.logs.slice(-49), log], // Keep last 50 logs
       }));
     });
 
@@ -89,8 +89,12 @@ const Dashboard = () => {
             <h1 className="ml-3 text-2xl font-bold text-gray-900">Ultra-Dex Dashboard</h1>
           </div>
           <div className="flex items-center space-x-4">
-            <div className={`h-3 w-3 rounded-full ${connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
-            <span className="text-sm text-gray-600">{connected ? 'Connected' : 'Disconnected'}</span>
+            <div
+              className={`h-3 w-3 rounded-full ${connected ? 'bg-green-500' : 'bg-red-500'}`}
+            ></div>
+            <span className="text-sm text-gray-600">
+              {connected ? 'Connected' : 'Disconnected'}
+            </span>
           </div>
         </div>
       </header>
@@ -100,7 +104,9 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow p-6">
             <h3 className="text-lg font-medium text-gray-900">Active Agents</h3>
-            <p className="mt-2 text-3xl font-semibold text-indigo-600">{systemStatus.agents.length}</p>
+            <p className="mt-2 text-3xl font-semibold text-indigo-600">
+              {systemStatus.agents.length}
+            </p>
             <p className="text-sm text-gray-500 mt-1">Currently running</p>
           </div>
           <div className="bg-white rounded-xl shadow p-6">
@@ -112,7 +118,9 @@ const Dashboard = () => {
           </div>
           <div className="bg-white rounded-xl shadow p-6">
             <h3 className="text-lg font-medium text-gray-900">Today's Cost</h3>
-            <p className="mt-2 text-3xl font-semibold text-indigo-600">${systemStatus.costs.today?.toFixed(2) || '0.00'}</p>
+            <p className="mt-2 text-3xl font-semibold text-indigo-600">
+              ${systemStatus.costs.today?.toFixed(2) || '0.00'}
+            </p>
             <p className="text-sm text-gray-500 mt-1">Current billing period</p>
           </div>
         </div>
@@ -150,10 +158,15 @@ const Dashboard = () => {
               {systemStatus.logs.length > 0 ? (
                 systemStatus.logs.map((log, index) => (
                   <div key={index} className="text-gray-300 mb-1">
-                    <span className="text-green-400">[{new Date(log.timestamp).toLocaleTimeString()}]</span>{' '}
-                    <span className={`text-${log.level === 'error' ? 'red' : log.level === 'warn' ? 'yellow' : 'gray'}-${log.level === 'error' ? '300' : '400'}`}>
+                    <span className="text-green-400">
+                      [{new Date(log.timestamp).toLocaleTimeString()}]
+                    </span>{' '}
+                    <span
+                      className={`text-${log.level === 'error' ? 'red' : log.level === 'warn' ? 'yellow' : 'gray'}-${log.level === 'error' ? '300' : '400'}`}
+                    >
                       {log.level.toUpperCase()}
-                    </span>: {log.message}
+                    </span>
+                    : {log.message}
                   </div>
                 ))
               ) : (

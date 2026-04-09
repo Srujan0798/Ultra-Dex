@@ -8,13 +8,13 @@ console.log('🔍 Auto-monitoring Ultra-Dex deployment...\n');
 
 async function checkHealth() {
   const timestamp = new Date().toLocaleTimeString();
-  
+
   try {
     const response = await fetch(`${SERVICE_URL}/health`, {
       method: 'GET',
-      headers: { 'Accept': 'application/json' }
+      headers: { Accept: 'application/json' },
     });
-    
+
     if (response.ok) {
       const data = await response.json();
       console.log(`✅ [${timestamp}] DEPLOYMENT LIVE!`);
@@ -39,4 +39,4 @@ async function checkHealth() {
 checkHealth();
 setInterval(checkHealth, CHECK_INTERVAL);
 
-console.log(`Checking every ${CHECK_INTERVAL/1000}s... Press Ctrl+C to stop\n`);
+console.log(`Checking every ${CHECK_INTERVAL / 1000}s... Press Ctrl+C to stop\n`);

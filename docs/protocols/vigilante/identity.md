@@ -9,6 +9,7 @@
 ## What Users GET When Ultra-Dex Ships
 
 ### 🚀 Solo Developer Transformation
+
 **BEFORE:** Juggling 5 AI APIs. Context lost between sessions. Integration hell. Prompt engineering nightmare.
 
 **AFTER:** One command. All models. Seamless orchestration. Your AI just works.
@@ -18,6 +19,7 @@
 ---
 
 ### 🏢 Enterprise Transformation
+
 **BEFORE:** Vendor lock-in. Compliance nightmares. Fragmented tools. Security questions with no answers.
 
 **AFTER:** Full control. Audit trails. Unified platform. Your security team sleeps at night.
@@ -27,6 +29,7 @@
 ---
 
 ### 💡 Indie Hacker Transformation
+
 **BEFORE:** Can't afford enterprise AI. Limited to one provider. Watching competitors use better models.
 
 **AFTER:** Access to ALL models. Pay only for what you use. Same power as funded startups.
@@ -37,25 +40,25 @@
 
 ## The Pain We Remove
 
-| Pain | Gone |
-|------|------|
-| API key management across 10 providers | One unified config |
-| Context lost between AI sessions | Persistent memory |
-| Prompt engineering for each model | Universal interface |
-| Vendor lock-in fears | Switch models in one line |
-| Integration debugging | It just works |
+| Pain                                   | Gone                      |
+| -------------------------------------- | ------------------------- |
+| API key management across 10 providers | One unified config        |
+| Context lost between AI sessions       | Persistent memory         |
+| Prompt engineering for each model      | Universal interface       |
+| Vendor lock-in fears                   | Switch models in one line |
+| Integration debugging                  | It just works             |
 
 ---
 
 ## The Power We Give
 
-| Power | Unlocked |
-|-------|----------|
-| Use GPT-4, Claude, Gemini in same session | ✅ |
-| Switch providers without code changes | ✅ |
-| Local models when you need privacy | ✅ |
-| AI agents that actually complete tasks | ✅ |
-| One CLI to rule them all | ✅ |
+| Power                                     | Unlocked |
+| ----------------------------------------- | -------- |
+| Use GPT-4, Claude, Gemini in same session | ✅       |
+| Switch providers without code changes     | ✅       |
+| Local models when you need privacy        | ✅       |
+| AI agents that actually complete tasks    | ✅       |
+| One CLI to rule them all                  | ✅       |
 
 ---
 
@@ -119,9 +122,9 @@ Just outcomes.
 
 ---
 
-*The vigilante doesn't explain the plane. The vigilante DELIVERS the destination.*
+_The vigilante doesn't explain the plane. The vigilante DELIVERS the destination._
 
 ---
 
-*Last Updated: 2026-04-04*
-*Protocol Version: 2.0 — Destination-First*
+_Last Updated: 2026-04-04_
+_Protocol Version: 2.0 — Destination-First_

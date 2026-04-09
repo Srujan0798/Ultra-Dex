@@ -13,10 +13,7 @@ interface WebSocketOptions<T> {
   onMessage?: (data: T) => void;
 }
 
-export function useWebSocket<T = unknown>(
-  url: string,
-  options: WebSocketOptions<T> = {}
-) {
+export function useWebSocket<T = unknown>(url: string, options: WebSocketOptions<T> = {}) {
   const { reconnect = true, reconnectInterval = 5000, onMessage } = options;
   const [data, setData] = useState<T | null>(null);
   const [status, setStatus] = useState<WebSocketStatus>('connecting');
@@ -107,10 +104,13 @@ export function useWebSocket<T = unknown>(
     };
   }, [url, reconnect, reconnectInterval]); // onMessage removed from deps
 
-  return useMemo(() => ({
-    data,
-    status,
-    connected: status === 'open',
-    error,
-  }), [data, status, error]);
+  return useMemo(
+    () => ({
+      data,
+      status,
+      connected: status === 'open',
+      error,
+    }),
+    [data, status, error]
+  );
 }

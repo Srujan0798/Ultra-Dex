@@ -1,12 +1,6 @@
 // apps/dashboard/pages/index.js
 import React, { useState, useEffect } from 'react';
-import { 
-  Card, 
-  CardHeader, 
-  CardTitle, 
-  CardContent, 
-  CardFooter 
-} from '../components/ui/Card';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../components/ui/Card';
 import {
   Activity,
   Users,
@@ -25,7 +19,7 @@ import {
   GitBranch,
   Settings,
   Terminal,
-  User
+  User,
 } from 'lucide-react';
 
 export default function Dashboard() {
@@ -37,7 +31,7 @@ export default function Dashboard() {
     performanceScore: 0,
     securityScore: 0,
     memoryUsage: 0,
-    taskCompletion: 0
+    taskCompletion: 0,
   });
 
   const [loading, setLoading] = useState(true);
@@ -54,7 +48,7 @@ export default function Dashboard() {
         performanceScore: 94,
         securityScore: 98,
         memoryUsage: 67,
-        taskCompletion: 96.8
+        taskCompletion: 96.8,
       });
       setLoading(false);
     }, 1000);
@@ -71,7 +65,7 @@ export default function Dashboard() {
         activeTasks: Math.floor(Math.random() * 50) + 10,
         queuedTasks: Math.floor(Math.random() * 20) + 5,
         errorRate: Math.random() * 0.02,
-        systemLoad: Math.random() * 100
+        systemLoad: Math.random() * 100,
       });
     }, 3000);
 
@@ -91,11 +85,15 @@ export default function Dashboard() {
           <div className="text-2xl font-bold text-white">
             {typeof value === 'number' && value >= 1000 ? `${(value / 1000).toFixed(1)}K` : value}
             {typeof value === 'number' && value < 1000 && value > 0.1 ? `${value}` : ''}
-            {typeof value === 'number' && value <= 0.1 && value > 0 ? `${(value * 100).toFixed(1)}%` : ''}
+            {typeof value === 'number' && value <= 0.1 && value > 0
+              ? `${(value * 100).toFixed(1)}%`
+              : ''}
             {typeof value === 'string' ? value : ''}
           </div>
           {change && (
-            <p className={`text-xs ${change > 0 ? 'text-green-500' : 'text-red-500'} flex items-center`}>
+            <p
+              className={`text-xs ${change > 0 ? 'text-green-500' : 'text-red-500'} flex items-center`}
+            >
               <TrendingUp className={`w-3 h-3 mr-1 ${change < 0 ? 'rotate-180' : ''}`} />
               {Math.abs(change)}% from last month
             </p>
@@ -131,10 +129,30 @@ export default function Dashboard() {
                 <span className="ml-2 text-xl font-bold text-white">Ultra-Dex</span>
               </div>
               <nav className="ml-6 hidden md:flex md:space-x-8">
-                <a href="#" className="text-slate-300 hover:text-white px-1 py-2 text-sm font-medium">Dashboard</a>
-                <a href="#" className="text-slate-300 hover:text-white px-1 py-2 text-sm font-medium">Agents</a>
-                <a href="#" className="text-slate-300 hover:text-white px-1 py-2 text-sm font-medium">Memory</a>
-                <a href="#" className="text-slate-300 hover:text-white px-1 py-2 text-sm font-medium">Settings</a>
+                <a
+                  href="#"
+                  className="text-slate-300 hover:text-white px-1 py-2 text-sm font-medium"
+                >
+                  Dashboard
+                </a>
+                <a
+                  href="#"
+                  className="text-slate-300 hover:text-white px-1 py-2 text-sm font-medium"
+                >
+                  Agents
+                </a>
+                <a
+                  href="#"
+                  className="text-slate-300 hover:text-white px-1 py-2 text-sm font-medium"
+                >
+                  Memory
+                </a>
+                <a
+                  href="#"
+                  className="text-slate-300 hover:text-white px-1 py-2 text-sm font-medium"
+                >
+                  Settings
+                </a>
               </nav>
             </div>
             <div className="flex items-center">
@@ -164,7 +182,9 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-white">Welcome back, Developer!</h1>
-              <p className="text-slate-400 mt-2">Here's what's happening with your AI orchestration platform today.</p>
+              <p className="text-slate-400 mt-2">
+                Here's what's happening with your AI orchestration platform today.
+              </p>
             </div>
             <div className="flex space-x-3">
               <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 flex items-center space-x-2">
@@ -180,30 +200,15 @@ export default function Dashboard() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-          <StatCard
-            title="Total Agents"
-            value={metrics.totalAgents}
-            icon={Bot}
-            change={12.5}
-          />
-          <StatCard
-            title="Active Users"
-            value={metrics.activeUsers}
-            icon={Users}
-            change={8.3}
-          />
+          <StatCard title="Total Agents" value={metrics.totalAgents} icon={Bot} change={12.5} />
+          <StatCard title="Active Users" value={metrics.activeUsers} icon={Users} change={8.3} />
           <StatCard
             title="Monthly Revenue"
             value={`$${(metrics.mrr / 1000).toFixed(1)}K`}
             icon={DollarSign}
             change={15.2}
           />
-          <StatCard
-            title="System Uptime"
-            value={`${metrics.uptime}%`}
-            icon={Shield}
-            change={0.1}
-          />
+          <StatCard title="System Uptime" value={`${metrics.uptime}%`} icon={Shield} change={0.1} />
         </div>
 
         {/* Real-time Status */}
@@ -226,11 +231,15 @@ export default function Dashboard() {
                 <div className="text-sm text-slate-400">Queued Tasks</div>
               </div>
               <div className="text-center p-3 bg-slate-700/30 rounded-lg">
-                <div className="text-2xl font-bold text-red-400">{(realTimeData.errorRate * 100).toFixed(2)}%</div>
+                <div className="text-2xl font-bold text-red-400">
+                  {(realTimeData.errorRate * 100).toFixed(2)}%
+                </div>
                 <div className="text-sm text-slate-400">Error Rate</div>
               </div>
               <div className="text-center p-3 bg-slate-700/30 rounded-lg">
-                <div className="text-2xl font-bold text-green-400">{realTimeData.systemLoad.toFixed(1)}%</div>
+                <div className="text-2xl font-bold text-green-400">
+                  {realTimeData.systemLoad.toFixed(1)}%
+                </div>
                 <div className="text-sm text-slate-400">System Load</div>
               </div>
             </div>
@@ -254,34 +263,34 @@ export default function Dashboard() {
                     <span className="text-white">{metrics.performanceScore}/100</span>
                   </div>
                   <div className="w-full bg-slate-700 rounded-full h-2">
-                    <div 
-                      className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full" 
+                    <div
+                      className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full"
                       style={{ width: `${metrics.performanceScore}%` }}
                     ></div>
                   </div>
                 </div>
-                
+
                 <div>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-slate-400">Task Completion Rate</span>
                     <span className="text-white">{metrics.taskCompletion}%</span>
                   </div>
                   <div className="w-full bg-slate-700 rounded-full h-2">
-                    <div 
-                      className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full" 
+                    <div
+                      className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full"
                       style={{ width: `${metrics.taskCompletion}%` }}
                     ></div>
                   </div>
                 </div>
-                
+
                 <div>
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-slate-400">Memory Utilization</span>
                     <span className="text-white">{metrics.memoryUsage}%</span>
                   </div>
                   <div className="w-full bg-slate-700 rounded-full h-2">
-                    <div 
-                      className="bg-gradient-to-r from-yellow-500 to-orange-500 h-2 rounded-full" 
+                    <div
+                      className="bg-gradient-to-r from-yellow-500 to-orange-500 h-2 rounded-full"
                       style={{ width: `${metrics.memoryUsage}%` }}
                     ></div>
                   </div>
@@ -305,13 +314,13 @@ export default function Dashboard() {
                     <span className="text-white">{metrics.securityScore}/100</span>
                   </div>
                   <div className="w-full bg-slate-700 rounded-full h-2">
-                    <div 
-                      className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full" 
+                    <div
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full"
                       style={{ width: `${metrics.securityScore}%` }}
                     ></div>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center p-3 bg-slate-700/50 rounded-lg">
                     <Shield className="w-6 h-6 text-green-500 mx-auto mb-1" />
@@ -324,7 +333,7 @@ export default function Dashboard() {
                     <div className="text-sm font-medium text-white">Compliant</div>
                   </div>
                 </div>
-                
+
                 <div className="text-sm text-slate-400 flex items-center">
                   <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
                   Zero security incidents in 90 days
@@ -351,14 +360,22 @@ export default function Dashboard() {
                   { name: 'CodeReviewer', status: 'online', tasks: 18, responseTime: '212ms' },
                   { name: 'ContentGenerator', status: 'warning', tasks: 12, responseTime: '345ms' },
                   { name: 'SecurityScanner', status: 'online', tasks: 8, responseTime: '156ms' },
-                  { name: 'MemoryManager', status: 'online', tasks: 45, responseTime: '98ms' }
+                  { name: 'MemoryManager', status: 'online', tasks: 45, responseTime: '98ms' },
                 ].map((agent, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg"
+                  >
                     <div className="flex items-center">
-                      <div className={`w-3 h-3 rounded-full mr-3 ${
-                        agent.status === 'online' ? 'bg-green-500' : 
-                        agent.status === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
-                      }`}></div>
+                      <div
+                        className={`w-3 h-3 rounded-full mr-3 ${
+                          agent.status === 'online'
+                            ? 'bg-green-500'
+                            : agent.status === 'warning'
+                              ? 'bg-yellow-500'
+                              : 'bg-red-500'
+                        }`}
+                      ></div>
                       <span className="text-white font-medium">{agent.name}</span>
                     </div>
                     <div className="text-right">
@@ -388,7 +405,7 @@ export default function Dashboard() {
                 <div className="w-full bg-slate-700 rounded-full h-2">
                   <div className="bg-blue-500 h-2 rounded-full" style={{ width: '65%' }}></div>
                 </div>
-                
+
                 <div className="flex justify-between">
                   <span className="text-slate-400">Warm Storage</span>
                   <span className="text-white">42%</span>
@@ -396,7 +413,7 @@ export default function Dashboard() {
                 <div className="w-full bg-slate-700 rounded-full h-2">
                   <div className="bg-green-500 h-2 rounded-full" style={{ width: '42%' }}></div>
                 </div>
-                
+
                 <div className="flex justify-between">
                   <span className="text-slate-400">Cold Archive</span>
                   <span className="text-white">28%</span>
@@ -404,7 +421,7 @@ export default function Dashboard() {
                 <div className="w-full bg-slate-700 rounded-full h-2">
                   <div className="bg-purple-500 h-2 rounded-full" style={{ width: '28%' }}></div>
                 </div>
-                
+
                 <div className="mt-4 p-3 bg-slate-700/30 rounded-lg">
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-400">Total Memory</span>
@@ -431,18 +448,56 @@ export default function Dashboard() {
           <CardContent>
             <div className="space-y-4">
               {[
-                { id: 1, agent: 'DataProcessor', action: 'completed task', time: '2 minutes ago', status: 'success' },
-                { id: 2, agent: 'ContentGenerator', action: 'started execution', time: '5 minutes ago', status: 'running' },
-                { id: 3, agent: 'SecurityScanner', action: 'completed scan', time: '12 minutes ago', status: 'success' },
-                { id: 4, agent: 'APIGateway', action: 'processed 1,248 requests', time: '15 minutes ago', status: 'success' },
-                { id: 5, agent: 'MemoryManager', action: 'optimized cache', time: '22 minutes ago', status: 'success' }
-              ].map(activity => (
-                <div key={activity.id} className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg hover:bg-slate-700/50 transition-colors">
+                {
+                  id: 1,
+                  agent: 'DataProcessor',
+                  action: 'completed task',
+                  time: '2 minutes ago',
+                  status: 'success',
+                },
+                {
+                  id: 2,
+                  agent: 'ContentGenerator',
+                  action: 'started execution',
+                  time: '5 minutes ago',
+                  status: 'running',
+                },
+                {
+                  id: 3,
+                  agent: 'SecurityScanner',
+                  action: 'completed scan',
+                  time: '12 minutes ago',
+                  status: 'success',
+                },
+                {
+                  id: 4,
+                  agent: 'APIGateway',
+                  action: 'processed 1,248 requests',
+                  time: '15 minutes ago',
+                  status: 'success',
+                },
+                {
+                  id: 5,
+                  agent: 'MemoryManager',
+                  action: 'optimized cache',
+                  time: '22 minutes ago',
+                  status: 'success',
+                },
+              ].map((activity) => (
+                <div
+                  key={activity.id}
+                  className="flex items-center justify-between p-3 bg-slate-700/30 rounded-lg hover:bg-slate-700/50 transition-colors"
+                >
                   <div className="flex items-center">
-                    <div className={`w-2 h-2 rounded-full mr-3 ${
-                      activity.status === 'success' ? 'bg-green-500' : 
-                      activity.status === 'running' ? 'bg-blue-500' : 'bg-red-500'
-                    }`}></div>
+                    <div
+                      className={`w-2 h-2 rounded-full mr-3 ${
+                        activity.status === 'success'
+                          ? 'bg-green-500'
+                          : activity.status === 'running'
+                            ? 'bg-blue-500'
+                            : 'bg-red-500'
+                      }`}
+                    ></div>
                     <div>
                       <div className="font-medium text-white">{activity.agent}</div>
                       <div className="text-sm text-slate-400">{activity.action}</div>

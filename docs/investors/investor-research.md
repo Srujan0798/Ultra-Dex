@@ -363,6 +363,7 @@
 ## Prioritized Investor List
 
 ### Tier 1 (Highest Priority - 10 investors)
+
 1. Y Combinator - Technical network and AI focus
 2. a16z - Leading AI investor with strong technical background
 3. Bessemer - Enterprise software and developer tools expertise
@@ -375,6 +376,7 @@
 10. NEA - Enterprise infrastructure focus
 
 ### Tier 2 (High Priority - 15 investors)
+
 11. Salesforce Ventures
 12. Oracle Ventures
 13. IBM Ventures
@@ -392,6 +394,7 @@
 25. Palo Alto Networks Stripes Fund
 
 ### Tier 3 (Medium Priority - 15 investors)
+
 26. Lightspeed Venture Partners
 27. Costanoa Ventures
 28. Bolt Ventures
@@ -409,6 +412,7 @@
 40. Techstars
 
 ### Tier 4 (Additional Targets - 10 investors)
+
 41. 500 Startups
 42. Seedcamp
 43. Entrepreneur First
@@ -423,6 +427,7 @@
 ## Investment Thesis Alignment
 
 ### Ultra-Dex Aligns With:
+
 - **AI Infrastructure**: Core AI orchestration platform
 - **Developer Tools**: Delightful developer experience
 - **Enterprise Software**: Security, compliance, and governance
@@ -431,6 +436,7 @@
 - **Security & Compliance**: SOC 2, GDPR, enterprise controls
 
 ### Key Value Propositions for Investors:
+
 1. **Large Market**: $100B+ AI developer tools market
 2. **Unique Position**: Only enterprise-grade AI orchestration platform
 3. **Strong Traction**: 500+ users, $5K+ MRR, growing at 15% MoM
@@ -442,18 +448,21 @@
 ## Outreach Strategy
 
 ### Warm Intros (Target: 20 investors)
+
 - Leverage founder networks
 - Use advisor connections
 - Partner introductions
 - Alumni networks
 
 ### Cold Outreach (Target: 30 investors)
+
 - Personalized emails highlighting our unique value
 - Technical deep-dive materials
 - Live demo invitations
 - Follow-up sequences
 
 ### Engagement Channels
+
 - LinkedIn messaging
 - Twitter engagement
 - Email outreach

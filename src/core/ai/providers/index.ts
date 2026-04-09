@@ -14,16 +14,16 @@ function getProvider(name) {
 }
 function createProvider(type, options = {}) {
   switch (type.toLowerCase()) {
-    case "openai":
+    case 'openai':
       return new OpenAIProvider2(options);
-    case "anthropic":
+    case 'anthropic':
       return new AnthropicProvider2(options);
     default:
       throw new Error(`Unknown provider type: ${type}`);
   }
 }
-registerProvider("openai", createProvider("openai"));
-registerProvider("anthropic", createProvider("anthropic"));
+registerProvider('openai', createProvider('openai'));
+registerProvider('anthropic', createProvider('anthropic'));
 var providers_default = providers;
 export {
   AnthropicProvider,
@@ -34,5 +34,5 @@ export {
   providers_default as default,
   getProvider,
   providers,
-  registerProvider
+  registerProvider,
 };

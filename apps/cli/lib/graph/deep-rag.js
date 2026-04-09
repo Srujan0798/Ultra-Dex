@@ -14,9 +14,7 @@ async function loadChroma() {
     const mod = await import('chromadb');
     return mod.ChromaClient || mod.default;
   } catch (_error) {
-    throw new Error(
-      'chromadb is required for DeepRAG. Install with `npm install chromadb`.'
-    );
+    throw new Error('chromadb is required for DeepRAG. Install with `npm install chromadb`.');
   }
 }
 

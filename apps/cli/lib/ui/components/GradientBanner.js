@@ -14,11 +14,13 @@ const GradientBanner = ({ text, colors = ['#00f2fe', '#4facfe'], bold = true }) 
 
   const gradientText = gradient(colors).multiline(text);
 
-  return /* @__PURE__ */ React.createElement(Box, { marginY: 1 }, /* @__PURE__ */ React.createElement(Text, { bold: bold }, gradientText));
+  return /* @__PURE__ */ React.createElement(
+    Box,
+    { marginY: 1 },
+    /* @__PURE__ */ React.createElement(Text, { bold: bold }, gradientText)
+  );
 };
 
 var GradientBanner_default = GradientBanner;
 
-export {
-  GradientBanner_default as default
-};
+export { GradientBanner_default as default };

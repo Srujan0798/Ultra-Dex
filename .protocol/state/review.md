@@ -1,153 +1,200 @@
-# Cycle 4 → Cycle 5 Review: Pre-Launch Audit
+# CYCLE 6 PRE-AUDIT: BRUTAL GROUND TRUTH
 
-## What Cycle 4 Delivered (Tech Debt → Production Ready)
-
-| Check | Status | Hard Number |
-|-------|--------|-------------|
-| TypeScript compilation | ✅ PASS | `tsc --noEmit` → 0 errors, 306 .ts files |
-| Build: core | ✅ PASS | ESM modules ready |
-| Build: CLI | ✅ PASS | dist/ultra-dex.js built |
-| Build: dashboard | ✅ PASS | vite build fixed |
-| Unit tests | ✅ PASS | 318 passing |
-| Integration tests | ✅ PASS | 33 passing |
-| ESLint | ✅ PASS | 0 errors (95 warnings) |
-| npm audit | ✅ PASS | 0 high/critical |
-| NoopSubsystems | ✅ PASS | 0 remaining |
-| Dockerfile.prod | ✅ EXISTS | Multi-stage alpine, node:22 |
-| docker-compose.prod.yml | ✅ EXISTS | With Redis mesh |
-| config/production.json | ✅ EXISTS | Env var references |
-| config/staging.json | ✅ EXISTS | Debug config |
-| scripts/deployment/ | ✅ EXISTS | 4 scripts (deploy, staging, rollback, health-check) |
-| docs/DEPLOYMENT.md | ✅ EXISTS | 6.8 KB |
-| docs/OPERATIONS.md | ✅ EXISTS | 11.3 KB |
-| Version | ✅ | 3.0.0 |
-
-**Cycle 4 verdict: COMPLETE. All 16 completion criteria met.**
+> Generated: 2026-04-09 | Source: Live codebase deep scan
+> No opinions. No claims. Only what the codebase actually says.
 
 ---
 
-## What Exists But Needs Wiring (Scaffolds from Diamond State)
+## SYSTEM STATE
 
-### Auth Module — src/core/auth/ (470 LOC)
-
-| File | LOC | State | What Needs Doing |
-|------|-----|-------|------------------|
-| auth-service.ts | 80 | STUB | Uses `Map<string, User>` in-memory. Replace with Clerk SDK calls. |
-| user-model.ts | 57 | OK | Interfaces defined. May need Clerk-specific fields (clerkId, publicMetadata). |
-| rbac.ts | 123 | STUB | Role definitions exist. Need to read role from Clerk publicMetadata. |
-| rbac-manager.ts | 99 | STUB | RBAC enforcement exists. Wire to auth middleware for route protection. |
-| sso.ts | 111 | STUB | SSO scaffold. Wire to Clerk SAML for enterprise or leave as TODO. |
-
-**Key observation:** AuthService interface is clean. Can swap internals without breaking consumers.
-
-### Billing Module — src/core/billing/ (750 LOC)
-
-| File | LOC | State | What Needs Doing |
-|------|-----|-------|------------------|
-| billing-service.ts | 135 | STUB | Has `Stripe` import with dummy key `sk_test_dummy`. Replace with real key from env. |
-| billing-manager.ts | 523 | PARTIAL | Orchestration logic exists. Needs checkout session + webhook handler. |
-| pricing-tiers.ts | 92 | OK | Free/Pro/Enterprise defined with limits. Need Stripe price IDs. |
-
-**Key observation:** Stripe SDK already imported. pricing-tiers.ts already defines the tiers. Gap is: no checkout flow, no webhooks, no usage metering.
-
-### Analytics Module — src/core/analytics/ (771 LOC)
-
-| File | LOC | State | What Needs Doing |
-|------|-----|-------|------------------|
-| analytics-service.ts | 69 | STUB | Stores events in local array. Replace with PostHog client. |
-| enterprise-analytics.ts | 700 | ADVANCED | Full analytics engine. Wire PostHog as event sink. |
-| index.ts | 2 | OK | Just re-exports. |
-
-**Key observation:** enterprise-analytics.ts is 700 LOC of real analytics logic (aggregation, time-series, etc.). Just needs a real event sink instead of local array.
-
----
-
-## What Does NOT Exist (Must Be Created in Cycle 5)
-
-| Component | Files Needed | Complexity |
-|-----------|-------------|------------|
-| Clerk client wrapper | src/core/auth/clerk-client.ts | Medium — SDK wrapper + dev fallback |
-| Auth middleware | src/core/auth/middleware.ts | Medium — verify token, attach context, RBAC check |
-| PostHog client | src/core/analytics/posthog-client.ts | Low — SDK wrapper + event batching |
-| Sentry client | src/core/analytics/sentry-client.ts | Low — SDK init + captureException |
-| Stripe client wrapper | src/core/billing/stripe-client.ts | Medium — typed helpers for Stripe operations |
-| Webhook handler | src/core/billing/webhook-handler.ts | High — signature verification, event handling, idempotency |
-| Usage meter | src/core/billing/usage-meter.ts | Medium — per-user tracking, limit enforcement |
-| Structured logger | src/core/system/structured-logger.ts | Low — JSON format wrapper around winston |
-| Monitoring service | src/core/system/monitoring.ts | Medium — request counting, latency tracking, /metrics |
-| Onboarding flow | apps/dashboard/src/pages/Onboarding.tsx | Medium — 5-step wizard |
-| Analytics dashboard | apps/dashboard/src/pages/Analytics.tsx | Medium — charts + tables |
-| Billing dashboard | apps/dashboard/src/pages/Billing.tsx | Medium — plan + usage + invoices |
-| Landing page | apps/dashboard/src/pages/Landing.tsx | Low — hero + features + pricing |
-| Render config | render.json, Procfile | Low — deployment config |
-| Stripe setup script | scripts/setup-stripe.sh | Low — CLI commands |
-| Billing docs | docs/BILLING.md | Low — setup + usage guide |
-| CLI login command | apps/cli/lib/commands/login.ts | Medium — browser auth + local token |
-
-**Total new files: ~17. Total estimated new LOC: ~3,000-4,000.**
-
----
-
-## Risk Assessment
-
-| Risk | Severity | Mitigation |
-|------|----------|------------|
-| Clerk SDK breaking existing auth interface | HIGH | Keep AuthService interface, swap internals. Dev-mode fallback to in-memory. |
-| Stripe webhook reliability | HIGH | Idempotent handlers. Log all events. Retry on failure. Test with stripe CLI trigger. |
-| PostHog batching delays | LOW | 30s flush interval. Local logging as backup. |
-| Usage metering accuracy | MEDIUM | Count at middleware level before AI call. Atomic increment. |
-| Dashboard build breaks from new pages | MEDIUM | Type-check after each page. Build after each phase. |
-| Env vars not set on deploy | HIGH | Startup validation: check all required vars, fail fast with clear error. |
-| Test regressions from service rewrites | MEDIUM | Mock all external services in tests. Run full suite after each window. |
-
----
-
-## Cycle 5 Mission
-
-**"Deploy. Get users. Iterate. Scale. Win."**
-
-No new architecture. No new core modules. Wire existing scaffolds to real SaaS services (Clerk, PostHog, Sentry, Stripe). Deploy to Render. Create onboarding flow. Launch publicly.
-
-After Cycle 5: Ultra-Dex is a live product with paying users.
-
----
-
-## How to Use These Dispatches
-
-```bash
-# 1. View the dispatch sheet
-cat .protocol/state/dispatches.md
-
-# 2. Complete OWNER pre-requisites first (35 min)
-#    - Create Render, Clerk, PostHog, Sentry, Stripe accounts
-#    - Get all API keys
-#    - Set env vars in Render
-
-# 3. Execute Phase 0 first (deployment)
-#    Copy W1 command → run with Claude
-#    After W1: copy W2 command → run with Codex
-
-# 4. Execute Parallel Group 1 (auth + analytics + billing)
-#    Copy W3 command → run with Claude Opus
-#    Copy W5 command → run with Codex o3
-#    Copy W7 command → run with Claude Sonnet
-#    (all 3 can run simultaneously)
-
-# 5. Execute Parallel Group 2 (wiring + dashboards)
-#    Copy W4, W6, W8, W9 → run simultaneously
-
-# 6. Execute Group 3 (onboarding + landing)
-#    Copy W10, W11 → run simultaneously
-
-# 7. Final verification
-#    Copy W12 → run with Gemini
-
-# Example — running W1:
-claude --model sonnet --effort high \
-  "Deploy Ultra-Dex v3.0.0 to production..."
+```
+Version:        3.0.0
+Deployed:       https://ultra-dex.onrender.com (Render)
+TypeScript:     0 errors (tsc --noEmit clean)
+Lint:           0 errors, 0 warnings (611 files)
+Unit tests:     13 pass / 50 FAIL (esbuild platform mismatch)
+Integration:    39 pass / 2 FAIL (same esbuild)
+CLI tests:      21 pass / 4 FAIL (3 esbuild + 1 real)
+npm audit:      0 high/critical (3 low)
+Dashboard build: FAILS (rolldown native binding mismatch)
+CLI --help:     FAILS (Cannot find module registry.js)
+MOCK_AI run:    RUNS but RBAC blocks: Role "viewer" cannot run @planner
 ```
 
 ---
 
-*Review generated 2026-04-08 from live codebase audit (post-Cycle-4 completion)*
-*Next: Cycle 5 — GO LIVE*
+## BLOCKER #1: ESBUILD PLATFORM MISMATCH (55 test failures)
+
+`@esbuild/darwin-arm64` installed but runtime is `linux-arm64`.
+tsx uses esbuild internally → TransformError on every test that imports .ts.
+
+**Fix:** `npm rebuild esbuild` OR `npm install @esbuild/linux-arm64 --force`
+**Impact:** 50 unit + 2 integration + 3 CLI = 55 of 56 total failures
+
+---
+
+## BLOCKER #2: CLI --help CRASHES
+
+`apps/cli/lib/commands/mcp.js` line 2 imports `src/core/mcp/registry.js` but file is `registry.ts`.
+Node can't resolve `.js` → `.ts` without tsx loader at CLI runtime.
+
+**Fix:** Either register tsx in CLI entry point OR add a `.js` re-export shim.
+
+---
+
+## BLOCKER #3: RBAC BLOCKS EXECUTION
+
+`MOCK_AI=true node apps/cli/bin/ultra-dex.js run planner -t "hello"` runs but:
+
+```
+[Access]: Role "viewer" cannot run @planner
+```
+
+Default role is "viewer" → blocked from executing any agent.
+
+**Fix:** Default role should be "admin" or "developer" when running locally.
+
+---
+
+## BLOCKER #4: ARCHITECTURE VIOLATION
+
+`src/core/governance/governance-manager.ts` line 13:
+
+```typescript
+import { GovernanceEngine } from '../../../apps/cli/lib/governance/index.js';
+```
+
+Core imports from apps/cli. This is BACKWARDS per architecture rules.
+
+**Fix:** Move GovernanceEngine to src/core/ OR create interface in core, implement in CLI.
+
+---
+
+## BLOCKER #5: DASHBOARD BUILD FAILS
+
+Vite build crashes: rolldown native binding `MODULE_NOT_FOUND`.
+Same root cause as esbuild: darwin-arm64 binary on linux-arm64 runtime.
+
+**Fix:** `npm rebuild` after esbuild fix should resolve.
+
+---
+
+## WHAT'S COMPLETE (REAL, WORKING)
+
+| Component                | File                                       | LOC   | Status                        |
+| ------------------------ | ------------------------------------------ | ----- | ----------------------------- |
+| Better Stack logging     | src/core/monitoring/better-stack-logger.ts | 187   | ✅ Real                       |
+| Alert manager            | src/core/monitoring/alert-manager.ts       | 184   | ✅ Real                       |
+| Clerk auth service       | src/core/auth/clerk-auth-service.ts        | 124   | ✅ Real                       |
+| Auth service (original)  | src/core/auth/auth-service.ts              | 134   | ✅ Real                       |
+| RBAC                     | src/core/auth/rbac.ts                      | 123   | ✅ Real                       |
+| RBAC manager             | src/core/auth/rbac-manager.ts              | 99    | ✅ Real                       |
+| SSO                      | src/core/auth/sso.ts                       | 111   | ✅ Real                       |
+| Billing service (Stripe) | src/core/billing/billing-service.ts        | 283   | ✅ Real                       |
+| Billing manager          | src/core/billing/billing-manager.ts        | 523   | ✅ Real                       |
+| Pricing tiers            | src/core/billing/pricing-tiers.ts          | 92    | ✅ Real                       |
+| Enterprise analytics     | src/core/analytics/enterprise-analytics.ts | 700   | ✅ Real                       |
+| Production server        | src/core/server/production-server.ts       | 568   | ✅ Real                       |
+| Git integration          | src/core/integrations/git.ts               | 94    | ✅ Real                       |
+| NVIDIA provider          | apps/cli/lib/providers/nvidia.js           | ~80   | ✅ Real (OpenAI wrapper)      |
+| Provider index           | apps/cli/lib/providers/index.js            | ~400  | ✅ 6 providers registered     |
+| Run command              | apps/cli/lib/commands/run.js               | 1632  | ✅ MAX_STEPS=10, bounded loop |
+| Analytics dashboard      | apps/dashboard/src/pages/Analytics.tsx     | 338   | ✅ Real                       |
+| 12 other dashboard pages | apps/dashboard/src/pages/\*.tsx            | ~1700 | ✅ Real                       |
+
+---
+
+## WHAT'S STUB/EMPTY (24 files)
+
+| File                                            | Lines | State                        |
+| ----------------------------------------------- | ----- | ---------------------------- |
+| src/core/mesh/message-bus.ts                    | 0     | EMPTY                        |
+| src/core/templates/contentstudio/lib/types.ts   | 0     | EMPTY                        |
+| src/core/mcp/memory.ts                          | 1     | Re-export stub               |
+| src/core/analytics/index.ts                     | 2     | Re-export                    |
+| src/core/streaming/index.ts                     | 3     | Re-export                    |
+| src/core/commands/agents.ts                     | 4     | Broken import path           |
+| src/core/agents/autonomous-agent.ts             | 6     | Returns "Goal set" hardcoded |
+| src/core/multimodal/multimodal-service.ts       | 6     | Empty stub class             |
+| src/core/services/index.ts                      | 6     | Re-export                    |
+| src/core/utils/logging.js                       | 6     | Duplicate shim               |
+| src/core/utils/logging.ts                       | 6     | Duplicate shim               |
+| src/core/auth/clerk-client.ts                   | 7     | Minimal Clerk init           |
+| src/core/tenant/tenant-service.ts               | 7     | Stub factory                 |
+| src/core/mcp/index.ts                           | 8     | Re-export                    |
+| src/core/interfaces/ITelemetryService.ts        | 9     | Interface only               |
+| src/core/agents/index.ts                        | 10    | Re-export                    |
+| src/core/marketplace/plugin-marketplace.ts      | 10    | Stub                         |
+| src/core/templates/contentstudio/lib/prisma.ts  | 10    | Stub                         |
+| src/core/templates/contentstudio/lib/slugify.ts | 12    | Minimal util                 |
+| src/core/utils/token-budget.ts                  | 12    | Minimal util                 |
+| src/core/interfaces/IExecutionEngine.ts         | 13    | Interface only               |
+| src/core/memory/index.ts                        | 13    | Re-export                    |
+| src/core/utils/smart-errors.ts                  | 13    | Minimal util                 |
+| src/core/utils/config.ts                        | 14    | Minimal util                 |
+
+---
+
+## WHAT'S MISSING (Files that should exist but don't)
+
+| File                                    | Purpose                                                                                                                               | Priority |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| src/core/auth/middleware.ts             | MISSING but production-server.ts references requireAuth/requireAdmin/enforceUsageLimit — these must exist somewhere else or be inline | P0       |
+| src/core/billing/usage-meter.ts         | Usage limit enforcement                                                                                                               | P1       |
+| src/core/billing/webhook-handler.ts     | Dedicated webhook module (currently inline in production-server.ts)                                                                   | P2       |
+| src/core/analytics/posthog-client.ts    | PostHog SDK wrapper                                                                                                                   | P1       |
+| src/core/analytics/sentry-client.ts     | Sentry SDK wrapper                                                                                                                    | P1       |
+| src/core/system/monitoring.ts           | /metrics implementation (endpoint exists in server but may be stub)                                                                   | P2       |
+| apps/dashboard/src/pages/Billing.tsx    | Billing UI                                                                                                                            | P2       |
+| apps/dashboard/src/pages/Landing.tsx    | Public landing page                                                                                                                   | P3       |
+| apps/dashboard/src/pages/Onboarding.tsx | Onboarding wizard                                                                                                                     | P3       |
+| apps/cli/lib/commands/login.ts          | CLI auth commands                                                                                                                     | P3       |
+| docs/BILLING.md                         | Billing documentation                                                                                                                 | P3       |
+| scripts/setup-stripe.sh                 | Stripe product setup                                                                                                                  | P3       |
+
+---
+
+## PRE-V2.0 PROTOCOL STATUS (19 Phases from NOTION/pre v2.0.md)
+
+| #   | Phase                          | Status        | Evidence                                                   |
+| --- | ------------------------------ | ------------- | ---------------------------------------------------------- |
+| 1   | Dependency Repair              | ⚠️ NEEDS REDO | esbuild mismatch, node_modules cross-platform              |
+| 2   | NVIDIA Provider Registration   | ✅ DONE       | providers/index.js has nvidia entry                        |
+| 3   | NVIDIA Provider Implementation | ✅ DONE       | providers/nvidia.js exists (OpenAI wrapper to NVIDIA API)  |
+| 4   | Connect Provider to run.js     | ✅ DONE       | run.js calls provider, 1632 LOC                            |
+| 5   | Direct Provider Test           | ❌ BLOCKED    | Needs esbuild fix + NVIDIA_API_KEY                         |
+| 6   | Agent Loop Control             | ✅ DONE       | MAX_STEPS=10, MAX_DELEGATION_DEPTH=5                       |
+| 7   | Output Fix                     | ✅ DONE       | Output printing at multiple points in run.js               |
+| 8   | Logging Migration              | ⚠️ PARTIAL    | better-stack-logger exists, but 4 target files not checked |
+| 9   | Remove Fake Features           | ❌ NOT DONE   | Need to audit --stream, --cache, SEARCH_CODE               |
+| 10  | Execution Trace                | ✅ DONE       | run_id, trace, steps[] all present                         |
+| 11  | Final Execution Test           | ❌ BLOCKED    | RBAC blocks: "viewer" cannot run @planner                  |
+| 12  | Fake Module Detection          | ❌ NOT DONE   | 24 stubs found, not cleaned                                |
+| 13  | Wave6 Unification              | ❌ NOT DONE   | Architecture violation in governance-manager.ts            |
+| 14  | False Completion Override      | N/A           | Protocol rule                                              |
+| 15  | Test Integrity Rules           | N/A           | Protocol rule                                              |
+| 16  | Architecture Enforcement       | ❌ VIOLATED   | core imports from apps/cli                                 |
+| 17  | Mock Execution                 | ⚠️ PARTIAL    | Runs but RBAC blocks                                       |
+| 18  | 401/Auth Failure Fix           | ⚠️ UNKNOWN    | Need real API key test                                     |
+| 19  | Full System Flow               | ❌ BLOCKED    | Multiple blockers above                                    |
+
+**Summary: 5/19 done, 3 partial, 6 blocked, 5 not started.**
+
+---
+
+## WHAT CYCLE 6 MUST DELIVER
+
+1. **All 5 blockers resolved** (esbuild, CLI --help, RBAC, architecture, dashboard build)
+2. **24 stub files** either implemented or cleanly removed
+3. **Pre-v2.0 phases 5, 8, 9, 11, 12, 13, 16, 17, 18, 19** completed
+4. **Missing files** created (middleware, usage-meter, posthog, sentry, dashboard pages, CLI login, docs)
+5. **All tests passing** (unit + integration + CLI)
+6. **Both execution paths proven**: `MOCK_AI=true` AND real provider
+7. **Version bumped to 3.1.0**, CHANGELOG updated, tagged
+8. **Architecture clean**: no core→CLI imports, no stubs, no fakes
+
+**After Cycle 6: Ultra-Dex pre-v2.0 is COMPLETE. Ship it. Plan v2.0.**
+
+---
+
+_Review generated 2026-04-09 from deep codebase audit (post-Cycle-5)_

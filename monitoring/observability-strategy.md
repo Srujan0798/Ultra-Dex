@@ -3,6 +3,7 @@
 ## Monitoring Architecture
 
 ### Overview
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        MONITORING LAYER                         │
@@ -23,6 +24,7 @@
 ### Application Metrics (Prometheus)
 
 #### Custom Metrics Implementation
+
 ```javascript
 // src/metrics/appMetrics.js
 import promClient from 'prom-client';
@@ -34,52 +36,52 @@ export const metrics = {
     name: 'http_request_duration_seconds',
     help: 'Duration of HTTP requests in seconds',
     labelNames: ['method', 'route', 'status_code'],
-    buckets: [0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+    buckets: [0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10],
   }),
 
   httpRequestTotal: new promClient.Counter({
     name: 'http_requests_total',
     help: 'Total number of HTTP requests',
-    labelNames: ['method', 'route', 'status_code']
+    labelNames: ['method', 'route', 'status_code'],
   }),
 
   httpRequestActive: new promClient.Gauge({
     name: 'http_requests_active',
-    help: 'Number of active HTTP requests'
+    help: 'Number of active HTTP requests',
   }),
 
   // Agent metrics
   agentExecutionsTotal: new promClient.Counter({
     name: 'agent_executions_total',
     help: 'Total number of agent executions',
-    labelNames: ['agent_id', 'status']
+    labelNames: ['agent_id', 'status'],
   }),
 
   agentExecutionDuration: new promClient.Histogram({
     name: 'agent_execution_duration_seconds',
     help: 'Duration of agent executions in seconds',
     labelNames: ['agent_id'],
-    buckets: [1, 5, 10, 30, 60, 120, 300]
+    buckets: [1, 5, 10, 30, 60, 120, 300],
   }),
 
   agentQueueSize: new promClient.Gauge({
     name: 'agent_queue_size',
     help: 'Current size of agent execution queue',
-    labelNames: ['queue_type']
+    labelNames: ['queue_type'],
   }),
 
   // Memory metrics
   memoryOperationsTotal: new promClient.Counter({
     name: 'memory_operations_total',
     help: 'Total number of memory operations',
-    labelNames: ['operation', 'type']
+    labelNames: ['operation', 'type'],
   }),
 
   memoryOperationDuration: new promClient.Histogram({
     name: 'memory_operation_duration_seconds',
     help: 'Duration of memory operations in seconds',
     labelNames: ['operation'],
-    buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2.5]
+    buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2.5],
   }),
 
   // Database metrics
@@ -87,91 +89,82 @@ export const metrics = {
     name: 'database_query_duration_seconds',
     help: 'Duration of database queries in seconds',
     labelNames: ['query_type', 'table'],
-    buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5]
+    buckets: [0.01, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5],
   }),
 
   databaseConnections: new promClient.Gauge({
     name: 'database_connections',
     help: 'Current number of database connections',
-    labelNames: ['pool']
+    labelNames: ['pool'],
   }),
 
   // Cache metrics
   cacheHits: new promClient.Counter({
     name: 'cache_hits_total',
     help: 'Total number of cache hits',
-    labelNames: ['cache_type']
+    labelNames: ['cache_type'],
   }),
 
   cacheMisses: new promClient.Counter({
     name: 'cache_misses_total',
     help: 'Total number of cache misses',
-    labelNames: ['cache_type']
+    labelNames: ['cache_type'],
   }),
 
   cacheHitRatio: new promClient.Gauge({
     name: 'cache_hit_ratio',
     help: 'Cache hit ratio',
-    labelNames: ['cache_type']
-  })
+    labelNames: ['cache_type'],
+  }),
 };
 
 // Middleware to collect metrics
 export const metricsMiddleware = (req, res, next) => {
   const start = Date.now();
-  
+
   // Increment active requests
   metrics.httpRequestActive.inc();
-  
+
   // Capture original end method
   const originalEnd = res.end;
-  res.end = function(chunk, encoding) {
+  res.end = function (chunk, encoding) {
     // Calculate duration
     const duration = (Date.now() - start) / 1000;
-    
+
     // Record metrics
     metrics.httpRequestDuration
       .labels(req.method, req.route?.path || req.path, res.statusCode)
       .observe(duration);
-    
-    metrics.httpRequestsTotal
-      .labels(req.method, req.route?.path || req.path, res.statusCode)
-      .inc();
-    
+
+    metrics.httpRequestsTotal.labels(req.method, req.route?.path || req.path, res.statusCode).inc();
+
     // Decrement active requests
     metrics.httpRequestActive.dec();
-    
+
     // Call original end
     originalEnd.call(this, chunk, encoding);
   };
-  
+
   next();
 };
 
 // Agent execution metrics
 export const recordAgentExecution = (agentId, status, duration) => {
-  metrics.agentExecutionsTotal
-    .labels(agentId, status)
-    .inc();
-  
-  metrics.agentExecutionDuration
-    .labels(agentId)
-    .observe(duration);
+  metrics.agentExecutionsTotal.labels(agentId, status).inc();
+
+  metrics.agentExecutionDuration.labels(agentId).observe(duration);
 };
 
 // Memory operation metrics
 export const recordMemoryOperation = (operation, type, duration) => {
-  metrics.memoryOperationsTotal
-    .labels(operation, type)
-    .inc();
-  
-  metrics.memoryOperationDuration
-    .labels(operation)
-    .observe(duration);
+  metrics.memoryOperationsTotal.labels(operation, type).inc();
+
+  metrics.memoryOperationDuration.labels(operation).observe(duration);
 };
 ```
 
 #### Prometheus Configuration
+
 ```yaml
 # prometheus/prometheus.yml
 global:
@@ -179,7 +172,7 @@ global:
   evaluation_interval: 15s
 
 rule_files:
-  - "alert_rules.yml"
+  - 'alert_rules.yml'
 
 scrape_configs:
   - job_name: 'ultra-dex-api'
@@ -187,7 +180,7 @@ scrape_configs:
       - targets: ['api-service:3000']
     metrics_path: /metrics
     scrape_interval: 5s
-    
+
   - job_name: 'ultra-dex-dashboard'
     static_configs:
       - targets: ['dashboard-service:3000']
@@ -210,6 +203,7 @@ scrape_configs:
 ### Infrastructure Metrics (Datadog)
 
 #### Datadog Configuration
+
 ```javascript
 // src/monitoring/datadog.js
 import dogapi from 'dogapi';
@@ -217,7 +211,7 @@ import dogapi from 'dogapi';
 // Initialize Datadog
 dogapi.initialize({
   api_key: process.env.DATADOG_API_KEY,
-  app_key: process.env.DATADOG_APP_KEY
+  app_key: process.env.DATADOG_APP_KEY,
 });
 
 export class DatadogService {
@@ -226,17 +220,19 @@ export class DatadogService {
       title,
       text,
       tags: [...tags, `env:${process.env.NODE_ENV}`, `service:ultra-dex`],
-      priority: 'normal'
+      priority: 'normal',
     });
   }
 
   static async sendMetric(name, value, tags = []) {
-    const series = [{
-      metric: name,
-      points: [[Date.now() / 1000, value]],
-      tags: [...tags, `env:${process.env.NODE_ENV}`, `service:ultra-dex`]
-    }];
-    
+    const series = [
+      {
+        metric: name,
+        points: [[Date.now() / 1000, value]],
+        tags: [...tags, `env:${process.env.NODE_ENV}`, `service:ultra-dex`],
+      },
+    ];
+
     return dogapi.metric.send(series);
   }
 
@@ -244,7 +240,7 @@ export class DatadogService {
     return dogapi.series.query({
       query,
       from: Math.floor(from / 1000),
-      to: Math.floor(to / 1000)
+      to: Math.floor(to / 1000),
     });
   }
 
@@ -260,9 +256,7 @@ export class DatadogService {
           width: 32,
           height: 8,
           title: 'Request Rate',
-          queries: [
-            'avg:ultra_dex.http_requests_total{*}.as_rate()'
-          ]
+          queries: ['avg:ultra_dex.http_requests_total{*}.as_rate()'],
         },
         {
           type: 'timeseries',
@@ -271,9 +265,7 @@ export class DatadogService {
           width: 32,
           height: 8,
           title: 'Response Time (p95)',
-          queries: [
-            'avg:ultra_dex.http_request_duration_seconds.quantile{quantile:0.95}'
-          ]
+          queries: ['avg:ultra_dex.http_request_duration_seconds.quantile{quantile:0.95}'],
         },
         {
           type: 'toplist',
@@ -283,12 +275,12 @@ export class DatadogService {
           height: 8,
           title: 'Top Agents by Execution Count',
           queries: [
-            'top(avg:ultra_dex.agent_executions_total{*} by {agent_id}, 10, "mean", "desc")'
-          ]
-        }
+            'top(avg:ultra_dex.agent_executions_total{*} by {agent_id}, 10, "mean", "desc")',
+          ],
+        },
       ],
       template_variables: [],
-      layout_type: 'ordered'
+      layout_type: 'ordered',
     };
 
     return dogapi.dashboard.create(dashboard);
@@ -301,6 +293,7 @@ export default DatadogService;
 ## Logging Strategy (ELK Stack)
 
 ### Application Logging
+
 ```javascript
 // src/utils/logger.js
 import winston from 'winston';
@@ -319,40 +312,39 @@ export const logger = winston.createLogger({
   transports: [
     // Console transport for development
     new winston.transports.Console({
-      format: winston.format.combine(
-        winston.format.colorize(),
-        winston.format.simple()
-      ),
-      silent: process.env.NODE_ENV === 'test'
+      format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
+      silent: process.env.NODE_ENV === 'test',
     }),
-    
+
     // File transport for production
-    new winston.transports.File({ 
-      filename: 'logs/error.log', 
+    new winston.transports.File({
+      filename: 'logs/error.log',
       level: 'error',
       maxsize: 5242880, // 5MB
-      maxFiles: 5
+      maxFiles: 5,
     }),
-    
-    new winston.transports.File({ 
+
+    new winston.transports.File({
       filename: 'logs/combined.log',
       maxsize: 5242880, // 5MB
-      maxFiles: 5
-    })
-  ]
+      maxFiles: 5,
+    }),
+  ],
 });
 
 // Add Loki transport for centralized logging
 if (process.env.LOKI_URL) {
-  logger.add(new LokiTransport({
-    host: process.env.LOKI_URL,
-    json: true,
-    labels: {
-      job: 'ultra-dex',
-      env: process.env.NODE_ENV || 'development'
-    },
-    level: process.env.LOG_LEVEL || 'info'
-  }));
+  logger.add(
+    new LokiTransport({
+      host: process.env.LOKI_URL,
+      json: true,
+      labels: {
+        job: 'ultra-dex',
+        env: process.env.NODE_ENV || 'development',
+      },
+      level: process.env.LOG_LEVEL || 'info',
+    })
+  );
 }
 
 // Structured logging functions
@@ -364,7 +356,7 @@ export const logRequest = (req, res, duration) => {
     duration: `${duration}ms`,
     userAgent: req.get('User-Agent'),
     ip: req.ip,
-    userId: req.user?.id
+    userId: req.user?.id,
   });
 };
 
@@ -376,7 +368,7 @@ export const logAgentExecution = (agentId, executionId, status, duration, error 
     status,
     duration: `${duration}ms`,
     error: error?.message,
-    stack: error?.stack
+    stack: error?.stack,
   });
 };
 
@@ -385,7 +377,7 @@ export const logDatabaseQuery = (query, duration, error = null) => {
   logger[level]('Database Query', {
     query: query.slice(0, 200) + (query.length > 200 ? '...' : ''),
     duration: `${duration}ms`,
-    error: error?.message
+    error: error?.message,
   });
 };
 
@@ -393,10 +385,11 @@ export default logger;
 ```
 
 ### Log Aggregation Configuration
+
 ```yaml
 # elk/elasticsearch.yml
-cluster.name: "ultra-dex-cluster"
-node.name: "node-1"
+cluster.name: 'ultra-dex-cluster'
+node.name: 'node-1'
 network.host: 0.0.0.0
 http.port: 9200
 discovery.type: single-node
@@ -406,41 +399,42 @@ xpack.security.enabled: false
 ```yaml
 # elk/logstash.conf
 input {
-  beats {
-    port => 5044
-  }
+beats {
+port => 5044
+}
 }
 
 filter {
-  if [type] == "ultra-dex" {
-    json {
-      source => "message"
-    }
-    mutate {
-      remove_field => ["message"]
-    }
-  }
+if [type] == "ultra-dex" {
+json {
+source => "message"
+}
+mutate {
+remove_field => ["message"]
+}
+}
 }
 
 output {
-  elasticsearch {
-    hosts => ["elasticsearch:9200"]
-    index => "ultra-dex-%{+YYYY.MM.dd}"
-  }
+elasticsearch {
+hosts => ["elasticsearch:9200"]
+index => "ultra-dex-%{+YYYY.MM.dd}"
+}
 }
 ```
 
 ```yaml
 # elk/kibana.yml
 server.name: kibana
-server.host: "0"
-elasticsearch.hosts: ["http://elasticsearch:9200"]
+server.host: '0'
+elasticsearch.hosts: ['http://elasticsearch:9200']
 xpack.security.enabled: false
 ```
 
 ## Distributed Tracing (Jaeger/OpenTelemetry)
 
 ### Tracing Implementation
+
 ```javascript
 // src/monitoring/tracing.js
 import opentelemetry from '@opentelemetry/api';
@@ -459,18 +453,18 @@ export const initTracing = () => {
     resource: {
       'service.name': 'ultra-dex-api',
       'service.version': process.env.npm_package_version || '1.0.0',
-      'environment': process.env.NODE_ENV || 'development'
-    }
+      environment: process.env.NODE_ENV || 'development',
+    },
   });
 
   // Jaeger exporter
   const jaegerExporter = new JaegerExporter({
-    endpoint: process.env.JAEGER_ENDPOINT || 'http://jaeger:14268/api/traces'
+    endpoint: process.env.JAEGER_ENDPOINT || 'http://jaeger:14268/api/traces',
   });
 
   // Span processors
   provider.addSpanProcessor(new BatchSpanProcessor(jaegerExporter));
-  
+
   // Initialize the provider
   provider.register();
 
@@ -480,8 +474,8 @@ export const initTracing = () => {
       new HttpInstrumentation(),
       new ExpressInstrumentation(),
       new PgInstrumentation(),
-      new RedisInstrumentation()
-    ]
+      new RedisInstrumentation(),
+    ],
   });
 
   return provider;
@@ -499,7 +493,7 @@ export const traceFunction = (name, fn) => {
       } catch (error) {
         span.setStatus({
           code: opentelemetry.SpanStatusCode.ERROR,
-          message: error.message
+          message: error.message,
         });
         span.recordException(error);
         throw error;
@@ -523,6 +517,7 @@ export default initTracing;
 ## Alerting System
 
 ### Alert Rules (Prometheus)
+
 ```yaml
 # prometheus/alert_rules.yml
 groups:
@@ -535,8 +530,8 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "High error rate detected"
-          description: "Error rate is {{ $value | humanizePercentage }} over the last 5 minutes"
+          summary: 'High error rate detected'
+          description: 'Error rate is {{ $value | humanizePercentage }} over the last 5 minutes'
 
       # High response time
       - alert: HighResponseTime
@@ -545,8 +540,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "High response time"
-          description: "95th percentile response time is {{ $value }}s"
+          summary: 'High response time'
+          description: '95th percentile response time is {{ $value }}s'
 
       # Agent execution failures
       - alert: AgentExecutionFailures
@@ -555,8 +550,8 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "High agent execution failure rate"
-          description: "{{ $value }} agent execution failures per second"
+          summary: 'High agent execution failure rate'
+          description: '{{ $value }} agent execution failures per second'
 
       # Database connection issues
       - alert: DatabaseConnectionIssues
@@ -565,8 +560,8 @@ groups:
         labels:
           severity: critical
         annotations:
-          summary: "Database connection issues"
-          description: "No database queries in the last 5 minutes"
+          summary: 'Database connection issues'
+          description: 'No database queries in the last 5 minutes'
 
       # Cache hit ratio low
       - alert: LowCacheHitRatio
@@ -575,11 +570,12 @@ groups:
         labels:
           severity: warning
         annotations:
-          summary: "Low cache hit ratio"
-          description: "Cache hit ratio is {{ $value | humanizePercentage }}"
+          summary: 'Low cache hit ratio'
+          description: 'Cache hit ratio is {{ $value | humanizePercentage }}'
 ```
 
 ### Alertmanager Configuration
+
 ```yaml
 # prometheus/alertmanager.yml
 global:
@@ -598,19 +594,20 @@ route:
 receivers:
   - name: 'default'
     email_configs:
-    - to: 'oncall@ultra-dex.ai'
-      send_resolved: true
+      - to: 'oncall@ultra-dex.ai'
+        send_resolved: true
     slack_configs:
-    - api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
-      channel: '#alerts'
-      send_resolved: true
-      text: '{{ template "slack.default" . }}'
+      - api_url: 'https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK'
+        channel: '#alerts'
+        send_resolved: true
+        text: '{{ template "slack.default" . }}'
 
 templates:
-- '/etc/alertmanager/template/*.tmpl'
+  - '/etc/alertmanager/template/*.tmpl'
 ```
 
 ### Slack Alert Template
+
 ```
 {{ define "slack.default" }}
 {
@@ -642,6 +639,7 @@ templates:
 ## Dashboard Configuration
 
 ### Grafana Dashboards
+
 ```json
 {
   "dashboard": {
@@ -718,6 +716,7 @@ templates:
 ## Monitoring Implementation Plan
 
 ### Week 9 Tasks:
+
 - [ ] Set up Prometheus and Grafana (Days 1-2)
 - [ ] Implement custom metrics collection (Days 2-3)
 - [ ] Configure ELK stack for logging (Days 3-4)
@@ -726,6 +725,7 @@ templates:
 - [ ] Create dashboards (Days 6-7)
 
 ### Week 10 Tasks:
+
 - [ ] Integrate with existing applications (Days 1-2)
 - [ ] Set up notification channels (Days 2-3)
 - [ ] Performance testing with monitoring (Days 3-4)
@@ -736,12 +736,14 @@ templates:
 ## Success Metrics
 
 ### Technical Metrics:
+
 - **Monitoring Coverage**: 100% of critical services monitored
 - **Alert Accuracy**: <5% false positives
 - **Mean Time to Detection**: <2 minutes for critical issues
 - **Dashboard Load Time**: <5 seconds for all dashboards
 
 ### Operational Metrics:
+
 - **Incident Response Time**: <15 minutes for critical issues
 - **System Visibility**: 99% of system state observable
 - **Alert Fatigue**: <10 alerts per engineer per day
@@ -750,6 +752,7 @@ templates:
 ## Incident Response
 
 ### On-Call Procedures
+
 1. **Alert Receipt**: Acknowledge within 5 minutes
 2. **Initial Assessment**: Determine severity and impact
 3. **Communication**: Notify team and stakeholders
@@ -757,6 +760,7 @@ templates:
 5. **Post-Incident**: Document and improve processes
 
 ### Runbooks
+
 - Database performance issues
 - High error rates
 - Memory leaks

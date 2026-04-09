@@ -11,7 +11,6 @@ import path from 'path';
 import { printInfo, printSuccess, printWarning, printError } from '../../utils/output.js';
 import chalk from 'chalk';
 
-
 /**
  * Remote MCP Client Class
  */

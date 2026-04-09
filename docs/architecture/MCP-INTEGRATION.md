@@ -11,6 +11,7 @@ ultra-dex serve
 ```
 
 Default:
+
 - HTTP: `http://localhost:3001`
 - WebSocket: `ws://localhost:3002`
 
@@ -28,6 +29,7 @@ Default:
 ## 3. Windsurf / Cline
 
 Use the same MCP endpoint:
+
 ```
 http://localhost:3001
 ```
@@ -37,11 +39,13 @@ http://localhost:3001
 ## 4. Resources + Tools
 
 Common MCP resources:
+
 - `ultra://project/state`
 - `ultra://project/context`
 - `ultra://memory/search?q=...`
 
 Common MCP tools:
+
 - `remember(text, tags)`
 - `query_graph(query)`
 - `validate_output(code)`

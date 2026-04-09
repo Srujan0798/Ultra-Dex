@@ -3,14 +3,13 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { EventEmitter } from "events";
+import { singleton } from 'tsyringe';
+import { EventEmitter } from 'events';
 let EnterpriseGateway = class extends EventEmitter {
   constructor(options = {}) {
     super();
@@ -19,7 +18,7 @@ let EnterpriseGateway = class extends EventEmitter {
       authentication: options.authentication || true,
       logging: options.logging || true,
       monitoring: options.monitoring || true,
-      ...options
+      ...options,
     };
     this.routes = /* @__PURE__ */ new Map();
     this.middleware = [];
@@ -29,11 +28,11 @@ let EnterpriseGateway = class extends EventEmitter {
     this.routes.set(path, {
       handler,
       options: {
-        method: "POST",
+        method: 'POST',
         auth: true,
         rateLimit: true,
-        ...options
-      }
+        ...options,
+      },
     });
     return this;
   }
@@ -42,12 +41,12 @@ let EnterpriseGateway = class extends EventEmitter {
     return this;
   }
   async handle(request) {
-    const { path, method = "POST", user, headers = {} } = request;
+    const { path, method = 'POST', user, headers = {} } = request;
     try {
       for (const middleware of this.middleware) {
         const result = await middleware(request);
         if (result === false) {
-          throw new Error("Request blocked by middleware");
+          throw new Error('Request blocked by middleware');
         }
       }
       const route = this.routes.get(path);
@@ -58,37 +57,37 @@ let EnterpriseGateway = class extends EventEmitter {
         throw new Error(`Method not allowed: ${method}`);
       }
       if (route.options.auth && !user) {
-        throw new Error("Authentication required");
+        throw new Error('Authentication required');
       }
       if (route.options.rateLimit) {
-        const isAllowed = this.checkRateLimit(user?.id || "anonymous", path);
+        const isAllowed = this.checkRateLimit(user?.id || 'anonymous', path);
         if (!isAllowed) {
-          throw new Error("Rate limit exceeded");
+          throw new Error('Rate limit exceeded');
         }
       }
       const response = await route.handler(request);
-      this.emit("request.success", {
+      this.emit('request.success', {
         path,
         user: user?.id,
         response,
-        timestamp: /* @__PURE__ */ new Date()
+        timestamp: /* @__PURE__ */ new Date(),
       });
       return {
         success: true,
         data: response,
-        timestamp: /* @__PURE__ */ new Date()
+        timestamp: /* @__PURE__ */ new Date(),
       };
     } catch (error) {
-      this.emit("request.error", {
+      this.emit('request.error', {
         path,
         user: user?.id,
         error: error.message,
-        timestamp: /* @__PURE__ */ new Date()
+        timestamp: /* @__PURE__ */ new Date(),
       });
       return {
         success: false,
         error: error.message,
-        timestamp: /* @__PURE__ */ new Date()
+        timestamp: /* @__PURE__ */ new Date(),
       };
     }
   }
@@ -99,7 +98,7 @@ let EnterpriseGateway = class extends EventEmitter {
     if (!this.rateLimiter.has(key)) {
       this.rateLimiter.set(key, {
         count: 1,
-        resetTime: now + window
+        resetTime: now + window,
       });
       return true;
     }
@@ -120,15 +119,10 @@ let EnterpriseGateway = class extends EventEmitter {
       routes: this.routes.size,
       middleware: this.middleware.length,
       rateLimitEntries: this.rateLimiter.size,
-      config: this.config
+      config: this.config,
     };
   }
 };
-EnterpriseGateway = __decorateClass([
-  singleton()
-], EnterpriseGateway);
+EnterpriseGateway = __decorateClass([singleton()], EnterpriseGateway);
 var gateway_default = EnterpriseGateway;
-export {
-  EnterpriseGateway,
-  gateway_default as default
-};
+export { EnterpriseGateway, gateway_default as default };

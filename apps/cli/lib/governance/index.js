@@ -10,4 +10,4 @@ export {
   governance,
   authorizeOperation,
   enforceAgentExecution,
-} from '../../../../src/core/governance/governance-engine.js';
+} from '../../../../src/core/governance/governance-engine.ts';

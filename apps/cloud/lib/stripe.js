@@ -8,7 +8,7 @@ import Stripe from 'stripe';
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 
 // Initialize Stripe only if the secret key is available
-export const stripe = stripeSecretKey 
+export const stripe = stripeSecretKey
   ? new Stripe(stripeSecretKey, {
       apiVersion: '2024-12-18.acacia',
     })

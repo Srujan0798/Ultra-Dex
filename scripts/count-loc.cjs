@@ -20,18 +20,18 @@ function countLinesInDir(dir) {
 }
 
 function getSubdirBreakdown(baseDir) {
-  const dirs = fs.readdirSync(baseDir).filter(d => {
+  const dirs = fs.readdirSync(baseDir).filter((d) => {
     const stat = fs.statSync(path.join(baseDir, d));
     return stat.isDirectory() && d !== 'node_modules';
   });
-  
+
   const breakdown = [];
   for (const dir of dirs) {
     const fullPath = path.join(baseDir, dir);
     const lines = countLinesInDir(fullPath);
     breakdown.push({ dir, lines });
   }
-  
+
   return breakdown.sort((a, b) => b.lines - a.lines);
 }
 
@@ -67,7 +67,7 @@ const report = `# Codebase Size Report
 
 | Subdirectory | Lines of Code |
 |--------------|---------------|
-${coreBreakdown.map(b => `| ${b.dir}/ | ${b.lines.toLocaleString()} |`).join('\n')}
+${coreBreakdown.map((b) => `| ${b.dir}/ | ${b.lines.toLocaleString()} |`).join('\n')}
 
 **Total src/core/:** ${coreTotal.toLocaleString()} LOC
 
@@ -77,7 +77,7 @@ ${coreBreakdown.map(b => `| ${b.dir}/ | ${b.lines.toLocaleString()} |`).join('\n
 
 | Subdirectory | Lines of Code |
 |--------------|---------------|
-${appsBreakdown.map(b => `| ${b.dir}/ | ${b.lines.toLocaleString()} |`).join('\n')}
+${appsBreakdown.map((b) => `| ${b.dir}/ | ${b.lines.toLocaleString()} |`).join('\n')}
 
 **Total apps/:** ${appsTotal.toLocaleString()} LOC
 

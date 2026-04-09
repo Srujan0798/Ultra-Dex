@@ -3,13 +3,12 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
+import { singleton } from 'tsyringe';
 let GraphEngine = class {
   constructor() {
     this.nodes = /* @__PURE__ */ new Map();
@@ -26,7 +25,7 @@ let GraphEngine = class {
       id,
       data,
       createdAt: Date.now(),
-      type: data.type || "generic"
+      type: data.type || 'generic',
     };
     this.nodes.set(id, node);
     if (!this.adjacencyList.has(id)) {
@@ -34,7 +33,7 @@ let GraphEngine = class {
     }
     return node;
   }
-  async addEdge(from, to, relation = "connected") {
+  async addEdge(from, to, relation = 'connected') {
     if (!this.nodes.has(from) || !this.nodes.has(to)) {
       throw new Error(`Both nodes must exist. from: ${from}, to: ${to}`);
     }
@@ -42,7 +41,7 @@ let GraphEngine = class {
       from,
       to,
       relation,
-      createdAt: Date.now()
+      createdAt: Date.now(),
     };
     this.edges.push(edge);
     if (!this.adjacencyList.has(from)) {
@@ -59,7 +58,7 @@ let GraphEngine = class {
     return neighbors.map((n) => ({
       id: n.to,
       relation: n.relation,
-      node: this.nodes.get(n.to)
+      node: this.nodes.get(n.to),
     }));
   }
   async query(pattern) {
@@ -114,18 +113,12 @@ let GraphEngine = class {
       edges: [...this.edges],
       stats: {
         nodeCount: this.nodes.size,
-        edgeCount: this.edges.length
-      }
+        edgeCount: this.edges.length,
+      },
     };
   }
 };
-GraphEngine = __decorateClass([
-  singleton()
-], GraphEngine);
+GraphEngine = __decorateClass([singleton()], GraphEngine);
 const graphEngine = new GraphEngine();
 var graph_engine_default = graphEngine;
-export {
-  GraphEngine,
-  graph_engine_default as default,
-  graphEngine
-};
+export { GraphEngine, graph_engine_default as default, graphEngine };

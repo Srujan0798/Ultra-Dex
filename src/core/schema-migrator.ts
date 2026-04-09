@@ -3,15 +3,14 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { readdir, readFile } from "fs/promises";
-import { join } from "path";
+import { singleton } from 'tsyringe';
+import { readdir, readFile } from 'fs/promises';
+import { join } from 'path';
 import { atomicWriteJSON, safeReadJSON } from '../utils/safe-fs.js';
 let SchemaMigrator = class {
   /**
@@ -21,8 +20,8 @@ let SchemaMigrator = class {
    * @param {object} options.db - Database connection/instance
    */
   constructor(options = {}) {
-    this.migrationsPath = options.migrationsPath || "./migrations";
-    this.stateFile = options.stateFile || "./.migration-state.json";
+    this.migrationsPath = options.migrationsPath || './migrations';
+    this.stateFile = options.stateFile || './.migration-state.json';
     this.db = options.db || null;
     this.appliedMigrations = [];
   }
@@ -42,10 +41,10 @@ let SchemaMigrator = class {
   async getPendingMigrations() {
     try {
       const files = await readdir(this.migrationsPath);
-      const migrations = files.filter((f) => f.endsWith(".js") || f.endsWith(".sql")).sort();
+      const migrations = files.filter((f) => f.endsWith('.js') || f.endsWith('.sql')).sort();
       return migrations.filter((m) => !this.appliedMigrations.includes(m));
     } catch (error) {
-      if (error.code === "ENOENT") {
+      if (error.code === 'ENOENT') {
         return [];
       }
       throw error;
@@ -60,18 +59,18 @@ let SchemaMigrator = class {
     const filePath = join(this.migrationsPath, migrationFile);
     const startTime = Date.now();
     try {
-      if (migrationFile.endsWith(".js")) {
+      if (migrationFile.endsWith('.js')) {
         const migration = await import(filePath);
-        if (typeof migration.up === "function") {
+        if (typeof migration.up === 'function') {
           await migration.up(this.db);
-        } else if (typeof migration.default === "function") {
+        } else if (typeof migration.default === 'function') {
           await migration.default(this.db);
         }
-      } else if (migrationFile.endsWith(".sql")) {
-        const sql = await readFile(filePath, "utf8");
-        if (this.db && typeof this.db.exec === "function") {
+      } else if (migrationFile.endsWith('.sql')) {
+        const sql = await readFile(filePath, 'utf8');
+        if (this.db && typeof this.db.exec === 'function') {
           await this.db.exec(sql);
-        } else if (this.db && typeof this.db.query === "function") {
+        } else if (this.db && typeof this.db.query === 'function') {
           await this.db.query(sql);
         }
       }
@@ -81,14 +80,14 @@ let SchemaMigrator = class {
       return {
         success: true,
         migration: migrationFile,
-        duration: Date.now() - startTime
+        duration: Date.now() - startTime,
       };
     } catch (error) {
       return {
         success: false,
         migration: migrationFile,
         error: error.message,
-        duration: Date.now() - startTime
+        duration: Date.now() - startTime,
       };
     }
   }
@@ -111,7 +110,7 @@ let SchemaMigrator = class {
       applied: results.filter((r) => r.success).length,
       failed: results.filter((r) => !r.success).length,
       results,
-      currentVersion: this.currentVersion
+      currentVersion: this.currentVersion,
     };
   }
   /**
@@ -122,7 +121,7 @@ let SchemaMigrator = class {
     await atomicWriteJSON(this.stateFile, {
       applied: this.appliedMigrations,
       version: this.currentVersion,
-      lastUpdated: (/* @__PURE__ */ new Date()).toISOString()
+      lastUpdated: /* @__PURE__ */ new Date().toISOString(),
     });
   }
   /**
@@ -137,7 +136,7 @@ let SchemaMigrator = class {
       appliedCount: this.appliedMigrations.length,
       pendingCount: pending.length,
       applied: this.appliedMigrations,
-      pending
+      pending,
     };
   }
   /**
@@ -146,17 +145,17 @@ let SchemaMigrator = class {
    */
   async rollback() {
     if (this.appliedMigrations.length === 0) {
-      return { success: false, error: "No migrations to rollback" };
+      return { success: false, error: 'No migrations to rollback' };
     }
     const lastMigration = this.appliedMigrations[this.appliedMigrations.length - 1];
     const filePath = join(this.migrationsPath, lastMigration);
     try {
-      if (lastMigration.endsWith(".js")) {
+      if (lastMigration.endsWith('.js')) {
         const migration = await import(filePath);
-        if (typeof migration.down === "function") {
+        if (typeof migration.down === 'function') {
           await migration.down(this.db);
         } else {
-          return { success: false, error: "Migration does not support rollback" };
+          return { success: false, error: 'Migration does not support rollback' };
         }
       }
       this.appliedMigrations.pop();
@@ -168,11 +167,6 @@ let SchemaMigrator = class {
     }
   }
 };
-SchemaMigrator = __decorateClass([
-  singleton()
-], SchemaMigrator);
+SchemaMigrator = __decorateClass([singleton()], SchemaMigrator);
 var schema_migrator_default = SchemaMigrator;
-export {
-  SchemaMigrator,
-  schema_migrator_default as default
-};
+export { SchemaMigrator, schema_migrator_default as default };

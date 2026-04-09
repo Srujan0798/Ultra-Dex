@@ -7,6 +7,7 @@ This document contains operational runbooks for managing Ultra-Dex in enterprise
 ## Daily Operations
 
 ### Morning Checklist (9:00 AM)
+
 - [ ] Verify system health: `ultra-dex health`
 - [ ] Check dashboard availability: `curl -s https://dashboard.ultra-dex.ai/health`
 - [ ] Review overnight logs: `tail -f /var/log/ultra-dex/app.log`
@@ -15,6 +16,7 @@ This document contains operational runbooks for managing Ultra-Dex in enterprise
 - [ ] Review audit logs: `ultra-dex audit recent --limit 10`
 
 ### Evening Checklist (5:00 PM)
+
 - [ ] Verify system stability
 - [ ] Check resource utilization
 - [ ] Review daily metrics
@@ -24,6 +26,7 @@ This document contains operational runbooks for managing Ultra-Dex in enterprise
 ## Weekly Operations
 
 ### Monday Tasks
+
 - [ ] Review weekly performance metrics
 - [ ] Check for security updates
 - [ ] Verify backup integrity
@@ -31,6 +34,7 @@ This document contains operational runbooks for managing Ultra-Dex in enterprise
 - [ ] Review customer feedback
 
 ### Friday Tasks
+
 - [ ] Generate weekly operational report
 - [ ] Review system capacity
 - [ ] Update compliance status
@@ -49,6 +53,7 @@ This document contains operational runbooks for managing Ultra-Dex in enterprise
 ## Security Operations
 
 ### Access Management
+
 ```bash
 # Add user to organization
 ultra-dex org add-member --org-id ORG_ID --user-id USER_ID --role ROLE
@@ -64,6 +69,7 @@ ultra-dex org members --org-id ORG_ID
 ```
 
 ### Security Monitoring
+
 ```bash
 # Monitor for suspicious activity
 ultra-dex security monitor --alerts
@@ -82,6 +88,7 @@ ultra-dex security api-keys --usage
 ```
 
 ### Security Incident Response
+
 1. **Detection**: Automated monitoring alerts
 2. **Containment**: Isolate affected systems
 3. **Investigation**: Analyze logs and audit trails
@@ -94,22 +101,26 @@ ultra-dex security api-keys --usage
 ### Incident Classification
 
 #### P1 - Critical (Response: < 15 minutes)
+
 - Complete service unavailability
 - Data breach or compromise
 - Security vulnerability exploitation
 - Compliance violation
 
 #### P2 - High (Response: < 1 hour)
+
 - Major functionality impaired
 - Performance degradation > 50%
 - Multiple customer complaints
 
 #### P3 - Medium (Response: < 4 hours)
+
 - Minor functionality issues
 - Performance degradation < 50%
 - Single customer issue
 
 #### P4 - Low (Response: < 24 hours)
+
 - General questions
 - Enhancement requests
 - Informational requests
@@ -117,6 +128,7 @@ ultra-dex security api-keys --usage
 ### Incident Response Process
 
 #### 1. Detection & Triage
+
 ```bash
 # Check system status
 curl -s https://status.ultra-dex.ai
@@ -129,6 +141,7 @@ tail -n 100 /var/log/ultra-dex/app.log | grep -i error
 ```
 
 #### 2. Containment
+
 ```bash
 # Temporarily disable problematic feature
 ultra-dex feature disable --name FEATURE_NAME
@@ -141,6 +154,7 @@ ultra-dex security block-ip --ip IP_ADDRESS
 ```
 
 #### 3. Investigation
+
 ```bash
 # Get detailed system information
 ultra-dex debug system
@@ -153,6 +167,7 @@ ultra-dex metrics analyze --component AGENT_ORCHESTRATOR
 ```
 
 #### 4. Resolution
+
 ```bash
 # Apply fix
 ultra-dex deploy --environment production --version VERSION
@@ -165,6 +180,7 @@ kubectl scale deployment ultra-dex --replicas=3
 ```
 
 #### 5. Communication
+
 - Update status page within 30 minutes
 - Notify customers via email
 - Provide regular updates every 30 minutes
@@ -175,6 +191,7 @@ kubectl scale deployment ultra-dex --replicas=3
 ### Backup Procedures
 
 #### Daily Automated Backup
+
 ```bash
 # Backup script (runs daily at 2 AM)
 #!/bin/bash
@@ -216,6 +233,7 @@ echo "Backup completed: $BACKUP_DIR.tar.gz.enc"
 ```
 
 #### Backup Verification
+
 ```bash
 # Verify backup integrity
 ultra-dex backup verify --path /path/to/backup.tar.gz.enc
@@ -230,6 +248,7 @@ ultra-dex backup list --retention-days 30
 ### Recovery Procedures
 
 #### Data Recovery
+
 ```bash
 # In case of data loss, restore from backup
 ultra-dex backup restore --backup-path /path/to/backup.tar.gz.enc --encryption-key YOUR_KEY
@@ -239,6 +258,7 @@ ultra-dex doctor
 ```
 
 #### System Recovery
+
 ```bash
 # In case of system failure
 1. Identify root cause
@@ -255,6 +275,7 @@ ultra-dex doctor
 ### Key Performance Indicators (KPIs)
 
 #### System Health Metrics
+
 - **Availability**: > 99.95% (Gold tier)
 - **Response Time (P95)**: < 500ms
 - **Error Rate**: < 0.1%
@@ -262,12 +283,14 @@ ultra-dex doctor
 - **Memory Utilization**: < 80%
 
 #### Agent Performance Metrics
+
 - **Agent Startup Time**: < 2 seconds
 - **Task Completion Rate**: > 99%
 - **Average Task Duration**: < 30 seconds
 - **Resource Utilization**: < 80% CPU, < 70% Memory
 
 ### Monitoring Commands
+
 ```bash
 # Check system health
 ultra-dex health
@@ -286,6 +309,7 @@ ultra-dex api performance
 ```
 
 ### Performance Optimization
+
 ```bash
 # Identify performance bottlenecks
 ultra-dex performance analyze
@@ -305,18 +329,21 @@ ultra-dex restart --component AGENT_ORCHESTRATOR
 ### SOC 2 Compliance
 
 #### Daily SOC 2 Tasks
+
 - [ ] Verify access controls are functioning
 - [ ] Check audit log integrity
 - [ ] Review security events
 - [ ] Monitor system changes
 
 #### Weekly SOC 2 Tasks
+
 - [ ] Generate SOC 2 compliance report
 - [ ] Review access logs
 - [ ] Verify data encryption
 - [ ] Check backup integrity
 
 #### Monthly SOC 2 Tasks
+
 - [ ] Comprehensive SOC 2 assessment
 - [ ] Update compliance documentation
 - [ ] Review security policies
@@ -325,6 +352,7 @@ ultra-dex restart --component AGENT_ORCHESTRATOR
 ### GDPR Compliance
 
 #### Data Subject Rights
+
 ```bash
 # Right to Access - Export user data
 ultra-dex user export --user-id USER_ID
@@ -340,6 +368,7 @@ ultra-dex user export --user-id USER_ID --format json
 ```
 
 #### Data Retention
+
 ```bash
 # Check data retention policies
 ultra-dex compliance retention --check
@@ -354,6 +383,7 @@ ultra-dex compliance retention --report
 ### Audit Procedures
 
 #### Internal Audits
+
 ```bash
 # Run internal compliance audit
 ultra-dex compliance audit --internal
@@ -366,6 +396,7 @@ ultra-dex compliance report --type SOC2
 ```
 
 #### External Audits
+
 ```bash
 # Prepare for external audit
 ultra-dex compliance prepare --audit-type SOC2
@@ -382,8 +413,10 @@ ultra-dex compliance verify --readiness
 ### Common Issues & Solutions
 
 #### Issue: Agent Not Responding
+
 **Symptoms**: Agent appears stuck or not responding
 **Solution**:
+
 ```bash
 # Check agent status
 ultra-dex agents status --agent-id AGENT_ID
@@ -396,8 +429,10 @@ ultra-dex agents logs --agent-id AGENT_ID
 ```
 
 #### Issue: Memory System Slow
+
 **Symptoms**: Slow memory retrieval or high latency
 **Solution**:
+
 ```bash
 # Check memory stats
 ultra-dex memory stats
@@ -410,8 +445,10 @@ ultra-dex memory optimize
 ```
 
 #### Issue: Authentication Failure
+
 **Symptoms**: Users unable to log in or access system
 **Solution**:
+
 ```bash
 # Check SSO configuration
 ultra-dex auth sso --status
@@ -424,8 +461,10 @@ ultra-dex auth rbac --status
 ```
 
 #### Issue: Performance Degradation
+
 **Symptoms**: Slow response times, high latency
 **Solution**:
+
 ```bash
 # Check system resources
 ultra-dex performance diagnose
@@ -438,6 +477,7 @@ ultra-dex performance analyze
 ```
 
 ### Diagnostic Commands
+
 ```bash
 # System health check
 ultra-dex doctor
@@ -461,6 +501,7 @@ ultra-dex debug database
 ## Deployment Procedures
 
 ### Production Deployment
+
 ```bash
 # Deploy to production
 ultra-dex deploy --environment production --version VERSION
@@ -473,6 +514,7 @@ ultra-dex monitor deployment --environment production
 ```
 
 ### Blue-Green Deployment
+
 ```bash
 # Deploy to staging (blue)
 ultra-dex deploy --environment staging --version VERSION
@@ -488,6 +530,7 @@ ultra-dex health --environment production
 ```
 
 ### Canary Deployment
+
 ```bash
 # Deploy to canary (small percentage)
 ultra-dex deploy --environment canary --version VERSION --percentage 10
@@ -504,6 +547,7 @@ ultra-dex deploy promote --from canary --to production --percentage 100
 ## Security Hardening
 
 ### Network Security
+
 ```bash
 # Check firewall rules
 ultra-dex security network --firewall
@@ -516,6 +560,7 @@ ultra-dex security network --ports
 ```
 
 ### Database Security
+
 ```bash
 # Check database encryption
 ultra-dex security database --encryption
@@ -528,6 +573,7 @@ ultra-dex security database --scan
 ```
 
 ### API Security
+
 ```bash
 # Check rate limiting
 ultra-dex security api --rate-limit
@@ -542,6 +588,7 @@ ultra-dex security api --scan
 ## Business Continuity
 
 ### Disaster Recovery Plan
+
 1. **Detection**: Automated monitoring detects failure
 2. **Notification**: Alerts sent to on-call team
 3. **Assessment**: Determine scope and impact
@@ -552,8 +599,9 @@ ultra-dex security api --scan
 8. **Review**: Conduct post-incident analysis
 
 ### Recovery Sites
+
 - **Primary**: US-West (Oregon)
-- **Secondary**: US-East (Virginia) 
+- **Secondary**: US-East (Virginia)
 - **Tertiary**: EU-West (Ireland)
 - **RTO**: < 15 minutes
 - **RPO**: < 5 minutes

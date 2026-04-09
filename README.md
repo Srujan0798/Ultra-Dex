@@ -106,29 +106,29 @@ ultra-dex swarm "Build a production-ready authentication system"
 
 Ultra-Dex provides a unified interface for the following AI providers:
 
-| Provider | Status | Models Supported |
-| :--- | :--- | :--- |
-| **OpenAI** | ✅ Production | GPT-4o, GPT-4 Turbo, o1-preview |
-| **Anthropic** | ✅ Production | Claude 3.5 Sonnet, 3 Opus, 3 Haiku |
-| **DeepSeek** | ✅ Production | DeepSeek-V3, DeepSeek-R1 |
-| **Google** | ✅ Production | Gemini 1.5 Pro, Flash |
-| **Mistral** | ✅ Production | Mistral Large, Mixtral 8x22B |
-| **Groq** | ✅ Production | Llama 3 70B, Mixtral 8x7B (Ultra-fast) |
-| **Local / Ollama** | ✅ Production | Llama 3.1, Phi-3, Qwen 2 |
-| **Others** | ✅ Active | Cohere, Together, Yi, Zhipu, Kimi |
+| Provider           | Status        | Models Supported                       |
+| :----------------- | :------------ | :------------------------------------- |
+| **OpenAI**         | ✅ Production | GPT-4o, GPT-4 Turbo, o1-preview        |
+| **Anthropic**      | ✅ Production | Claude 3.5 Sonnet, 3 Opus, 3 Haiku     |
+| **DeepSeek**       | ✅ Production | DeepSeek-V3, DeepSeek-R1               |
+| **Google**         | ✅ Production | Gemini 1.5 Pro, Flash                  |
+| **Mistral**        | ✅ Production | Mistral Large, Mixtral 8x22B           |
+| **Groq**           | ✅ Production | Llama 3 70B, Mixtral 8x7B (Ultra-fast) |
+| **Local / Ollama** | ✅ Production | Llama 3.1, Phi-3, Qwen 2               |
+| **Others**         | ✅ Active     | Cohere, Together, Yi, Zhipu, Kimi      |
 
 ## 💻 CLI Reference
 
-| Command | Description |
-| :--- | :--- |
-| `ultra-dex init` | Initialize a new workspace and configuration. |
-| `ultra-dex run` | Execute a task using the semantic router. |
-| `ultra-dex swarm` | Launch an autonomous agent swarm. |
-| `ultra-dex config` | Manage API keys and system settings. |
-| `ultra-dex doctor` | Diagnose system health and provider connectivity. |
-| `ultra-dex serve` | Launch the API server and management dashboard. |
-| `ultra-dex generate`| Generate code, assets, or documentation. |
-| `ultra-dex quality` | Run quality gates and project-wide linting. |
+| Command              | Description                                       |
+| :------------------- | :------------------------------------------------ |
+| `ultra-dex init`     | Initialize a new workspace and configuration.     |
+| `ultra-dex run`      | Execute a task using the semantic router.         |
+| `ultra-dex swarm`    | Launch an autonomous agent swarm.                 |
+| `ultra-dex config`   | Manage API keys and system settings.              |
+| `ultra-dex doctor`   | Diagnose system health and provider connectivity. |
+| `ultra-dex serve`    | Launch the API server and management dashboard.   |
+| `ultra-dex generate` | Generate code, assets, or documentation.          |
+| `ultra-dex quality`  | Run quality gates and project-wide linting.       |
 
 Run `ultra-dex --help` for a full list of commands and options.
 

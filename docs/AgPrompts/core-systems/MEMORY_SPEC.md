@@ -1,6 +1,7 @@
 # 🧠 Persistent Memory System - Enhanced Implementation
 
 ## Prompt Metadata
+
 - **ID:** PERSISTENT_MEMORY_ENHANCED
 - **Category:** Infrastructure
 - **Priority:** P0
@@ -13,9 +14,11 @@
   - cli/lib/memory/serializer.js (create)
 
 ## Problem Statement
+
 The current memory system needs enhancement to support persistent storage, efficient context management, automatic compaction, and multi-tier memory architecture for production-scale AI development.
 
 ## Success Criteria
+
 - [ ] Persistent storage works reliably
 - [ ] Context management is efficient
 - [ ] Automatic compaction prevents bloat
@@ -27,6 +30,7 @@ The current memory system needs enhancement to support persistent storage, effic
 ## Technical Specification
 
 ### Architecture
+
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Hot Memory    │    │   Warm Memory   │    │   Cold Memory   │
@@ -43,6 +47,7 @@ The current memory system needs enhancement to support persistent storage, effic
 ### Implementation Details
 
 #### Enhanced Memory Features
+
 - Multi-tier storage system (hot/warm/cold)
 - Automatic context compaction
 - Semantic search capabilities
@@ -53,6 +58,7 @@ The current memory system needs enhancement to support persistent storage, effic
 #### Files to Create/Modify
 
 **cli/lib/memory/persistent-store.js:**
+
 - Enhanced persistent storage with multi-tier architecture
 - SQLite for hot memory
 - ChromaDB for warm memory
@@ -71,9 +77,9 @@ export class PersistentStore {
       hotStorage: config.hotStorage || ':memory:',
       warmStorage: config.warmStorage || 'http://localhost:8000',
       coldStorage: config.coldStorage || 'bolt://localhost:7687',
-      ...config
+      ...config,
     };
-    
+
     this.hotDb = null;
     this.warmClient = null;
     this.coldDriver = null;
@@ -84,7 +90,7 @@ export class PersistentStore {
     // Initialize hot storage (SQLite)
     this.hotDb = await open({
       filename: this.config.hotStorage,
-      driver: sqlite3.Database
+      driver: sqlite3.Database,
     });
 
     await this.hotDb.exec(`
@@ -104,7 +110,7 @@ export class PersistentStore {
 
     // Initialize warm storage (ChromaDB)
     this.warmClient = new ChromaClient({
-      path: this.config.warmStorage
+      path: this.config.warmStorage,
     });
 
     // Initialize cold storage (Neo4j)
@@ -126,11 +132,14 @@ export class PersistentStore {
     const ttlMs = ttl * 1000;
     const expireAt = now + ttlMs;
 
-    await this.hotDb.run(`
+    await this.hotDb.run(
+      `
       INSERT OR REPLACE INTO hot_memory 
       (id, key, value, ttl, created_at, updated_at, access_count)
       VALUES (?, ?, ?, ?, ?, ?, ?)
-    `, [this.generateId(), key, JSON.stringify(value), expireAt, now, now, 1]);
+    `,
+      [this.generateId(), key, JSON.stringify(value), expireAt, now, now, 1]
+    );
 
     return { success: true, key, ttl };
   }
@@ -138,18 +147,24 @@ export class PersistentStore {
   async getHot(key) {
     if (!this.initialized) await this.initialize();
 
-    const row = await this.hotDb.get(`
+    const row = await this.hotDb.get(
+      `
       SELECT * FROM hot_memory 
       WHERE key = ? AND (ttl IS NULL OR ttl > ?)
-    `, [key, Date.now()]);
+    `,
+      [key, Date.now()]
+    );
 
     if (row) {
       // Update access count and last access time
-      await this.hotDb.run(`
+      await this.hotDb.run(
+        `
         UPDATE hot_memory 
         SET access_count = access_count + 1, updated_at = ?
         WHERE key = ?
-      `, [Date.now(), key]);
+      `,
+        [Date.now(), key]
+      );
 
       return JSON.parse(row.value);
     }
@@ -162,14 +177,14 @@ export class PersistentStore {
 
     const collection = await this.warmClient.getOrCreateCollection({
       name: 'warm_memory',
-      metadata: { description: 'Ultra-Dex warm memory' }
+      metadata: { description: 'Ultra-Dex warm memory' },
     });
 
     await collection.add({
       ids: [key],
       embeddings: [this.generateEmbedding(value)],
       metadatas: [metadata],
-      documents: [JSON.stringify(value)]
+      documents: [JSON.stringify(value)],
     });
 
     return { success: true, key };
@@ -180,12 +195,12 @@ export class PersistentStore {
 
     const collection = await this.warmClient.getOrCreateCollection({
       name: 'warm_memory',
-      metadata: { description: 'Ultra-Dex warm memory' }
+      metadata: { description: 'Ultra-Dex warm memory' },
     });
 
     const results = await collection.query({
       queryTexts: [key],
-      nResults: 1
+      nResults: 1,
     });
 
     if (results.documents && results.documents[0]) {
@@ -199,28 +214,34 @@ export class PersistentStore {
     if (!this.initialized) await this.initialize();
 
     const session = this.coldDriver.session();
-    
+
     try {
       // Store the main entity
-      await session.run(`
+      await session.run(
+        `
         MERGE (n:MemoryEntity {key: $key})
         SET n.value = $value, n.updatedAt = $updatedAt
-      `, {
-        key,
-        value: JSON.stringify(value),
-        updatedAt: new Date().toISOString()
-      });
+      `,
+        {
+          key,
+          value: JSON.stringify(value),
+          updatedAt: new Date().toISOString(),
+        }
+      );
 
       // Create relationships
       for (const rel of relationships) {
-        await session.run(`
+        await session.run(
+          `
           MATCH (a:MemoryEntity {key: $fromKey})
           MATCH (b:MemoryEntity {key: $toKey})
           MERGE (a)-[:${rel.type}]->(b)
-        `, {
-          fromKey: rel.from,
-          toKey: rel.to
-        });
+        `,
+          {
+            fromKey: rel.from,
+            toKey: rel.to,
+          }
+        );
       }
 
       return { success: true, key, relationships: relationships.length };
@@ -247,11 +268,11 @@ export class PersistentStore {
 
   async deleteWarm(key) {
     const collection = await this.warmClient.getOrCreateCollection({
-      name: 'warm_memory'
+      name: 'warm_memory',
     });
-    
+
     await collection.delete({
-      ids: [key]
+      ids: [key],
     });
   }
 
@@ -259,10 +280,13 @@ export class PersistentStore {
     if (!this.initialized) await this.initialize();
 
     // Clean up expired hot memory entries
-    await this.hotDb.run(`
+    await this.hotDb.run(
+      `
       DELETE FROM hot_memory 
       WHERE ttl IS NOT NULL AND ttl < ?
-    `, [Date.now()]);
+    `,
+      [Date.now()]
+    );
   }
 
   generateId() {
@@ -280,7 +304,7 @@ export class PersistentStore {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash |= 0; // Convert to 32bit integer
     }
     return Math.abs(hash);
@@ -298,6 +322,7 @@ export class PersistentStore {
 ```
 
 **cli/lib/memory/context-manager.js:**
+
 - Enhanced context management with lifecycle
 - Automatic tier migration based on access patterns
 - Context compaction and optimization
@@ -316,13 +341,17 @@ const ContextSchema = z.object({
     accessCount: z.number().default(0),
     lastAccessed: z.number(),
     size: z.number(),
-    tags: z.array(z.string()).optional()
+    tags: z.array(z.string()).optional(),
   }),
-  relationships: z.array(z.object({
-    type: z.string(),
-    target: z.string(),
-    strength: z.number().min(0).max(1)
-  })).optional()
+  relationships: z
+    .array(
+      z.object({
+        type: z.string(),
+        target: z.string(),
+        strength: z.number().min(0).max(1),
+      })
+    )
+    .optional(),
 });
 
 export class ContextManager {
@@ -342,12 +371,13 @@ export class ContextManager {
         accessCount: 0,
         lastAccessed: Date.now(),
         size: JSON.stringify(contextDef.data).length,
-        ...contextDef.metadata
-      }
+        ...contextDef.metadata,
+      },
     });
 
     // Store in appropriate tier based on context type and size
-    if (validated.metadata.size < 10000) { // Less than 10KB
+    if (validated.metadata.size < 10000) {
+      // Less than 10KB
       await this.store.storeHot(validated.id, validated);
     } else {
       await this.store.storeWarm(validated.id, validated);
@@ -359,11 +389,11 @@ export class ContextManager {
   async getContext(id) {
     // Try hot memory first
     let context = await this.store.getHot(id);
-    
+
     if (!context) {
       // Try warm memory
       context = await this.store.getWarm(id);
-      
+
       if (context && context.metadata.size < 10000) {
         // Promote to hot memory if accessed and small enough
         await this.store.storeHot(id, context);
@@ -373,12 +403,12 @@ export class ContextManager {
     if (context) {
       // Update access patterns
       this.updateAccessPattern(id, context);
-      
+
       // Update metadata
       context.metadata.accessCount = (context.metadata.accessCount || 0) + 1;
       context.metadata.lastAccessed = Date.now();
       context.metadata.updatedAt = Date.now();
-      
+
       // Update in store
       if (context.metadata.size < 10000) {
         await this.store.storeHot(id, context);
@@ -403,8 +433,8 @@ export class ContextManager {
         ...context.metadata,
         ...updates.metadata,
         updatedAt: Date.now(),
-        size: JSON.stringify({ ...context, ...updates }).length
-      }
+        size: JSON.stringify({ ...context, ...updates }).length,
+      },
     };
 
     // Validate updated context
@@ -430,13 +460,13 @@ export class ContextManager {
       this.accessPatterns.set(id, {
         accesses: [],
         frequency: 0,
-        recency: 0
+        recency: 0,
       });
     }
 
     const pattern = this.accessPatterns.get(id);
     pattern.accesses.push(Date.now());
-    
+
     // Keep only last 100 accesses
     if (pattern.accesses.length > 100) {
       pattern.accesses = pattern.accesses.slice(-100);
@@ -444,7 +474,7 @@ export class ContextManager {
 
     // Calculate frequency (accesses per hour)
     const oneHourAgo = Date.now() - 3600000;
-    const recentAccesses = pattern.accesses.filter(time => time > oneHourAgo);
+    const recentAccesses = pattern.accesses.filter((time) => time > oneHourAgo);
     pattern.frequency = recentAccesses.length;
 
     // Calculate recency (time since last access)
@@ -482,7 +512,8 @@ export class ContextManager {
     await this.store.deleteWarm(id);
   }
 
-  async scheduleCompaction(interval = 3600000) { // 1 hour
+  async scheduleCompaction(interval = 3600000) {
+    // 1 hour
     if (this.compactionSchedule) {
       clearInterval(this.compactionSchedule);
     }
@@ -505,19 +536,22 @@ export class ContextManager {
 
   async compactHotMemory(maxEntries = 1000) {
     const session = await this.store.hotDb;
-    
+
     // Remove entries with lowest access count if we exceed max
     const count = await session.get('SELECT COUNT(*) as count FROM hot_memory');
     if (count.count > maxEntries) {
       const toRemove = count.count - maxEntries;
-      await session.run(`
+      await session.run(
+        `
         DELETE FROM hot_memory 
         WHERE id IN (
           SELECT id FROM hot_memory 
           ORDER BY access_count ASC, updated_at ASC 
           LIMIT ?
         )
-      `, [toRemove]);
+      `,
+        [toRemove]
+      );
     }
   }
 
@@ -543,12 +577,12 @@ export class ContextManager {
     const relationship = {
       type: relationshipType,
       target: targetId,
-      strength
+      strength,
     };
 
     // Add relationship to source context
     const updatedSource = await this.updateContext(sourceId, {
-      relationships: [...(sourceContext.relationships || []), relationship]
+      relationships: [...(sourceContext.relationships || []), relationship],
     });
 
     return updatedSource;
@@ -557,6 +591,7 @@ export class ContextManager {
 ```
 
 **cli/lib/memory/compactor.js:**
+
 - Enhanced compaction logic
 - Memory optimization algorithms
 - Garbage collection
@@ -570,7 +605,7 @@ export class MemoryCompactor {
     this.metrics = {
       compacted: 0,
       freedBytes: 0,
-      operations: 0
+      operations: 0,
     };
   }
 
@@ -593,7 +628,9 @@ export class MemoryCompactor {
     const duration = Date.now() - startTime;
 
     console.log(`Memory compaction completed in ${duration}ms`);
-    console.log(`Compacted: ${this.metrics.compacked} items, Freed: ${this.metrics.freedBytes} bytes`);
+    console.log(
+      `Compacted: ${this.metrics.compacked} items, Freed: ${this.metrics.freedBytes} bytes`
+    );
   }
 
   async compactHotMemory() {
@@ -616,10 +653,13 @@ export class MemoryCompactor {
     `);
 
     for (const dup of duplicates) {
-      await this.store.hotDb.run(`
+      await this.store.hotDb.run(
+        `
         DELETE FROM hot_memory 
         WHERE key = ? AND id != ?
-      `, [dup.key, dup.keep_id]);
+      `,
+        [dup.key, dup.keep_id]
+      );
     }
   }
 
@@ -633,7 +673,7 @@ export class MemoryCompactor {
     // Remove entries that haven't been accessed recently
     // This is more complex with ChromaDB and may involve archiving
     console.log('Warm memory compaction (ChromaDB) - optimizing collections...');
-    
+
     // In practice, this would involve:
     // - Removing old collections
     // - Optimizing vector indices
@@ -643,9 +683,9 @@ export class MemoryCompactor {
   async compactColdMemory() {
     // Remove stale relationships and optimize graph
     console.log('Cold memory compaction (Neo4j) - optimizing graph...');
-    
+
     const session = this.store.coldDriver.session();
-    
+
     try {
       // Remove orphaned nodes
       await session.run(`
@@ -674,7 +714,7 @@ export class MemoryCompactor {
       warm: warmStats,
       cold: coldStats,
       compactor: this.metrics,
-      totalSize: hotStats.size + warmStats.size + coldStats.size
+      totalSize: hotStats.size + warmStats.size + coldStats.size,
     };
   }
 
@@ -682,13 +722,13 @@ export class MemoryCompactor {
     const [count, size, oldest] = await Promise.all([
       this.store.hotDb.get('SELECT COUNT(*) as count FROM hot_memory'),
       this.store.hotDb.get('SELECT SUM(length(value)) as total_size FROM hot_memory'),
-      this.store.hotDb.get('SELECT MIN(created_at) as oldest FROM hot_memory')
+      this.store.hotDb.get('SELECT MIN(created_at) as oldest FROM hot_memory'),
     ]);
 
     return {
       count: count.count,
       size: size.total_size || 0,
-      oldest: oldest.oldest
+      oldest: oldest.oldest,
     };
   }
 
@@ -697,31 +737,32 @@ export class MemoryCompactor {
     return {
       count: 0,
       size: 0,
-      collections: 0
+      collections: 0,
     };
   }
 
   async getColdMemoryStats() {
     // Placeholder for Neo4j stats
     const session = this.store.coldDriver.session();
-    
+
     try {
       const result = await session.run(`
         MATCH (n:MemoryEntity)
         RETURN count(n) as nodeCount,
                sum(size(n.value)) as totalSize
       `);
-      
+
       return {
         count: result.records[0]?.get('nodeCount') || 0,
-        size: result.records[0]?.get('totalSize') || 0
+        size: result.records[0]?.get('totalSize') || 0,
       };
     } finally {
       await session.close();
     }
   }
 
-  async schedule(interval = 3600000) { // 1 hour
+  async schedule(interval = 3600000) {
+    // 1 hour
     setInterval(() => {
       this.compact().catch(console.error);
     }, interval);
@@ -730,6 +771,7 @@ export class MemoryCompactor {
 ```
 
 **cli/lib/memory/serializer.js:**
+
 - Enhanced serialization with compression
 - Type-safe serialization
 - Version compatibility
@@ -748,16 +790,16 @@ export class MemorySerializer {
       compress: options.compress !== false, // enabled by default
       maxDepth: options.maxDepth || 10,
       maxSize: options.maxSize || 1024 * 1024, // 1MB
-      enableCompression: options.enableCompression !== false
+      enableCompression: options.enableCompression !== false,
     };
   }
 
   async serialize(obj) {
     // Validate object size and structure
     this.validateObject(obj, 0);
-    
+
     let serialized = JSON.stringify(obj);
-    
+
     // Check size
     if (serialized.length > this.options.maxSize) {
       throw new Error(`Serialized object exceeds maximum size: ${this.options.maxSize} bytes`);
@@ -769,14 +811,14 @@ export class MemorySerializer {
       return {
         version: 'v2',
         compressed: true,
-        data: compressed.toString('base64')
+        data: compressed.toString('base64'),
       };
     }
 
     return {
       version: 'v1',
       compressed: false,
-      data: serialized
+      data: serialized,
     };
   }
 
@@ -843,12 +885,14 @@ export class MemorySerializer {
 ```
 
 #### Configuration Requirements
+
 - Add memory configuration options
 - Configure storage backends
 - Set tier thresholds and policies
 - Enable/disable compaction
 
 ## Security Considerations
+
 - [x] Input validation for all context data
 - [x] Size limits to prevent memory exhaustion
 - [x] Secure storage with encryption
@@ -856,6 +900,7 @@ export class MemorySerializer {
 - [x] Audit logging for memory operations
 
 ## Performance Requirements
+
 - [x] Sub-10ms hot memory access
 - [x] Sub-100ms warm memory access
 - [x] Sub-500ms cold memory access
@@ -863,6 +908,7 @@ export class MemorySerializer {
 - [x] Support for 1000+ concurrent contexts
 
 ## Testing Strategy
+
 - [x] Unit tests for each component
 - [x] Integration tests for end-to-end flows
 - [x] Performance tests for access times
@@ -871,6 +917,7 @@ export class MemorySerializer {
 - [x] Security tests for injection attacks
 
 ## Quality Gates
+
 - [x] All unit tests pass
 - [x] Integration tests pass
 - [x] Performance benchmarks met
@@ -879,11 +926,13 @@ export class MemorySerializer {
 - [x] Documentation updated
 
 ## Rollback Plan
+
 1. Revert to previous memory implementation
 2. Disable enhanced features via config
 3. Roll back to basic memory if needed
 
 ## Acceptance Criteria
+
 - [x] Persistent storage works reliably
 - [x] Multi-tier architecture functions
 - [x] Context management is efficient
@@ -892,6 +941,7 @@ export class MemorySerializer {
 - [x] Security requirements satisfied
 
 ## Implementation Notes
+
 - Use connection pooling for database connections
 - Implement circuit breaker pattern for resilience
 - Add metrics collection for monitoring

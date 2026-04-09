@@ -17,34 +17,45 @@ export const SECURITY_LEVELS = {
   LOW: 'low',
   MEDIUM: 'medium',
   HIGH: 'high',
-  CRITICAL: 'critical'
+  CRITICAL: 'critical',
 };
 
 export const EXECUTION_POLICIES = {
   SANDBOXED: 'sandboxed',
   RESTRICTED: 'restricted',
-  UNRESTRICTED: 'unrestricted'
+  UNRESTRICTED: 'unrestricted',
 };
 
 const AgentSecurityPolicySchema = z.object({
   id: z.string(),
   name: z.string(),
   description: z.string(),
-  securityLevel: z.enum([SECURITY_LEVELS.LOW, SECURITY_LEVELS.MEDIUM, SECURITY_LEVELS.HIGH, SECURITY_LEVELS.CRITICAL]),
-  executionPolicy: z.enum([EXECUTION_POLICIES.SANDBOXED, EXECUTION_POLICIES.RESTRICTED, EXECUTION_POLICIES.UNRESTRICTED]),
+  securityLevel: z.enum([
+    SECURITY_LEVELS.LOW,
+    SECURITY_LEVELS.MEDIUM,
+    SECURITY_LEVELS.HIGH,
+    SECURITY_LEVELS.CRITICAL,
+  ]),
+  executionPolicy: z.enum([
+    EXECUTION_POLICIES.SANDBOXED,
+    EXECUTION_POLICIES.RESTRICTED,
+    EXECUTION_POLICIES.UNRESTRICTED,
+  ]),
   allowedOperations: z.array(z.string()),
   blockedOperations: z.array(z.string()),
-  resourceLimits: z.object({
-    maxCpuTime: z.number().optional(),
-    maxMemory: z.number().optional(),
-    maxFileSize: z.number().optional(),
-    maxNetworkRequests: z.number().optional(),
-    timeout: z.number().optional()
-  }).optional(),
+  resourceLimits: z
+    .object({
+      maxCpuTime: z.number().optional(),
+      maxMemory: z.number().optional(),
+      maxFileSize: z.number().optional(),
+      maxNetworkRequests: z.number().optional(),
+      timeout: z.number().optional(),
+    })
+    .optional(),
   dataSensitivity: z.enum(['public', 'internal', 'confidential', 'restricted']),
   auditLevel: z.enum(['minimal', 'standard', 'detailed']),
   createdAt: z.string(),
-  updatedAt: z.string()
+  updatedAt: z.string(),
 });
 
 export class AgentSecurityPolicies {
@@ -71,24 +82,20 @@ export class AgentSecurityPolicies {
           'file:write',
           'network:http_get',
           'network:http_post',
-          'ai:execute'
+          'ai:execute',
         ],
-        blockedOperations: [
-          'system:exec',
-          'file:delete_system',
-          'network:raw_socket'
-        ],
+        blockedOperations: ['system:exec', 'file:delete_system', 'network:raw_socket'],
         resourceLimits: {
           maxCpuTime: 30000, // 30 seconds
           maxMemory: 128 * 1024 * 1024, // 128MB
           maxFileSize: 10 * 1024 * 1024, // 10MB
           maxNetworkRequests: 100,
-          timeout: 60000 // 1 minute
+          timeout: 60000, // 1 minute
         },
         dataSensitivity: 'internal',
         auditLevel: 'standard',
         createdAt: now,
-        updatedAt: now
+        updatedAt: now,
       },
 
       'trusted-agent': {
@@ -106,25 +113,25 @@ export class AgentSecurityPolicies {
           'network:http_post',
           'network:websocket',
           'ai:execute',
-          'database:query'
+          'database:query',
         ],
         blockedOperations: [
           'system:exec_dangerous',
           'file:delete_system',
           'network:raw_socket',
-          'system:shutdown'
+          'system:shutdown',
         ],
         resourceLimits: {
           maxCpuTime: 120000, // 2 minutes
           maxMemory: 512 * 1024 * 1024, // 512MB
           maxFileSize: 100 * 1024 * 1024, // 100MB
           maxNetworkRequests: 1000,
-          timeout: 300000 // 5 minutes
+          timeout: 300000, // 5 minutes
         },
         dataSensitivity: 'confidential',
         auditLevel: 'detailed',
         createdAt: now,
-        updatedAt: now
+        updatedAt: now,
       },
 
       'admin-agent': {
@@ -139,8 +146,8 @@ export class AgentSecurityPolicies {
         dataSensitivity: 'restricted',
         auditLevel: 'detailed',
         createdAt: now,
-        updatedAt: now
-      }
+        updatedAt: now,
+      },
     };
   }
 
@@ -191,7 +198,7 @@ export class AgentSecurityPolicies {
       const validatedData = AgentSecurityPolicySchema.parse({
         ...policyData,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       });
 
       if (this.policies.has(validatedData.id)) {
@@ -205,7 +212,7 @@ export class AgentSecurityPolicies {
       return validatedData;
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new Error(`Validation error: ${error.errors.map(e => e.message).join(', ')}`);
+        throw new Error(`Validation error: ${error.errors.map((e) => e.message).join(', ')}`);
       }
       throw error;
     }
@@ -230,7 +237,7 @@ export class AgentSecurityPolicies {
     const updated = {
       ...existing,
       ...updates,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
 
     const validated = AgentSecurityPolicySchema.parse(updated);
@@ -302,7 +309,9 @@ export class AgentSecurityPolicies {
     }
 
     if (limits.maxNetworkRequests && usage.networkRequests > limits.maxNetworkRequests) {
-      throw new Error(`Network requests limit exceeded: ${usage.networkRequests} > ${limits.maxNetworkRequests}`);
+      throw new Error(
+        `Network requests limit exceeded: ${usage.networkRequests} > ${limits.maxNetworkRequests}`
+      );
     }
   }
 
@@ -319,24 +328,24 @@ export class AgentSecurityPolicies {
   getPolicyForAgent(agentType, userRole = 'member') {
     // Map agent types to policies
     const agentPolicyMap = {
-      'architect': 'trusted-agent',
+      architect: 'trusted-agent',
       'meta-orchestrator': 'trusted-agent',
-      'orchestrator': 'basic-agent',
-      'cto': 'trusted-agent',
-      'planner': 'basic-agent',
-      'research': 'basic-agent',
-      'backend': 'basic-agent',
-      'frontend': 'basic-agent',
-      'database': 'trusted-agent',
-      'auth': 'trusted-agent',
-      'security': 'trusted-agent',
-      'devops': 'trusted-agent',
-      'testing': 'basic-agent',
-      'reviewer': 'basic-agent',
-      'debugger': 'basic-agent',
-      'documentation': 'basic-agent',
-      'performance': 'basic-agent',
-      'refactoring': 'basic-agent'
+      orchestrator: 'basic-agent',
+      cto: 'trusted-agent',
+      planner: 'basic-agent',
+      research: 'basic-agent',
+      backend: 'basic-agent',
+      frontend: 'basic-agent',
+      database: 'trusted-agent',
+      auth: 'trusted-agent',
+      security: 'trusted-agent',
+      devops: 'trusted-agent',
+      testing: 'basic-agent',
+      reviewer: 'basic-agent',
+      debugger: 'basic-agent',
+      documentation: 'basic-agent',
+      performance: 'basic-agent',
+      refactoring: 'basic-agent',
     };
 
     // Admin users get admin policy

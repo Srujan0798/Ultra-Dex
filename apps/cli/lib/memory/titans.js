@@ -21,12 +21,12 @@ export class TitansMemory {
 
   async getTier(tier) {
     const results = await memoryManager.retrieve('', { tags: [tier], limit: 1000 });
-    return results.items.map(item => ({
+    return results.items.map((item) => ({
       id: item.id,
       content: item.content.text,
       tokens: item.content.tokens,
       createdAt: item.createdAt,
-      ...item.content.metadata
+      ...item.content.metadata,
     }));
   }
 
@@ -52,7 +52,7 @@ export class TitansMemory {
       hot: stats.hot.count,
       warm: stats.warm.count,
       cold: stats.cold.count,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
   }
 }

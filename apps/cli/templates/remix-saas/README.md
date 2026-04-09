@@ -13,6 +13,7 @@ Complete SaaS template built with Remix, featuring authentication, payments, dat
 The Remix SaaS Template is a comprehensive starter kit that includes all essential features for a production SaaS application. Built with Remix for optimal user experience and performance, this template follows industry best practices and includes enterprise-grade security and scalability features.
 
 ### Core Features
+
 - **Authentication:** Clerk or custom auth with social login
 - **Payments:** Stripe integration for subscriptions
 - **Database:** Prisma ORM with PostgreSQL
@@ -23,6 +24,7 @@ The Remix SaaS Template is a comprehensive starter kit that includes all essenti
 - **Performance:** Optimized for Core Web Vitals
 
 ### Architecture Highlights
+
 - **Remix Framework:** Full-stack React with server-side rendering
 - **TypeScript:** Full type safety throughout
 - **Tailwind CSS:** Utility-first styling
@@ -68,6 +70,7 @@ The Remix SaaS Template is a comprehensive starter kit that includes all essenti
 ## 🚀 QUICK START
 
 ### Generate Project
+
 ```bash
 # Using Ultra-Dex CLI
 ultra-dex template generate remix-saas my-saas-app
@@ -77,6 +80,7 @@ npx ultra-dex generate "Create a SaaS with Remix template" --template remix-saas
 ```
 
 ### Manual Setup
+
 ```bash
 # Clone the template
 npx ultra-dex template clone remix-saas my-saas-app
@@ -105,6 +109,7 @@ npm run dev
 ## 🔧 ENVIRONMENT VARIABLES
 
 ### Required Variables
+
 ```env
 # Database
 DATABASE_URL="postgresql://username:password@localhost:5432/my_saas_db"
@@ -128,6 +133,7 @@ UPLOADTHING_APP_ID="your-uploadthing-app-id"
 ```
 
 ### Optional Variables
+
 ```env
 # Email (if using custom SMTP)
 SMTP_HOST="smtp.gmail.com"
@@ -197,6 +203,7 @@ my-remix-saas/
 ## 🧩 CORE COMPONENTS
 
 ### 1. Authentication System
+
 - **Social Login:** Discord, Google, GitHub integration
 - **Email/Password:** Traditional authentication
 - **Session Management:** Secure session handling
@@ -204,6 +211,7 @@ my-remix-saas/
 - **Multi-Factor Auth:** Optional 2FA support
 
 ### 2. Billing & Payments
+
 - **Subscription Management:** Stripe integration for recurring payments
 - **Pricing Tiers:** Multiple pricing plans with features
 - **Usage Tracking:** Track usage for metered billing
@@ -211,6 +219,7 @@ my-remix-saas/
 - **Tax Calculation:** Automatic tax calculation
 
 ### 3. Database Layer
+
 - **Prisma ORM:** Type-safe database access
 - **PostgreSQL:** Robust database with advanced features
 - **Migrations:** Automated schema migrations
@@ -218,6 +227,7 @@ my-remix-saas/
 - **Relationships:** Properly defined entity relationships
 
 ### 4. File Management
+
 - **Uploadthing:** Easy file uploads with progress tracking
 - **S3 Integration:** Scalable file storage
 - **Image Optimization:** Automatic image optimization
@@ -225,6 +235,7 @@ my-remix-saas/
 - **CDN Support:** Content delivery network integration
 
 ### 5. Admin Dashboard
+
 - **User Management:** Manage users and permissions
 - **Analytics:** Business metrics and KPIs
 - **Billing Dashboard:** Subscription and payment management
@@ -236,6 +247,7 @@ my-remix-saas/
 ## 🛡️ SECURITY FEATURES
 
 ### Authentication Security
+
 - **JWT Tokens:** Secure session management
 - **Password Hashing:** bcrypt for password security
 - **Rate Limiting:** Prevent brute force attacks
@@ -243,6 +255,7 @@ my-remix-saas/
 - **XSS Prevention:** Automatic XSS protection
 
 ### Data Security
+
 - **Encryption at Rest:** Database encryption
 - **Encryption in Transit:** HTTPS/TLS for all communications
 - **Input Validation:** Sanitize all user inputs
@@ -250,6 +263,7 @@ my-remix-saas/
 - **Access Controls:** Role-based access controls
 
 ### Payment Security
+
 - **PCI DSS Compliance:** Stripe handles payment processing
 - **Secure Webhooks:** Verify webhook signatures
 - **Tokenization:** No sensitive data stored locally
@@ -261,6 +275,7 @@ my-remix-saas/
 ## 📊 PERFORMANCE OPTIMIZATIONS
 
 ### Client-Side Optimizations
+
 - **Code Splitting:** Route-based code splitting
 - **Image Optimization:** Lazy loading and optimization
 - **Caching:** Intelligent caching strategies
@@ -268,6 +283,7 @@ my-remix-saas/
 - **Accessibility:** WCAG 2.1 AA compliance
 
 ### Server-Side Optimizations
+
 - **Database Indexing:** Optimized database queries
 - **Caching Layer:** Redis for frequently accessed data
 - **CDN Integration:** Static asset delivery
@@ -275,6 +291,7 @@ my-remix-saas/
 - **Connection Pooling:** Optimized database connections
 
 ### Monitoring & Analytics
+
 - **Performance Metrics:** Core Web Vitals tracking
 - **Error Monitoring:** Sentry for error tracking
 - **Usage Analytics:** Plausible for privacy-friendly analytics
@@ -286,12 +303,14 @@ my-remix-saas/
 ## 🚢 DEPLOYMENT
 
 ### Vercel Deployment
+
 ```bash
 # Deploy to Vercel
 npm run deploy
 ```
 
 ### Environment Setup for Production
+
 1. **Database:** Set up PostgreSQL database
 2. **Environment Variables:** Configure all required variables
 3. **Domains:** Set up custom domains
@@ -299,6 +318,7 @@ npm run deploy
 5. **Monitoring:** Set up error tracking and analytics
 
 ### Docker Deployment
+
 ```dockerfile
 FROM node:18-alpine AS builder
 WORKDIR /app
@@ -319,6 +339,7 @@ CMD ["dumb-init", "npm", "start"]
 ```
 
 ### CI/CD Pipeline
+
 ```yaml
 # .github/workflows/deploy.yml
 name: Deploy to Production
@@ -351,21 +372,25 @@ jobs:
 ## 🧪 TESTING STRATEGY
 
 ### Unit Tests
+
 - **Jest:** JavaScript testing framework
 - **Testing Library:** DOM testing utilities
 - **Vitest:** Fast test runner (alternative)
 
 ### Integration Tests
+
 - **Playwright:** End-to-end browser testing
 - **Supertest:** HTTP assertions for API testing
 - **Prisma Testing:** Database integration tests
 
 ### Performance Tests
+
 - **Lighthouse CI:** Automated performance auditing
 - **Load Testing:** Simulate concurrent users
 - **Database Performance:** Query optimization testing
 
 ### Security Tests
+
 - **Dependency Scanning:** Automated vulnerability detection
 - **Penetration Testing:** Regular security assessments
 - **Compliance Testing:** Regulatory compliance verification
@@ -375,22 +400,26 @@ jobs:
 ## 🔌 INTEGRATIONS
 
 ### Payment Processing
+
 - **Stripe:** Subscriptions and one-time payments
 - **PayPal:** Alternative payment method
 - **Crypto:** Future cryptocurrency payment support
 
 ### Email Services
+
 - **Resend:** Transactional email delivery
 - **SendGrid:** Alternative email provider
 - **Custom SMTP:** Bring your own email service
 
 ### File Storage
+
 - **Uploadthing:** Easy file upload service
 - **AWS S3:** Scalable object storage
 - **Cloudflare R2:** Cost-effective storage
 - **Custom S3:** Compatible storage providers
 
 ### Analytics & Monitoring
+
 - **Plausible:** Privacy-friendly analytics
 - **Sentry:** Error tracking and monitoring
 - **LogRocket:** Session replay and user analytics
@@ -401,18 +430,21 @@ jobs:
 ## 📋 CUSTOMIZATION GUIDE
 
 ### Changing Branding
+
 1. **Update Logo:** Replace logo in `public/logo.svg`
 2. **Update Colors:** Modify Tailwind config in `tailwind.config.js`
 3. **Update Favicon:** Replace favicon in `public/favicon.ico`
 4. **Update Metadata:** Modify SEO metadata in `app/root.tsx`
 
 ### Modifying Pricing Plans
+
 1. **Update Stripe Dashboard:** Configure plans in Stripe
 2. **Update Frontend:** Modify pricing components in `app/routes/pricing.tsx`
 3. **Update Backend:** Update billing logic in `app/services/billing-service.ts`
 4. **Test Changes:** Verify all payment flows work correctly
 
 ### Adding New Features
+
 1. **Database Schema:** Update Prisma schema
 2. **API Routes:** Create new API endpoints
 3. **UI Components:** Build new UI components
@@ -424,6 +456,7 @@ jobs:
 ## 🔄 UPDATES & MAINTENANCE
 
 ### Keeping Dependencies Updated
+
 ```bash
 # Check for outdated dependencies
 npm outdated
@@ -436,12 +469,15 @@ npm audit
 ```
 
 ### Template Versioning
+
 - **Major Updates:** Breaking changes to template structure
 - **Minor Updates:** New features and improvements
 - **Patch Updates:** Bug fixes and security patches
 
 ### Migration Guide
+
 When updating to a new template version:
+
 1. **Backup Current Code:** Create a backup of your current implementation
 2. **Review Changes:** Check the changelog for breaking changes
 3. **Update Dependencies:** Update package dependencies
@@ -453,17 +489,20 @@ When updating to a new template version:
 ## 📞 SUPPORT & RESOURCES
 
 ### Documentation
+
 - [Remix Documentation](https://remix.run/docs)
 - [Prisma Documentation](https://prisma.io/docs)
 - [Stripe Documentation](https://stripe.com/docs)
 - [Ultra-Dex Documentation](../../README.md)
 
 ### Community
+
 - [Remix Discord](https://rmx.as/discord)
 - [Ultra-Dex Discord](https://discord.gg/ultra-dex)
 - [GitHub Issues](https://github.com/Srujan0798/Ultra-Dex/issues)
 
 ### Professional Support
+
 - **Enterprise Support:** Available for production deployments
 - **Consulting Services:** Custom implementation and integration
 - **Training:** Team training and onboarding
@@ -473,6 +512,7 @@ When updating to a new template version:
 ## 🚀 NEXT STEPS
 
 ### After Setup
+
 1. **Customize Branding:** Update logos, colors, and copy
 2. **Configure Payments:** Set up Stripe with your business details
 3. **Add Features:** Implement your specific business logic
@@ -480,6 +520,7 @@ When updating to a new template version:
 5. **Deploy:** Launch to production
 
 ### Advanced Customizations
+
 - **Multi-Tenancy:** Add support for multiple tenants
 - **Advanced Analytics:** Implement custom analytics
 - **AI Integration:** Add AI-powered features
@@ -491,6 +532,7 @@ When updating to a new template version:
 ## 🏆 BEST PRACTICES
 
 ### Development Best Practices
+
 - **Type Safety:** Use TypeScript extensively
 - **Component Reusability:** Build reusable UI components
 - **Security First:** Implement security from the start
@@ -498,6 +540,7 @@ When updating to a new template version:
 - **Testing:** Maintain high test coverage
 
 ### Deployment Best Practices
+
 - **Environment Variables:** Never commit secrets to version control
 - **Database Migrations:** Test migrations in staging first
 - **Monitoring:** Set up comprehensive monitoring

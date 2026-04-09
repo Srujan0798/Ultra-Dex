@@ -72,7 +72,8 @@ export class ApprovalWorkflow {
     }
 
     // Record decision
-    currentStep.status = decision === 'approve' ? APPROVAL_STATUS.APPROVED : APPROVAL_STATUS.REJECTED;
+    currentStep.status =
+      decision === 'approve' ? APPROVAL_STATUS.APPROVED : APPROVAL_STATUS.REJECTED;
     currentStep.decidedBy = approverId;
     currentStep.decidedAt = new Date().toISOString();
     currentStep.comment = comment;

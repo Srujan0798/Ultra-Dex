@@ -9,7 +9,8 @@ import * as bootstrapModule from '../../src/core/bootstrap.js';
 import { container } from '../../src/core/di/container.js';
 import { DI_TOKENS } from '../../src/core/di/tokens.js';
 
-const { bootstrap, shutdown, isBootstrapped, resetForTesting } = bootstrapModule.default || bootstrapModule;
+const { bootstrap, shutdown, isBootstrapped, resetForTesting } =
+  bootstrapModule.default || bootstrapModule;
 
 test('bootstrap - initialization', { timeout: 10000 }, async () => {
   await resetForTesting();

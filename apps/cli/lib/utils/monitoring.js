@@ -309,12 +309,14 @@ class MonitoringSystem {
       if (!this.logger) return;
 
       const serialized = serializeEvent(event);
-      await Promise.resolve(this.logger.log({
-        level: event.level || 'info',
-        message: event.message || event.type,
-        eventType: event.type,
-        structuredEvent: serialized,
-      }));
+      await Promise.resolve(
+        this.logger.log({
+          level: event.level || 'info',
+          message: event.message || event.type,
+          eventType: event.type,
+          structuredEvent: serialized,
+        })
+      );
 
       if (MONITORING_CONFIG.metricsEnabled) {
         this.updateMetricsFromEvent(event);

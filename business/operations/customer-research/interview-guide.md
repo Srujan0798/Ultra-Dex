@@ -1,6 +1,7 @@
 # Ultra-Dex Customer Interview Guide
 
 ## Interview Objectives
+
 - Understand customer use cases and pain points
 - Validate product-market fit
 - Identify feature gaps and improvement opportunities
@@ -9,18 +10,21 @@
 ## Interview Structure (45-60 minutes)
 
 ### Opening (5 minutes)
+
 - Thank participant for their time
 - Explain interview purpose and confidentiality
 - Confirm consent to record (if applicable)
 - Set expectations for interview flow
 
 ### Background Questions (10 minutes)
+
 1. Tell me about your role and company
 2. What does your team do?
 3. How does AI currently fit into your workflow?
 4. What tools does your team currently use for AI development?
 
 ### Current Challenges (15 minutes)
+
 1. What are the biggest challenges you face with AI development?
 2. How do you currently coordinate multiple AI tools/agents?
 3. What security/compliance requirements do you have?
@@ -28,6 +32,7 @@
 5. What frustrates you most about current AI tools?
 
 ### Ultra-Dex Usage (20 minutes)
+
 1. How did you first discover Ultra-Dex?
 2. What specific problem were you trying to solve?
 3. How long did it take to get value from the platform?
@@ -39,12 +44,14 @@
 9. How does Ultra-Dex compare to alternatives you considered?
 
 ### Future Needs (10 minutes)
+
 1. What additional features would be valuable to you?
 2. How do you expect your AI usage to evolve?
 3. What would make you recommend Ultra-Dex to others?
 4. What would make you consider switching to a competitor?
 
 ### Closing (5 minutes)
+
 - Any final thoughts or feedback?
 - Would you be willing to provide a testimonial?
 - Can we follow up with additional questions?
@@ -53,6 +60,7 @@
 ## Interview Questions by Customer Segment
 
 ### Enterprise Customers
+
 - How does Ultra-Dex fit into your overall AI strategy?
 - What was the approval process for purchasing?
 - How do you manage security and compliance requirements?
@@ -60,6 +68,7 @@
 - Who are the key stakeholders in your organization?
 
 ### Mid-Market Companies
+
 - How does Ultra-Dex fit into your development workflow?
 - What was your evaluation process?
 - How do you measure ROI from Ultra-Dex?
@@ -67,6 +76,7 @@
 - How do you handle technical implementation?
 
 ### Startups
+
 - How does Ultra-Dex accelerate your product development?
 - What was your decision-making process?
 - How do you measure success with Ultra-Dex?
@@ -76,18 +86,21 @@
 ## Key Metrics to Track
 
 ### Adoption Metrics
+
 - Time to first value
 - Feature usage patterns
 - User engagement levels
 - Expansion within accounts
 
 ### Satisfaction Metrics
+
 - Net Promoter Score
 - Customer satisfaction rating
 - Support ticket volume
 - Renewal intentions
 
 ### Business Impact
+
 - Productivity improvements
 - Cost savings achieved
 - Time savings realized
@@ -96,17 +109,20 @@
 ## Follow-up Actions
 
 ### Immediate (Within 24 hours)
+
 - Send thank-you note
 - Share any promised resources
 - Schedule follow-up if needed
 
 ### Short-term (Within 1 week)
+
 - Document interview findings
 - Identify themes and patterns
 - Flag urgent issues for resolution
 - Update customer profiles
 
 ### Medium-term (Within 2 weeks)
+
 - Share insights with product team
 - Update product roadmap based on feedback
 - Plan follow-up interviews if needed
@@ -115,12 +131,14 @@
 ## Interviewer Best Practices
 
 ### Before the Interview
+
 - Research the customer and their company
 - Review their usage data if available
 - Prepare follow-up questions based on their situation
 - Test recording equipment if applicable
 
 ### During the Interview
+
 - Listen more than you talk
 - Ask open-ended questions
 - Dig deeper on interesting points
@@ -129,6 +147,7 @@
 - Respect time commitments
 
 ### After the Interview
+
 - Document findings immediately
 - Identify actionable insights
 - Share relevant information with team
@@ -138,6 +157,7 @@
 ## Common Themes to Probe
 
 ### Product-Market Fit Indicators
+
 - Frequency of use
 - Willingness to pay more
 - Referral behavior
@@ -145,6 +165,7 @@
 - Alternative consideration
 
 ### Feature Prioritization
+
 - Most valuable features
 - Missing functionality
 - Usability issues
@@ -152,6 +173,7 @@
 - Performance concerns
 
 ### Competitive Positioning
+
 - Alternatives considered
 - Decision factors
 - Competitive comparisons
@@ -161,6 +183,7 @@
 ## Red Flags to Watch For
 
 ### Churn Risk Indicators
+
 - Decreased usage
 - Feature complaints
 - Budget concerns
@@ -168,6 +191,7 @@
 - Implementation issues
 
 ### Product Issues
+
 - Consistent feature requests
 - Usability problems
 - Performance complaints
@@ -177,6 +201,7 @@
 ## Success Indicators
 
 ### Strong Product-Market Fit
+
 - High usage frequency
 - Feature advocacy
 - Willingness to pay premium
@@ -184,6 +209,7 @@
 - Competitive dismissal
 
 ### Customer Success
+
 - Clear business value
 - Easy implementation
 - Strong support satisfaction

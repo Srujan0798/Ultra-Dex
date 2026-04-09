@@ -1,5 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { FiCheck, FiX, FiEdit, FiSave, FiTrash2, FiPlus, FiSettings, FiGlobe, FiKey, FiShield, FiDatabase, FiZap } from 'react-icons/fi';
+import {
+  FiCheck,
+  FiX,
+  FiEdit,
+  FiSave,
+  FiTrash2,
+  FiPlus,
+  FiSettings,
+  FiGlobe,
+  FiKey,
+  FiShield,
+  FiDatabase,
+  FiZap,
+} from 'react-icons/fi';
 
 const ConfigEditor = () => {
   const [config, setConfig] = useState({
@@ -9,47 +22,47 @@ const ConfigEditor = () => {
         apiKey: '',
         defaultModel: 'gpt-4o-2024-11-20',
         temperature: 0.7,
-        maxTokens: 4096
+        maxTokens: 4096,
       },
       anthropic: {
         enabled: true,
         apiKey: '',
         defaultModel: 'claude-3-5-sonnet-latest',
         temperature: 0.5,
-        maxTokens: 4096
+        maxTokens: 4096,
       },
       google: {
         enabled: true,
         apiKey: '',
         defaultModel: 'gemini-2.0-flash-exp',
         temperature: 0.7,
-        maxTokens: 2048
+        maxTokens: 2048,
       },
       ollama: {
         enabled: false,
         baseUrl: 'http://localhost:11434/v1',
         defaultModel: 'llama3.2',
         temperature: 0.7,
-        maxTokens: 2048
-      }
+        maxTokens: 2048,
+      },
     },
     memory: {
       hotRetention: 3600, // 1 hour
       warmRetention: 86400, // 24 hours
       coldRetention: 2592000, // 30 days
-      maxEntries: 10000
+      maxEntries: 10000,
     },
     agents: {
       defaultConcurrency: 4,
       maxRetries: 3,
-      timeout: 30000
+      timeout: 30000,
     },
     security: {
       enableSandbox: true,
       restrictFsAccess: true,
       blockNetwork: false,
-      auditLogging: true
-    }
+      auditLogging: true,
+    },
   });
 
   const [editingField, setEditingField] = useState(null);
@@ -59,55 +72,55 @@ const ConfigEditor = () => {
   const [saving, setSaving] = useState(false);
 
   const handleFieldChange = (section, field, value) => {
-    setConfig(prev => ({
+    setConfig((prev) => ({
       ...prev,
       [section]: {
         ...prev[section],
-        [field]: value
-      }
+        [field]: value,
+      },
     }));
   };
 
   const handleProviderChange = (provider, field, value) => {
-    setConfig(prev => ({
+    setConfig((prev) => ({
       ...prev,
       providers: {
         ...prev.providers,
         [provider]: {
           ...prev.providers[provider],
-          [field]: value
-        }
-      }
+          [field]: value,
+        },
+      },
     }));
   };
 
   const handleMemoryChange = (field, value) => {
-    setConfig(prev => ({
+    setConfig((prev) => ({
       ...prev,
       memory: {
         ...prev.memory,
-        [field]: value
-      }
+        [field]: value,
+      },
     }));
   };
 
   const handleAgentsChange = (field, value) => {
-    setConfig(prev => ({
+    setConfig((prev) => ({
       ...prev,
       agents: {
         ...prev.agents,
-        [field]: value
-      }
+        [field]: value,
+      },
     }));
   };
 
   const handleSecurityChange = (field, value) => {
-    setConfig(prev => ({
+    setConfig((prev) => ({
       ...prev,
       security: {
         ...prev.security,
-        [field]: value
-      }
+        [field]: value,
+      },
     }));
   };
 
@@ -128,12 +141,12 @@ const ConfigEditor = () => {
       handleProviderChange(provider, providerField, editingValue);
     } else {
       // Handle other sections
-      setConfig(prev => ({
+      setConfig((prev) => ({
         ...prev,
         [section]: {
           ...prev[section],
-          [field]: editingValue
-        }
+          [field]: editingValue,
+        },
       }));
     }
 
@@ -147,17 +160,20 @@ const ConfigEditor = () => {
   };
 
   const testConnection = async (provider) => {
-    setTestResults(prev => ({ ...prev, [provider]: { status: 'testing', message: 'Testing...' } }));
-    
+    setTestResults((prev) => ({
+      ...prev,
+      [provider]: { status: 'testing', message: 'Testing...' },
+    }));
+
     // Simulate API call
     setTimeout(() => {
       const success = Math.random() > 0.3; // 70% success rate for demo
-      setTestResults(prev => ({
+      setTestResults((prev) => ({
         ...prev,
         [provider]: {
           status: success ? 'success' : 'error',
-          message: success ? 'Connection successful!' : 'Failed to connect. Check your API key.'
-        }
+          message: success ? 'Connection successful!' : 'Failed to connect. Check your API key.',
+        },
       }));
     }, 1500);
   };
@@ -223,12 +239,12 @@ const ConfigEditor = () => {
               const [provider, providerField] = rest;
               handleProviderChange(provider, providerField, !value);
             } else {
-              setConfig(prev => ({
+              setConfig((prev) => ({
                 ...prev,
                 [section]: {
                   ...prev[section],
-                  [field]: !value
-                }
+                  [field]: !value,
+                },
               }));
             }
           }}
@@ -268,30 +284,60 @@ const ConfigEditor = () => {
                   {provider !== 'ollama' ? (
                     <>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">API Key</label>
-                        {renderEditableField(`providers.${provider}.apiKey`, settings.apiKey.replace(/./g, '*'), settings.apiKey)}
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          API Key
+                        </label>
+                        {renderEditableField(
+                          `providers.${provider}.apiKey`,
+                          settings.apiKey.replace(/./g, '*'),
+                          settings.apiKey
+                        )}
                       </div>
                     </>
                   ) : (
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Base URL</label>
-                      {renderEditableField(`providers.${provider}.baseUrl`, settings.baseUrl, settings.baseUrl)}
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Base URL
+                      </label>
+                      {renderEditableField(
+                        `providers.${provider}.baseUrl`,
+                        settings.baseUrl,
+                        settings.baseUrl
+                      )}
                     </div>
                   )}
-                  
+
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Default Model</label>
-                    {renderEditableField(`providers.${provider}.defaultModel`, settings.defaultModel, settings.defaultModel)}
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Default Model
+                    </label>
+                    {renderEditableField(
+                      `providers.${provider}.defaultModel`,
+                      settings.defaultModel,
+                      settings.defaultModel
+                    )}
                   </div>
-                  
+
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Temperature</label>
-                    {renderEditableField(`providers.${provider}.temperature`, settings.temperature, settings.temperature)}
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Temperature
+                    </label>
+                    {renderEditableField(
+                      `providers.${provider}.temperature`,
+                      settings.temperature,
+                      settings.temperature
+                    )}
                   </div>
-                  
+
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Max Tokens</label>
-                    {renderEditableField(`providers.${provider}.maxTokens`, settings.maxTokens, settings.maxTokens)}
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Max Tokens
+                    </label>
+                    {renderEditableField(
+                      `providers.${provider}.maxTokens`,
+                      settings.maxTokens,
+                      settings.maxTokens
+                    )}
                   </div>
                 </>
               )}
@@ -306,13 +352,15 @@ const ConfigEditor = () => {
                 Test Connection
               </button>
               {testResults[provider] && (
-                <div className={`ml-4 px-3 py-2 rounded-md text-sm ${
-                  testResults[provider].status === 'success' 
-                    ? 'bg-green-100 text-green-800' 
-                    : testResults[provider].status === 'error'
-                    ? 'bg-red-100 text-red-800'
-                    : 'bg-yellow-100 text-yellow-800'
-                }`}>
+                <div
+                  className={`ml-4 px-3 py-2 rounded-md text-sm ${
+                    testResults[provider].status === 'success'
+                      ? 'bg-green-100 text-green-800'
+                      : testResults[provider].status === 'error'
+                        ? 'bg-red-100 text-red-800'
+                        : 'bg-yellow-100 text-yellow-800'
+                  }`}
+                >
                   {testResults[provider].message}
                 </div>
               )}
@@ -331,29 +379,51 @@ const ConfigEditor = () => {
             <FiDatabase className="mr-2" />
             Memory Settings
           </h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Hot Retention (seconds)</label>
-              {renderEditableField('memory.hotRetention', config.memory.hotRetention, config.memory.hotRetention)}
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Hot Retention (seconds)
+              </label>
+              {renderEditableField(
+                'memory.hotRetention',
+                config.memory.hotRetention,
+                config.memory.hotRetention
+              )}
               <p className="mt-1 text-xs text-gray-500">How long hot memory is retained</p>
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Warm Retention (seconds)</label>
-              {renderEditableField('memory.warmRetention', config.memory.warmRetention, config.memory.warmRetention)}
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Warm Retention (seconds)
+              </label>
+              {renderEditableField(
+                'memory.warmRetention',
+                config.memory.warmRetention,
+                config.memory.warmRetention
+              )}
               <p className="mt-1 text-xs text-gray-500">How long warm memory is retained</p>
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Cold Retention (seconds)</label>
-              {renderEditableField('memory.coldRetention', config.memory.coldRetention, config.memory.coldRetention)}
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Cold Retention (seconds)
+              </label>
+              {renderEditableField(
+                'memory.coldRetention',
+                config.memory.coldRetention,
+                config.memory.coldRetention
+              )}
               <p className="mt-1 text-xs text-gray-500">How long cold memory is retained</p>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Max Entries</label>
-              {renderEditableField('memory.maxEntries', config.memory.maxEntries, config.memory.maxEntries)}
+              {renderEditableField(
+                'memory.maxEntries',
+                config.memory.maxEntries,
+                config.memory.maxEntries
+              )}
               <p className="mt-1 text-xs text-gray-500">Maximum number of entries in memory</p>
             </div>
           </div>
@@ -370,20 +440,34 @@ const ConfigEditor = () => {
             <FiSettings className="mr-2" />
             Agent Settings
           </h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Default Concurrency</label>
-              {renderEditableField('agents.defaultConcurrency', config.agents.defaultConcurrency, config.agents.defaultConcurrency)}
-              <p className="mt-1 text-xs text-gray-500">Number of agents that can run concurrently</p>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Default Concurrency
+              </label>
+              {renderEditableField(
+                'agents.defaultConcurrency',
+                config.agents.defaultConcurrency,
+                config.agents.defaultConcurrency
+              )}
+              <p className="mt-1 text-xs text-gray-500">
+                Number of agents that can run concurrently
+              </p>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Max Retries</label>
-              {renderEditableField('agents.maxRetries', config.agents.maxRetries, config.agents.maxRetries)}
-              <p className="mt-1 text-xs text-gray-500">Maximum number of retries for failed tasks</p>
+              {renderEditableField(
+                'agents.maxRetries',
+                config.agents.maxRetries,
+                config.agents.maxRetries
+              )}
+              <p className="mt-1 text-xs text-gray-500">
+                Maximum number of retries for failed tasks
+              </p>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Timeout (ms)</label>
               {renderEditableField('agents.timeout', config.agents.timeout, config.agents.timeout)}
@@ -403,7 +487,7 @@ const ConfigEditor = () => {
             <FiShield className="mr-2" />
             Security Settings
           </h3>
-          
+
           <div className="space-y-4">
             {Object.entries(config.security).map(([setting, value]) => (
               <div key={setting} className="flex items-center justify-between">
@@ -427,7 +511,7 @@ const ConfigEditor = () => {
             { id: 'providers', name: 'AI Providers', icon: FiGlobe },
             { id: 'memory', name: 'Memory', icon: FiDatabase },
             { id: 'agents', name: 'Agents', icon: FiSettings },
-            { id: 'security', name: 'Security', icon: FiShield }
+            { id: 'security', name: 'Security', icon: FiShield },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -462,9 +546,25 @@ const ConfigEditor = () => {
         >
           {saving ? (
             <>
-              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <svg
+                className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
               </svg>
               Saving...
             </>

@@ -208,7 +208,7 @@ class Logger {
     // Use theme function if it's a custom theme OR if colorize is true.
     // If colorize is false and it's a standard theme, use identity to avoid ANSI codes.
     const useStyling = this._customTheme || this.colorize;
-    const colorFn = (useStyling && theme[level]) ? theme[level] : (val) => val;
+    const colorFn = useStyling && theme[level] ? theme[level] : (val) => val;
     const icon = LEVEL_ICONS[level] || '';
     const safeMeta = normalizeMeta(meta);
     const parts = [];

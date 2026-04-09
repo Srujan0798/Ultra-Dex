@@ -5,6 +5,7 @@
 Ultra-Dex is the leading AI orchestration platform that makes enterprise AI development delightful. We coordinate specialized AI agents with visual debugging, enterprise security, and production-ready infrastructure.
 
 ### Key Differentiators
+
 - **Visual Debugging**: Real-time execution flow visualization with click-to-inspect
 - **Enterprise Security**: SOC 2, GDPR, HIPAA compliance with SSO and RBAC
 - **Multi-Agent Coordination**: 16 specialized agents working seamlessly together
@@ -16,6 +17,7 @@ Ultra-Dex is the leading AI orchestration platform that makes enterprise AI deve
 ## Architecture Overview
 
 ### System Architecture
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        SYSTEM ARCHITECTURE                      │
@@ -67,9 +69,11 @@ Ultra-Dex is the leading AI orchestration platform that makes enterprise AI deve
 ### Core Components
 
 #### 1. Agent Orchestrator (Nexus)
+
 The Nexus orchestrator is the heart of Ultra-Dex, coordinating specialized AI agents with visual debugging capabilities.
 
 **Key Features:**
+
 - Multi-agent coordination with autonomous task delegation
 - Visual execution flow with real-time debugging
 - Predictive orchestration using ML models
@@ -77,6 +81,7 @@ The Nexus orchestrator is the heart of Ultra-Dex, coordinating specialized AI ag
 - Error handling and recovery mechanisms
 
 **Architecture:**
+
 ```
 NEXUS ORCHESTRATOR:
 ┌─────────────────────────────────────────────────────────────────┐
@@ -101,9 +106,11 @@ NEXUS ORCHESTRATOR:
 ```
 
 #### 2. Memory System
+
 The tiered memory system provides persistent storage with intelligent caching and retrieval.
 
 **Architecture:**
+
 ```
 MEMORY SYSTEM ARCHITECTURE:
 ┌─────────────────────────────────────────────────────────────────┐
@@ -128,9 +135,11 @@ MEMORY SYSTEM ARCHITECTURE:
 ```
 
 #### 3. Security Service
+
 Enterprise-grade security with comprehensive compliance features.
 
 **Components:**
+
 - **Authentication**: SSO with SAML 2.0/OIDC, JWT tokens
 - **Authorization**: RBAC with hierarchical permissions
 - **Audit Logging**: Immutable, tamper-evident logs
@@ -144,6 +153,7 @@ Enterprise-grade security with comprehensive compliance features.
 ### Core API Endpoints
 
 #### Agent Management
+
 ```javascript
 // Create a new agent
 POST /api/v1/agents
@@ -181,6 +191,7 @@ GET /api/v1/agents/{agentId}/executions
 ```
 
 #### Memory Operations
+
 ```javascript
 // Store memory entry
 POST /api/v1/memory
@@ -221,6 +232,7 @@ GET /api/v1/memory/stats
 ```
 
 #### Orchestration Operations
+
 ```javascript
 // Create orchestration workflow
 POST /api/v1/orchestration
@@ -268,13 +280,14 @@ POST /api/v1/orchestration/{workflowId}/execute
 ## SDK Documentation
 
 ### TypeScript SDK
+
 ```typescript
 import { UltraDex, Agent, MemoryType } from '@ultra-dex/sdk';
 
 // Initialize client
 const ultraDex = new UltraDex({
   apiKey: process.env.ULTRA_DEX_API_KEY,
-  endpoint: process.env.ULTRA_DEX_ENDPOINT
+  endpoint: process.env.ULTRA_DEX_ENDPOINT,
 });
 
 // Create an agent
@@ -285,8 +298,8 @@ const agent = await ultraDex.agents.create({
   config: {
     model: 'gpt-4',
     temperature: 0.7,
-    maxTokens: 2000
-  }
+    maxTokens: 2000,
+  },
 });
 
 // Execute agent task
@@ -294,8 +307,8 @@ const result = await ultraDex.agents.execute(agent.id, {
   input: 'Analyze the sales data for Q4 2025',
   context: {
     userId: 'user-123',
-    projectId: 'project-456'
-  }
+    projectId: 'project-456',
+  },
 });
 
 // Store in memory
@@ -306,8 +319,8 @@ await ultraDex.memory.store({
   tags: ['analysis', 'sales', 'q4-2025'],
   metadata: {
     userId: 'user-123',
-    projectId: 'project-456'
-  }
+    projectId: 'project-456',
+  },
 });
 
 // Search memory
@@ -316,8 +329,8 @@ const searchResults = await ultraDex.memory.search({
   filters: {
     type: MemoryType.USER_CONTEXT,
     tags: ['sales'],
-    importance: { gte: 5 }
-  }
+    importance: { gte: 5 },
+  },
 });
 
 // Create orchestration workflow
@@ -328,24 +341,25 @@ const workflow = await ultraDex.orchestration.create({
     {
       agentId: 'data-extractor',
       input: '{{input.dataPath}}',
-      outputVariable: 'extractedData'
+      outputVariable: 'extractedData',
     },
     {
       agentId: 'data-analyst',
       input: '{{extractedData}}',
-      outputVariable: 'analysis'
-    }
-  ]
+      outputVariable: 'analysis',
+    },
+  ],
 });
 
 // Execute workflow
 const workflowResult = await ultraDex.orchestration.execute(workflow.id, {
   input: { dataPath: '/data/q4-sales.csv' },
-  context: { userId: 'user-123' }
+  context: { userId: 'user-123' },
 });
 ```
 
 ### Python SDK
+
 ```python
 from ultra_dex import UltraDex, Agent, MemoryType
 
@@ -405,6 +419,7 @@ search_results = client.memory.search(
 ## Security & Compliance
 
 ### Enterprise Security Features
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                      SECURITY FEATURES                          │
@@ -447,6 +462,7 @@ search_results = client.memory.search(
 ```
 
 ### Compliance Certifications
+
 - **SOC 2 Type II**: Annual audit with continuous monitoring
 - **GDPR**: Comprehensive privacy controls and data protection
 - **CCPA**: California Consumer Privacy Act compliance
@@ -458,6 +474,7 @@ search_results = client.memory.search(
 ## Performance & Scalability
 
 ### Performance Benchmarks
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                      PERFORMANCE BENCHMARKS                     │
@@ -493,6 +510,7 @@ search_results = client.memory.search(
 ```
 
 ### Auto-scaling Configuration
+
 ```yaml
 # Kubernetes Horizontal Pod Autoscaler
 apiVersion: autoscaling/v2
@@ -507,31 +525,31 @@ spec:
   minReplicas: 5
   maxReplicas: 100
   metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 70
-  - type: Resource
-    resource:
-      name: memory
-      target:
-        type: Utilization
-        averageUtilization: 80
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
   behavior:
     scaleUp:
       stabilizationWindowSeconds: 60
       policies:
-      - type: Percent
-        value: 100
-        periodSeconds: 60
+        - type: Percent
+          value: 100
+          periodSeconds: 60
     scaleDown:
       stabilizationWindowSeconds: 300
       policies:
-      - type: Percent
-        value: 10
-        periodSeconds: 60
+        - type: Percent
+          value: 10
+          periodSeconds: 60
 ```
 
 ---
@@ -539,6 +557,7 @@ spec:
 ## Developer Experience
 
 ### CLI Features
+
 ```bash
 # Initialize Ultra-Dex project
 ultra-dex init
@@ -563,6 +582,7 @@ ultra-dex tutorial
 ```
 
 ### Dashboard Features
+
 - **Real-time Monitoring**: Live metrics and performance indicators
 - **Visual Debugging**: Execution flow visualization with click-to-inspect
 - **Agent Management**: Create, configure, and monitor agents
@@ -575,9 +595,11 @@ ultra-dex tutorial
 ## Integration Capabilities
 
 ### Model Context Protocol (MCP)
+
 Ultra-Dex supports the Model Context Protocol for connecting any tool or service.
 
 **MCP Server Implementation:**
+
 ```javascript
 // MCP server for custom tools
 import { MCPServer } from '@ultra-dex/mcp';
@@ -585,7 +607,7 @@ import { MCPServer } from '@ultra-dex/mcp';
 const mcpServer = new MCPServer({
   port: 3001,
   name: 'custom-tool-server',
-  description: 'Custom tools for Ultra-Dex integration'
+  description: 'Custom tools for Ultra-Dex integration',
 });
 
 mcpServer.registerTool({
@@ -595,20 +617,21 @@ mcpServer.registerTool({
     type: 'object',
     properties: {
       dataSource: { type: 'string' },
-      query: { type: 'string' }
-    }
+      query: { type: 'string' },
+    },
   },
   handler: async (input) => {
     // Connect to custom data source and return results
     const results = await queryCustomDataSource(input.dataSource, input.query);
     return { results };
-  }
+  },
 });
 
 await mcpServer.start();
 ```
 
 ### Pre-built Integrations
+
 - **AI Providers**: OpenAI, Anthropic, Google, Cohere, Mistral
 - **Development Tools**: GitHub, GitLab, Jira, Slack, Discord
 - **Data Sources**: PostgreSQL, MySQL, MongoDB, S3, BigQuery
@@ -620,6 +643,7 @@ await mcpServer.start();
 ## Enterprise Features
 
 ### Multi-tenancy
+
 ```javascript
 // Organization and team management
 const organization = await ultraDex.organizations.create({
@@ -629,24 +653,25 @@ const organization = await ultraDex.organizations.create({
     security: {
       ssoRequired: true,
       mfaRequired: true,
-      ipWhitelist: ['192.168.1.0/24']
+      ipWhitelist: ['192.168.1.0/24'],
     },
     billing: {
       paymentMethod: 'credit_card',
-      billingCycle: 'annual'
-    }
-  }
+      billingCycle: 'annual',
+    },
+  },
 });
 
 const team = await ultraDex.teams.create({
   name: 'AI Research Team',
   organizationId: organization.id,
   members: ['user-123', 'user-456'],
-  permissions: ['agents:create', 'memory:write', 'orchestration:execute']
+  permissions: ['agents:create', 'memory:write', 'orchestration:execute'],
 });
 ```
 
 ### Advanced Security Controls
+
 - **SSO Integration**: SAML 2.0 and OIDC with any identity provider
 - **RBAC System**: Role-based access control with custom permissions
 - **Audit Logging**: Immutable logs of all system activities
@@ -658,6 +683,7 @@ const team = await ultraDex.teams.create({
 ## Monitoring & Observability
 
 ### Metrics Collection
+
 ```javascript
 // Built-in metrics and monitoring
 const metrics = ultraDex.metrics.getSystemMetrics();
@@ -668,6 +694,7 @@ console.log('Security Metrics:', metrics.security);
 ```
 
 ### Alerting Configuration
+
 ```javascript
 // Set up custom alerts
 await ultraDex.alerts.create({
@@ -675,7 +702,7 @@ await ultraDex.alerts.create({
   condition: 'error_rate > 0.05',
   frequency: '5m',
   notificationChannels: ['email', 'slack'],
-  recipients: ['admin@company.com', '#alerts-channel']
+  recipients: ['admin@company.com', '#alerts-channel'],
 });
 ```
 
@@ -684,6 +711,7 @@ await ultraDex.alerts.create({
 ## Best Practices
 
 ### Agent Development
+
 1. **Specialization**: Create agents for specific tasks rather than general-purpose agents
 2. **Memory Management**: Use memory system for context persistence
 3. **Error Handling**: Implement proper error handling and recovery
@@ -691,6 +719,7 @@ await ultraDex.alerts.create({
 5. **Security**: Follow security best practices for data handling
 
 ### Orchestration Patterns
+
 1. **Task Decomposition**: Break complex tasks into smaller, manageable steps
 2. **Dependency Management**: Clearly define task dependencies
 3. **Error Recovery**: Implement fallback mechanisms for failures
@@ -698,6 +727,7 @@ await ultraDex.alerts.create({
 5. **Optimization**: Continuously optimize workflow performance
 
 ### Security Best Practices
+
 1. **Principle of Least Privilege**: Grant minimum necessary permissions
 2. **Data Classification**: Classify and protect data appropriately
 3. **Audit Trail**: Maintain comprehensive audit logs
@@ -709,6 +739,7 @@ await ultraDex.alerts.create({
 ## Troubleshooting
 
 ### Common Issues & Solutions
+
 ```
 ISSUE: Slow agent response times
 SOLUTION: Check memory system performance, optimize queries, increase resources
@@ -727,6 +758,7 @@ SOLUTION: Verify SSO configuration, check certificates, review network access
 ```
 
 ### Support Resources
+
 - **Documentation**: https://docs.ultra-dex.ai
 - **Community Forum**: https://community.ultra-dex.ai
 - **GitHub Issues**: https://github.com/ultra-dex/ultra-dex/issues
@@ -738,6 +770,7 @@ SOLUTION: Verify SSO configuration, check certificates, review network access
 ## API Rate Limits & Quotas
 
 ### Rate Limiting
+
 ```
 FREE TIER:
 • API Requests: 1,000/month
@@ -774,12 +807,15 @@ ENTERPRISE TIER:
 ## Versioning & Updates
 
 ### Versioning Strategy
+
 Ultra-Dex follows semantic versioning (SemVer) for all releases:
+
 - **Major**: Breaking changes and significant new features
 - **Minor**: New features and enhancements (backward compatible)
 - **Patch**: Bug fixes and security patches (backward compatible)
 
 ### Update Process
+
 1. **Check for Updates**: `ultra-dex version --check`
 2. **Review Changes**: Read release notes and breaking changes
 3. **Test in Staging**: Deploy to staging environment first

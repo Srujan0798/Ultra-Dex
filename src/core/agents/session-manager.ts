@@ -3,14 +3,13 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { EventEmitter } from "events";
+import { singleton } from 'tsyringe';
+import { EventEmitter } from 'events';
 let SessionManager = class extends EventEmitter {
   constructor(options = {}) {
     super();
@@ -22,20 +21,20 @@ let SessionManager = class extends EventEmitter {
       // 10 minutes
       autoPersist: options.autoPersist !== false,
       persistInterval: options.persistInterval || 3e4,
-      ...options
+      ...options,
     };
-    this.state = "idle";
+    this.state = 'idle';
     this.persistenceTimer = null;
   }
   /**
    * Initialize session manager
    */
   async initialize() {
-    this.state = "ready";
+    this.state = 'ready';
     if (this.config.autoPersist) {
       this.startPersistence();
     }
-    this.emit("session-manager.ready");
+    this.emit('session-manager.ready');
     return this;
   }
   /**
@@ -49,15 +48,15 @@ let SessionManager = class extends EventEmitter {
       id: sessionId,
       createdAt: Date.now(),
       lastActivity: Date.now(),
-      status: "active",
+      status: 'active',
       context,
       data: {},
       history: [],
       agents: /* @__PURE__ */ new Map(),
-      metadata: {}
+      metadata: {},
     };
     this.sessions.set(sessionId, session);
-    this.emit("session.created", { sessionId });
+    this.emit('session.created', { sessionId });
     return session;
   }
   /**
@@ -71,8 +70,7 @@ let SessionManager = class extends EventEmitter {
    */
   recordActivity(sessionId) {
     const session = this.sessions.get(sessionId);
-    if (!session)
-      return;
+    if (!session) return;
     session.lastActivity = Date.now();
   }
   /**
@@ -106,18 +104,17 @@ let SessionManager = class extends EventEmitter {
       throw new Error(`Session ${sessionId} not found`);
     }
     session.agents.set(agent.id, agent);
-    this.emit("session.agent-added", { sessionId, agentId: agent.id });
+    this.emit('session.agent-added', { sessionId, agentId: agent.id });
   }
   /**
    * Record session history
    */
   recordHistory(sessionId, event) {
     const session = this.sessions.get(sessionId);
-    if (!session)
-      return;
+    if (!session) return;
     session.history.push({
       timestamp: Date.now(),
-      ...event
+      ...event,
     });
     if (session.history.length > 1e3) {
       session.history.shift();
@@ -132,19 +129,19 @@ let SessionManager = class extends EventEmitter {
     if (!session) {
       return false;
     }
-    this.emit("session.closing", { sessionId });
+    this.emit('session.closing', { sessionId });
     try {
       for (const agent of session.agents.values()) {
         if (agent.shutdown) {
           await agent.shutdown();
         }
       }
-      session.status = "closed";
+      session.status = 'closed';
       session.closedAt = Date.now();
-      this.emit("session.closed", { sessionId });
+      this.emit('session.closed', { sessionId });
       return true;
     } catch (error) {
-      this.emit("session.close-failed", { sessionId, error });
+      this.emit('session.close-failed', { sessionId, error });
       throw error;
     }
   }
@@ -153,20 +150,19 @@ let SessionManager = class extends EventEmitter {
    */
   async persistSession(sessionId) {
     const session = this.sessions.get(sessionId);
-    if (!session)
-      return;
+    if (!session) return;
     try {
       const serialized = JSON.stringify({
         id: session.id,
         context: session.context,
         data: session.data,
         metadata: session.metadata,
-        persistedAt: Date.now()
+        persistedAt: Date.now(),
       });
-      this.emit("session.persisted", { sessionId, size: serialized.length });
+      this.emit('session.persisted', { sessionId, size: serialized.length });
       return serialized;
     } catch (error) {
-      this.emit("session.persist-failed", { sessionId, error });
+      this.emit('session.persist-failed', { sessionId, error });
       throw error;
     }
   }
@@ -187,9 +183,7 @@ let SessionManager = class extends EventEmitter {
   async persistAllSessions() {
     const promises = [];
     for (const sessionId of this.sessions.keys()) {
-      promises.push(
-        this.persistSession(sessionId).catch(() => null)
-      );
+      promises.push(this.persistSession(sessionId).catch(() => null));
     }
     await Promise.all(promises);
   }
@@ -210,7 +204,7 @@ let SessionManager = class extends EventEmitter {
       await this.closeSession(sessionId);
     }
     if (toClose.length > 0) {
-      this.emit("sessions.cleaned", { count: toClose.length });
+      this.emit('sessions.cleaned', { count: toClose.length });
     }
   }
   /**
@@ -227,7 +221,7 @@ let SessionManager = class extends EventEmitter {
       createdAt: s.createdAt,
       lastActivity: s.lastActivity,
       agentCount: s.agents.size,
-      historyLength: s.history.length
+      historyLength: s.history.length,
     }));
   }
   /**
@@ -238,9 +232,9 @@ let SessionManager = class extends EventEmitter {
     let closedSessions = 0;
     let totalAgents = 0;
     for (const session of this.sessions.values()) {
-      if (session.status === "active") {
+      if (session.status === 'active') {
         activeSessions++;
-      } else if (session.status === "closed") {
+      } else if (session.status === 'closed') {
         closedSessions++;
       }
       totalAgents += session.agents.size;
@@ -250,7 +244,7 @@ let SessionManager = class extends EventEmitter {
       activeSessions,
       closedSessions,
       totalAgents,
-      managerUptime: Date.now() - this.startTime
+      managerUptime: Date.now() - this.startTime,
     };
   }
   /**
@@ -264,15 +258,10 @@ let SessionManager = class extends EventEmitter {
     for (const sessionId of sessionIds) {
       await this.closeSession(sessionId).catch(() => null);
     }
-    this.state = "shutdown";
-    this.emit("session-manager.shutdown");
+    this.state = 'shutdown';
+    this.emit('session-manager.shutdown');
   }
 };
-SessionManager = __decorateClass([
-  singleton()
-], SessionManager);
+SessionManager = __decorateClass([singleton()], SessionManager);
 var session_manager_default = SessionManager;
-export {
-  SessionManager,
-  session_manager_default as default
-};
+export { SessionManager, session_manager_default as default };

@@ -18,11 +18,11 @@ async function example() {
   try {
     await ultra.initialize();
     console.log('Ultra-Dex initialized');
-    
+
     // Execute a simple task
     const result = await ultra.execute('Analyze this codebase for security issues');
     console.log('Result:', result);
-    
+
     await ultra.stop();
   } catch (error) {
     console.error('Error:', error);

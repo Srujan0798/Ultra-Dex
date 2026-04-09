@@ -121,7 +121,10 @@ describe('Serve Command Integration Tests', () => {
  */
 function handleError(error) {
   try {
-    console.error('[serve-integration.test]', error instanceof Error ? error.message : String(error));
+    console.error(
+      '[serve-integration.test]',
+      error instanceof Error ? error.message : String(error)
+    );
   } catch (_) {
     // Fail silently
   }

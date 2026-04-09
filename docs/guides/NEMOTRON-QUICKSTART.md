@@ -29,6 +29,7 @@ echo "NVIDIA_API_KEY=nvapi-your-actual-key-here" > .env.local
 ```
 
 Or manually create `.env.local` with:
+
 ```
 NVIDIA_API_KEY=nvapi-your-actual-key-here
 ```
@@ -63,16 +64,16 @@ const MODEL = 'nvidia/nemotron-3-super-120b-a12b';
 
 // Exact match to NVIDIA's Python example
 const response = await client.chat.completions.create({
-    model: MODEL,
-    messages: [{ role: 'user', content: 'Write a haiku about GPUs' }],
-    max_tokens: 16000,
-    temperature: 1.0,
-    top_p: 0.95,
-    extra_body: {
-        chat_template_kwargs: {
-            enable_thinking: true
-        }
-    }
+  model: MODEL,
+  messages: [{ role: 'user', content: 'Write a haiku about GPUs' }],
+  max_tokens: 16000,
+  temperature: 1.0,
+  top_p: 0.95,
+  extra_body: {
+    chat_template_kwargs: {
+      enable_thinking: true,
+    },
+  },
 });
 
 console.log(response.choices[0].message.content);
@@ -82,7 +83,7 @@ console.log(response.choices[0].message.content);
 
 ## 📝 Example Session
 
-```bash
+````bash
 $ npm run nemotron "Write a function to check if a number is prime"
 
 🚀 Ultra-Dex Nemotron CLI
@@ -104,8 +105,9 @@ function isPrime(n) {
     }
     return true;
 }
-```
-```
+````
+
+````
 
 ---
 
@@ -116,13 +118,15 @@ function isPrime(n) {
 # Make sure .env.local exists and has your key
 cat .env.local
 # Should show: NVIDIA_API_KEY=nvapi-xxxxx
-```
+````
 
 **Rate limit error**
+
 - Free tier has limits - wait a few minutes and retry
 - Use `--no-thinking` for simpler queries
 
 **Command not found**
+
 ```bash
 # Install dependency first
 npm install openai@^4.0.0

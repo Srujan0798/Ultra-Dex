@@ -53,9 +53,9 @@ metadata:
   name: ultra-dex-role
   namespace: ultra-dex
 rules:
-- apiGroups: [""]
-  resources: ["pods", "services"]
-  verbs: ["get", "list"]
+  - apiGroups: ['']
+    resources: ['pods', 'services']
+    verbs: ['get', 'list']
 
 ---
 # RoleBinding: bind ultra-dex-role to ultra-dex-sa
@@ -65,9 +65,9 @@ metadata:
   name: ultra-dex-rolebinding
   namespace: ultra-dex
 subjects:
-- kind: ServiceAccount
-  name: ultra-dex-sa
-  namespace: ultra-dex
+  - kind: ServiceAccount
+    name: ultra-dex-sa
+    namespace: ultra-dex
 roleRef:
   kind: Role
   apiGroup: rbac.authorization.k8s.io
@@ -85,22 +85,22 @@ spec:
     matchLabels:
       app: ultra-dex
   policyTypes:
-  - Ingress
-  - Egress
+    - Ingress
+    - Egress
   ingress:
-  - from:
-    - podSelector:
-        matchLabels:
-          app: ingress-nginx
+    - from:
+        - podSelector:
+            matchLabels:
+              app: ingress-nginx
   egress:
-  - to:
-    - podSelector:
-        matchLabels:
-          app: ultra-dex-postgres
-  - to:
-    - podSelector:
-        matchLabels:
-          app: ultra-dex-redis
+    - to:
+        - podSelector:
+            matchLabels:
+              app: ultra-dex-postgres
+    - to:
+        - podSelector:
+            matchLabels:
+              app: ultra-dex-redis
 
 ---
 # ConfigMap for Ultra-Dex configuration
@@ -111,24 +111,24 @@ metadata:
   namespace: ultra-dex
 data:
   # Ultra-Dex Configuration
-  NODE_ENV: "production"
-  PORT: "8866"
-  ULTRA_DEX_THEME: "dark"
-  ULTRA_DEX_PROVIDER: "openai"
-  ULTRA_DEX_MODEL: "gpt-4-turbo"
-  
+  NODE_ENV: 'production'
+  PORT: '8866'
+  ULTRA_DEX_THEME: 'dark'
+  ULTRA_DEX_PROVIDER: 'openai'
+  ULTRA_DEX_MODEL: 'gpt-4-turbo'
+
   # Performance Configuration
-  MAX_WORKERS: "4"
-  MEMORY_LIMIT: "4GB"
-  TIMEOUT: "300000"
-  
+  MAX_WORKERS: '4'
+  MEMORY_LIMIT: '4GB'
+  TIMEOUT: '300000'
+
   # Security Configuration
-  SECURITY_AUDIT_ENABLED: "true"
-  RATE_LIMIT_ENABLED: "true"
-  LOG_LEVEL: "info"
-  
+  SECURITY_AUDIT_ENABLED: 'true'
+  RATE_LIMIT_ENABLED: 'true'
+  LOG_LEVEL: 'info'
+
   # Redis Configuration
-  REDIS_URL: "redis://ultra-dex-redis:6379"
+  REDIS_URL: 'redis://ultra-dex-redis:6379'
 
 ---
 # Deployment for Ultra-Dex main service
@@ -140,7 +140,7 @@ metadata:
   labels:
     app: ultra-dex
 spec:
-  replicas: 2  # Start with 2 replicas for high availability
+  replicas: 2 # Start with 2 replicas for high availability
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -156,78 +156,78 @@ spec:
     spec:
       serviceAccountName: ultra-dex-sa
       containers:
-      - name: ultra-dex
-        image: ultra-dex:latest
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 8866
-          name: mcp-server
-        env:
-        - name: NODE_ENV
-          valueFrom:
-            configMapKeyRef:
-              name: ultra-dex-config
-              key: NODE_ENV
-        - name: PORT
-          valueFrom:
-            configMapKeyRef:
-              name: ultra-dex-config
-              key: PORT
-        - name: OPENAI_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: ultra-dex-secrets
-              key: openai-api-key
-        - name: ANTHROPIC_API_KEY
-          valueFrom:
-            secretKeyRef:
-              name: ultra-dex-secrets
-              key: anthropic-api-key
-        - name: DATABASE_URL
-          valueFrom:
-            secretKeyRef:
-              name: ultra-dex-db-secret
-              key: DATABASE_URL
-        - name: REDIS_URL
-          valueFrom:
-            configMapKeyRef:
-              name: ultra-dex-config
-              key: REDIS_URL
-        resources:
-          requests:
-            memory: "2Gi"
-            cpu: "1000m"
-          limits:
-            memory: "4Gi"
-            cpu: "2000m"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8866
-          initialDelaySeconds: 60
-          periodSeconds: 30
-          timeoutSeconds: 10
-          failureThreshold: 3
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 8866
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 3
-        volumeMounts:
-        - name: ultra-dex-storage
-          mountPath: /app/.ultra-dex
-        - name: workspace-storage
-          mountPath: /app/workspace
+        - name: ultra-dex
+          image: ultra-dex:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8866
+              name: mcp-server
+          env:
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: ultra-dex-config
+                  key: NODE_ENV
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: ultra-dex-config
+                  key: PORT
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ultra-dex-secrets
+                  key: openai-api-key
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ultra-dex-secrets
+                  key: anthropic-api-key
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: ultra-dex-db-secret
+                  key: DATABASE_URL
+            - name: REDIS_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: ultra-dex-config
+                  key: REDIS_URL
+          resources:
+            requests:
+              memory: '2Gi'
+              cpu: '1000m'
+            limits:
+              memory: '4Gi'
+              cpu: '2000m'
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8866
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8866
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: ultra-dex-storage
+              mountPath: /app/.ultra-dex
+            - name: workspace-storage
+              mountPath: /app/workspace
       volumes:
-      - name: ultra-dex-storage
-        persistentVolumeClaim:
-          claimName: ultra-dex-pvc
-      - name: workspace-storage
-        persistentVolumeClaim:
-          claimName: workspace-pvc
+        - name: ultra-dex-storage
+          persistentVolumeClaim:
+            claimName: ultra-dex-pvc
+        - name: workspace-storage
+          persistentVolumeClaim:
+            claimName: workspace-pvc
       securityContext:
         runAsNonRoot: true
         runAsUser: 1001
@@ -260,25 +260,25 @@ metadata:
   name: ultra-dex-ingress
   namespace: ultra-dex
   annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: 'true'
     nginx.ingress.kubernetes.io/rewrite-target: /
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   tls:
-  - hosts:
-    - ${ULTRA_DEX_DOMAIN}
-    secretName: ultra-dex-tls
+    - hosts:
+        - ${ULTRA_DEX_DOMAIN}
+      secretName: ultra-dex-tls
   rules:
-  - host: ${ULTRA_DEX_DOMAIN}
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: ultra-dex-service
-            port:
-              number: 80
+    - host: ${ULTRA_DEX_DOMAIN}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: ultra-dex-service
+                port:
+                  number: 80
 
 ---
 # PostgreSQL StatefulSet
@@ -299,42 +299,42 @@ spec:
         app: ultra-dex-postgres
     spec:
       containers:
-      - name: postgres
-        image: postgres:15-alpine
-        ports:
-        - containerPort: 5432
-        env:
-        - name: POSTGRES_DB
-          value: "ultradex"
-        - name: POSTGRES_USER
-          value: "ultradex"
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: ultra-dex-secrets
-              key: db-password
+        - name: postgres
+          image: postgres:15-alpine
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: 'ultradex'
+            - name: POSTGRES_USER
+              value: 'ultradex'
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ultra-dex-secrets
+                  key: db-password
+          resources:
+            requests:
+              memory: '512Mi'
+              cpu: '250m'
+            limits:
+              memory: '1Gi'
+              cpu: '500m'
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-storage
+      spec:
+        accessModes: ['ReadWriteOnce']
         resources:
           requests:
-            memory: "512Mi"
-            cpu: "250m"
-          limits:
-            memory: "1Gi"
-            cpu: "500m"
-        volumeMounts:
-        - name: postgres-storage
-          mountPath: /var/lib/postgresql/data
-      volumes:
-      - name: postgres-storage
-        persistentVolumeClaim:
-          claimName: postgres-pvc
-  volumeClaimTemplates:
-  - metadata:
-      name: postgres-storage
-    spec:
-      accessModes: ["ReadWriteOnce"]
-      resources:
-        requests:
-          storage: 10Gi
+            storage: 10Gi
 
 ---
 # PostgreSQL Service
@@ -350,7 +350,7 @@ spec:
     - protocol: TCP
       port: 5432
       targetPort: 5432
-  clusterIP: None  # Headless service for StatefulSet
+  clusterIP: None # Headless service for StatefulSet
 
 ---
 # Redis Deployment
@@ -370,30 +370,30 @@ spec:
         app: ultra-dex-redis
     spec:
       containers:
-      - name: redis
-        image: redis:7-alpine
-        ports:
-        - containerPort: 6379
-        command:
-        - redis-server
-        - --maxmemory
-        - 2gb
-        - --maxmemory-policy
-        - allkeys-lru
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "100m"
-          limits:
-            memory: "512Mi"
-            cpu: "200m"
-        volumeMounts:
-        - name: redis-storage
-          mountPath: /data
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+          command:
+            - redis-server
+            - --maxmemory
+            - 2gb
+            - --maxmemory-policy
+            - allkeys-lru
+          resources:
+            requests:
+              memory: '256Mi'
+              cpu: '100m'
+            limits:
+              memory: '512Mi'
+              cpu: '200m'
+          volumeMounts:
+            - name: redis-storage
+              mountPath: /data
       volumes:
-      - name: redis-storage
-        persistentVolumeClaim:
-          claimName: redis-pvc
+        - name: redis-storage
+          persistentVolumeClaim:
+            claimName: redis-pvc
 
 ---
 # Redis Service
@@ -478,18 +478,18 @@ spec:
   minReplicas: 2
   maxReplicas: 10
   metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 70
-  - type: Resource
-    resource:
-      name: memory
-      target:
-        type: Utilization
-        averageUtilization: 80
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
 
 ---
 # Resource Quota
@@ -500,15 +500,15 @@ metadata:
   namespace: ultra-dex
 spec:
   hard:
-    requests.cpu: "4"
+    requests.cpu: '4'
     requests.memory: 8Gi
-    limits.cpu: "8"
+    limits.cpu: '8'
     limits.memory: 16Gi
-    persistentvolumeclaims: "5"
-    storage: "50Gi"
+    persistentvolumeclaims: '5'
+    storage: '50Gi'
 
 # Deployment Instructions:
-# 
+#
 # 1. Create the namespace:
 #    kubectl create namespace ultra-dex
 #

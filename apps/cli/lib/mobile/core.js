@@ -50,15 +50,9 @@ export class MobileAppGenerator {
     await fs.mkdir(iosDir, { recursive: true });
 
     // Create basic iOS files
-    await fs.writeFile(
-      path.join(iosDir, 'Info.plist'),
-      this.createIOSInfoPlist()
-    );
+    await fs.writeFile(path.join(iosDir, 'Info.plist'), this.createIOSInfoPlist());
 
-    await fs.writeFile(
-      path.join(iosDir, 'AppDelegate.swift'),
-      this.createIOSAppDelegate()
-    );
+    await fs.writeFile(path.join(iosDir, 'AppDelegate.swift'), this.createIOSAppDelegate());
   }
 
   async generateAndroid(projectDir) {
@@ -172,10 +166,7 @@ public class MainActivity extends AppCompatActivity {
     const apiDir = path.join(projectDir, 'api');
     await fs.mkdir(apiDir, { recursive: true });
 
-    await fs.writeFile(
-      path.join(apiDir, 'ultra-dex-api.js'),
-      this.createUltraDexAPIWrapper()
-    );
+    await fs.writeFile(path.join(apiDir, 'ultra-dex-api.js'), this.createUltraDexAPIWrapper());
   }
 
   createUltraDexAPIWrapper() {

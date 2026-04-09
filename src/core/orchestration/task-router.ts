@@ -3,14 +3,13 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { encode } from "gpt-tokenizer";
+import { singleton } from 'tsyringe';
+import { encode } from 'gpt-tokenizer';
 import { getAgentProfile } from '../routing/agent-profiles.js';
 import { HybridRouter, SemanticRouter } from '../routing/semantic-router.js';
 let TfIdfVectorizer = class {
@@ -20,18 +19,20 @@ let TfIdfVectorizer = class {
     this.idf = /* @__PURE__ */ new Map();
   }
   tokenize(text) {
-    if (!text || typeof text !== "string")
-      return [];
+    if (!text || typeof text !== 'string') return [];
     const normalized = text.toLowerCase();
     encode(normalized);
-    return normalized.replace(/[^a-z0-9\s]/g, " ").split(/\s+/).filter((word) => word.length > 1);
+    return normalized
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter((word) => word.length > 1);
   }
   fit(documents) {
     this.documents = documents.map((doc, idx) => ({
       id: doc.id || idx,
-      text: doc.text || doc.capabilities?.join(" ") || "",
+      text: doc.text || doc.capabilities?.join(' ') || '',
       original: doc,
-      tokens: [...new Set(this.tokenize(doc.text || doc.capabilities?.join(" ") || ""))]
+      tokens: [...new Set(this.tokenize(doc.text || doc.capabilities?.join(' ') || ''))],
     }));
     const docFrequency = /* @__PURE__ */ new Map();
     for (const doc of this.documents) {
@@ -84,9 +85,7 @@ let TfIdfVectorizer = class {
     return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
   }
 };
-TfIdfVectorizer = __decorateClass([
-  singleton()
-], TfIdfVectorizer);
+TfIdfVectorizer = __decorateClass([singleton()], TfIdfVectorizer);
 let TaskRouter = class {
   constructor(options = {}) {
     this.vectorizer = new TfIdfVectorizer();
@@ -94,29 +93,40 @@ let TaskRouter = class {
     this.similarityThreshold = options.similarityThreshold || 0.3;
     this.minimumSemanticConfidence = options.minimumSemanticConfidence || 0.6;
     this.fallbackRouter = options.fallbackRouter || this.keywordFallback;
-    this.semanticRouter = options.semanticRouter || new SemanticRouter({
-      backend: options.embeddingBackend || (process.env.NODE_ENV === "test" ? "hashed" : "hashed")
-    });
-    this.hybridRouter = options.hybridRouter || new HybridRouter({
-      semanticRouter: this.semanticRouter,
-      minimumSemanticConfidence: this.minimumSemanticConfidence
-    });
+    this.semanticRouter =
+      options.semanticRouter ||
+      new SemanticRouter({
+        backend:
+          options.embeddingBackend || (process.env.NODE_ENV === 'test' ? 'hashed' : 'hashed'),
+      });
+    this.hybridRouter =
+      options.hybridRouter ||
+      new HybridRouter({
+        semanticRouter: this.semanticRouter,
+        minimumSemanticConfidence: this.minimumSemanticConfidence,
+      });
     this.isFitted = false;
   }
   registerAgent(agentId, capabilities = [], metadata = {}) {
     const defaultProfile = getAgentProfile(agentId);
     const normalizedCapabilities = [
-      .../* @__PURE__ */ new Set([...defaultProfile?.capabilities || [], ...Array.isArray(capabilities) ? capabilities : [capabilities]])
+      .../* @__PURE__ */ new Set([
+        ...(defaultProfile?.capabilities || []),
+        ...(Array.isArray(capabilities) ? capabilities : [capabilities]),
+      ]),
     ];
     const examples = [
-      .../* @__PURE__ */ new Set([...defaultProfile?.examples || [], ...Array.isArray(metadata.examples) && metadata.examples || []])
+      .../* @__PURE__ */ new Set([
+        ...(defaultProfile?.examples || []),
+        ...((Array.isArray(metadata.examples) && metadata.examples) || []),
+      ]),
     ];
     this.agents.set(agentId, {
       id: agentId,
       capabilities: normalizedCapabilities,
       metadata,
       examples,
-      capabilityText: [...normalizedCapabilities, ...examples].join(" ")
+      capabilityText: [...normalizedCapabilities, ...examples].join(' '),
     });
     this.isFitted = false;
   }
@@ -124,7 +134,7 @@ let TaskRouter = class {
     const agentDocs = Array.from(this.agents.values()).map((agent) => ({
       id: agent.id,
       text: agent.capabilityText,
-      capabilities: agent.capabilities
+      capabilities: agent.capabilities,
     }));
     this.vectorizer.fit(agentDocs);
     for (const agent of this.agents.values()) {
@@ -135,7 +145,7 @@ let TaskRouter = class {
         agentId: agent.id,
         capabilities: agent.capabilities,
         examples: agent.examples,
-        metadata: agent.metadata
+        metadata: agent.metadata,
       }))
     );
     this.isFitted = true;
@@ -145,7 +155,7 @@ let TaskRouter = class {
     if (!this.isFitted) {
       this.fit();
     }
-    const taskText = typeof task === "string" ? task : JSON.stringify(task);
+    const taskText = typeof task === 'string' ? task : JSON.stringify(task);
     if (!taskText.trim() || this.agents.size === 0) {
       return this.fallbackRouter(taskText, options);
     }
@@ -155,7 +165,7 @@ let TaskRouter = class {
       return {
         ...fallback,
         semanticConfidence: decision.semanticConfidence,
-        capabilityScore: decision.capabilityScore
+        capabilityScore: decision.capabilityScore,
       };
     }
     return {
@@ -165,56 +175,55 @@ let TaskRouter = class {
       alternatives: decision.alternatives,
       semanticConfidence: decision.semanticConfidence,
       capabilityScore: decision.capabilityScore,
-      method: decision.method === "capability-fallback" ? "fallback" : "semantic"
+      method: decision.method === 'capability-fallback' ? 'fallback' : 'semantic',
     };
   }
   getScores(task) {
     if (!this.isFitted) {
       this.fit();
     }
-    const taskText = typeof task === "string" ? task : JSON.stringify(task);
+    const taskText = typeof task === 'string' ? task : JSON.stringify(task);
     const decision = this.hybridRouter.routeSync(taskText);
     const alternatives = [
       {
         agentId: decision.agentId,
         similarity: decision.similarity ?? decision.semanticConfidence ?? 0,
-        confidence: decision.confidence
+        confidence: decision.confidence,
       },
       ...decision.alternatives.map((alternative) => ({
         agentId: alternative.agentId,
         similarity: alternative.similarity ?? alternative.confidence,
-        confidence: alternative.confidence
-      }))
+        confidence: alternative.confidence,
+      })),
     ];
     const byId = new Map(alternatives.map((entry) => [entry.agentId, entry]));
-    return Array.from(this.agents.keys()).map((agentId) => {
-      const score = byId.get(agentId);
-      return {
-        agentId,
-        similarity: score?.similarity || 0,
-        confidence: score?.confidence || 0,
-        capabilities: this.agents.get(agentId)?.capabilities || []
-      };
-    }).sort((left, right) => right.similarity - left.similarity);
+    return Array.from(this.agents.keys())
+      .map((agentId) => {
+        const score = byId.get(agentId);
+        return {
+          agentId,
+          similarity: score?.similarity || 0,
+          confidence: score?.confidence || 0,
+          capabilities: this.agents.get(agentId)?.capabilities || [],
+        };
+      })
+      .sort((left, right) => right.similarity - left.similarity);
   }
   keywordFallback(task, _options = {}) {
-    const taskLower = String(task || "").toLowerCase();
+    const taskLower = String(task || '').toLowerCase();
     const keywords = {
-      frontend: ["ui", "css", "component", "react", "html", "dom", "style", "layout", "button"],
-      backend: ["api", "route", "server", "endpoint", "middleware", "controller", "query"],
-      database: ["db", "schema", "sql", "migration", "model", "table", "index"],
-      testing: ["test", "spec", "jest", "vitest", "coverage", "mock"],
-      devops: ["docker", "k8s", "deploy", "ci", "cd", "pipeline", "infra"],
-      security: ["auth", "encrypt", "hash", "jwt", "permission", "governance"]
+      frontend: ['ui', 'css', 'component', 'react', 'html', 'dom', 'style', 'layout', 'button'],
+      backend: ['api', 'route', 'server', 'endpoint', 'middleware', 'controller', 'query'],
+      database: ['db', 'schema', 'sql', 'migration', 'model', 'table', 'index'],
+      testing: ['test', 'spec', 'jest', 'vitest', 'coverage', 'mock'],
+      devops: ['docker', 'k8s', 'deploy', 'ci', 'cd', 'pipeline', 'infra'],
+      security: ['auth', 'encrypt', 'hash', 'jwt', 'permission', 'governance'],
     };
     const scores = {};
     for (const [agent, words] of Object.entries(keywords)) {
-      scores[agent] = words.reduce(
-        (score, word) => score + (taskLower.includes(word) ? 1 : 0),
-        0
-      );
+      scores[agent] = words.reduce((score, word) => score + (taskLower.includes(word) ? 1 : 0), 0);
     }
-    let bestAgent = "orchestrator";
+    let bestAgent = 'orchestrator';
     let bestScore = 0;
     for (const [agent, score] of Object.entries(scores)) {
       if (score > bestScore) {
@@ -225,8 +234,8 @@ let TaskRouter = class {
     return {
       agentId: bestAgent,
       confidence: bestScore > 0 ? 0.25 : 0.1,
-      method: "fallback",
-      alternatives: []
+      method: 'fallback',
+      alternatives: [],
     };
   }
   getAgents() {
@@ -234,34 +243,28 @@ let TaskRouter = class {
   }
   clear() {
     this.agents.clear();
-    if (typeof this.hybridRouter.clearFeedback === "function") {
+    if (typeof this.hybridRouter.clearFeedback === 'function') {
       this.hybridRouter.clearFeedback();
     }
     this.isFitted = false;
   }
   recordOutcome(taskId, agentId, outcome = {}) {
-    if (typeof this.hybridRouter.recordOutcome === "function") {
+    if (typeof this.hybridRouter.recordOutcome === 'function') {
       this.hybridRouter.recordOutcome(taskId, agentId, outcome);
     }
   }
   getRouterStats() {
-    if (typeof this.hybridRouter.getRouterStats === "function") {
+    if (typeof this.hybridRouter.getRouterStats === 'function') {
       return this.hybridRouter.getRouterStats();
     }
     return {};
   }
   clearFeedback() {
-    if (typeof this.hybridRouter.clearFeedback === "function") {
+    if (typeof this.hybridRouter.clearFeedback === 'function') {
       this.hybridRouter.clearFeedback();
     }
   }
 };
-TaskRouter = __decorateClass([
-  singleton()
-], TaskRouter);
+TaskRouter = __decorateClass([singleton()], TaskRouter);
 var task_router_default = TaskRouter;
-export {
-  TaskRouter,
-  TfIdfVectorizer,
-  task_router_default as default
-};
+export { TaskRouter, TfIdfVectorizer, task_router_default as default };

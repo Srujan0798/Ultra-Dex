@@ -1,4 +1,3 @@
-
 import { OptimizedSwarmExecutor } from '../../lib/performance/swarm-optimizer.js';
 
 const mockProvider = {
@@ -15,7 +14,7 @@ const mockProvider = {
       throw new Error('Task Failed');
     }
     return `Result...`;
-  }
+  },
 };
 
 async function runFailureTest() {
@@ -24,20 +23,16 @@ async function runFailureTest() {
 
   const pipeline = [
     { name: 'agent_fail', tier: '2-implementation', description: 'FAIL_TASK' },
-    { name: 'agent_next', tier: '4-quality', description: 'NEXT_TASK' }
+    { name: 'agent_next', tier: '4-quality', description: 'NEXT_TASK' },
   ];
 
   try {
-    const result = await executor.executeSwarm(
-      pipeline,
-      'Failure Test',
-      'context',
-      mockProvider,
-      { parallel: true }
-    );
+    const result = await executor.executeSwarm(pipeline, 'Failure Test', 'context', mockProvider, {
+      parallel: true,
+    });
 
-    const failResult = result.results.find(r => r.agent === 'agent_fail');
-    const nextResult = result.results.find(r => r.agent === 'agent_next');
+    const failResult = result.results.find((r) => r.agent === 'agent_fail');
+    const nextResult = result.results.find((r) => r.agent === 'agent_next');
 
     console.log('Fail Agent Success:', failResult.success);
     console.log('Fail Agent Error:', failResult.error);
@@ -46,7 +41,10 @@ async function runFailureTest() {
     if (nextResult && failResult.success === false) {
       console.log('OBSERVATION: Execution continued despite failure (Tier Failure Propagation).');
     } else {
-      console.log('OBSERVATION: Execution logic behavior: ', failResult.success ? 'Success unexpectedly' : 'Stopped?');
+      console.log(
+        'OBSERVATION: Execution logic behavior: ',
+        failResult.success ? 'Success unexpectedly' : 'Stopped?'
+      );
     }
   } catch (e) {
     console.error('Executor threw exception:', e);

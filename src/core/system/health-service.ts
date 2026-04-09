@@ -3,14 +3,13 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { EventEmitter } from "events";
+import { singleton } from 'tsyringe';
+import { EventEmitter } from 'events';
 let HealthCheck = class {
   constructor({ name, check, critical = false, intervalMs = 3e4, timeoutMs = 5e3 }) {
     this.name = name;
@@ -18,7 +17,7 @@ let HealthCheck = class {
     this.critical = critical;
     this.intervalMs = intervalMs;
     this.timeoutMs = timeoutMs;
-    this.status = "unknown";
+    this.status = 'unknown';
     this.lastCheck = null;
     this.lastError = null;
     this.latency = 0;
@@ -30,22 +29,22 @@ let HealthCheck = class {
     try {
       const result = await Promise.race([
         this.check(),
-        new Promise(
-          (_, reject) => setTimeout(() => reject(new Error("Health check timeout")), this.timeoutMs)
-        )
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Health check timeout')), this.timeoutMs)
+        ),
       ]);
       this.latency = Date.now() - start;
       this.lastCheck = Date.now();
-      this.status = "healthy";
+      this.status = 'healthy';
       this.lastError = null;
       this.consecutiveFailures = 0;
-      return { name: this.name, status: "healthy", latency: this.latency, details: result };
+      return { name: this.name, status: 'healthy', latency: this.latency, details: result };
     } catch (error) {
       this.latency = Date.now() - start;
       this.lastCheck = Date.now();
       this.consecutiveFailures++;
       this.lastError = error.message;
-      this.status = this.consecutiveFailures >= 3 ? "unhealthy" : "degraded";
+      this.status = this.consecutiveFailures >= 3 ? 'unhealthy' : 'degraded';
       return { name: this.name, status: this.status, error: error.message, latency: this.latency };
     }
   }
@@ -57,15 +56,18 @@ let HealthCheck = class {
       lastCheck: this.lastCheck,
       lastError: this.lastError,
       latency: this.latency,
-      consecutiveFailures: this.consecutiveFailures
+      consecutiveFailures: this.consecutiveFailures,
     };
   }
 };
-HealthCheck = __decorateClass([
-  singleton()
-], HealthCheck);
+HealthCheck = __decorateClass([singleton()], HealthCheck);
 let HealthService = class extends EventEmitter {
-  constructor({ appName = "ultra-dex", version = "1.0.0", readinessChecks = [], deepChecks = [] } = {}) {
+  constructor({
+    appName = 'ultra-dex',
+    version = '1.0.0',
+    readinessChecks = [],
+    deepChecks = [],
+  } = {}) {
     super();
     this.appName = appName;
     this.version = version;
@@ -93,7 +95,8 @@ let HealthService = class extends EventEmitter {
    * Register a readiness dependency check
    */
   addReadinessCheck(config) {
-    const check = config instanceof HealthCheck ? config : new HealthCheck({ critical: true, ...config });
+    const check =
+      config instanceof HealthCheck ? config : new HealthCheck({ critical: true, ...config });
     this.readinessChecks.set(check.name, check);
     return this;
   }
@@ -101,7 +104,8 @@ let HealthService = class extends EventEmitter {
    * Register a deep health dependency check
    */
   addDeepCheck(config) {
-    const check = config instanceof HealthCheck ? config : new HealthCheck({ critical: true, ...config });
+    const check =
+      config instanceof HealthCheck ? config : new HealthCheck({ critical: true, ...config });
     this.deepChecks.set(check.name, check);
     return this;
   }
@@ -120,14 +124,14 @@ let HealthService = class extends EventEmitter {
     for (const check of this.checks.values()) {
       check.timer = setInterval(async () => {
         const result = await check.run();
-        this.emit("check:completed", result);
-        if (result.status !== "healthy") {
-          this.emit("check:unhealthy", result);
+        this.emit('check:completed', result);
+        if (result.status !== 'healthy') {
+          this.emit('check:unhealthy', result);
         }
       }, check.intervalMs);
-      check.run().then((r) => this.emit("check:completed", r));
+      check.run().then((r) => this.emit('check:completed', r));
     }
-    this.emit("health:started");
+    this.emit('health:started');
   }
   /**
    * Stop periodic health checking
@@ -140,7 +144,7 @@ let HealthService = class extends EventEmitter {
         check.timer = null;
       }
     }
-    this.emit("health:stopped");
+    this.emit('health:stopped');
   }
   /**
    * Run all health checks now
@@ -159,11 +163,11 @@ let HealthService = class extends EventEmitter {
    */
   liveness() {
     return {
-      status: "ok",
+      status: 'ok',
       app: this.appName,
       version: this.version,
       uptime: Date.now() - this.startTime,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
   }
   /**
@@ -176,29 +180,27 @@ let HealthService = class extends EventEmitter {
     const dependencyChecks = [...this.readinessChecks.values()];
     const allChecks = [...serviceChecks, ...dependencyChecks];
     const criticalChecks = allChecks.filter((c) => c.critical);
-    const allCriticalHealthy = criticalChecks.every((c) => c.status === "healthy");
-    const anyUnhealthy = allChecks.some((c) => c.status === "unhealthy");
+    const allCriticalHealthy = criticalChecks.every((c) => c.status === 'healthy');
+    const anyUnhealthy = allChecks.some((c) => c.status === 'unhealthy');
     let status;
     if (!allCriticalHealthy) {
-      status = "not_ready";
+      status = 'not_ready';
     } else if (anyUnhealthy) {
-      status = "degraded";
+      status = 'degraded';
     } else {
-      status = "ready";
+      status = 'ready';
     }
     return {
       status,
       app: this.appName,
       version: this.version,
       uptime: Date.now() - this.startTime,
-      checks: Object.fromEntries(
-        allChecks.map((c) => [c.name, c.toJSON()])
-      ),
+      checks: Object.fromEntries(allChecks.map((c) => [c.name, c.toJSON()])),
       probes: {
         service: results,
-        readiness: readinessResults
+        readiness: readinessResults,
       },
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
   }
   /**
@@ -208,16 +210,16 @@ let HealthService = class extends EventEmitter {
     const readiness = await this.readiness();
     const deepResults = await this.checkDeepDependencies();
     const deepChecks = [...this.deepChecks.values()];
-    const deepHealthy = deepChecks.every((check) => check.status === "healthy");
-    const status = readiness.status === "ready" && deepHealthy ? "ready" : "not_ready";
+    const deepHealthy = deepChecks.every((check) => check.status === 'healthy');
+    const status = readiness.status === 'ready' && deepHealthy ? 'ready' : 'not_ready';
     return {
       ...readiness,
       status,
       deepChecks: Object.fromEntries(deepChecks.map((check) => [check.name, check.toJSON()])),
       probes: {
         ...readiness.probes,
-        deep: deepResults
-      }
+        deep: deepResults,
+      },
     };
   }
   /**
@@ -230,12 +232,12 @@ let HealthService = class extends EventEmitter {
       },
       readiness: async (req, res) => {
         const result = await this.readiness();
-        const statusCode = result.status === "not_ready" ? 503 : 200;
+        const statusCode = result.status === 'not_ready' ? 503 : 200;
         res.status(statusCode).json(result);
       },
       deep: async (req, res) => {
         const result = await this.deep();
-        const statusCode = result.status === "ready" ? 200 : 503;
+        const statusCode = result.status === 'ready' ? 200 : 503;
         res.status(statusCode).json(result);
       },
       full: async (req, res) => {
@@ -243,12 +245,12 @@ let HealthService = class extends EventEmitter {
         res.json({
           ...this.liveness(),
           checks: results.checks,
-          probes: results.probes
+          probes: results.probes,
         });
-      }
+      },
     };
   }
-  registerRoutes(app, { basePath = "/health" } = {}) {
+  registerRoutes(app, { basePath = '/health' } = {}) {
     const handlers = this.middleware();
     app.get(basePath, handlers.liveness);
     app.get(`${basePath}/ready`, handlers.readiness);
@@ -266,20 +268,14 @@ let HealthService = class extends EventEmitter {
       running: this.running,
       uptime: Date.now() - this.startTime,
       totalChecks: checks.length,
-      healthy: checks.filter((c) => c.status === "healthy").length,
-      degraded: checks.filter((c) => c.status === "degraded").length,
-      unhealthy: checks.filter((c) => c.status === "unhealthy").length,
-      unknown: checks.filter((c) => c.status === "unknown").length,
-      checks: Object.fromEntries(checks.map((c) => [c.name, c.toJSON()]))
+      healthy: checks.filter((c) => c.status === 'healthy').length,
+      degraded: checks.filter((c) => c.status === 'degraded').length,
+      unhealthy: checks.filter((c) => c.status === 'unhealthy').length,
+      unknown: checks.filter((c) => c.status === 'unknown').length,
+      checks: Object.fromEntries(checks.map((c) => [c.name, c.toJSON()])),
     };
   }
 };
-HealthService = __decorateClass([
-  singleton()
-], HealthService);
+HealthService = __decorateClass([singleton()], HealthService);
 var health_service_default = HealthService;
-export {
-  HealthCheck,
-  HealthService,
-  health_service_default as default
-};
+export { HealthCheck, HealthService, health_service_default as default };

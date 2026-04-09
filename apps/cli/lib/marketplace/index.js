@@ -10,7 +10,7 @@ import AdmZip from 'adm-zip';
 import FormData from 'form-data';
 // Stub for marketplace client until client.js is implemented
 const marketplaceClient = {
-  searchAgents: async () => ({ agents: [] })
+  searchAgents: async () => ({ agents: [] }),
 };
 import { AppError } from '../utils/errors.js';
 import { printInfo, printSuccess, printError, printWarning } from '../utils/output.js';

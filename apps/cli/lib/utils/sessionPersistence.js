@@ -335,19 +335,22 @@ function parsePersistedJsonField(value, fallbackValue, fieldName, recordId) {
   try {
     return JSON.parse(value);
   } catch (error) {
-    throw new CorruptionError(`Corrupted persisted JSON detected in ${fieldName} for record ${recordId}.`, {
-      cause: error,
-      details: {
-        fieldName,
-        recordId,
-        valuePreview: String(value).slice(0, 120),
-      },
-      suggestions: [
-        'Restore the affected SQLite row from a known-good backup.',
-        'Repair the malformed JSON payload in the database before retrying.',
-        'Re-run the original command after the persisted record has been fixed.',
-      ],
-    });
+    throw new CorruptionError(
+      `Corrupted persisted JSON detected in ${fieldName} for record ${recordId}.`,
+      {
+        cause: error,
+        details: {
+          fieldName,
+          recordId,
+          valuePreview: String(value).slice(0, 120),
+        },
+        suggestions: [
+          'Restore the affected SQLite row from a known-good backup.',
+          'Repair the malformed JSON payload in the database before retrying.',
+          'Re-run the original command after the persisted record has been fixed.',
+        ],
+      }
+    );
   }
 }
 

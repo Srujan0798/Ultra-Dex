@@ -22,12 +22,14 @@ This example demonstrates how to create an AI-powered code review system using U
 ## Setup
 
 1. **Install Dependencies**:
+
    ```bash
    # This example uses the UltraDex library
    ```
 
 2. **Environment Variables**:
    Create a `.env` file with the following:
+
    ```env
    ULTRA_DEX_API_KEY=your_ultra_dex_api_key
    ULTRA_DEX_ENDPOINT=https://api.ultra-dex.ai
@@ -56,47 +58,48 @@ The code reviewer can analyze various aspects of code:
 const codeReviewer = new CodeReviewer({
   ultraDex: {
     apiKey: process.env.ULTRA_DEX_API_KEY,
-    endpoint: process.env.ULTRA_DEX_ENDPOINT || 'https://api.ultra-dex.ai'
+    endpoint: process.env.ULTRA_DEX_ENDPOINT || 'https://api.ultra-dex.ai',
   },
   codeStandards: {
     quality: {
       maxComplexity: 10,
       maxFunctionLength: 50,
-      maxParameters: 5
+      maxParameters: 5,
     },
     practices: {
       allowConsoleLogs: false,
       requireJSDoc: true,
-      maxNestedIfs: 3
+      maxNestedIfs: 3,
     },
     style: {
       indentSize: 2,
       useSemicolons: true,
-      maxLineLength: 100
-    }
+      maxLineLength: 100,
+    },
   },
   securityRules: {
     disableEval: true,
     validateInput: true,
     escapeOutput: true,
-    useHTTPS: true
+    useHTTPS: true,
   },
   performanceThresholds: {
     maxFunctionTime: 100, // ms
     maxMemoryUsage: 100, // MB
-    minEfficiencyRating: 80
-  }
+    minEfficiencyRating: 80,
+  },
 });
 
 // Review a single file
 const review = await codeReviewer.reviewCode('./path/to/code/file.js', {
   qualityThreshold: 85,
   securitySeverity: 'high',
-  styleStrictness: 'strict'
+  styleStrictness: 'strict',
 });
 
 // Review a diff/patch
-const diffReview = await codeReviewer.reviewDiff(`
+const diffReview = await codeReviewer.reviewDiff(
+  `
 diff --git a/file.js b/file.js
 index abc123..def456 100644
 --- a/file.js
@@ -109,18 +112,19 @@ index abc123..def456 100644
 +  }
 +  return "Hello " + name;
  }
-`, {
-  securitySeverity: 'critical'
-});
+`,
+  {
+    securitySeverity: 'critical',
+  }
+);
 
 // Batch review multiple files
-const batchResults = await codeReviewer.batchReview([
-  './src/utils.js',
-  './src/components/Button.js',
-  './src/services/api.js'
-], {
-  qualityThreshold: 80
-});
+const batchResults = await codeReviewer.batchReview(
+  ['./src/utils.js', './src/components/Button.js', './src/services/api.js'],
+  {
+    qualityThreshold: 80,
+  }
+);
 
 // Get improvement recommendations
 const recommendations = await codeReviewer.getImprovementRecommendations('./path/to/file.js');

@@ -46,7 +46,7 @@ describe('Gemini Provider - Models', () => {
   test('should support Gemini Pro models', () => {
     const models = ['gemini-pro', 'gemini-1.5-pro', 'gemini-1.5-flash'];
 
-    models.forEach(model => {
+    models.forEach((model) => {
       assert.ok(model.includes('gemini'));
       assert.ok(typeof model === 'string');
     });
@@ -55,7 +55,7 @@ describe('Gemini Provider - Models', () => {
   test('should support multimodal models', () => {
     const multimodalModels = ['gemini-1.5-pro', 'gemini-pro-vision'];
 
-    multimodalModels.forEach(model => {
+    multimodalModels.forEach((model) => {
       assert.ok(model.includes('gemini'));
     });
   });
@@ -63,7 +63,7 @@ describe('Gemini Provider - Models', () => {
   test('should validate model names', () => {
     const validModels = ['gemini-pro', 'gemini-1.5-pro', 'gemini-1.5-flash'];
 
-    validModels.forEach(model => {
+    validModels.forEach((model) => {
       assert.ok(model.startsWith('gemini'));
       assert.ok(model.length > 6);
     });
@@ -81,7 +81,7 @@ describe('Gemini Provider - Configuration', () => {
   test('should allow temperature configuration', () => {
     const validTemperatures = [0, 0.5, 0.9, 1.0];
 
-    validTemperatures.forEach(temp => {
+    validTemperatures.forEach((temp) => {
       assert.ok(temp >= 0 && temp <= 1.0);
     });
   });
@@ -89,7 +89,7 @@ describe('Gemini Provider - Configuration', () => {
   test('should allow top_p configuration', () => {
     const validTopP = [0.1, 0.5, 0.95, 1.0];
 
-    validTopP.forEach(topP => {
+    validTopP.forEach((topP) => {
       assert.ok(topP > 0 && topP <= 1.0);
     });
   });
@@ -97,7 +97,7 @@ describe('Gemini Provider - Configuration', () => {
   test('should allow max_output_tokens', () => {
     const validTokens = [100, 2048, 8192];
 
-    validTokens.forEach(tokens => {
+    validTokens.forEach((tokens) => {
       assert.ok(tokens > 0);
       assert.ok(Number.isInteger(tokens));
     });
@@ -110,10 +110,10 @@ describe('Gemini Provider - Safety Settings', () => {
       'HARM_CATEGORY_HARASSMENT',
       'HARM_CATEGORY_HATE_SPEECH',
       'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-      'HARM_CATEGORY_DANGEROUS_CONTENT'
+      'HARM_CATEGORY_DANGEROUS_CONTENT',
     ];
 
-    safetyCategories.forEach(category => {
+    safetyCategories.forEach((category) => {
       assert.ok(category.startsWith('HARM_CATEGORY_'));
     });
   });
@@ -123,10 +123,10 @@ describe('Gemini Provider - Safety Settings', () => {
       'BLOCK_NONE',
       'BLOCK_LOW_AND_ABOVE',
       'BLOCK_MEDIUM_AND_ABOVE',
-      'BLOCK_ONLY_HIGH'
+      'BLOCK_ONLY_HIGH',
     ];
 
-    thresholds.forEach(threshold => {
+    thresholds.forEach((threshold) => {
       assert.ok(threshold.startsWith('BLOCK_'));
     });
   });
@@ -134,7 +134,7 @@ describe('Gemini Provider - Safety Settings', () => {
   test('should have default safety settings', () => {
     const defaultSettings = {
       category: 'HARM_CATEGORY_HARASSMENT',
-      threshold: 'BLOCK_MEDIUM_AND_ABOVE'
+      threshold: 'BLOCK_MEDIUM_AND_ABOVE',
     };
 
     assert.ok(defaultSettings.category);
@@ -154,8 +154,8 @@ describe('Gemini Provider - Multimodal Support', () => {
     const imageInput = {
       inlineData: {
         mimeType: 'image/jpeg',
-        data: 'base64-encoded-data'
-      }
+        data: 'base64-encoded-data',
+      },
     };
 
     assert.ok(imageInput.inlineData);
@@ -165,7 +165,7 @@ describe('Gemini Provider - Multimodal Support', () => {
   test('should validate mime types', () => {
     const validMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic'];
 
-    validMimeTypes.forEach(mimeType => {
+    validMimeTypes.forEach((mimeType) => {
       assert.ok(mimeType.startsWith('image/'));
     });
   });
@@ -173,7 +173,7 @@ describe('Gemini Provider - Multimodal Support', () => {
   test('should support mixed content', () => {
     const mixedContent = [
       { text: 'What is in this image?' },
-      { inlineData: { mimeType: 'image/jpeg', data: '...' } }
+      { inlineData: { mimeType: 'image/jpeg', data: '...' } },
     ];
 
     assert.strictEqual(mixedContent.length, 2);
@@ -186,7 +186,7 @@ describe('Gemini Provider - Error Handling', () => {
   test('should handle quota exceeded errors', () => {
     const quotaError = {
       status: 429,
-      message: 'Quota exceeded'
+      message: 'Quota exceeded',
     };
 
     assert.strictEqual(quotaError.status, 429);
@@ -195,7 +195,7 @@ describe('Gemini Provider - Error Handling', () => {
   test('should handle invalid API key', () => {
     const authError = {
       status: 401,
-      message: 'API key not valid'
+      message: 'API key not valid',
     };
 
     assert.strictEqual(authError.status, 401);
@@ -204,7 +204,7 @@ describe('Gemini Provider - Error Handling', () => {
   test('should handle safety filter blocking', () => {
     const safetyError = {
       finishReason: 'SAFETY',
-      safetyRatings: [{ category: 'HARM_CATEGORY_HARASSMENT', probability: 'HIGH' }]
+      safetyRatings: [{ category: 'HARM_CATEGORY_HARASSMENT', probability: 'HIGH' }],
     };
 
     assert.strictEqual(safetyError.finishReason, 'SAFETY');
@@ -214,7 +214,7 @@ describe('Gemini Provider - Error Handling', () => {
   test('should handle model not found', () => {
     const notFoundError = {
       status: 404,
-      message: 'Model not found'
+      message: 'Model not found',
     };
 
     assert.strictEqual(notFoundError.status, 404);
@@ -227,9 +227,9 @@ describe('Gemini Provider - Response Parsing', () => {
       candidates: [
         {
           content: { parts: [{ text: 'Hello from Gemini!' }] },
-          finishReason: 'STOP'
-        }
-      ]
+          finishReason: 'STOP',
+        },
+      ],
     };
 
     assert.ok(mockResponse.candidates);
@@ -242,13 +242,10 @@ describe('Gemini Provider - Response Parsing', () => {
       candidates: [
         {
           content: {
-            parts: [
-              { text: 'Part 1' },
-              { text: 'Part 2' }
-            ]
-          }
-        }
-      ]
+            parts: [{ text: 'Part 1' }, { text: 'Part 2' }],
+          },
+        },
+      ],
     };
 
     assert.strictEqual(multiPartResponse.candidates[0].content.parts.length, 2);
@@ -259,8 +256,8 @@ describe('Gemini Provider - Response Parsing', () => {
       usageMetadata: {
         promptTokenCount: 10,
         candidatesTokenCount: 20,
-        totalTokenCount: 30
-      }
+        totalTokenCount: 30,
+      },
     };
 
     assert.strictEqual(responseWithMetadata.usageMetadata.totalTokenCount, 30);

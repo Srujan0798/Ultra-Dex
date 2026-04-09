@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ### Development
+
 ```bash
 npm start                    # Run the CLI
 npm run dev                  # Run CLI with file watch (hot reload)
@@ -14,6 +15,7 @@ npm run demo                 # Run a demo with MOCK_AI=true (no real API calls)
 ```
 
 ### Build
+
 ```bash
 npm run build                # Build all (core + dashboard)
 npm run build:core           # Core modules only
@@ -22,6 +24,7 @@ npm run build:dashboard      # Dashboard app
 ```
 
 ### Testing
+
 ```bash
 npm test                     # All tests (unit + integration + CLI), 30s timeout
 npm run test:unit            # tests/core/*.test.js
@@ -35,6 +38,7 @@ npm run test:coverage        # With spec reporter
 Tests use Node's built-in `node --test` runner (not Jest/Vitest). `NODE_ENV=test` is set automatically.
 
 ### Lint & Format
+
 ```bash
 npm run lint                 # ESLint on apps/cli/lib (JS/TS)
 npm run lint:fix             # Auto-fix ESLint issues
@@ -44,6 +48,7 @@ npm run typecheck            # TypeScript noEmit check
 ```
 
 ### Pre-commit gates (run before committing)
+
 ```bash
 npm run governance           # Pre-commit governance checks
 npm run gate:local           # Full local enterprise gate
@@ -67,17 +72,17 @@ CLI (apps/cli/bin/ultra-dex.js)
 
 ### Key modules
 
-| Path | Role |
-|------|------|
-| `apps/cli/bin/ultra-dex.js` | CLI entry point; Commander.js, lazy command loading |
-| `apps/cli/lib/commands/run.js` | `run`, `swarm`, `distributed` commands |
-| `src/core/orchestration/index.js` | `AgentOrchestrator` (also exported as `nexus`) — multi-agent coordination, task graphs, self-healing |
-| `src/core/ai/ai-meta-layer.js` | `AIMetaLayer` — provider abstraction, cost/latency/quality routing, caching, token tracking |
-| `src/core/memory/unified-api.js` | `ppmManager` — tiered persistent memory, semantic/vector search |
-| `src/core/governance/governance-manager.js` | Policy enforcement; throws `DeniedException` on violations |
-| `src/core/mcp/` | Model Context Protocol server and tool registry |
-| `src/services/ai-providers/router.js` | Routes requests to the right provider with fallback chains |
-| `src/index.js` | Top-level export of the whole platform |
+| Path                                        | Role                                                                                                 |
+| ------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `apps/cli/bin/ultra-dex.js`                 | CLI entry point; Commander.js, lazy command loading                                                  |
+| `apps/cli/lib/commands/run.js`              | `run`, `swarm`, `distributed` commands                                                               |
+| `src/core/orchestration/index.js`           | `AgentOrchestrator` (also exported as `nexus`) — multi-agent coordination, task graphs, self-healing |
+| `src/core/ai/ai-meta-layer.js`              | `AIMetaLayer` — provider abstraction, cost/latency/quality routing, caching, token tracking          |
+| `src/core/memory/unified-api.js`            | `ppmManager` — tiered persistent memory, semantic/vector search                                      |
+| `src/core/governance/governance-manager.js` | Policy enforcement; throws `DeniedException` on violations                                           |
+| `src/core/mcp/`                             | Model Context Protocol server and tool registry                                                      |
+| `src/services/ai-providers/router.js`       | Routes requests to the right provider with fallback chains                                           |
+| `src/index.js`                              | Top-level export of the whole platform                                                               |
 
 ### AI providers
 

@@ -19,47 +19,47 @@ const ConfigPage = () => {
             apiKey: 'sk-...xxx',
             defaultModel: 'gpt-4o-2024-11-20',
             temperature: 0.7,
-            maxTokens: 4096
+            maxTokens: 4096,
           },
           anthropic: {
             enabled: true,
             apiKey: 'sk-ant-...yyy',
             defaultModel: 'claude-3-5-sonnet-latest',
             temperature: 0.5,
-            maxTokens: 4096
+            maxTokens: 4096,
           },
           google: {
             enabled: true,
             apiKey: '...zzz',
             defaultModel: 'gemini-2.0-flash-exp',
             temperature: 0.7,
-            maxTokens: 2048
+            maxTokens: 2048,
           },
           ollama: {
             enabled: false,
             baseUrl: 'http://localhost:11434/v1',
             defaultModel: 'llama3.2',
             temperature: 0.7,
-            maxTokens: 2048
-          }
+            maxTokens: 2048,
+          },
         },
         memory: {
           hotRetention: 3600,
           warmRetention: 86400,
           coldRetention: 2592000,
-          maxEntries: 10000
+          maxEntries: 10000,
         },
         agents: {
           defaultConcurrency: 4,
           maxRetries: 3,
-          timeout: 30000
+          timeout: 30000,
         },
         security: {
           enableSandbox: true,
           restrictFsAccess: true,
           blockNetwork: false,
-          auditLogging: true
-        }
+          auditLogging: true,
+        },
       });
       setLoading(false);
     }, 1000);
@@ -75,17 +75,20 @@ const ConfigPage = () => {
   };
 
   const testConnection = async (provider) => {
-    setTestResults(prev => ({ ...prev, [provider]: { status: 'testing', message: 'Testing...' } }));
-    
+    setTestResults((prev) => ({
+      ...prev,
+      [provider]: { status: 'testing', message: 'Testing...' },
+    }));
+
     // Simulate API call
     setTimeout(() => {
       const success = Math.random() > 0.3; // 70% success rate for demo
-      setTestResults(prev => ({
+      setTestResults((prev) => ({
         ...prev,
         [provider]: {
           status: success ? 'success' : 'error',
-          message: success ? 'Connection successful!' : 'Failed to connect. Check your API key.'
-        }
+          message: success ? 'Connection successful!' : 'Failed to connect. Check your API key.',
+        },
       }));
     }, 1500);
   };
@@ -111,11 +114,13 @@ const ConfigPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Configuration</h1>
-          <p className="mt-2 text-gray-600">Manage Ultra-Dex settings and environment configurations</p>
+          <p className="mt-2 text-gray-600">
+            Manage Ultra-Dex settings and environment configurations
+          </p>
         </div>
 
-        <ConfigEditor 
-          config={config} 
+        <ConfigEditor
+          config={config}
           onConfigChange={setConfig}
           testConnection={testConnection}
           testResults={testResults}

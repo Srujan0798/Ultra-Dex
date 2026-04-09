@@ -3,6 +3,7 @@
 ## Executive Summary
 
 ### Series B Funding Target
+
 - **Amount**: $15,000,000
 - **Pre-money Valuation**: $75,000,000
 - **Post-money Valuation**: $90,000,000
@@ -11,6 +12,7 @@
 - **Timeline**: 6 months from initial outreach
 
 ### Key Value Propositions
+
 - **Market Leadership**: #1 position in AI orchestration space
 - **Revenue Growth**: $200K+ MRR with 150% YoY growth
 - **Unit Economics**: 12.5x LTV/CAC ratio with 3-month payback
@@ -23,6 +25,7 @@
 ## Market Leadership Positioning
 
 ### Competitive Analysis
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    COMPETITIVE LANDSCAPE                        │
@@ -57,6 +60,7 @@
 ```
 
 ### Market Size & Opportunity
+
 ```
 Total Addressable Market (TAM): $100B+
 • AI developer tools: $45B
@@ -74,6 +78,7 @@ Serviceable Obtainable Market (SOM): $500M+
 ```
 
 ### Technology Leadership
+
 - **First-to-Market**: Predictive orchestration capabilities
 - **Patent Portfolio**: 3 filed patents, 2 pending approvals
 - **Technical Innovation**: Visual debugging and enterprise security
@@ -85,6 +90,7 @@ Serviceable Obtainable Market (SOM): $500M+
 ## Financial Performance
 
 ### Current Financial Metrics
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        FINANCIAL METRICS                        │
@@ -119,6 +125,7 @@ Serviceable Obtainable Market (SOM): $500M+
 ```
 
 ### Projected Financials (Next 2 Years)
+
 ```
 Year 3 Projections:
 • ARR: $15,000,000 (525% growth from Year 2)
@@ -138,10 +145,11 @@ Year 4 Projections:
 ```
 
 ### Revenue Breakdown
+
 ```
 Current Revenue Mix:
 • Pro Tier: $24,000/month (12% of MRR)
-• Team Tier: $80,000/month (40% of MRR)  
+• Team Tier: $80,000/month (40% of MRR)
 • Enterprise Tier: $96,000/month (48% of MRR)
 
 Geographic Revenue Split:
@@ -159,6 +167,7 @@ Growth Drivers:
 ## Use of Funds
 
 ### $15M Series B Allocation
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        USE OF FUNDS                             │
@@ -216,6 +225,7 @@ Growth Drivers:
 ## Investor Target Profile
 
 ### Ideal Investor Characteristics
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    INVESTOR PROFILE                             │
@@ -248,10 +258,11 @@ Growth Drivers:
 ```
 
 ### Target Investor List
+
 ```
 Tier 1 Investors (Primary Targets):
 • a16z AI Fund
-• NVIDIA AI Ventures  
+• NVIDIA AI Ventures
 • Microsoft M12
 • Google Ventures (GV)
 • NEA (New Enterprise Associates)
@@ -276,6 +287,7 @@ Tier 3 Investors (Backup Options):
 ## Go-to-Market Strategy
 
 ### Customer Acquisition Strategy
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                   CUSTOMER ACQUISITION                          │
@@ -303,6 +315,7 @@ Tier 3 Investors (Backup Options):
 ```
 
 ### International Expansion Plan
+
 ```
 Phase 1: EU Market Strengthening (Months 1-6)
 • Expand Dublin office to 15+ employees
@@ -328,6 +341,7 @@ Phase 3: Global Scale (Months 13-18)
 ## Risk Analysis & Mitigation
 
 ### Key Risks
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                           RISKS                                 │
@@ -353,6 +367,7 @@ Phase 3: Global Scale (Months 13-18)
 ```
 
 ### Mitigation Strategies
+
 ```
 Technology Risks:
 • Continuous model monitoring and retraining
@@ -378,6 +393,7 @@ Execution Risks:
 ## Milestones & Metrics
 
 ### Series B Milestones (18-Month Timeline)
+
 ```
 6-Month Milestones:
 • MRR: $500K (150% growth from $200K)
@@ -402,6 +418,7 @@ Execution Risks:
 ```
 
 ### Key Performance Indicators
+
 ```
 Financial KPIs:
 • Monthly Recurring Revenue (MRR)
@@ -436,6 +453,7 @@ Growth KPIs:
 ## Exit Strategy
 
 ### Potential Exit Scenarios
+
 ```
 Acquisition Targets (Year 4-5):
 • Strategic Acquirers: Microsoft, Google, AWS, Salesforce
@@ -455,6 +473,7 @@ Alternative Scenarios:
 ```
 
 ### Valuation Multiples
+
 ```
 Public SaaS Company Comparables:
 • ZoomInfo: 8-12x revenue multiple
@@ -478,6 +497,7 @@ Ultra-Dex Valuation Target: 15-20x revenue multiple
 ## Investment Terms
 
 ### Proposed Terms
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        INVESTMENT TERMS                         │
@@ -519,6 +539,7 @@ Ultra-Dex Valuation Target: 15-20x revenue multiple
 ## Due Diligence Preparation
 
 ### Financial Documentation
+
 - 3-year audited financial statements
 - Monthly financial reporting package
 - Detailed revenue recognition policies
@@ -527,6 +548,7 @@ Ultra-Dex Valuation Target: 15-20x revenue multiple
 - Cash flow projections and models
 
 ### Legal Documentation
+
 - Corporate structure and cap table
 - Intellectual property portfolio
 - Key customer contracts
@@ -535,6 +557,7 @@ Ultra-Dex Valuation Target: 15-20x revenue multiple
 - Compliance certifications
 
 ### Technical Documentation
+
 - System architecture diagrams
 - Security audit reports
 - Performance benchmarks
@@ -543,6 +566,7 @@ Ultra-Dex Valuation Target: 15-20x revenue multiple
 - Integration documentation
 
 ### Market Documentation
+
 - Customer reference letters
 - Competitive analysis
 - Market research reports

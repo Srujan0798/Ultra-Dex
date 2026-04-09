@@ -19,7 +19,7 @@ class SystemHealthEvaluator {
       overallStatus: 'unknown',
       components: {},
       metrics: {},
-      recommendations: []
+      recommendations: [],
     };
   }
 
@@ -60,14 +60,18 @@ class SystemHealthEvaluator {
       appsDirectory: await this.exists(path.join(this.projectRoot, 'apps')),
       packagesDirectory: await this.exists(path.join(this.projectRoot, 'packages')),
       cliExists: await this.exists(path.join(this.projectRoot, 'apps', 'cli')),
-      agentsExist: await this.exists(path.join(this.projectRoot, 'apps', 'cli', 'assets', 'agents')),
+      agentsExist: await this.exists(
+        path.join(this.projectRoot, 'apps', 'cli', 'assets', 'agents')
+      ),
       libDirectory: await this.exists(path.join(this.projectRoot, 'apps', 'cli', 'lib')),
-      commandsDirectory: await this.exists(path.join(this.projectRoot, 'apps', 'cli', 'lib', 'commands')),
+      commandsDirectory: await this.exists(
+        path.join(this.projectRoot, 'apps', 'cli', 'lib', 'commands')
+      ),
       testsDirectory: await this.exists(path.join(this.projectRoot, 'tests')),
-      docsDirectory: await this.exists(path.join(this.projectRoot, 'docs'))
+      docsDirectory: await this.exists(path.join(this.projectRoot, 'docs')),
     };
 
-    const passedChecks = Object.values(structureChecks).filter(check => check).length;
+    const passedChecks = Object.values(structureChecks).filter((check) => check).length;
     const totalChecks = Object.keys(structureChecks).length;
     const score = Math.round((passedChecks / totalChecks) * 100);
 
@@ -75,7 +79,7 @@ class SystemHealthEvaluator {
       status: score >= 90 ? 'healthy' : score >= 70 ? 'warning' : 'critical',
       score,
       details: structureChecks,
-      message: `Project structure: ${passedChecks}/${totalChecks} checks passed`
+      message: `Project structure: ${passedChecks}/${totalChecks} checks passed`,
     };
 
     console.log(`   ✅ Structure: ${passedChecks}/${totalChecks} checks passed (${score}%)\n`);
@@ -93,12 +97,12 @@ class SystemHealthEvaluator {
         hasDevDependencies: Object.keys(packageJson.devDependencies || {}).length > 0,
         hasScripts: Object.keys(packageJson.scripts || {}).length > 0,
         hasCorrectVersion: packageJson.version === '6.0.0',
-        hasRequiredScripts: [
-          'test', 'lint', 'format', 'build', 'start', 'dev'
-        ].every(script => packageJson.scripts && packageJson.scripts[script])
+        hasRequiredScripts: ['test', 'lint', 'format', 'build', 'start', 'dev'].every(
+          (script) => packageJson.scripts && packageJson.scripts[script]
+        ),
       };
 
-      const passedChecks = Object.values(dependencyChecks).filter(check => check).length;
+      const passedChecks = Object.values(dependencyChecks).filter((check) => check).length;
       const totalChecks = Object.keys(dependencyChecks).length;
       const score = Math.round((passedChecks / totalChecks) * 100);
 
@@ -106,7 +110,7 @@ class SystemHealthEvaluator {
         status: score >= 90 ? 'healthy' : score >= 70 ? 'warning' : 'critical',
         score,
         details: dependencyChecks,
-        message: `Dependencies: ${passedChecks}/${totalChecks} checks passed`
+        message: `Dependencies: ${passedChecks}/${totalChecks} checks passed`,
       };
 
       console.log(`   ✅ Dependencies: ${passedChecks}/${totalChecks} checks passed (${score}%)\n`);
@@ -115,7 +119,7 @@ class SystemHealthEvaluator {
         status: 'critical',
         score: 0,
         details: { error: error.message },
-        message: `Dependencies evaluation failed: ${error.message}`
+        message: `Dependencies evaluation failed: ${error.message}`,
       };
       console.log(`   ❌ Dependencies: Evaluation failed\n`);
     }
@@ -126,25 +130,31 @@ class SystemHealthEvaluator {
 
     try {
       // Test version command
-      const versionResult = await execAsync(`cd ${this.projectRoot} && node apps/cli/bin/ultra-dex.js --version`);
+      const versionResult = await execAsync(
+        `cd ${this.projectRoot} && node apps/cli/bin/ultra-dex.js --version`
+      );
       const hasVersion = versionResult.stdout.includes('6.0.0');
 
       // Test help command
-      const helpResult = await execAsync(`cd ${this.projectRoot} && node apps/cli/bin/ultra-dex.js --help`);
+      const helpResult = await execAsync(
+        `cd ${this.projectRoot} && node apps/cli/bin/ultra-dex.js --help`
+      );
       const hasHelp = helpResult.stdout.includes('AI Orchestration Meta-Layer');
 
       // Test agents command
-      const agentsResult = await execAsync(`cd ${this.projectRoot} && node apps/cli/bin/ultra-dex.js agents list`);
+      const agentsResult = await execAsync(
+        `cd ${this.projectRoot} && node apps/cli/bin/ultra-dex.js agents list`
+      );
       const hasAgents = agentsResult.stdout.includes('AI Agents');
 
       const cliChecks = {
         versionCommandWorks: hasVersion,
         helpCommandWorks: hasHelp,
         agentsCommandWorks: hasAgents,
-        startupTime: this.measureStartupTime()
+        startupTime: this.measureStartupTime(),
       };
 
-      const passedChecks = Object.values(cliChecks).filter(check => check).length;
+      const passedChecks = Object.values(cliChecks).filter((check) => check).length;
       const totalChecks = Object.keys(cliChecks).length;
       const score = Math.round((passedChecks / totalChecks) * 100);
 
@@ -152,7 +162,7 @@ class SystemHealthEvaluator {
         status: score >= 90 ? 'healthy' : score >= 70 ? 'warning' : 'critical',
         score,
         details: cliChecks,
-        message: `CLI functionality: ${passedChecks}/${totalChecks} checks passed`
+        message: `CLI functionality: ${passedChecks}/${totalChecks} checks passed`,
       };
 
       console.log(`   ✅ CLI: ${passedChecks}/${totalChecks} checks passed (${score}%)\n`);
@@ -161,7 +171,7 @@ class SystemHealthEvaluator {
         status: 'critical',
         score: 0,
         details: { error: error.message },
-        message: `CLI evaluation failed: ${error.message}`
+        message: `CLI evaluation failed: ${error.message}`,
       };
       console.log(`   ❌ CLI: Evaluation failed\n`);
     }
@@ -183,10 +193,10 @@ class SystemHealthEvaluator {
         hasDevOpsTier: agentTiers.includes('4-devops'),
         hasQualityTier: agentTiers.includes('5-quality'),
         hasSpecialistTier: agentTiers.includes('6-specialist'),
-        totalAgentFiles: await this.countAgentFiles(agentsDir)
+        totalAgentFiles: await this.countAgentFiles(agentsDir),
       };
 
-      const passedChecks = Object.values(agentChecks).filter(check => check).length;
+      const passedChecks = Object.values(agentChecks).filter((check) => check).length;
       const totalChecks = Object.keys(agentChecks).length;
       const score = Math.round((passedChecks / totalChecks) * 100);
 
@@ -194,16 +204,18 @@ class SystemHealthEvaluator {
         status: score >= 90 ? 'healthy' : score >= 70 ? 'warning' : 'critical',
         score,
         details: agentChecks,
-        message: `Agent system: ${passedChecks}/${totalChecks} checks passed`
+        message: `Agent system: ${passedChecks}/${totalChecks} checks passed`,
       };
 
-      console.log(`   ✅ Agents: ${passedChecks}/${totalChecks} checks passed (${score}%), ${agentChecks.totalAgentFiles} agent files found\n`);
+      console.log(
+        `   ✅ Agents: ${passedChecks}/${totalChecks} checks passed (${score}%), ${agentChecks.totalAgentFiles} agent files found\n`
+      );
     } catch (error) {
       this.healthReport.components.agents = {
         status: 'critical',
         score: 0,
         details: { error: error.message },
-        message: `Agent system evaluation failed: ${error.message}`
+        message: `Agent system evaluation failed: ${error.message}`,
       };
       console.log(`   ❌ Agents: Evaluation failed\n`);
     }
@@ -214,14 +226,20 @@ class SystemHealthEvaluator {
 
     try {
       const perfChecks = {
-        hasPerformanceOptimizer: await this.exists(path.join(this.projectRoot, 'src', 'core', 'performance', 'advanced-optimizer.js')),
-        hasMonitoringDashboard: await this.exists(path.join(this.projectRoot, 'src', 'core', 'performance', 'monitoring-dashboard.js')),
-        hasHealthChecker: await this.exists(path.join(this.projectRoot, 'src', 'core', 'system', 'health-checker.js')),
+        hasPerformanceOptimizer: await this.exists(
+          path.join(this.projectRoot, 'src', 'core', 'performance', 'advanced-optimizer.js')
+        ),
+        hasMonitoringDashboard: await this.exists(
+          path.join(this.projectRoot, 'src', 'core', 'performance', 'monitoring-dashboard.js')
+        ),
+        hasHealthChecker: await this.exists(
+          path.join(this.projectRoot, 'src', 'core', 'system', 'health-checker.js')
+        ),
         hasTestSuite: await this.exists(path.join(this.projectRoot, 'tests')),
-        hasComprehensiveTests: await this.countTestFiles() > 5
+        hasComprehensiveTests: (await this.countTestFiles()) > 5,
       };
 
-      const passedChecks = Object.values(perfChecks).filter(check => check).length;
+      const passedChecks = Object.values(perfChecks).filter((check) => check).length;
       const totalChecks = Object.keys(perfChecks).length;
       const score = Math.round((passedChecks / totalChecks) * 100);
 
@@ -229,7 +247,7 @@ class SystemHealthEvaluator {
         status: score >= 90 ? 'healthy' : score >= 70 ? 'warning' : 'critical',
         score,
         details: perfChecks,
-        message: `Performance systems: ${passedChecks}/${totalChecks} checks passed`
+        message: `Performance systems: ${passedChecks}/${totalChecks} checks passed`,
       };
 
       console.log(`   ✅ Performance: ${passedChecks}/${totalChecks} checks passed (${score}%)\n`);
@@ -238,7 +256,7 @@ class SystemHealthEvaluator {
         status: 'critical',
         score: 0,
         details: { error: error.message },
-        message: `Performance systems evaluation failed: ${error.message}`
+        message: `Performance systems evaluation failed: ${error.message}`,
       };
       console.log(`   ❌ Performance: Evaluation failed\n`);
     }
@@ -258,7 +276,12 @@ class SystemHealthEvaluator {
     const tiers = await fs.readdir(agentsDir);
 
     for (const tier of tiers) {
-      if (tier !== 'README.md' && tier !== 'documentation.md' && tier !== 'AGENT-INSTRUCTIONS.md' && tier !== '00-AGENT_INDEX.md') {
+      if (
+        tier !== 'README.md' &&
+        tier !== 'documentation.md' &&
+        tier !== 'AGENT-INSTRUCTIONS.md' &&
+        tier !== '00-AGENT_INDEX.md'
+      ) {
         const tierPath = path.join(agentsDir, tier);
         const stats = await fs.stat(tierPath);
         if (stats.isDirectory()) {
@@ -288,7 +311,7 @@ class SystemHealthEvaluator {
 
   calculateOverallHealth() {
     const components = this.healthReport.components;
-    const scores = Object.values(components).map(comp => comp.score);
+    const scores = Object.values(components).map((comp) => comp.score);
     const avgScore = scores.reduce((sum, score) => sum + score, 0) / scores.length;
 
     if (avgScore >= 90) {
@@ -306,7 +329,7 @@ class SystemHealthEvaluator {
       totalComponents: Object.keys(components).length,
       healthBreakdown: Object.fromEntries(
         Object.entries(components).map(([key, value]) => [key, value.score])
-      )
+      ),
     };
   }
 
@@ -357,17 +380,19 @@ class SystemHealthEvaluator {
 
     for (const [component, data] of Object.entries(this.healthReport.components)) {
       const statusEmojis = {
-        'excellent': '🟢',
-        'good': '🟢',
-        'fair': '🟡',
-        'needs_improvement': '🔴',
-        'healthy': '🟢',
-        'warning': '🟡',
-        'critical': '🔴'
+        excellent: '🟢',
+        good: '🟢',
+        fair: '🟡',
+        needs_improvement: '🔴',
+        healthy: '🟢',
+        warning: '🟡',
+        critical: '🔴',
       };
 
       const emoji = statusEmojis[data.status] || '❓';
-      console.log(`   ${emoji} ${component.charAt(0).toUpperCase() + component.slice(1)}: ${data.score}%`);
+      console.log(
+        `   ${emoji} ${component.charAt(0).toUpperCase() + component.slice(1)}: ${data.score}%`
+      );
     }
 
     console.log('\n💡 RECOMMENDATIONS:');
@@ -376,7 +401,10 @@ class SystemHealthEvaluator {
     }
 
     console.log('\n🎯 CONCLUSION:');
-    if (this.healthReport.overallStatus === 'excellent' || this.healthReport.overallStatus === 'good') {
+    if (
+      this.healthReport.overallStatus === 'excellent' ||
+      this.healthReport.overallStatus === 'good'
+    ) {
       console.log('   ✅ Ultra-Dex is in excellent condition and ready for production use!');
       console.log('   🚀 The system demonstrates high quality and comprehensive functionality.');
     } else {

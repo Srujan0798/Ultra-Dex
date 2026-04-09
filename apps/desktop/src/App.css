@@ -5,9 +5,9 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell',
+    'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: #1a1a1a;
@@ -208,11 +208,15 @@ body {
 }
 
 /* Tab-specific styles */
-.projects-tab, .agents-tab, .settings-tab {
+.projects-tab,
+.agents-tab,
+.settings-tab {
   padding: 1rem;
 }
 
-.projects-tab h2, .agents-tab h2, .settings-tab h2 {
+.projects-tab h2,
+.agents-tab h2,
+.settings-tab h2 {
   color: #00d0ff;
   margin-bottom: 1rem;
 }

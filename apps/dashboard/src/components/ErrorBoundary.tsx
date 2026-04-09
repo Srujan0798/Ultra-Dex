@@ -47,8 +47,8 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
             {this.props.fallbackTitle || 'Dashboard Rendering Error'}
           </h1>
           <p className="mt-3 text-sm text-slate-300">
-            The dashboard crashed while rendering. Retry once; if this repeats, inspect browser console
-            and recent changes.
+            The dashboard crashed while rendering. Retry once; if this repeats, inspect browser
+            console and recent changes.
           </p>
           <pre className="mt-4 overflow-x-auto rounded-lg border border-slate-800 bg-slate-950 p-3 text-xs text-slate-400">
             {this.state.message || 'No error message available'}

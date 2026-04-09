@@ -3,14 +3,13 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { randomUUID } from "crypto";
+import { singleton } from 'tsyringe';
+import { randomUUID } from 'crypto';
 import MessageBus from './bus-interface.js';
 const HUBS = /* @__PURE__ */ new Map();
 function getHub(namespace) {
@@ -21,8 +20,8 @@ function getHub(namespace) {
       maxHistory: 2e3,
       metrics: {
         published: 0,
-        delivered: 0
-      }
+        delivered: 0,
+      },
     });
   }
   return HUBS.get(namespace);
@@ -33,13 +32,13 @@ function makeEnvelope(channel, message, nodeId) {
     channel,
     message,
     nodeId,
-    timestamp: (/* @__PURE__ */ new Date()).toISOString()
+    timestamp: /* @__PURE__ */ new Date().toISOString(),
   };
 }
 let InMemoryMessageBus = class extends MessageBus {
   constructor(config = {}) {
     super();
-    this.namespace = config.namespace || "ultra-dex";
+    this.namespace = config.namespace || 'ultra-dex';
     this.nodeId = config.nodeId || `memory-node-${randomUUID().slice(0, 8)}`;
     this.connected = false;
     this.hub = getHub(this.namespace);
@@ -48,7 +47,7 @@ let InMemoryMessageBus = class extends MessageBus {
       published: 0,
       delivered: 0,
       errors: 0,
-      lastLatencyMs: 0
+      lastLatencyMs: 0,
     };
   }
   async connect() {
@@ -63,7 +62,7 @@ let InMemoryMessageBus = class extends MessageBus {
   }
   async publish(channel, message) {
     if (!this.connected) {
-      throw new Error("Message bus is not connected");
+      throw new Error('Message bus is not connected');
     }
     const envelope = makeEnvelope(channel, message, this.nodeId);
     this.stats.published++;
@@ -92,7 +91,7 @@ let InMemoryMessageBus = class extends MessageBus {
   }
   async subscribe(channel, handler) {
     if (!this.connected) {
-      throw new Error("Message bus is not connected");
+      throw new Error('Message bus is not connected');
     }
     if (!this.hub.channels.has(channel)) {
       this.hub.channels.set(channel, /* @__PURE__ */ new Set());
@@ -127,19 +126,19 @@ let InMemoryMessageBus = class extends MessageBus {
       await this.publish(channel, {
         ...message,
         requestId,
-        replyChannel
+        replyChannel,
       });
     });
   }
   async broadcast(event, payload) {
     return await this.publish(`broadcast:${event}`, {
       event,
-      payload
+      payload,
     });
   }
   getStats() {
     return {
-      type: "memory",
+      type: 'memory',
       namespace: this.namespace,
       nodeId: this.nodeId,
       connected: this.connected,
@@ -148,15 +147,10 @@ let InMemoryMessageBus = class extends MessageBus {
       published: this.stats.published,
       delivered: this.stats.delivered,
       errors: this.stats.errors,
-      lastLatencyMs: this.stats.lastLatencyMs
+      lastLatencyMs: this.stats.lastLatencyMs,
     };
   }
 };
-InMemoryMessageBus = __decorateClass([
-  singleton()
-], InMemoryMessageBus);
+InMemoryMessageBus = __decorateClass([singleton()], InMemoryMessageBus);
 var in_memory_adapter_default = InMemoryMessageBus;
-export {
-  InMemoryMessageBus,
-  in_memory_adapter_default as default
-};
+export { InMemoryMessageBus, in_memory_adapter_default as default };

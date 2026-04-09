@@ -2976,4 +2976,3 @@ _Options will be auto-extracted from command implementation._
 #### Examples
 
 _Examples will be auto-generated based on command usage._
-

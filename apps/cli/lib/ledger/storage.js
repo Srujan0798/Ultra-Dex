@@ -48,10 +48,10 @@ async function recoverFromBackup() {
     const entries = safeReadJSONL(LEDGER_PATH, []);
     return entries;
   } catch {
-    throw new CorruptionError(
-      'Ledger corrupted and no valid backup available for recovery',
-      { recovered: false, backupUsed: false }
-    );
+    throw new CorruptionError('Ledger corrupted and no valid backup available for recovery', {
+      recovered: false,
+      backupUsed: false,
+    });
   }
 }
 

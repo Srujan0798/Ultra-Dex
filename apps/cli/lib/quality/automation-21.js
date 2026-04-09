@@ -21,15 +21,24 @@ export const AUTOMATED_STEPS = [
     automated: true,
     execute: async (_context) => {
       // Check if CONTEXT.md or requirements exist
-      const files = ['CONTEXT.md', 'REQUIREMENTS.md', 'docs/requirements.md', 'IMPLEMENTATION-PLAN.md'];
+      const files = [
+        'CONTEXT.md',
+        'REQUIREMENTS.md',
+        'docs/requirements.md',
+        'IMPLEMENTATION-PLAN.md',
+      ];
       for (const file of files) {
         try {
           await fs.access(path.join(process.cwd(), file));
           return { passed: true, message: `Found requirements in ${file}` };
         } catch {}
       }
-      return { passed: false, message: 'No requirements document found', suggestion: 'Create CONTEXT.md or REQUIREMENTS.md' };
-    }
+      return {
+        passed: false,
+        message: 'No requirements document found',
+        suggestion: 'Create CONTEXT.md or REQUIREMENTS.md',
+      };
+    },
   },
   {
     id: 'analyze',
@@ -37,15 +46,23 @@ export const AUTOMATED_STEPS = [
     automated: true,
     execute: async (_context) => {
       // Check for architecture docs or design decisions
-      const files = ['docs/ARCHITECTURE.md', 'docs/auth-architecture.md', '.ultra-dex/decisions.json'];
+      const files = [
+        'docs/ARCHITECTURE.md',
+        'docs/auth-architecture.md',
+        '.ultra-dex/decisions.json',
+      ];
       for (const file of files) {
         try {
           await fs.access(path.join(process.cwd(), file));
           return { passed: true, message: `Technical analysis documented in ${file}` };
         } catch {}
       }
-      return { passed: false, message: 'No technical analysis found', suggestion: 'Document your architecture decisions' };
-    }
+      return {
+        passed: false,
+        message: 'No technical analysis found',
+        suggestion: 'Document your architecture decisions',
+      };
+    },
   },
   {
     id: 'design',
@@ -55,15 +72,16 @@ export const AUTOMATED_STEPS = [
       // Check for Figma links, design docs, or UI components
       try {
         const packageJson = JSON.parse(await fs.readFile('package.json', 'utf8'));
-        const hasUILib = packageJson.dependencies?.['@radix-ui/react-dialog'] ||
-                         packageJson.dependencies?.['@shadcn/ui'] ||
-                         packageJson.dependencies?.['tailwindcss'];
+        const hasUILib =
+          packageJson.dependencies?.['@radix-ui/react-dialog'] ||
+          packageJson.dependencies?.['@shadcn/ui'] ||
+          packageJson.dependencies?.['tailwindcss'];
         if (hasUILib) {
           return { passed: true, message: 'Design system detected in dependencies' };
         }
       } catch {}
       return { passed: true, message: 'Design review: manual verification needed', manual: true };
-    }
+    },
   },
   {
     id: 'implement',
@@ -78,13 +96,20 @@ export const AUTOMATED_STEPS = [
           if (stats.isDirectory()) {
             const files = await fs.readdir(path.join(process.cwd(), dir));
             if (files.length > 0) {
-              return { passed: true, message: `Implementation found in ${dir}/ (${files.length} files)` };
+              return {
+                passed: true,
+                message: `Implementation found in ${dir}/ (${files.length} files)`,
+              };
             }
           }
         } catch {}
       }
-      return { passed: false, message: 'No source code found', suggestion: 'Create src/ or lib/ directory with implementation' };
-    }
+      return {
+        passed: false,
+        message: 'No source code found',
+        suggestion: 'Create src/ or lib/ directory with implementation',
+      };
+    },
   },
   {
     id: 'unit-test',
@@ -97,23 +122,30 @@ export const AUTOMATED_STEPS = [
         for (const dir of testDirs) {
           try {
             const files = await fs.readdir(path.join(process.cwd(), dir));
-            const testFiles = files.filter(f => f.includes('.test.') || f.includes('.spec.'));
+            const testFiles = files.filter((f) => f.includes('.test.') || f.includes('.spec.'));
             if (testFiles.length > 0) {
               // Try running tests
               try {
                 execSync('npm test --if-present 2>/dev/null', { stdio: 'pipe', timeout: 60000 });
-                return { passed: true, message: `${testFiles.length} test files found and passing` };
+                return {
+                  passed: true,
+                  message: `${testFiles.length} test files found and passing`,
+                };
               } catch (_e) {
                 return { passed: false, message: 'Tests exist but some are failing' };
               }
             }
           } catch {}
         }
-        return { passed: false, message: 'No test files found', suggestion: 'Add unit tests in test/ or __tests__/' };
+        return {
+          passed: false,
+          message: 'No test files found',
+          suggestion: 'Add unit tests in test/ or __tests__/',
+        };
       } catch (error) {
         return { passed: false, message: error.message };
       }
-    }
+    },
   },
   {
     id: 'integration-test',
@@ -124,13 +156,18 @@ export const AUTOMATED_STEPS = [
       const _patterns = ['**/*.e2e.ts', '**/*.integration.ts', '**/e2e/**', '**/integration/**'];
       try {
         const files = await fs.readdir(path.join(process.cwd(), 'test'));
-        const integrationFiles = files.filter(f => f.includes('integration') || f.includes('e2e'));
+        const integrationFiles = files.filter(
+          (f) => f.includes('integration') || f.includes('e2e')
+        );
         if (integrationFiles.length > 0) {
-          return { passed: true, message: `${integrationFiles.length} integration test files found` };
+          return {
+            passed: true,
+            message: `${integrationFiles.length} integration test files found`,
+          };
         }
       } catch {}
       return { passed: true, message: 'No integration tests (optional)', optional: true };
-    }
+    },
   },
   {
     id: 'security',
@@ -146,16 +183,24 @@ export const AUTOMATED_STEPS = [
         const high = vulns.high || 0;
 
         if (critical > 0) {
-          return { passed: false, message: `${critical} critical vulnerabilities found`, suggestion: 'Run npm audit fix' };
+          return {
+            passed: false,
+            message: `${critical} critical vulnerabilities found`,
+            suggestion: 'Run npm audit fix',
+          };
         }
         if (high > 0) {
-          return { passed: false, message: `${high} high-severity vulnerabilities found`, suggestion: 'Run npm audit fix' };
+          return {
+            passed: false,
+            message: `${high} high-severity vulnerabilities found`,
+            suggestion: 'Run npm audit fix',
+          };
         }
         return { passed: true, message: 'No critical/high vulnerabilities' };
       } catch {
         return { passed: true, message: 'Security audit: manual check needed', manual: true };
       }
-    }
+    },
   },
   {
     id: 'performance',
@@ -178,14 +223,22 @@ export const AUTOMATED_STEPS = [
             if (totalSize < 5 * 1024 * 1024) {
               return { passed: true, message: `Bundle size: ${sizeMB}MB (under 5MB threshold)` };
             }
-            return { passed: false, message: `Bundle size: ${sizeMB}MB (exceeds 5MB)`, suggestion: 'Consider code splitting' };
+            return {
+              passed: false,
+              message: `Bundle size: ${sizeMB}MB (exceeds 5MB)`,
+              suggestion: 'Consider code splitting',
+            };
           }
         } catch {}
         return { passed: true, message: 'Performance check: build not found', manual: true };
       } catch {
-        return { passed: true, message: 'Performance check: manual verification needed', manual: true };
+        return {
+          passed: true,
+          message: 'Performance check: manual verification needed',
+          manual: true,
+        };
       }
-    }
+    },
   },
   {
     id: 'accessibility',
@@ -195,15 +248,16 @@ export const AUTOMATED_STEPS = [
       // Check for a11y testing setup
       try {
         const packageJson = JSON.parse(await fs.readFile('package.json', 'utf8'));
-        const hasA11y = packageJson.devDependencies?.['@axe-core/react'] ||
-                        packageJson.devDependencies?.['jest-axe'] ||
-                        packageJson.devDependencies?.['eslint-plugin-jsx-a11y'];
+        const hasA11y =
+          packageJson.devDependencies?.['@axe-core/react'] ||
+          packageJson.devDependencies?.['jest-axe'] ||
+          packageJson.devDependencies?.['eslint-plugin-jsx-a11y'];
         if (hasA11y) {
           return { passed: true, message: 'Accessibility testing tools detected' };
         }
       } catch {}
       return { passed: true, message: 'A11y: manual verification recommended', manual: true };
-    }
+    },
   },
   {
     id: 'compatibility',
@@ -222,7 +276,7 @@ export const AUTOMATED_STEPS = [
         } catch {}
       } catch {}
       return { passed: true, message: 'Browser compatibility: manual check needed', manual: true };
-    }
+    },
   },
   {
     id: 'error-handling',
@@ -231,16 +285,22 @@ export const AUTOMATED_STEPS = [
     execute: async (_context) => {
       // Search for try/catch patterns
       try {
-        const result = execSync('grep -r "try {" src/ lib/ 2>/dev/null | wc -l || echo "0"', { encoding: 'utf8' });
+        const result = execSync('grep -r "try {" src/ lib/ 2>/dev/null | wc -l || echo "0"', {
+          encoding: 'utf8',
+        });
         const count = parseInt(result.trim()) || 0;
         if (count > 5) {
           return { passed: true, message: `${count} try/catch blocks found` };
         }
-        return { passed: false, message: 'Limited error handling detected', suggestion: 'Add more try/catch blocks' };
+        return {
+          passed: false,
+          message: 'Limited error handling detected',
+          suggestion: 'Add more try/catch blocks',
+        };
       } catch {
         return { passed: true, message: 'Error handling: manual review needed', manual: true };
       }
-    }
+    },
   },
   {
     id: 'logging',
@@ -249,16 +309,21 @@ export const AUTOMATED_STEPS = [
     execute: async (_context) => {
       try {
         const packageJson = JSON.parse(await fs.readFile('package.json', 'utf8'));
-        const hasLogging = packageJson.dependencies?.['winston'] ||
-                          packageJson.dependencies?.['pino'] ||
-                          packageJson.dependencies?.['bunyan'] ||
-                          packageJson.dependencies?.['@sentry/node'];
+        const hasLogging =
+          packageJson.dependencies?.['winston'] ||
+          packageJson.dependencies?.['pino'] ||
+          packageJson.dependencies?.['bunyan'] ||
+          packageJson.dependencies?.['@sentry/node'];
         if (hasLogging) {
           return { passed: true, message: 'Logging library detected' };
         }
       } catch {}
-      return { passed: true, message: 'Logging: consider adding structured logging', suggestion: 'Add winston or pino' };
-    }
+      return {
+        passed: true,
+        message: 'Logging: consider adding structured logging',
+        suggestion: 'Add winston or pino',
+      };
+    },
   },
   {
     id: 'documentation',
@@ -274,7 +339,7 @@ export const AUTOMATED_STEPS = [
       } catch {
         return { passed: false, message: 'README.md not found', suggestion: 'Create README.md' };
       }
-    }
+    },
   },
   {
     id: 'code-review',
@@ -282,7 +347,7 @@ export const AUTOMATED_STEPS = [
     automated: false,
     execute: async (_context) => {
       return { passed: true, message: 'Code review: requires human verification', manual: true };
-    }
+    },
   },
   {
     id: 'dependency-check',
@@ -293,9 +358,13 @@ export const AUTOMATED_STEPS = [
         execSync('npm audit --audit-level=high 2>/dev/null', { stdio: 'pipe' });
         return { passed: true, message: 'No high-severity dependency issues' };
       } catch {
-        return { passed: false, message: 'Dependency vulnerabilities found', suggestion: 'Run npm audit fix' };
+        return {
+          passed: false,
+          message: 'Dependency vulnerabilities found',
+          suggestion: 'Run npm audit fix',
+        };
       }
-    }
+    },
   },
   {
     id: 'backup',
@@ -306,9 +375,13 @@ export const AUTOMATED_STEPS = [
         execSync('git status 2>/dev/null', { stdio: 'pipe' });
         return { passed: true, message: 'Git repository detected for version control' };
       } catch {
-        return { passed: false, message: 'No git repository found', suggestion: 'Initialize git for backup' };
+        return {
+          passed: false,
+          message: 'No git repository found',
+          suggestion: 'Initialize git for backup',
+        };
       }
-    }
+    },
   },
   {
     id: 'rollback',
@@ -321,23 +394,37 @@ export const AUTOMATED_STEPS = [
           return { passed: true, message: 'Git history available for rollback' };
         }
       } catch {}
-      return { passed: true, message: 'Rollback: ensure git tags for releases', suggestion: 'Tag releases for easy rollback' };
-    }
+      return {
+        passed: true,
+        message: 'Rollback: ensure git tags for releases',
+        suggestion: 'Tag releases for easy rollback',
+      };
+    },
   },
   {
     id: 'deployment',
     title: 'Deployment Ready',
     automated: true,
     execute: async (_context) => {
-      const deployConfigs = ['.github/workflows', 'vercel.json', 'netlify.toml', 'Dockerfile', 'fly.toml'];
+      const deployConfigs = [
+        '.github/workflows',
+        'vercel.json',
+        'netlify.toml',
+        'Dockerfile',
+        'fly.toml',
+      ];
       for (const config of deployConfigs) {
         try {
           await fs.access(path.join(process.cwd(), config));
           return { passed: true, message: `Deployment config found: ${config}` };
         } catch {}
       }
-      return { passed: false, message: 'No deployment config found', suggestion: 'Add CI/CD or deployment config' };
-    }
+      return {
+        passed: false,
+        message: 'No deployment config found',
+        suggestion: 'Add CI/CD or deployment config',
+      };
+    },
   },
   {
     id: 'monitoring',
@@ -346,15 +433,20 @@ export const AUTOMATED_STEPS = [
     execute: async (_context) => {
       try {
         const packageJson = JSON.parse(await fs.readFile('package.json', 'utf8'));
-        const hasMonitoring = packageJson.dependencies?.['@sentry/node'] ||
-                             packageJson.dependencies?.['newrelic'] ||
-                             packageJson.dependencies?.['@opentelemetry/api'];
+        const hasMonitoring =
+          packageJson.dependencies?.['@sentry/node'] ||
+          packageJson.dependencies?.['newrelic'] ||
+          packageJson.dependencies?.['@opentelemetry/api'];
         if (hasMonitoring) {
           return { passed: true, message: 'Monitoring library detected' };
         }
       } catch {}
-      return { passed: true, message: 'Monitoring: consider adding Sentry or similar', suggestion: 'Add error monitoring' };
-    }
+      return {
+        passed: true,
+        message: 'Monitoring: consider adding Sentry or similar',
+        suggestion: 'Add error monitoring',
+      };
+    },
   },
   {
     id: 'user-testing',
@@ -362,7 +454,7 @@ export const AUTOMATED_STEPS = [
     automated: false,
     execute: async (_context) => {
       return { passed: true, message: 'UAT: requires human verification', manual: true };
-    }
+    },
   },
   {
     id: 'sign-off',
@@ -370,8 +462,8 @@ export const AUTOMATED_STEPS = [
     automated: false,
     execute: async (_context) => {
       return { passed: true, message: 'Sign-off: requires stakeholder approval', manual: true };
-    }
-  }
+    },
+  },
 ];
 
 /**
@@ -423,21 +515,23 @@ export async function runAutomatedVerification(options = {}) {
   printInfo(chalk.cyan('\n📊 Verification Summary\n'));
   printInfo(chalk.gray('─'.repeat(60)));
 
-  const passed = results.filter(r => r.passed && !r.manual).length;
-  const failed = results.filter(r => !r.passed).length;
-  const manual = results.filter(r => r.manual).length;
+  const passed = results.filter((r) => r.passed && !r.manual).length;
+  const failed = results.filter((r) => !r.passed).length;
+  const manual = results.filter((r) => r.manual).length;
 
   printInfo(`✅ Passed: ${chalk.green(passed)}`);
   printInfo(`❌ Failed: ${chalk.red(failed)}`);
   printInfo(`⚡ Manual: ${chalk.yellow(manual)}`);
 
   const score = Math.round((passed / (passed + failed)) * 100) || 0;
-  printInfo(`\n📈 Automation Score: ${score >= 80 ? chalk.green(score + '%') : chalk.yellow(score + '%')}`);
+  printInfo(
+    `\n📈 Automation Score: ${score >= 80 ? chalk.green(score + '%') : chalk.yellow(score + '%')}`
+  );
 
   return {
     results,
     summary: { passed, failed, manual, score },
-    allPassed: failed === 0
+    allPassed: failed === 0,
   };
 }
 
@@ -472,5 +566,5 @@ export async function generateVerificationReport(results) {
 export default {
   AUTOMATED_STEPS,
   runAutomatedVerification,
-  generateVerificationReport
+  generateVerificationReport,
 };

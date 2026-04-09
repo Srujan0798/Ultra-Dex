@@ -5,11 +5,8 @@ import path from 'path';
 import { exec, execSync } from 'child_process';
 import { promisify } from 'util';
 
-
 import { createOpenAIRunnable, createAnthropicRunnable } from '../providers/index.js';
 import { printInfo, printSuccess, printError, printWarning } from '../utils/output.js';
-
-
 
 const execAsync = promisify(exec);
 
@@ -25,7 +22,7 @@ export class SelfHealingCICD {
       verbose: options.verbose || false,
       maxRetries: options.maxRetries || 3,
       timeout: options.timeout || 300000, // 5 minutes
-      ...options
+      ...options,
     };
 
     this.ciSystems = {
@@ -33,7 +30,7 @@ export class SelfHealingCICD {
       gitlab: this.gitlabIntegration.bind(this),
       circleci: this.circleciIntegration.bind(this),
       jenkins: this.jenkinsIntegration.bind(this),
-      vercel: this.vercelIntegration.bind(this)
+      vercel: this.vercelIntegration.bind(this),
     };
 
     this.healingRules = new Map();
@@ -60,7 +57,12 @@ export class SelfHealingCICD {
   async loadHealingRules() {
     try {
       const rulesPath = path.join(process.cwd(), '.ultra-dex', 'healing-rules.json');
-      if (await fs.access(rulesPath).then(() => true).catch(() => false)) {
+      if (
+        await fs
+          .access(rulesPath)
+          .then(() => true)
+          .catch(() => false)
+      ) {
         const rules = JSON.parse(await fs.readFile(rulesPath, 'utf8'));
         for (const [pattern, rule] of Object.entries(rules)) {
           this.healingRules.set(pattern, rule);
@@ -83,49 +85,49 @@ export class SelfHealingCICD {
     this.healingRules.set(/node_modules.*missing/, {
       action: 'npm install',
       description: 'Missing dependencies detected',
-      priority: 'high'
+      priority: 'high',
     });
 
     this.healingRules.set(/cannot find module/, {
       action: 'npm install',
       description: 'Module not found',
-      priority: 'high'
+      priority: 'high',
     });
 
     this.healingRules.set(/EACCES.*permission denied/, {
       action: 'chmod +x',
       description: 'Permission denied',
-      priority: 'medium'
+      priority: 'medium',
     });
 
     this.healingRules.set(/port.*already in use/, {
       action: 'kill-port',
       description: 'Port already in use',
-      priority: 'medium'
+      priority: 'medium',
     });
 
     this.healingRules.set(/database.*connection failed/, {
       action: 'start-db',
       description: 'Database connection failed',
-      priority: 'high'
+      priority: 'high',
     });
 
     this.healingRules.set(/timeout.*exceeded/, {
       action: 'increase-timeout',
       description: 'Timeout exceeded',
-      priority: 'medium'
+      priority: 'medium',
     });
 
     this.healingRules.set(/SSL.*certificate/, {
       action: 'disable-ssl-verification',
       description: 'SSL certificate error',
-      priority: 'low'
+      priority: 'low',
     });
 
     this.healingRules.set(/out of memory/, {
       action: 'increase-memory',
       description: 'Out of memory error',
-      priority: 'high'
+      priority: 'high',
     });
 
     printInfo('📋 Default healing rules loaded');
@@ -139,25 +141,25 @@ export class SelfHealingCICD {
     this.activeMonitors.set('dependency-errors', {
       pattern: /node_modules|package-lock.json/,
       handler: this.handleDependencyError.bind(this),
-      interval: 30000 // Check every 30 seconds
+      interval: 30000, // Check every 30 seconds
     });
 
     this.activeMonitors.set('test-failures', {
       pattern: /test.*failed/,
       handler: this.handleTestFailure.bind(this),
-      interval: 10000 // Check every 10 seconds
+      interval: 10000, // Check every 10 seconds
     });
 
     this.activeMonitors.set('build-errors', {
       pattern: /build.*failed/,
       handler: this.handleBuildError.bind(this),
-      interval: 15000 // Check every 15 seconds
+      interval: 15000, // Check every 15 seconds
     });
 
     this.activeMonitors.set('deployment-errors', {
       pattern: /deploy.*failed/,
       handler: this.handleDeploymentError.bind(this),
-      interval: 20000 // Check every 20 seconds
+      interval: 20000, // Check every 20 seconds
     });
 
     printInfo('🔍 Failure monitors activated');
@@ -179,10 +181,10 @@ export class SelfHealingCICD {
           build: { status: 'pending', startTime: null, endTime: null, error: null },
           deploy: { status: 'pending', startTime: null, endTime: null, error: null },
           security: { status: 'pending', startTime: null, endTime: null, error: null },
-          performance: { status: 'pending', startTime: null, endTime: null, error: null }
+          performance: { status: 'pending', startTime: null, endTime: null, error: null },
         },
         fixesApplied: 0,
-        errors: []
+        errors: [],
       };
 
       // Run each stage with self-healing
@@ -196,7 +198,9 @@ export class SelfHealingCICD {
       pipeline.duration = pipeline.endTime - pipeline.startTime;
       pipeline.status = pipeline.errors.length === 0 ? 'success' : 'partial-success';
 
-      printSuccess(`✅ Pipeline completed: ${pipeline.status} (${pipeline.fixesApplied} fixes applied)`);
+      printSuccess(
+        `✅ Pipeline completed: ${pipeline.status} (${pipeline.fixesApplied} fixes applied)`
+      );
 
       return pipeline;
     } catch (error) {
@@ -228,7 +232,7 @@ export class SelfHealingCICD {
       const fixResult = await this.attemptFix({
         stage: 'test',
         error: error.message,
-        command: 'npm test'
+        command: 'npm test',
       });
 
       if (fixResult.applied) {
@@ -261,7 +265,9 @@ export class SelfHealingCICD {
       pipeline.stages.security.startTime = new Date();
 
       // Run security audit
-      const _securityResult = await execAsync('npm audit --audit-level high', { timeout: this.options.timeout });
+      const _securityResult = await execAsync('npm audit --audit-level high', {
+        timeout: this.options.timeout,
+      });
 
       pipeline.stages.security.status = 'success';
       pipeline.stages.security.endTime = new Date();
@@ -308,7 +314,7 @@ export class SelfHealingCICD {
       const fixResult = await this.attemptFix({
         stage: 'build',
         error: error.message,
-        command: 'npm run build'
+        command: 'npm run build',
       });
 
       if (fixResult.applied) {
@@ -341,7 +347,10 @@ export class SelfHealingCICD {
       pipeline.stages.performance.startTime = new Date();
 
       // Run performance tests
-      const _perfResult = await execAsync('npm run test:performance || echo "No performance tests"', { timeout: this.options.timeout });
+      const _perfResult = await execAsync(
+        'npm run test:performance || echo "No performance tests"',
+        { timeout: this.options.timeout }
+      );
 
       pipeline.stages.performance.status = 'success';
       pipeline.stages.performance.endTime = new Date();
@@ -379,13 +388,19 @@ export class SelfHealingCICD {
       let _deployResult;
       switch (deployTarget) {
         case 'vercel':
-          _deployResult = await execAsync('npx vercel --prod', { timeout: this.options.timeout * 2 });
+          _deployResult = await execAsync('npx vercel --prod', {
+            timeout: this.options.timeout * 2,
+          });
           break;
         case 'netlify':
-          _deployResult = await execAsync('npx netlify deploy --prod', { timeout: this.options.timeout * 2 });
+          _deployResult = await execAsync('npx netlify deploy --prod', {
+            timeout: this.options.timeout * 2,
+          });
           break;
         case 'aws':
-          _deployResult = await execAsync('npx serverless deploy', { timeout: this.options.timeout * 2 });
+          _deployResult = await execAsync('npx serverless deploy', {
+            timeout: this.options.timeout * 2,
+          });
           break;
         default:
           _deployResult = await execAsync('npm run deploy', { timeout: this.options.timeout * 2 });
@@ -403,7 +418,7 @@ export class SelfHealingCICD {
       const fixResult = await this.attemptFix({
         stage: 'deploy',
         error: error.message,
-        command: 'npm run deploy'
+        command: 'npm run deploy',
       });
 
       if (fixResult.applied) {
@@ -504,7 +519,7 @@ export class SelfHealingCICD {
           return {
             applied: true,
             description: rule.description,
-            action: rule.action
+            action: rule.action,
           };
         } catch (ruleError) {
           printError(`Rule-based fix failed: ${ruleError.message}`);
@@ -530,7 +545,7 @@ export class SelfHealingCICD {
           role: 'system',
           content: `You are an expert CI/CD troubleshooter. Analyze the error and suggest a fix.
           Provide the exact command to run or code change to make.
-          Return JSON: {fix: {type: "command|code", value: "exact fix", description: "what it does"}}`
+          Return JSON: {fix: {type: "command|code", value: "exact fix", description: "what it does"}}`,
         },
         {
           role: 'user',
@@ -538,8 +553,8 @@ export class SelfHealingCICD {
           Command: ${errorInfo.command}
           Error: ${errorInfo.error}
           
-          Suggest a fix for this CI/CD error.`
-        }
+          Suggest a fix for this CI/CD error.`,
+        },
       ];
 
       const response = await provider.invoke({ messages });
@@ -557,7 +572,7 @@ export class SelfHealingCICD {
         return {
           applied: true,
           description: fixData.fix.description,
-          action: fixData.fix.type
+          action: fixData.fix.type,
         };
       }
 
@@ -595,8 +610,8 @@ export class SelfHealingCICD {
         fix: {
           type: 'command',
           value: 'npm install',
-          description: 'Install dependencies'
-        }
+          description: 'Install dependencies',
+        },
       };
     }
   }
@@ -726,7 +741,7 @@ export class SelfHealingCICD {
       return {
         file: match[1],
         line: parseInt(match[3]),
-        column: parseInt(match[4])
+        column: parseInt(match[4]),
       };
     }
     return null;
@@ -744,15 +759,15 @@ export class SelfHealingCICD {
       const messages = [
         {
           role: 'system',
-          content: `Fix this failing test. Return the corrected test code.`
+          content: `Fix this failing test. Return the corrected test code.`,
         },
         {
           role: 'user',
           content: `Test file: ${testInfo.file}
           Line: ${testInfo.line}
           Current test code:
-          ${testContent}`
-        }
+          ${testContent}`,
+        },
       ];
 
       const response = await provider.invoke({ messages });
@@ -816,10 +831,34 @@ export class SelfHealingCICD {
       }
 
       // Check for deployment config files
-      if (await fs.access('vercel.json').then(() => true).catch(() => false)) return 'vercel';
-      if (await fs.access('netlify.toml').then(() => true).catch(() => false)) return 'netlify';
-      if (await fs.access('serverless.yml').then(() => true).catch(() => false)) return 'aws';
-      if (await fs.access('Dockerfile').then(() => true).catch(() => false)) return 'docker';
+      if (
+        await fs
+          .access('vercel.json')
+          .then(() => true)
+          .catch(() => false)
+      )
+        return 'vercel';
+      if (
+        await fs
+          .access('netlify.toml')
+          .then(() => true)
+          .catch(() => false)
+      )
+        return 'netlify';
+      if (
+        await fs
+          .access('serverless.yml')
+          .then(() => true)
+          .catch(() => false)
+      )
+        return 'aws';
+      if (
+        await fs
+          .access('Dockerfile')
+          .then(() => true)
+          .catch(() => false)
+      )
+        return 'docker';
 
       return 'unknown';
     } catch {
@@ -970,24 +1009,25 @@ pipeline {
    */
   async vercelIntegration() {
     const vercelContent = {
-      "version": 2,
-      "builds": [
+      version: 2,
+      builds: [
         {
-          "src": "package.json",
-          "use": "@vercel/node",
-          "config": { "includeFiles": ["dist/**"] }
-        }
+          src: 'package.json',
+          use: '@vercel/node',
+          config: { includeFiles: ['dist/**'] },
+        },
       ],
-      "routes": [
-        { "src": "/(.*)", "dest": "/dist/$1" }
-      ],
-      "github": {
-        "enabled": true,
-        "autoJobCancelation": true
-      }
+      routes: [{ src: '/(.*)', dest: '/dist/$1' }],
+      github: {
+        enabled: true,
+        autoJobCancelation: true,
+      },
     };
 
-    await fs.writeFile(path.join(process.cwd(), 'vercel.json'), JSON.stringify(vercelContent, null, 2));
+    await fs.writeFile(
+      path.join(process.cwd(), 'vercel.json'),
+      JSON.stringify(vercelContent, null, 2)
+    );
   }
 
   /**
@@ -1023,7 +1063,7 @@ pipeline {
       successRate: 0.95,
       avgDuration: '5m 30s',
       pendingJobs: 0,
-      failedJobs: 0
+      failedJobs: 0,
     };
   }
 
@@ -1047,10 +1087,11 @@ pipeline {
   getHealingStats() {
     return {
       totalFixes: this.fixHistory.length,
-      successRate: this.fixHistory.filter(f => f.success).length / Math.max(this.fixHistory.length, 1),
+      successRate:
+        this.fixHistory.filter((f) => f.success).length / Math.max(this.fixHistory.length, 1),
       rulesCount: this.healingRules.size,
       activeMonitors: this.activeMonitors.size,
-      lastFix: this.fixHistory[this.fixHistory.length - 1] || null
+      lastFix: this.fixHistory[this.fixHistory.length - 1] || null,
     };
   }
 
@@ -1063,7 +1104,7 @@ pipeline {
       timestamp: new Date().toISOString(),
       stats,
       rules: Array.from(this.healingRules.entries()),
-      history: this.fixHistory.slice(-50) // Last 50 fixes
+      history: this.fixHistory.slice(-50), // Last 50 fixes
     };
 
     if (format === 'json') {
@@ -1091,7 +1132,7 @@ pipeline {
 ${report.rules.map(([pattern, rule]) => `- ${pattern}: ${rule.description}`).join('\n')}
 
 ## Recent Fixes
-${report.history.map(fix => `- ${fix.timestamp}: ${fix.description}`).join('\n')}
+${report.history.map((fix) => `- ${fix.timestamp}: ${fix.description}`).join('\n')}
 `;
   }
 
@@ -1111,7 +1152,7 @@ Healing Rules:
 ${report.rules.map(([pattern, rule]) => `  ${pattern}: ${rule.description}`).join('\n')}
 
 Recent Fixes:
-${report.history.map(fix => `  ${fix.timestamp}: ${fix.description}`).join('\n')}
+${report.history.map((fix) => `  ${fix.timestamp}: ${fix.description}`).join('\n')}
 `;
   }
 }

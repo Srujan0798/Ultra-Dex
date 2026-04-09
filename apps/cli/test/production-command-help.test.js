@@ -68,7 +68,10 @@ describe('mocks for production command tests', () => {
  */
 function handleError(error) {
   try {
-    console.error('[production-command-help.test]', error instanceof Error ? error.message : String(error));
+    console.error(
+      '[production-command-help.test]',
+      error instanceof Error ? error.message : String(error)
+    );
   } catch (_) {
     // Fail silently
   }

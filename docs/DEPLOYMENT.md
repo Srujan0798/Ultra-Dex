@@ -7,6 +7,7 @@ This guide covers deploying Ultra-Dex v3.0.0 to production environments. Ultra-D
 Before deploying Ultra-Dex, ensure your environment meets these requirements:
 
 **System Requirements:**
+
 - Node.js 22 or higher (LTS recommended)
 - npm 10 or higher
 - Minimum 512 MB RAM (1 GB recommended for production)
@@ -14,6 +15,7 @@ Before deploying Ultra-Dex, ensure your environment meets these requirements:
 - Additional space for logs and persistent data (varies by usage)
 
 **Optional Components:**
+
 - Docker 24+ and Docker Compose v2 (for containerized deployment)
 - Redis 7+ (for distributed mesh communication)
 - PostgreSQL 15+ (for audit database persistence)
@@ -23,6 +25,7 @@ Before deploying Ultra-Dex, ensure your environment meets these requirements:
 Ultra-Dex requires several environment variables for proper operation. Create a `.env` file in your deployment directory with the following configuration:
 
 **AI Provider API Keys (at least one required):**
+
 ```bash
 OPENAI_API_KEY=sk-your-openai-key-here
 ANTHROPIC_API_KEY=sk-ant-your-anthropic-key-here
@@ -39,6 +42,7 @@ GROK_API_KEY=xai-your-grok-key-here
 ```
 
 **Core Application Settings:**
+
 ```bash
 NODE_ENV=production
 PORT=3000
@@ -48,6 +52,7 @@ DATABASE_URL=postgresql://user:password@localhost:5432/ultra_dex
 ```
 
 **Security Configuration:**
+
 ```bash
 NEXTAUTH_SECRET=your-32-character-secret-key
 NEXTAUTH_URL=https://yourdomain.com
@@ -55,6 +60,7 @@ SESSION_SECRET=another-32-character-secret
 ```
 
 **Memory and Performance Tuning:**
+
 ```bash
 NODE_OPTIONS="--max-old-space-size=512"
 GOVERNANCE_STRICT_MODE=true
@@ -67,6 +73,7 @@ MEMORY_TIER_DEMOTION_THRESHOLD=100
 For a basic deployment on a single server, follow these steps:
 
 **Step 1: Clone and Install**
+
 ```bash
 git clone https://github.com/yourusername/Ultra-Dex.git
 cd Ultra-Dex
@@ -77,11 +84,13 @@ npm install --production
 Copy the `.env.example` file to `.env` and fill in your API keys and configuration values. Ensure all required AI provider keys are set.
 
 **Step 3: Build Application**
+
 ```bash
 npm run build
 ```
 
 **Step 4: Start Application**
+
 ```bash
 npm start
 ```
@@ -93,6 +102,7 @@ The application will start on the configured port (default 3000). Access the web
 For containerized deployment with better isolation and easier scaling, use the provided Docker configuration:
 
 **Single Container Deployment:**
+
 ```bash
 docker build -f Dockerfile.prod -t ultra-dex:v3.0.0 .
 docker run -d \
@@ -105,6 +115,7 @@ docker run -d \
 ```
 
 **Full Stack with Docker Compose:**
+
 ```bash
 cp .env.example .env
 # Edit .env with your configuration
@@ -118,6 +129,7 @@ This will start Ultra-Dex with Redis and PostgreSQL services. The application wi
 Ultra-Dex supports environment-specific configuration files in the `config/` directory:
 
 **config/production.json:**
+
 ```json
 {
   "server": {
@@ -143,6 +155,7 @@ Ultra-Dex supports environment-specific configuration files in the `config/` dir
 ```
 
 **config/staging.json:**
+
 ```json
 {
   "server": {
@@ -175,10 +188,10 @@ Use nginx or Apache as a reverse proxy to handle SSL termination:
 server {
     listen 443 ssl http2;
     server_name yourdomain.com;
-    
+
     ssl_certificate /path/to/cert.pem;
     ssl_certificate_key /path/to/key.pem;
-    
+
     location / {
         proxy_pass http://localhost:3000;
         proxy_http_version 1.1;
@@ -199,30 +212,35 @@ If using cloud load balancers (AWS ALB, GCP Load Balancer), configure SSL termin
 ## Troubleshooting
 
 **Application Won't Start:**
+
 - Check that all required environment variables are set with `npm run config:check`
 - Verify Node.js version with `node --version` (should be 22+)
 - Check port availability with `lsof -i :3000`
 - Review startup logs for missing dependencies
 
 **AI Provider Errors:**
+
 - Verify API keys are valid and have sufficient quota
 - Test individual providers with `npm run test:providers`
 - Check rate limiting settings in your provider dashboards
 - Ensure network connectivity to provider APIs
 
 **Memory Issues:**
+
 - Increase `NODE_OPTIONS="--max-old-space-size=1024"` for larger workloads
 - Monitor memory usage with `npm run stats:memory`
 - Configure memory tier settings to optimize for your use case
 - Consider scaling horizontally if single-instance limits are reached
 
 **Database Connection Issues:**
+
 - Verify database credentials and network connectivity
 - Check that the database exists and schema is up to date
 - Run `npm run db:migrate` to apply any pending migrations
 - Monitor connection pool settings for high-load scenarios
 
 **Redis Connection Problems:**
+
 - Verify Redis is running and accessible at the configured URL
 - Check Redis authentication settings match your configuration
 - Monitor Redis memory usage and configure appropriate eviction policies

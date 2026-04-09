@@ -19,11 +19,11 @@ export const UserProfile: React.FC = () => {
   useEffect(() => {
     fetch('/api/user/profile', {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('session_token')}`
-      }
+        Authorization: `Bearer ${localStorage.getItem('session_token')}`,
+      },
     })
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         setUser(data);
         setLoading(false);
       })

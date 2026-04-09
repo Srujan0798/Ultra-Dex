@@ -35,14 +35,19 @@ try {
 // 2. Check CLI execution
 console.log('2️⃣  Checking CLI execution...');
 try {
-  const cliOutput = execSync('npx ultra-dex run planner -t "controller test" --provider nvidia 2>&1 | tail -15', {
-    cwd: process.cwd(),
-    encoding: 'utf8',
-    timeout: 60000,
-  });
+  const cliOutput = execSync(
+    'npx ultra-dex run planner -t "controller test" --provider nvidia 2>&1 | tail -15',
+    {
+      cwd: process.cwd(),
+      encoding: 'utf8',
+      timeout: 60000,
+    }
+  );
   const has401 = cliOutput.includes('401');
   const hasSuccess = cliOutput.includes('success') || cliOutput.includes('Result');
-  console.log(`   ${has401 ? '⚠️' : '✅'} API: ${has401 ? '401 error (expected - placeholder keys)' : 'Working'}`);
+  console.log(
+    `   ${has401 ? '⚠️' : '✅'} API: ${has401 ? '401 error (expected - placeholder keys)' : 'Working'}`
+  );
   console.log(`   ${hasSuccess ? '✅' : '⚠️'} Execution: ${hasSuccess ? 'Completed' : 'Failed'}\n`);
 } catch (e) {
   console.log(`   ⚠️  CLI execution check: ${e.message.split('\n')[0]}\n`);
@@ -80,31 +85,19 @@ const tasks = [
     agent: 'API Integration Agent',
     task: 'Fix NVIDIA provider integration',
     priority: 'HIGH',
-    checks: [
-      'Correct API endpoint',
-      'Correct headers/auth format',
-      'Model configuration',
-    ],
+    checks: ['Correct API endpoint', 'Correct headers/auth format', 'Model configuration'],
   },
   {
     agent: 'Architecture Agent',
     task: 'Scan for duplicates and corruption',
     priority: 'MEDIUM',
-    checks: [
-      'Remove duplicate files',
-      'Enforce core → independent',
-      'Enforce cli → uses core',
-    ],
+    checks: ['Remove duplicate files', 'Enforce core → independent', 'Enforce cli → uses core'],
   },
   {
     agent: 'Test Integrity Agent',
     task: 'Verify tests are real',
     priority: 'MEDIUM',
-    checks: [
-      'No modified assertions',
-      'No relaxed validations',
-      'Tests match real behavior',
-    ],
+    checks: ['No modified assertions', 'No relaxed validations', 'Tests match real behavior'],
   },
 ];
 
@@ -135,25 +128,31 @@ console.log('  ✅ CLOSE ONLY when ALL = PASS\n');
 // Write task assignments
 const taskFile = path.join(process.cwd(), '.ultra-dex/controller-tasks.json');
 fs.mkdirSync(path.dirname(taskFile), { recursive: true });
-fs.writeFileSync(taskFile, JSON.stringify({
-  timestamp: new Date().toISOString(),
-  systemStatus: {
-    tests: '99% passing',
-    cli: 'running with 401 (expected)',
-    neo4j: 'optional, not configured',
-  },
-  tasks,
-  validationCriteria: {
-    execution: 'PASS/FAIL',
-    api: 'PASS/FAIL',
-    system: 'REAL/FAKE',
-    ready: 'YES/NO',
-  },
-}, null, 2));
+fs.writeFileSync(
+  taskFile,
+  JSON.stringify(
+    {
+      timestamp: new Date().toISOString(),
+      systemStatus: {
+        tests: '99% passing',
+        cli: 'running with 401 (expected)',
+        neo4j: 'optional, not configured',
+      },
+      tasks,
+      validationCriteria: {
+        execution: 'PASS/FAIL',
+        api: 'PASS/FAIL',
+        system: 'REAL/FAKE',
+        ready: 'YES/NO',
+      },
+    },
+    null,
+    2
+  )
+);
 
 console.log(`📄 Task assignments saved to: ${taskFile}\n`);
 
 console.log('═══════════════════════════════════════════════════════════');
 console.log('         🚀 CONTROLLER AGENT - COMPLETE');
 console.log('═══════════════════════════════════════════════════════════\n');
-

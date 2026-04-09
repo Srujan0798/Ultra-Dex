@@ -2,11 +2,11 @@
 
 /**
  * Ultra-Dex Content Creator
- * 
+ *
  * This example demonstrates how to create an AI-powered content generation system using Ultra-Dex.
- * The system can generate various types of content like blog posts, social media content, 
+ * The system can generate various types of content like blog posts, social media content,
  * marketing materials, and more.
- * 
+ *
  * Features:
  * - Multi-format content generation
  * - Brand voice consistency
@@ -20,40 +20,50 @@ import { UltraDex } from '@ultra-dex/sdk';
 class ContentCreator {
   constructor(config) {
     this.ultraDex = new UltraDex(config.ultraDex);
-    
+
     // Initialize specialized agents
     this.agents = {
       contentPlanner: this.ultraDex.createAgent({
         name: 'content-planner',
         role: 'Plans content strategy and creates outlines based on objectives',
-        tools: ['audience-analyzer', 'trend-tracker', 'keyword-researcher', 'competitor-analyzer']
+        tools: ['audience-analyzer', 'trend-tracker', 'keyword-researcher', 'competitor-analyzer'],
       }),
-      
+
       contentWriter: this.ultraDex.createAgent({
         name: 'content-writer',
         role: 'Writes high-quality content in various formats and styles',
-        tools: ['tone-matcher', 'style-guide-adherence', 'fact-checker', 'grammar-correction']
+        tools: ['tone-matcher', 'style-guide-adherence', 'fact-checker', 'grammar-correction'],
       }),
-      
+
       seoOptimizer: this.ultraDex.createAgent({
         name: 'seo-optimizer',
         role: 'Optimizes content for search engines and readability',
-        tools: ['keyword-optimizer', 'meta-generator', 'readability-analyzer', 'link-suggestion']
+        tools: ['keyword-optimizer', 'meta-generator', 'readability-analyzer', 'link-suggestion'],
       }),
-      
+
       socialMediaSpecialist: this.ultraDex.createAgent({
         name: 'social-media-specialist',
         role: 'Adapts content for different social media platforms',
-        tools: ['platform-analyzer', 'engagement-maximizer', 'hashtag-generator', 'visual-suggestion']
+        tools: [
+          'platform-analyzer',
+          'engagement-maximizer',
+          'hashtag-generator',
+          'visual-suggestion',
+        ],
       }),
-      
+
       contentAnalyzer: this.ultraDex.createAgent({
         name: 'content-analyzer',
         role: 'Analyzes content performance and suggests improvements',
-        tools: ['performance-tracker', 'engagement-analyzer', 'conversion-analyzer', 'improvement-suggester']
-      })
+        tools: [
+          'performance-tracker',
+          'engagement-analyzer',
+          'conversion-analyzer',
+          'improvement-suggester',
+        ],
+      }),
     };
-    
+
     // Maintain content templates and brand guidelines
     this.brandGuidelines = config.brandGuidelines || {};
     this.contentTemplates = config.templates || {};
@@ -70,40 +80,40 @@ class ContentCreator {
         type,
         requirements,
         brandGuidelines: this.brandGuidelines,
-        audience: requirements.audience || 'general'
+        audience: requirements.audience || 'general',
       });
-      
+
       // Write the content
       const draft = await this.agents.contentWriter.execute({
         type,
         outline: plan.outline,
         requirements,
         brandVoice: this.brandGuidelines.voice,
-        tone: requirements.tone || 'professional'
+        tone: requirements.tone || 'professional',
       });
-      
+
       // Optimize for SEO if needed
       let optimizedContent = draft.content;
       if (requirements.optimizeForSEO) {
         const seoResult = await this.agents.seoOptimizer.execute({
           content: draft.content,
           keywords: requirements.keywords || [],
-          targetAudience: requirements.audience
+          targetAudience: requirements.audience,
         });
-        
+
         optimizedContent = seoResult.optimizedContent;
       }
-      
+
       // Create social media adaptations if needed
       let socialAdaptations = [];
       if (requirements.createSocialVersions) {
         socialAdaptations = await this.agents.socialMediaSpecialist.execute({
           content: optimizedContent,
           platforms: requirements.platforms || ['twitter', 'linkedin', 'facebook'],
-          purpose: requirements.purpose || 'promotional'
+          purpose: requirements.purpose || 'promotional',
         });
       }
-      
+
       // Create content object
       const contentItem = {
         id: `content-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -119,15 +129,14 @@ class ContentCreator {
           wordCount: optimizedContent.split(' ').length,
           readingTime: Math.ceil(optimizedContent.split(' ').length / 200), // ~200 wpm
           seoOptimized: !!requirements.optimizeForSEO,
-          socialAdapted: requirements.createSocialVersions
-        }
+          socialAdapted: requirements.createSocialVersions,
+        },
       };
-      
+
       // Store the generated content
       this.generatedContent.push(contentItem);
-      
+
       return contentItem;
-      
     } catch (error) {
       console.error('Error generating content:', error);
       throw error;
@@ -148,9 +157,9 @@ class ContentCreator {
       keywords: options.keywords || [],
       optimizeForSEO: true,
       createSocialVersions: true,
-      ...options
+      ...options,
     };
-    
+
     return await this.generateContent('blog-post', requirements);
   }
 
@@ -168,9 +177,9 @@ class ContentCreator {
       hashtags: options.hashtags || [],
       optimizeForSEO: false,
       createSocialVersions: false,
-      ...options
+      ...options,
     };
-    
+
     return await this.generateContent('social-media', requirements);
   }
 
@@ -188,9 +197,9 @@ class ContentCreator {
       benefits: options.benefits || [],
       optimizeForSEO: type === 'landing-page',
       createSocialVersions: true,
-      ...options
+      ...options,
     };
-    
+
     return await this.generateContent('marketing-copy', requirements);
   }
 
@@ -207,9 +216,9 @@ class ContentCreator {
       sections: options.sections || ['featured', 'news', 'offers'],
       optimizeForSEO: false,
       createSocialVersions: true,
-      ...options
+      ...options,
     };
-    
+
     return await this.generateContent('newsletter', requirements);
   }
 
@@ -217,21 +226,21 @@ class ContentCreator {
    * Analyze content performance
    */
   async analyzeContent(contentId, performanceData) {
-    const content = this.generatedContent.find(c => c.id === contentId);
+    const content = this.generatedContent.find((c) => c.id === contentId);
     if (!content) {
       throw new Error('Content not found');
     }
-    
+
     const analysis = await this.agents.contentAnalyzer.execute({
       content,
       performanceData,
-      brandGuidelines: this.brandGuidelines
+      brandGuidelines: this.brandGuidelines,
     });
-    
+
     // Update content with analysis
     content.analysis = analysis;
     content.performance = performanceData;
-    
+
     return analysis;
   }
 
@@ -258,23 +267,28 @@ class ContentCreator {
       acc[item.type] = (acc[item.type] || 0) + 1;
       return acc;
     }, {});
-    
-    const totalWords = this.generatedContent.reduce((sum, item) => 
-      sum + item.metadata.wordCount, 0);
-    
-    const avgReadingTime = totalContent > 0 
-      ? this.generatedContent.reduce((sum, item) => sum + item.metadata.readingTime, 0) / totalContent 
-      : 0;
-    
+
+    const totalWords = this.generatedContent.reduce(
+      (sum, item) => sum + item.metadata.wordCount,
+      0
+    );
+
+    const avgReadingTime =
+      totalContent > 0
+        ? this.generatedContent.reduce((sum, item) => sum + item.metadata.readingTime, 0) /
+          totalContent
+        : 0;
+
     return {
       totalContent,
       byType,
       totalWords,
       avgReadingTime,
-      generatedSince: this.generatedContent.length > 0 
-        ? this.generatedContent[0].createdAt 
-        : new Date().toISOString(),
-      timestamp: new Date().toISOString()
+      generatedSince:
+        this.generatedContent.length > 0
+          ? this.generatedContent[0].createdAt
+          : new Date().toISOString(),
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -282,21 +296,21 @@ class ContentCreator {
    * Publish content (simulated)
    */
   async publishContent(contentId, destination) {
-    const content = this.generatedContent.find(c => c.id === contentId);
+    const content = this.generatedContent.find((c) => c.id === contentId);
     if (!content) {
       throw new Error('Content not found');
     }
-    
+
     // Simulate publishing process
     content.status = 'published';
     content.publishedAt = new Date().toISOString();
     content.destination = destination;
-    
+
     return {
       success: true,
       contentId,
       destination,
-      publishedAt: content.publishedAt
+      publishedAt: content.publishedAt,
     };
   }
 }
@@ -306,22 +320,22 @@ async function main() {
   const contentCreator = new ContentCreator({
     ultraDex: {
       apiKey: process.env.ULTRA_DEX_API_KEY,
-      endpoint: process.env.ULTRA_DEX_ENDPOINT || 'https://api.ultra-dex.ai'
+      endpoint: process.env.ULTRA_DEX_ENDPOINT || 'https://api.ultra-dex.ai',
     },
     brandGuidelines: {
       voice: 'professional yet approachable',
       tone: 'helpful and informative',
       keyMessages: ['innovation', 'reliability', 'customer-focus'],
-      prohibitedContent: ['jargon-heavy text', 'negative language']
+      prohibitedContent: ['jargon-heavy text', 'negative language'],
     },
     templates: {
       blogPost: {
         structure: ['introduction', 'problem', 'solution', 'benefits', 'conclusion'],
-        wordCount: [800, 1200]
-      }
-    }
+        wordCount: [800, 1200],
+      },
+    },
   });
-  
+
   // Generate a blog post
   const blogPost = await contentCreator.generateBlogPost(
     'The Future of AI Orchestration',
@@ -330,14 +344,14 @@ async function main() {
     {
       audience: 'tech-leaders',
       keywords: ['AI orchestration', 'enterprise AI', 'workflow automation'],
-      tone: 'thought-leadership'
+      tone: 'thought-leadership',
     }
   );
-  
+
   console.log(`Generated blog post: ${blogPost.title}`);
   console.log(`Word count: ${blogPost.metadata.wordCount}`);
   console.log(`Reading time: ${blogPost.metadata.readingTime} minutes`);
-  
+
   // Generate social media content
   const socialContent = await contentCreator.generateSocialContent(
     'linkedin',
@@ -346,12 +360,12 @@ async function main() {
     {
       audience: 'tech-professionals',
       tone: 'insightful',
-      hashtags: ['AI', 'Orchestration', 'Enterprise']
+      hashtags: ['AI', 'Orchestration', 'Enterprise'],
     }
   );
-  
+
   console.log(`Generated ${socialContent.type} for ${socialContent.requirements.platform}`);
-  
+
   // Print content statistics
   console.log('Content Statistics:', contentCreator.getStats());
 }

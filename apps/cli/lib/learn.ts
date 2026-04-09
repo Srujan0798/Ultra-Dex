@@ -3,7 +3,6 @@ import fs from 'fs';
 import readline from 'readline';
 import { spawn } from 'child_process';
 
-
 const tutorialData = JSON.parse(
   fs.readFileSync(new URL('./tutorial-data.json', import.meta.url), 'utf8')
 );
@@ -45,7 +44,14 @@ class InteractiveTutorial {
     this.rl.close();
   }
 
-  async showStep(step: { id: number; title: string; description: string; explanation?: string; command?: string; challenge?: string }): Promise<void> {
+  async showStep(step: {
+    id: number;
+    title: string;
+    description: string;
+    explanation?: string;
+    command?: string;
+    challenge?: string;
+  }): Promise<void> {
     console.log(`\x1b[33mStep ${step.id}/${tutorialData.steps.length}: ${step.title}\x1b[0m`);
     console.log(step.description);
     console.log('');

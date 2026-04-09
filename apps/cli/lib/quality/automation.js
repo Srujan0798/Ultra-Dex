@@ -66,20 +66,36 @@ export async function verifySecurityPatterns(projectDir) {
   // Only fail on truly dangerous issues: secret leaks, SQL injection, eval
   // Exclude false positives: .env.example templates, docs, quality scanner files
   const dangerousRules = ['secret-leak', 'sql-injection', 'no-eval'];
-  const excludePatterns = ['.env.example', '.md', '.vsix', 'packages/', 'quality/', 'scanner', 'security.js', 'browser.js', 'bots/', 'commands/', 'docs-site/', 'templates/', 'live-templates/', 'assets/'];
+  const excludePatterns = [
+    '.env.example',
+    '.md',
+    '.vsix',
+    'packages/',
+    'quality/',
+    'scanner',
+    'security.js',
+    'browser.js',
+    'bots/',
+    'commands/',
+    'docs-site/',
+    'templates/',
+    'live-templates/',
+    'assets/',
+  ];
 
   const dangerousIssues = results.details.filter(
-    (d) => d.severity === 'critical' &&
+    (d) =>
+      d.severity === 'critical' &&
       dangerousRules.includes(d.ruleId) &&
-      !excludePatterns.some(pattern => d.file?.includes(pattern))
+      !excludePatterns.some((pattern) => d.file?.includes(pattern))
   );
   // Allow up to 1 issue (known false positives from example/template files)
   if (dangerousIssues.length > 1) {
     return { status: 'FAIL', message: `Found ${dangerousIssues.length} critical security issues` };
   }
   const criticalCount = results.details.filter(
-    (d) => d.severity === 'critical' &&
-      !excludePatterns.some(pattern => d.file?.includes(pattern))
+    (d) =>
+      d.severity === 'critical' && !excludePatterns.some((pattern) => d.file?.includes(pattern))
   ).length;
 
   if (criticalCount > 0) {
@@ -155,7 +171,8 @@ export async function verifyErrorHandlingStrategy(projectDir) {
   let filesWithErrorHandling = 0;
 
   const codeFiles = summary.files.filter(
-    (f) => /\.(js|ts|tsx|jsx)$/.test(f) &&
+    (f) =>
+      /\.(js|ts|tsx|jsx)$/.test(f) &&
       !f.includes('node_modules') &&
       !f.includes('templates/') &&
       !f.includes('examples/') &&
@@ -169,7 +186,7 @@ export async function verifyErrorHandlingStrategy(projectDir) {
         filesWithErrorHandling++;
       }
       totalFiles++;
-    } catch { }
+    } catch {}
   }
 
   const percentage = totalFiles > 0 ? (filesWithErrorHandling / totalFiles) * 100 : 0;
@@ -187,13 +204,23 @@ export async function verifyErrorHandlingStrategy(projectDir) {
 
 export async function verifyApiDocumentation(projectDir) {
   const summary = await projectGraph.scan();
-  const apiFiles = summary.files.filter((f) =>
-    (f.includes('api/') || f.includes('routes/') || f.includes('commands/') || f.includes('providers/') || f.includes('utils/') || f.includes('agents/') || f.includes('ai/') || f.includes('sandbox/') || f.includes('mcp/') || f.includes('context/')) &&
-    !f.includes('node_modules') &&
-    !f.includes('templates/') &&
-    !f.includes('examples/') &&
-    !f.includes('assets/') &&
-    !f.includes('test/')
+  const apiFiles = summary.files.filter(
+    (f) =>
+      (f.includes('api/') ||
+        f.includes('routes/') ||
+        f.includes('commands/') ||
+        f.includes('providers/') ||
+        f.includes('utils/') ||
+        f.includes('agents/') ||
+        f.includes('ai/') ||
+        f.includes('sandbox/') ||
+        f.includes('mcp/') ||
+        f.includes('context/')) &&
+      !f.includes('node_modules') &&
+      !f.includes('templates/') &&
+      !f.includes('examples/') &&
+      !f.includes('assets/') &&
+      !f.includes('test/')
   );
 
   if (apiFiles.length === 0) return { status: 'SKIP', message: 'No API files detected' };
@@ -205,7 +232,7 @@ export async function verifyApiDocumentation(projectDir) {
       if (/\/\*\*|\/\/\/|@swagger|@api|@param|@returns/.test(content)) {
         documented++;
       }
-    } catch { }
+    } catch {}
   }
 
   const percentage = (documented / apiFiles.length) * 100;
@@ -247,12 +274,13 @@ export async function verifyEnvironmentVariables(projectDir) {
 
 export async function verifyAccessibility(projectDir) {
   const summary = await projectGraph.scan();
-  const uiFiles = summary.files.filter((f) =>
-    /\.(tsx|jsx)$/.test(f) &&
-    !f.includes('node_modules') &&
-    !f.includes('templates/') &&
-    !f.includes('examples/') &&
-    !f.includes('assets/')
+  const uiFiles = summary.files.filter(
+    (f) =>
+      /\.(tsx|jsx)$/.test(f) &&
+      !f.includes('node_modules') &&
+      !f.includes('templates/') &&
+      !f.includes('examples/') &&
+      !f.includes('assets/')
   );
 
   if (uiFiles.length === 0) return { status: 'SKIP', message: 'No UI files detected' };
@@ -264,7 +292,7 @@ export async function verifyAccessibility(projectDir) {
       if (/aria-|<img.*alt=|role=/.test(content)) {
         a11yScore++;
       }
-    } catch { }
+    } catch {}
   }
 
   const percentage = (a11yScore / uiFiles.length) * 100;
@@ -281,12 +309,13 @@ export async function verifyAccessibility(projectDir) {
 
 export async function verifyPerformance(projectDir) {
   const summary = await projectGraph.scan();
-  const reactFiles = summary.files.filter((f) =>
-    /\.(tsx|jsx)$/.test(f) &&
-    !f.includes('node_modules') &&
-    !f.includes('templates/') &&
-    !f.includes('examples/') &&
-    !f.includes('assets/')
+  const reactFiles = summary.files.filter(
+    (f) =>
+      /\.(tsx|jsx)$/.test(f) &&
+      !f.includes('node_modules') &&
+      !f.includes('templates/') &&
+      !f.includes('examples/') &&
+      !f.includes('assets/')
   );
 
   if (reactFiles.length === 0) return { status: 'SKIP', message: 'No React files detected' };
@@ -298,7 +327,7 @@ export async function verifyPerformance(projectDir) {
       if (/memo\(|useMemo\(|useCallback\(/.test(content)) {
         perfPatterns++;
       }
-    } catch { }
+    } catch {}
   }
 
   const percentage = (perfPatterns / reactFiles.length) * 100;
@@ -338,17 +367,17 @@ export async function verifyMigrationScripts(projectDir) {
   try {
     await fs.access(path.join(projectDir, 'cli/lib/db/migrations'));
     return { status: 'PASS', message: 'Migration directory found (cli/lib/db/migrations)' };
-  } catch { }
+  } catch {}
 
   try {
     await fs.access(path.join(projectDir, 'migrations'));
     return { status: 'PASS', message: 'Migration directory found' };
-  } catch { }
+  } catch {}
 
   try {
     await fs.access(path.join(projectDir, 'prisma/migrations'));
     return { status: 'PASS', message: 'Prisma migrations found' };
-  } catch { }
+  } catch {}
 
   if (hasMigrations) return { status: 'PASS', message: 'Migration directory found' };
   return { status: 'FAIL', message: 'No database migration scripts found' };

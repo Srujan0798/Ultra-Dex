@@ -2,10 +2,7 @@
   "mcpServers": {
     "ultra-dex": {
       "command": "npx",
-      "args": [
-        "ultra-dex",
-        "serve"
-      ],
+      "args": ["ultra-dex", "serve"],
       "cwd": "/app"
     }
   }

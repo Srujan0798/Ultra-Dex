@@ -3,15 +3,14 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
+import { singleton } from 'tsyringe';
 import { MCTSNode } from './node.js';
-import { logger } from '../../utils/logging.js';
+import { logger } from '../../../utils/logging.js';
 let MCTSEngine = class {
   constructor(rootState, simulator) {
     this.root = new MCTSNode(rootState);
@@ -34,8 +33,7 @@ let MCTSEngine = class {
   select(node) {
     while (!node.isTerminal() && node.isFullyExpanded()) {
       node = node.bestChild();
-      if (!node)
-        break;
+      if (!node) break;
     }
     return node;
   }
@@ -60,8 +58,7 @@ let MCTSEngine = class {
     let depth = 0;
     while (!currentState.isTerminal && depth < 50) {
       const actions = this.simulator.getPossibleActions(currentState);
-      if (actions.length === 0)
-        break;
+      if (actions.length === 0) break;
       const randomAction = actions[Math.floor(Math.random() * actions.length)];
       currentState = this.simulator.applyAction(currentState, randomAction);
       depth++;
@@ -86,15 +83,10 @@ let MCTSEngine = class {
     return best;
   }
 };
-MCTSEngine = __decorateClass([
-  singleton()
-], MCTSEngine);
+MCTSEngine = __decorateClass([singleton()], MCTSEngine);
 function _handleError(error) {
   try {
-    logger.error("[engine]", error instanceof Error ? error.message : String(error));
-  } catch (_) {
-  }
+    logger.error('[engine]', error instanceof Error ? error.message : String(error));
+  } catch (_) {}
 }
-export {
-  MCTSEngine
-};
+export { MCTSEngine };

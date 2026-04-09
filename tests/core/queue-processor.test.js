@@ -44,7 +44,9 @@ describe('QueueProcessor', () => {
           if (taskMessage.includes('Task: first task')) {
             await new Promise((resolve) => setTimeout(resolve, 40));
           }
-          return { text: taskMessage.includes('Task: first task') ? 'first result' : 'second result' };
+          return {
+            text: taskMessage.includes('Task: first task') ? 'first result' : 'second result',
+          };
         },
       },
       maxConcurrentAgents: 1,

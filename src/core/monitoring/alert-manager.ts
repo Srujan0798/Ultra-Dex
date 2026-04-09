@@ -3,20 +3,17 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
 var __decorateParam = (index, decorator) => (target, key) => decorator(target, key, index);
-import { singleton, inject } from "tsyringe";
-import { EventEmitter } from "events";
+import { singleton, inject } from 'tsyringe';
+import { EventEmitter } from 'events';
 import { DI_TOKENS } from '../di/tokens.js';
-import {
-  AlertSeverity
-} from '../interfaces/IAlertManager.js';
-import { randomUUID } from "crypto";
+import { AlertSeverity } from '../interfaces/IAlertManager.js';
+import { randomUUID } from 'crypto';
 let AlertManager = class extends EventEmitter {
   constructor(logger) {
     super();
@@ -30,26 +27,26 @@ let AlertManager = class extends EventEmitter {
     const completeAlert = {
       id: alert.id || randomUUID(),
       timestamp: alert.timestamp || /* @__PURE__ */ new Date(),
-      ...alert
+      ...alert,
     };
     this.alertHistory.push(completeAlert);
     if (this.alertHistory.length > this.maxHistory) {
       this.alertHistory.shift();
     }
     this.logAlert(completeAlert);
-    this.emit("alert", completeAlert);
+    this.emit('alert', completeAlert);
     this.subscribers.forEach((callback) => {
       try {
         callback(completeAlert);
       } catch (error) {
-        this.logger.error("Alert subscriber failed", error);
+        this.logger.error('Alert subscriber failed', error);
       }
     });
     if (completeAlert.severity >= AlertSeverity.HIGH) {
-      this.emit("auto-heal:trigger", completeAlert);
+      this.emit('auto-heal:trigger', completeAlert);
     }
     if (completeAlert.severity === AlertSeverity.CRITICAL) {
-      this.emit("pager-duty:escalate", completeAlert);
+      this.emit('pager-duty:escalate', completeAlert);
     }
   }
   logAlert(alert) {
@@ -58,7 +55,7 @@ let AlertManager = class extends EventEmitter {
       type: alert.type,
       source: alert.source,
       metrics: alert.metrics,
-      context: alert.context
+      context: alert.context,
     };
     switch (alert.severity) {
       case AlertSeverity.LOW:
@@ -107,15 +104,13 @@ let AlertManager = class extends EventEmitter {
   getStats(timeRange) {
     let alerts = this.alertHistory;
     if (timeRange) {
-      alerts = alerts.filter(
-        (a) => a.timestamp >= timeRange.start && a.timestamp <= timeRange.end
-      );
+      alerts = alerts.filter((a) => a.timestamp >= timeRange.start && a.timestamp <= timeRange.end);
     }
     const bySeverity = {
       [AlertSeverity.LOW]: 0,
       [AlertSeverity.MEDIUM]: 0,
       [AlertSeverity.HIGH]: 0,
-      [AlertSeverity.CRITICAL]: 0
+      [AlertSeverity.CRITICAL]: 0,
     };
     const byType = {};
     for (const alert of alerts) {
@@ -126,7 +121,7 @@ let AlertManager = class extends EventEmitter {
       total: alerts.length,
       bySeverity,
       byType,
-      autoHealed: alerts.filter((a) => a.context?.autoHealed).length
+      autoHealed: alerts.filter((a) => a.context?.autoHealed).length,
     };
   }
   /**
@@ -138,10 +133,10 @@ let AlertManager = class extends EventEmitter {
     return initialLength - this.alertHistory.length;
   }
 };
-AlertManager = __decorateClass([
-  singleton(),
-  __decorateParam(0, inject(DI_TOKENS.Logger))
-], AlertManager);
+AlertManager = __decorateClass(
+  [singleton(), __decorateParam(0, inject(DI_TOKENS.Logger))],
+  AlertManager
+);
 class AlertBuilder {
   constructor(manager) {
     this.manager = manager;
@@ -173,12 +168,9 @@ class AlertBuilder {
   }
   emit() {
     if (!this.alert.type || !this.alert.message || this.alert.severity === void 0) {
-      throw new Error("Alert must have type, message, and severity");
+      throw new Error('Alert must have type, message, and severity');
     }
     this.manager.emitAlert(this.alert);
   }
 }
-export {
-  AlertBuilder,
-  AlertManager
-};
+export { AlertBuilder, AlertManager };

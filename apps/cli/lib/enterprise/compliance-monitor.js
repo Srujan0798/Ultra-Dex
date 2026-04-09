@@ -18,7 +18,7 @@ export class ComplianceMonitor {
     this.monitors = {
       gdpr: new GDPRMonitor(),
       hipaa: new HIPAACompliance(),
-      soc2: new SOC2Compliance()
+      soc2: new SOC2Compliance(),
     };
   }
 
@@ -37,7 +37,7 @@ export class ComplianceMonitor {
         const result = await monitor.checkCompliance();
         results[standard] = {
           ...result,
-          checkedAt: timestamp
+          checkedAt: timestamp,
         };
         printSuccess(`✅ ${standard.toUpperCase()} check completed`);
       } catch (error) {
@@ -45,7 +45,7 @@ export class ComplianceMonitor {
         results[standard] = {
           status: 'error',
           error: error.message,
-          checkedAt: timestamp
+          checkedAt: timestamp,
         };
       }
     }
@@ -57,7 +57,7 @@ export class ComplianceMonitor {
     return {
       results,
       reportPath,
-      summary: this.generateSummary(results)
+      summary: this.generateSummary(results),
     };
   }
 
@@ -69,7 +69,7 @@ export class ComplianceMonitor {
       overall: 'compliant',
       standards: {},
       issues: [],
-      recommendations: []
+      recommendations: [],
     };
 
     for (const [standard, result] of Object.entries(results)) {
@@ -97,7 +97,7 @@ export class ComplianceMonitor {
       } catch (error) {
         results[standard] = {
           status: 'error',
-          error: error.message
+          error: error.message,
         };
       }
     }
@@ -115,7 +115,7 @@ export class ComplianceMonitor {
     const report = {
       generatedAt: new Date().toISOString(),
       organization: 'Ultra-Dex',
-      standards: {}
+      standards: {},
     };
 
     // Get compliance data for each standard
@@ -135,7 +135,7 @@ export class ComplianceMonitor {
 
     return {
       report,
-      path: reportPath
+      path: reportPath,
     };
   }
 }
@@ -146,8 +146,9 @@ class GDPRMonitor {
     const recommendations = [];
 
     // Check data processing consent
-    const consentRecords = Array.from(enterpriseFeatures.complianceRecords.values())
-      .filter(r => r.standard === 'GDPR' && r.type === 'consent');
+    const consentRecords = Array.from(enterpriseFeatures.complianceRecords.values()).filter(
+      (r) => r.standard === 'GDPR' && r.type === 'consent'
+    );
 
     if (consentRecords.length === 0) {
       issues.push('No GDPR consent records found');
@@ -155,8 +156,9 @@ class GDPRMonitor {
     }
 
     // Check data retention policies
-    const retentionPolicies = Array.from(enterpriseFeatures.complianceRecords.values())
-      .filter(r => r.standard === 'GDPR' && r.type === 'retention');
+    const retentionPolicies = Array.from(enterpriseFeatures.complianceRecords.values()).filter(
+      (r) => r.standard === 'GDPR' && r.type === 'retention'
+    );
 
     if (retentionPolicies.length === 0) {
       issues.push('No data retention policies defined');
@@ -164,8 +166,9 @@ class GDPRMonitor {
     }
 
     // Check for PII handling
-    const piiRecords = Array.from(enterpriseFeatures.complianceRecords.values())
-      .filter(r => r.standard === 'GDPR' && r.type === 'pii_processing');
+    const piiRecords = Array.from(enterpriseFeatures.complianceRecords.values()).filter(
+      (r) => r.standard === 'GDPR' && r.type === 'pii_processing'
+    );
 
     if (piiRecords.length === 0) {
       issues.push('No PII processing records found');
@@ -181,8 +184,8 @@ class GDPRMonitor {
       metrics: {
         consentRecords: consentRecords.length,
         retentionPolicies: retentionPolicies.length,
-        piiRecords: piiRecords.length
-      }
+        piiRecords: piiRecords.length,
+      },
     };
   }
 
@@ -191,7 +194,7 @@ class GDPRMonitor {
     return {
       status: result.status,
       lastChecked: new Date().toISOString(),
-      issues: result.issues.length
+      issues: result.issues.length,
     };
   }
 
@@ -207,8 +210,8 @@ class GDPRMonitor {
       dataProcessing: {
         consent: result.metrics.consentRecords > 0,
         retention: result.metrics.retentionPolicies > 0,
-        piiProcessing: result.metrics.piiRecords > 0
-      }
+        piiProcessing: result.metrics.piiRecords > 0,
+      },
     };
   }
 }
@@ -219,8 +222,9 @@ class HIPAACompliance {
     const recommendations = [];
 
     // Check for PHI data handling
-    const phiRecords = Array.from(enterpriseFeatures.complianceRecords.values())
-      .filter(r => r.standard === 'HIPAA' && r.type === 'phi_handling');
+    const phiRecords = Array.from(enterpriseFeatures.complianceRecords.values()).filter(
+      (r) => r.standard === 'HIPAA' && r.type === 'phi_handling'
+    );
 
     if (phiRecords.length === 0) {
       issues.push('No PHI data handling records found');
@@ -228,8 +232,9 @@ class HIPAACompliance {
     }
 
     // Check access controls
-    const accessControls = Array.from(enterpriseFeatures.complianceRecords.values())
-      .filter(r => r.standard === 'HIPAA' && r.type === 'access_control');
+    const accessControls = Array.from(enterpriseFeatures.complianceRecords.values()).filter(
+      (r) => r.standard === 'HIPAA' && r.type === 'access_control'
+    );
 
     if (accessControls.length === 0) {
       issues.push('No access control records for PHI data');
@@ -237,8 +242,9 @@ class HIPAACompliance {
     }
 
     // Check audit logging
-    const auditRecords = Array.from(enterpriseFeatures.complianceRecords.values())
-      .filter(r => r.standard === 'HIPAA' && r.type === 'audit_logging');
+    const auditRecords = Array.from(enterpriseFeatures.complianceRecords.values()).filter(
+      (r) => r.standard === 'HIPAA' && r.type === 'audit_logging'
+    );
 
     if (auditRecords.length === 0) {
       issues.push('No audit logging for PHI access');
@@ -246,8 +252,9 @@ class HIPAACompliance {
     }
 
     // Check encryption
-    const encryptionRecords = Array.from(enterpriseFeatures.complianceRecords.values())
-      .filter(r => r.standard === 'HIPAA' && r.type === 'encryption');
+    const encryptionRecords = Array.from(enterpriseFeatures.complianceRecords.values()).filter(
+      (r) => r.standard === 'HIPAA' && r.type === 'encryption'
+    );
 
     if (encryptionRecords.length === 0) {
       issues.push('No encryption records for PHI data');
@@ -264,8 +271,8 @@ class HIPAACompliance {
         phiRecords: phiRecords.length,
         accessControls: accessControls.length,
         auditRecords: auditRecords.length,
-        encryptionRecords: encryptionRecords.length
-      }
+        encryptionRecords: encryptionRecords.length,
+      },
     };
   }
 
@@ -274,7 +281,7 @@ class HIPAACompliance {
     return {
       status: result.status,
       lastChecked: new Date().toISOString(),
-      issues: result.issues.length
+      issues: result.issues.length,
     };
   }
 
@@ -291,8 +298,8 @@ class HIPAACompliance {
         accessControl: result.metrics.accessControls > 0,
         auditLogging: result.metrics.auditRecords > 0,
         encryption: result.metrics.encryptionRecords > 0,
-        phiHandling: result.metrics.phiRecords > 0
-      }
+        phiHandling: result.metrics.phiRecords > 0,
+      },
     };
   }
 }
@@ -303,8 +310,9 @@ class SOC2Compliance {
     const recommendations = [];
 
     // Check security controls
-    const securityRecords = Array.from(enterpriseFeatures.complianceRecords.values())
-      .filter(r => r.standard === 'SOC2' && r.type === 'security');
+    const securityRecords = Array.from(enterpriseFeatures.complianceRecords.values()).filter(
+      (r) => r.standard === 'SOC2' && r.type === 'security'
+    );
 
     if (securityRecords.length === 0) {
       issues.push('No security control records found');
@@ -312,8 +320,9 @@ class SOC2Compliance {
     }
 
     // Check availability
-    const availabilityRecords = Array.from(enterpriseFeatures.complianceRecords.values())
-      .filter(r => r.standard === 'SOC2' && r.type === 'availability');
+    const availabilityRecords = Array.from(enterpriseFeatures.complianceRecords.values()).filter(
+      (r) => r.standard === 'SOC2' && r.type === 'availability'
+    );
 
     if (availabilityRecords.length === 0) {
       issues.push('No availability monitoring records');
@@ -321,8 +330,9 @@ class SOC2Compliance {
     }
 
     // Check processing integrity
-    const integrityRecords = Array.from(enterpriseFeatures.complianceRecords.values())
-      .filter(r => r.standard === 'SOC2' && r.type === 'processing_integrity');
+    const integrityRecords = Array.from(enterpriseFeatures.complianceRecords.values()).filter(
+      (r) => r.standard === 'SOC2' && r.type === 'processing_integrity'
+    );
 
     if (integrityRecords.length === 0) {
       issues.push('No processing integrity controls');
@@ -330,8 +340,9 @@ class SOC2Compliance {
     }
 
     // Check confidentiality
-    const confidentialityRecords = Array.from(enterpriseFeatures.complianceRecords.values())
-      .filter(r => r.standard === 'SOC2' && r.type === 'confidentiality');
+    const confidentialityRecords = Array.from(enterpriseFeatures.complianceRecords.values()).filter(
+      (r) => r.standard === 'SOC2' && r.type === 'confidentiality'
+    );
 
     if (confidentialityRecords.length === 0) {
       issues.push('No confidentiality controls');
@@ -339,8 +350,9 @@ class SOC2Compliance {
     }
 
     // Check privacy
-    const privacyRecords = Array.from(enterpriseFeatures.complianceRecords.values())
-      .filter(r => r.standard === 'SOC2' && r.type === 'privacy');
+    const privacyRecords = Array.from(enterpriseFeatures.complianceRecords.values()).filter(
+      (r) => r.standard === 'SOC2' && r.type === 'privacy'
+    );
 
     if (privacyRecords.length === 0) {
       issues.push('No privacy controls documented');
@@ -358,8 +370,8 @@ class SOC2Compliance {
         availabilityRecords: availabilityRecords.length,
         integrityRecords: integrityRecords.length,
         confidentialityRecords: confidentialityRecords.length,
-        privacyRecords: privacyRecords.length
-      }
+        privacyRecords: privacyRecords.length,
+      },
     };
   }
 
@@ -368,7 +380,7 @@ class SOC2Compliance {
     return {
       status: result.status,
       lastChecked: new Date().toISOString(),
-      issues: result.issues.length
+      issues: result.issues.length,
     };
   }
 
@@ -386,8 +398,8 @@ class SOC2Compliance {
         availability: result.metrics.availabilityRecords > 0,
         processingIntegrity: result.metrics.integrityRecords > 0,
         confidentiality: result.metrics.confidentialityRecords > 0,
-        privacy: result.metrics.privacyRecords > 0
-      }
+        privacy: result.metrics.privacyRecords > 0,
+      },
     };
   }
 }

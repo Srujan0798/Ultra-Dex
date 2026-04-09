@@ -1,6 +1,6 @@
-import { EventEmitter } from "events";
-import fs from "fs/promises";
-import path from "path";
+import { EventEmitter } from 'events';
+import fs from 'fs/promises';
+import path from 'path';
 class HealthMonitor extends EventEmitter {
   constructor(options = {}) {
     super();
@@ -12,16 +12,16 @@ class HealthMonitor extends EventEmitter {
       // 5 seconds
       backupInterval: options.backupInterval || 3e5,
       // 5 minutes
-      ...options
+      ...options,
     };
     this.isMonitoring = false;
     this.healthChecks = /* @__PURE__ */ new Map();
     this.recoveryMechanisms = /* @__PURE__ */ new Map();
     this.systemStatus = {
-      overall: "healthy",
+      overall: 'healthy',
       components: {},
       lastChecked: null,
-      uptime: 0
+      uptime: 0,
     };
     this.startupTime = Date.now();
     this.recoveryAttempts = /* @__PURE__ */ new Map();
@@ -31,24 +31,18 @@ class HealthMonitor extends EventEmitter {
    */
   async start() {
     if (this.isMonitoring) {
-      console.warn("Health monitor already running");
+      console.warn('Health monitor already running');
       return;
     }
-    console.log("\u{1F3E5} Starting Ultra-Dex Health Monitor...");
+    console.log('\u{1F3E5} Starting Ultra-Dex Health Monitor...');
     this.isMonitoring = true;
     await this.performHealthCheck();
-    this.monitorInterval = setInterval(
-      () => this.performHealthCheck(),
-      this.options.checkInterval
-    );
+    this.monitorInterval = setInterval(() => this.performHealthCheck(), this.options.checkInterval);
     if (this.options.backupInterval > 0) {
-      this.backupInterval = setInterval(
-        () => this.performBackup(),
-        this.options.backupInterval
-      );
+      this.backupInterval = setInterval(() => this.performBackup(), this.options.backupInterval);
     }
-    console.log("\u2705 Health monitor started");
-    this.emit("started");
+    console.log('\u2705 Health monitor started');
+    this.emit('started');
   }
   /**
    * Stop the health monitoring system
@@ -57,7 +51,7 @@ class HealthMonitor extends EventEmitter {
     if (!this.isMonitoring) {
       return;
     }
-    console.log("\u{1F3E5} Stopping Ultra-Dex Health Monitor...");
+    console.log('\u{1F3E5} Stopping Ultra-Dex Health Monitor...');
     if (this.monitorInterval) {
       clearInterval(this.monitorInterval);
       this.monitorInterval = null;
@@ -67,8 +61,8 @@ class HealthMonitor extends EventEmitter {
       this.backupInterval = null;
     }
     this.isMonitoring = false;
-    console.log("\u2705 Health monitor stopped");
-    this.emit("stopped");
+    console.log('\u2705 Health monitor stopped');
+    this.emit('stopped');
   }
   /**
    * Register a health check for a component
@@ -82,8 +76,8 @@ class HealthMonitor extends EventEmitter {
       options: {
         critical: options.critical || false,
         timeout: options.timeout || 1e4,
-        ...options
-      }
+        ...options,
+      },
     });
     console.log(`\u{1F4CB} Registered health check for: ${componentName}`);
   }
@@ -99,8 +93,8 @@ class HealthMonitor extends EventEmitter {
       options: {
         maxAttempts: options.maxAttempts || this.options.maxRetries,
         delay: options.delay || this.options.retryDelay,
-        ...options
-      }
+        ...options,
+      },
     });
     console.log(`\u{1F527} Registered recovery mechanism for: ${componentName}`);
   }
@@ -108,25 +102,24 @@ class HealthMonitor extends EventEmitter {
    * Perform a comprehensive health check
    */
   async performHealthCheck() {
-    if (!this.isMonitoring)
-      return;
-    console.log("\u{1F50D} Performing system health check...");
-    this.systemStatus.lastChecked = (/* @__PURE__ */ new Date()).toISOString();
+    if (!this.isMonitoring) return;
+    console.log('\u{1F50D} Performing system health check...');
+    this.systemStatus.lastChecked = /* @__PURE__ */ new Date().toISOString();
     this.systemStatus.uptime = Date.now() - this.startupTime;
     const results = {};
     let overallHealthy = true;
     for (const [componentName, healthCheck] of this.healthChecks) {
       try {
-        const timeoutPromise = new Promise(
-          (_, reject) => setTimeout(() => reject(new Error("Health check timeout")), healthCheck.options.timeout)
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Health check timeout')), healthCheck.options.timeout)
         );
         const checkPromise = Promise.resolve(healthCheck.checkFunction());
         const result = await Promise.race([checkPromise, timeoutPromise]);
         results[componentName] = {
           healthy: result.healthy || result === true,
-          status: result.status || "ok",
+          status: result.status || 'ok',
           details: result.details || {},
-          timestamp: (/* @__PURE__ */ new Date()).toISOString()
+          timestamp: /* @__PURE__ */ new Date().toISOString(),
         };
         if (!results[componentName].healthy) {
           console.warn(`\u26A0\uFE0F  Component ${componentName} is unhealthy:`, result);
@@ -139,9 +132,9 @@ class HealthMonitor extends EventEmitter {
         console.error(`\u274C Health check failed for ${componentName}:`, error.message);
         results[componentName] = {
           healthy: false,
-          status: "error",
+          status: 'error',
           details: { error: error.message },
-          timestamp: (/* @__PURE__ */ new Date()).toISOString()
+          timestamp: /* @__PURE__ */ new Date().toISOString(),
         };
         if (healthCheck.options.critical) {
           overallHealthy = false;
@@ -150,9 +143,9 @@ class HealthMonitor extends EventEmitter {
       }
     }
     this.systemStatus.components = results;
-    this.systemStatus.overall = overallHealthy ? "healthy" : "degraded";
+    this.systemStatus.overall = overallHealthy ? 'healthy' : 'degraded';
     console.log(`\u{1F3E5} Health check complete. Overall status: ${this.systemStatus.overall}`);
-    this.emit("health-check-complete", this.systemStatus);
+    this.emit('health-check-complete', this.systemStatus);
   }
   /**
    * Attempt to recover an unhealthy component
@@ -167,28 +160,32 @@ class HealthMonitor extends EventEmitter {
     }
     const attempts = this.recoveryAttempts.get(componentName) || 0;
     if (attempts >= recoveryMech.options.maxAttempts) {
-      console.warn(`Maximum recovery attempts (${recoveryMech.options.maxAttempts}) reached for ${componentName}`);
+      console.warn(
+        `Maximum recovery attempts (${recoveryMech.options.maxAttempts}) reached for ${componentName}`
+      );
       return false;
     }
-    console.log(`Attempting to recover ${componentName} (attempt ${attempts + 1}/${recoveryMech.options.maxAttempts})`);
+    console.log(
+      `Attempting to recover ${componentName} (attempt ${attempts + 1}/${recoveryMech.options.maxAttempts})`
+    );
     try {
       await new Promise((resolve) => setTimeout(resolve, recoveryMech.options.delay));
       const recoveryResult = await recoveryMech.recoveryFunction(healthStatus);
       if (recoveryResult.success) {
         console.log(`\u2705 Recovery successful for ${componentName}`);
         this.recoveryAttempts.set(componentName, 0);
-        this.emit("recovery-success", { component: componentName, result: recoveryResult });
+        this.emit('recovery-success', { component: componentName, result: recoveryResult });
         return true;
       } else {
         console.warn(`Recovery failed for ${componentName}:`, recoveryResult.error);
         this.recoveryAttempts.set(componentName, attempts + 1);
-        this.emit("recovery-failed", { component: componentName, error: recoveryResult.error });
+        this.emit('recovery-failed', { component: componentName, error: recoveryResult.error });
         return false;
       }
     } catch (error) {
       console.error(`Recovery attempt failed for ${componentName}:`, error.message);
       this.recoveryAttempts.set(componentName, attempts + 1);
-      this.emit("recovery-error", { component: componentName, error: error.message });
+      this.emit('recovery-error', { component: componentName, error: error.message });
       return false;
     }
   }
@@ -196,24 +193,24 @@ class HealthMonitor extends EventEmitter {
    * Perform system backup
    */
   async performBackup() {
-    console.log("\u{1F4BE} Performing system backup...");
+    console.log('\u{1F4BE} Performing system backup...');
     try {
-      const backupDir = path.join(process.cwd(), ".ultra-dex", "backups");
+      const backupDir = path.join(process.cwd(), '.ultra-dex', 'backups');
       await fs.mkdir(backupDir, { recursive: true });
-      const timestamp = (/* @__PURE__ */ new Date()).toISOString().replace(/[:.]/g, "-");
+      const timestamp = /* @__PURE__ */ new Date().toISOString().replace(/[:.]/g, '-');
       const backupFile = path.join(backupDir, `backup-${timestamp}.json`);
       const backupData = {
-        timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+        timestamp: /* @__PURE__ */ new Date().toISOString(),
         systemStatus: this.systemStatus,
         config: await this.getConfigSnapshot(),
-        memoryState: await this.getMemorySnapshot()
+        memoryState: await this.getMemorySnapshot(),
       };
       await fs.writeFile(backupFile, JSON.stringify(backupData, null, 2));
       console.log(`\u2705 Backup created: ${backupFile}`);
-      this.emit("backup-created", { file: backupFile, size: backupData });
+      this.emit('backup-created', { file: backupFile, size: backupData });
     } catch (error) {
-      console.error("\u274C Backup failed:", error.message);
-      this.emit("backup-error", { error: error.message });
+      console.error('\u274C Backup failed:', error.message);
+      this.emit('backup-error', { error: error.message });
     }
   }
   /**
@@ -221,15 +218,18 @@ class HealthMonitor extends EventEmitter {
    */
   async getConfigSnapshot() {
     try {
-      const configPath = path.join(process.cwd(), ".ultra-dex", "config.json");
-      const configExists = await fs.access(configPath).then(() => true).catch(() => false);
+      const configPath = path.join(process.cwd(), '.ultra-dex', 'config.json');
+      const configExists = await fs
+        .access(configPath)
+        .then(() => true)
+        .catch(() => false);
       if (configExists) {
-        const config = await fs.readFile(configPath, "utf8");
+        const config = await fs.readFile(configPath, 'utf8');
         return JSON.parse(config);
       }
       return null;
     } catch (error) {
-      console.warn("Could not create config snapshot:", error.message);
+      console.warn('Could not create config snapshot:', error.message);
       return { error: error.message };
     }
   }
@@ -239,11 +239,11 @@ class HealthMonitor extends EventEmitter {
   async getMemorySnapshot() {
     try {
       return {
-        message: "Memory snapshot functionality would be implemented here",
-        timestamp: (/* @__PURE__ */ new Date()).toISOString()
+        message: 'Memory snapshot functionality would be implemented here',
+        timestamp: /* @__PURE__ */ new Date().toISOString(),
       };
     } catch (error) {
-      console.warn("Could not create memory snapshot:", error.message);
+      console.warn('Could not create memory snapshot:', error.message);
       return { error: error.message };
     }
   }
@@ -253,7 +253,7 @@ class HealthMonitor extends EventEmitter {
    */
   async restartComponent(componentName) {
     console.log(`\u{1F504} Restarting component: ${componentName}`);
-    this.emit("component-restart", { component: componentName });
+    this.emit('component-restart', { component: componentName });
     this.recoveryAttempts.set(componentName, 0);
     return { success: true, component: componentName };
   }
@@ -296,8 +296,4 @@ function getInstance() {
   }
   return healthMonitorInstance;
 }
-export {
-  HealthMonitor,
-  health_monitor_default as default,
-  getInstance
-};
+export { HealthMonitor, health_monitor_default as default, getInstance };

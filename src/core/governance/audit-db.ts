@@ -3,38 +3,36 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import path from "path";
-import fs from "fs";
-import { fileURLToPath } from "url";
-import { v4 as uuidv4 } from "uuid";
+import { singleton } from 'tsyringe';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { v4 as uuidv4 } from 'uuid';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DEFAULT_DB_PATH = path.join(process.cwd(), ".ultra-dex", "audit", "governance.db");
+const DEFAULT_DB_PATH = path.join(process.cwd(), '.ultra-dex', 'audit', 'governance.db');
 let sqlite3 = null;
 let sqliteOpen = null;
 let useMemoryFallback = false;
 try {
-  const sqlite3Module = await import("sqlite3");
-  const sqliteModule = await import("sqlite");
+  const sqlite3Module = await import('sqlite3');
+  const sqliteModule = await import('sqlite');
   sqlite3 = sqlite3Module.default;
   sqliteOpen = sqliteModule.open;
 } catch (_error) {
   useMemoryFallback = true;
-  console.warn("[audit-db] sqlite3 native module not available, using memory fallback");
+  console.warn('[audit-db] sqlite3 native module not available, using memory fallback');
 }
 class MemoryAuditDB {
   constructor() {
     this.records = [];
     this.initialized = true;
   }
-  async exec() {
-  }
+  async exec() {}
   async run(sql, params) {
     this.records.push({
       id: params[0],
@@ -45,7 +43,7 @@ class MemoryAuditDB {
       result: params[4],
       outcome: params[4],
       details: params[5],
-      timestamp: params[6]
+      timestamp: params[6],
     });
   }
   async all(sql, params) {
@@ -79,11 +77,11 @@ let AuditDatabase = class {
       }
       this.db = await sqliteOpen({
         filename: this.dbPath,
-        driver: sqlite3.Database
+        driver: sqlite3.Database,
       });
       await this._createTable();
     } catch (error) {
-      if (error.code === "EPERM" || error.code === "EACCES" || error.code === "EROFS") {
+      if (error.code === 'EPERM' || error.code === 'EACCES' || error.code === 'EROFS') {
         this.memoryMode = true;
         this.db = new MemoryAuditDB();
       } else {
@@ -130,7 +128,7 @@ let AuditDatabase = class {
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
     const detailsJson = entry.details ? JSON.stringify(entry.details) : null;
-    const resultText = entry.outcome || entry.result || "unknown";
+    const resultText = entry.outcome || entry.result || 'unknown';
     const taskText = entry.task || entry.resource || null;
     await this.db.run(insertSQL, [
       id,
@@ -139,7 +137,7 @@ let AuditDatabase = class {
       taskText,
       resultText,
       detailsJson,
-      timestamp.toString()
+      timestamp.toString(),
     ]);
     return {
       ...entry,
@@ -148,7 +146,7 @@ let AuditDatabase = class {
       task: taskText,
       resource: entry.resource || taskText,
       result: resultText,
-      outcome: entry.outcome || resultText
+      outcome: entry.outcome || resultText,
     };
   }
   /**
@@ -167,7 +165,9 @@ let AuditDatabase = class {
         rows2 = rows2.filter((row) => row.action === filters.action);
       }
       if (filters.resource) {
-        rows2 = rows2.filter((row) => row.task === filters.resource || row.resource === filters.resource);
+        rows2 = rows2.filter(
+          (row) => row.task === filters.resource || row.resource === filters.resource
+        );
       }
       if (filters.since) {
         const since = Number(filters.since);
@@ -183,31 +183,34 @@ let AuditDatabase = class {
         resource: row.resource ?? row.task ?? null,
         result: row.result ?? row.outcome ?? null,
         outcome: row.outcome ?? row.result ?? null,
-        details: typeof row.details === "string" && row.details ? JSON.parse(row.details) : row.details ?? null,
-        timestamp: Number(row.timestamp)
+        details:
+          typeof row.details === 'string' && row.details
+            ? JSON.parse(row.details)
+            : (row.details ?? null),
+        timestamp: Number(row.timestamp),
       }));
     }
-    let sql = "SELECT * FROM governance_audit WHERE 1=1";
+    let sql = 'SELECT * FROM governance_audit WHERE 1=1';
     const params = [];
     if (filters.agentId) {
-      sql += " AND agentId = ?";
+      sql += ' AND agentId = ?';
       params.push(filters.agentId);
     }
     if (filters.action) {
-      sql += " AND action = ?";
+      sql += ' AND action = ?';
       params.push(filters.action);
     }
     if (filters.resource) {
-      sql += " AND task = ?";
+      sql += ' AND task = ?';
       params.push(filters.resource);
     }
     if (filters.since) {
-      sql += " AND timestamp >= ?";
+      sql += ' AND timestamp >= ?';
       params.push(filters.since.toString());
     }
-    sql += " ORDER BY timestamp DESC";
+    sql += ' ORDER BY timestamp DESC';
     if (filters.limit) {
-      sql += " LIMIT ?";
+      sql += ' LIMIT ?';
       params.push(filters.limit);
     }
     const rows = await this.db.all(sql, params);
@@ -217,8 +220,11 @@ let AuditDatabase = class {
       resource: row.resource ?? row.task ?? null,
       result: row.result ?? row.outcome ?? null,
       outcome: row.outcome ?? row.result ?? null,
-      details: typeof row.details === "string" && row.details ? JSON.parse(row.details) : row.details ?? null,
-      timestamp: parseInt(row.timestamp, 10)
+      details:
+        typeof row.details === 'string' && row.details
+          ? JSON.parse(row.details)
+          : (row.details ?? null),
+      timestamp: parseInt(row.timestamp, 10),
     }));
   }
   /**
@@ -227,10 +233,12 @@ let AuditDatabase = class {
    */
   async getStats() {
     await this.init();
-    const total = this.memoryMode ? this.db.records.length : (await this.db.all("SELECT COUNT(*) as count FROM governance_audit"))[0].count;
+    const total = this.memoryMode
+      ? this.db.records.length
+      : (await this.db.all('SELECT COUNT(*) as count FROM governance_audit'))[0].count;
     return {
       total,
-      mode: this.memoryMode ? "memory" : "sqlite"
+      mode: this.memoryMode ? 'memory' : 'sqlite',
     };
   }
   /**
@@ -243,9 +251,7 @@ let AuditDatabase = class {
     }
   }
 };
-AuditDatabase = __decorateClass([
-  singleton()
-], AuditDatabase);
+AuditDatabase = __decorateClass([singleton()], AuditDatabase);
 let auditDB = null;
 function getAuditDB() {
   if (!auditDB) {
@@ -262,10 +268,4 @@ async function queryAudit(filters = {}) {
   return db.query(filters);
 }
 var audit_db_default = AuditDatabase;
-export {
-  AuditDatabase,
-  audit_db_default as default,
-  getAuditDB,
-  queryAudit,
-  recordAudit
-};
+export { AuditDatabase, audit_db_default as default, getAuditDB, queryAudit, recordAudit };

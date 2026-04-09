@@ -38,9 +38,7 @@ export const Integrations = memo(function Integrations() {
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm font-semibold text-slate-100">
-                    {integration.name}
-                  </div>
+                  <div className="text-sm font-semibold text-slate-100">{integration.name}</div>
                   <div className="mt-1 text-xs text-slate-500">
                     Last sync: {integration.lastSync}
                   </div>

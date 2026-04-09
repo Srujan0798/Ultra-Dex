@@ -3,35 +3,34 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import chalk from "chalk";
-import gradient from "gradient-string";
-import ora from "ora";
-import cliProgress from "cli-progress";
+import { singleton } from 'tsyringe';
+import chalk from 'chalk';
+import gradient from 'gradient-string';
+import ora from 'ora';
+import cliProgress from 'cli-progress';
 import { logger } from './logging.js';
 let multiBar = null;
 function showProgress(tasks) {
   const _total = tasks.length;
-  logger.log("");
-  logger.log(gradient(["#6366f1", "#8b5cf6"]).bold("  \u26A1 EXECUTING TASKS..."));
-  logger.log("");
+  logger.log('');
+  logger.log(gradient(['#6366f1', '#8b5cf6']).bold('  \u26A1 EXECUTING TASKS...'));
+  logger.log('');
   tasks.forEach((task) => {
-    logger.log(`  ${chalk.hex("#d946ef")("\u25BA")} ${task}`);
+    logger.log(`  ${chalk.hex('#d946ef')('\u25BA')} ${task}`);
   });
-  logger.log("");
+  logger.log('');
 }
 function progressBar(current, total, width = 40) {
-  const percentage = Math.round(current / total * 100);
-  const filled = Math.round(current / total * width);
+  const percentage = Math.round((current / total) * 100);
+  const filled = Math.round((current / total) * width);
   const empty = width - filled;
-  const bar = chalk.hex("#6366f1")("\u2588".repeat(filled)) + chalk.dim("\u2591".repeat(empty));
-  return `${bar} ${chalk.hex("#d946ef")(percentage + "%")}`;
+  const bar = chalk.hex('#6366f1')('\u2588'.repeat(filled)) + chalk.dim('\u2591'.repeat(empty));
+  return `${bar} ${chalk.hex('#d946ef')(percentage + '%')}`;
 }
 let ProgressBar = class {
   spinner;
@@ -45,16 +44,17 @@ let ProgressBar = class {
     this.multiProgressBar = null;
     this.startTime = null;
     this.options = {
-      format: options.format || " {bar} {percentage}% | {value}/{total} | {task} | ETA: {eta_formatted}",
-      barCompleteChar: options.barCompleteChar || "\u25A0",
-      barIncompleteChar: options.barIncompleteChar || "\u25A1",
+      format:
+        options.format || ' {bar} {percentage}% | {value}/{total} | {task} | ETA: {eta_formatted}',
+      barCompleteChar: options.barCompleteChar || '\u25A0',
+      barIncompleteChar: options.barIncompleteChar || '\u25A1',
       hideCursor: options.hideCursor !== void 0 ? options.hideCursor : true,
       clearOnComplete: options.clearOnComplete !== void 0 ? options.clearOnComplete : true,
       showEta: options.showEta !== false,
-      ...options
+      ...options,
     };
   }
-  start(total, initial = 0, task = "Processing...") {
+  start(total, initial = 0, task = 'Processing...') {
     this.startTime = Date.now();
     this.progressBar = new cliProgress.SingleBar(
       {
@@ -62,11 +62,11 @@ let ProgressBar = class {
         barCompleteChar: this.options.barCompleteChar,
         barIncompleteChar: this.options.barIncompleteChar,
         hideCursor: this.options.hideCursor,
-        clearOnComplete: this.options.clearOnComplete
+        clearOnComplete: this.options.clearOnComplete,
       },
       cliProgress.Presets.shades_grey
     );
-    this.progressBar.start(total, initial, { task, eta_formatted: "--" });
+    this.progressBar.start(total, initial, { task, eta_formatted: '--' });
     return this.progressBar;
   }
   update(current, task = null) {
@@ -98,14 +98,14 @@ let ProgressBar = class {
         barCompleteChar: this.options.barCompleteChar,
         barIncompleteChar: this.options.barIncompleteChar,
         hideCursor: this.options.hideCursor,
-        clearOnComplete: false
+        clearOnComplete: false,
       },
       cliProgress.Presets.rect
     );
     const bars = {};
     tasks.forEach((task, index) => {
       bars[task.id || `task-${index}`] = this.multiProgressBar.create(task.total || 100, 0, {
-        task: task.name
+        task: task.name,
       });
     });
     return bars;
@@ -125,32 +125,32 @@ let ProgressBar = class {
       this.multiProgressBar = null;
     }
   }
-  startSpinner(text = "Processing...", spinnerType = "clock") {
+  startSpinner(text = 'Processing...', spinnerType = 'clock') {
     this.spinner = ora({
-      text: gradient(["#6366f1", "#8b5cf6"])(text),
-      spinner: spinnerType
+      text: gradient(['#6366f1', '#8b5cf6'])(text),
+      spinner: spinnerType,
     });
     this.spinner.start();
     return this.spinner;
   }
   updateSpinner(text) {
     if (this.spinner) {
-      this.spinner.text = gradient(["#6366f1", "#8b5cf6"])(text);
+      this.spinner.text = gradient(['#6366f1', '#8b5cf6'])(text);
     }
   }
-  succeedSpinner(text = "Done!") {
+  succeedSpinner(text = 'Done!') {
     if (this.spinner) {
-      this.spinner.succeed(gradient(["#10b981", "#34d399"])(text));
+      this.spinner.succeed(gradient(['#10b981', '#34d399'])(text));
       this.spinner = null;
     }
   }
-  failSpinner(text = "Failed!") {
+  failSpinner(text = 'Failed!') {
     if (this.spinner) {
       this.spinner.fail(chalk.red(text));
       this.spinner = null;
     }
   }
-  warnSpinner(text = "Warning!") {
+  warnSpinner(text = 'Warning!') {
     if (this.spinner) {
       this.spinner.warn(chalk.yellow(text));
       this.spinner = null;
@@ -163,8 +163,7 @@ let ProgressBar = class {
     }
   }
   calculateEta(current, total) {
-    if (!this.startTime || current <= 0 || total <= 0)
-      return "--";
+    if (!this.startTime || current <= 0 || total <= 0) return '--';
     const elapsed = Date.now() - this.startTime;
     const rate = elapsed / current;
     const remaining = Math.max(total - current, 0);
@@ -173,19 +172,15 @@ let ProgressBar = class {
   }
   formatTime(ms) {
     const seconds = Math.floor(ms / 1e3);
-    if (seconds < 60)
-      return `${seconds}s`;
+    if (seconds < 60) return `${seconds}s`;
     const minutes = Math.floor(seconds / 60);
-    if (minutes < 60)
-      return `${minutes}m ${seconds % 60}s`;
+    if (minutes < 60) return `${minutes}m ${seconds % 60}s`;
     const hours = Math.floor(minutes / 60);
     return `${hours}h ${minutes % 60}m`;
   }
 };
-ProgressBar = __decorateClass([
-  singleton()
-], ProgressBar);
-function createAnimatedProgress(total, task = "Processing...") {
+ProgressBar = __decorateClass([singleton()], ProgressBar);
+function createAnimatedProgress(total, task = 'Processing...') {
   const progress = new ProgressBar();
   progress.start(total, 0, task);
   return progress;
@@ -194,26 +189,29 @@ function createMultiProgress(tasks) {
   const progress = new ProgressBar();
   return progress.startMulti(tasks);
 }
-function createSpinner(text = "Loading...", spinnerType = "clock") {
+function createSpinner(text = 'Loading...', spinnerType = 'clock') {
   const progress = new ProgressBar();
   return progress.startSpinner(text, spinnerType);
 }
-function showAnimatedProgress(current, total, message = "Progress") {
-  const percentage = Math.round(current / total * 100);
+function showAnimatedProgress(current, total, message = 'Progress') {
+  const percentage = Math.round((current / total) * 100);
   const width = 50;
-  const filled = Math.round(current / total * width);
+  const filled = Math.round((current / total) * width);
   const empty = width - filled;
-  const filledChars = "\u2588".repeat(filled);
-  const emptyChars = "\u2591".repeat(empty);
-  let gradientBar = "";
+  const filledChars = '\u2588'.repeat(filled);
+  const emptyChars = '\u2591'.repeat(empty);
+  let gradientBar = '';
   if (filled > 0) {
-    const gradientColors = ["#6366f1", "#8b5cf6", "#d946ef"];
-    const gradientText = filledChars.split("").map((char, idx) => {
-      const colorIndex = Math.floor(idx / filled * gradientColors.length);
-      return chalk.hex(gradientColors[colorIndex] || gradientColors[gradientColors.length - 1])(
-        char
-      );
-    }).join("");
+    const gradientColors = ['#6366f1', '#8b5cf6', '#d946ef'];
+    const gradientText = filledChars
+      .split('')
+      .map((char, idx) => {
+        const colorIndex = Math.floor((idx / filled) * gradientColors.length);
+        return chalk.hex(gradientColors[colorIndex] || gradientColors[gradientColors.length - 1])(
+          char
+        );
+      })
+      .join('');
     gradientBar = gradientText;
   }
   const emptyBar = chalk.dim(emptyChars);
@@ -222,31 +220,30 @@ function showAnimatedProgress(current, total, message = "Progress") {
     `\r${progressBarStr} ${chalk.bold(`${percentage}%`)} ${message} (${current}/${total})`
   );
   if (current >= total) {
-    logger.log("");
+    logger.log('');
   }
 }
 function showFancyProgress(current, total, options = {}) {
   const {
-    message = "Processing",
-    symbol = "\u26A1",
+    message = 'Processing',
+    symbol = '\u26A1',
     showPercentage = true,
-    showCount = true
+    showCount = true,
   } = options;
-  const percentage = Math.round(current / total * 100);
+  const percentage = Math.round((current / total) * 100);
   const width = 40;
-  const filled = Math.round(current / total * width);
-  const leftSide = `[${gradient(["#6366f1", "#8b5cf6"])("|".repeat(filled))}`;
-  const rightSide = chalk.dim("\xB7".repeat(width - filled)) + "]";
+  const filled = Math.round((current / total) * width);
+  const leftSide = `[${gradient(['#6366f1', '#8b5cf6'])('|'.repeat(filled))}`;
+  const rightSide = chalk.dim('\xB7'.repeat(width - filled)) + ']';
   const progressBarStr = leftSide + rightSide;
   let output = `${symbol} ${message} `;
   if (showPercentage)
-    output += `${chalk.bold(gradient(["#10b981", "#34d399"])(`${percentage}%`))} `;
-  if (showCount)
-    output += chalk.dim(`(${current}/${total})`);
+    output += `${chalk.bold(gradient(['#10b981', '#34d399'])(`${percentage}%`))} `;
+  if (showCount) output += chalk.dim(`(${current}/${total})`);
   output += ` ${progressBarStr}`;
   process.stdout.write(`\r${output}`);
   if (current >= total) {
-    logger.log("");
+    logger.log('');
   }
 }
 let MultiStepProgress = class {
@@ -263,17 +260,17 @@ let MultiStepProgress = class {
   async run() {
     const multiBarInstance = new cliProgress.MultiBar(
       {
-        format: " {bar} | {percentage}% | {step} | {status}",
-        barCompleteChar: "\u25A0",
-        barIncompleteChar: "\u25A1",
-        hideCursor: true
+        format: ' {bar} | {percentage}% | {step} | {status}',
+        barCompleteChar: '\u25A0',
+        barIncompleteChar: '\u25A1',
+        hideCursor: true,
       },
       cliProgress.Presets.shades_grey
     );
     this.progressBars = this.steps.map((step, _index) => {
       return multiBarInstance.create(100, 0, {
         step: step.name,
-        status: "Pending"
+        status: 'Pending',
       });
     });
     for (let i = 0; i < this.steps.length; i++) {
@@ -281,14 +278,14 @@ let MultiStepProgress = class {
       const step = this.steps[i];
       const bar = this.progressBars[i];
       try {
-        bar.update(0, { step: step.name, status: chalk.yellow("Running") });
+        bar.update(0, { step: step.name, status: chalk.yellow('Running') });
         if (step.execute) {
           await step.execute(bar, this);
         }
-        bar.update(100, { step: step.name, status: chalk.green("Completed") });
+        bar.update(100, { step: step.name, status: chalk.green('Completed') });
         this.completedSteps.add(i);
       } catch (error) {
-        bar.update(100, { step: step.name, status: chalk.red("Failed") });
+        bar.update(100, { step: step.name, status: chalk.red('Failed') });
         throw error;
       }
     }
@@ -300,7 +297,7 @@ let MultiStepProgress = class {
       const statusText = status || this.progressBars[stepIndex].options.status;
       this.progressBars[stepIndex].update(percentage, {
         step: step.name,
-        status: statusText
+        status: statusText,
       });
     }
   }
@@ -311,51 +308,55 @@ let MultiStepProgress = class {
     return Array.from(this.completedSteps);
   }
 };
-MultiStepProgress = __decorateClass([
-  singleton()
-], MultiStepProgress);
+MultiStepProgress = __decorateClass([singleton()], MultiStepProgress);
 async function withProgress(taskFn, options = {}) {
-  const { message = "Processing...", total = 100, onProgress = null } = options;
+  const { message = 'Processing...', total = 100, onProgress = null } = options;
   const progress = new ProgressBar();
   progress.start(total, 0, message);
   try {
     const result = await taskFn((current, msg) => {
       progress.update(current, msg || message);
-      if (onProgress)
-        onProgress(current, total);
+      if (onProgress) onProgress(current, total);
     });
-    progress.succeedSpinner("Completed!");
+    progress.succeedSpinner('Completed!');
     return result;
   } catch (error) {
-    progress.failSpinner("Failed!");
+    progress.failSpinner('Failed!');
     throw error;
   } finally {
     progress.stop();
   }
 }
-let ProgressBarWithETA = class extends ProgressBar {
-};
-ProgressBarWithETA = __decorateClass([
-  singleton()
-], ProgressBarWithETA);
+let ProgressBarWithETA = class extends ProgressBar {};
+ProgressBarWithETA = __decorateClass([singleton()], ProgressBarWithETA);
 const statusIndicators = {
-  success: (_text) => chalk.bgGreen.black(" SUCCESS "),
-  warning: (_text) => chalk.bgYellow.black(" WARNING "),
-  error: (_text) => chalk.bgRed.white(" ERROR "),
-  info: (_text) => chalk.bgBlue.white(" INFO "),
-  processing: (_text) => chalk.bgMagenta.white(" PROCESSING ")
+  success: (_text) => chalk.bgGreen.black(' SUCCESS '),
+  warning: (_text) => chalk.bgYellow.black(' WARNING '),
+  error: (_text) => chalk.bgRed.white(' ERROR '),
+  info: (_text) => chalk.bgBlue.white(' INFO '),
+  processing: (_text) => chalk.bgMagenta.white(' PROCESSING '),
 };
 function animateCompletion(callback) {
-  const frames = ["\u280B", "\u2819", "\u2839", "\u2838", "\u283C", "\u2834", "\u2826", "\u2827", "\u2807", "\u280F"];
+  const frames = [
+    '\u280B',
+    '\u2819',
+    '\u2839',
+    '\u2838',
+    '\u283C',
+    '\u2834',
+    '\u2826',
+    '\u2827',
+    '\u2807',
+    '\u280F',
+  ];
   let i = 0;
   const spinner = setInterval(() => {
     process.stdout.write(`\r${chalk.yellow(frames[i++ % frames.length])} Finishing up...`);
   }, 100);
   setTimeout(() => {
     clearInterval(spinner);
-    logger.log(`\r${chalk.green("\u2713")} Completed!`);
-    if (callback)
-      callback();
+    logger.log(`\r${chalk.green('\u2713')} Completed!`);
+    if (callback) callback();
   }, 1e3);
 }
 export {
@@ -371,5 +372,5 @@ export {
   showFancyProgress,
   showProgress,
   statusIndicators,
-  withProgress
+  withProgress,
 };

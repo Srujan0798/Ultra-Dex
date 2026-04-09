@@ -56,6 +56,6 @@ _No steps defined for this phase._
 
 ## 🤖 Agent Registry
 
-
 ---
-*This file is strictly read-only. Edit .ultra/state.json to update.*
+
+_This file is strictly read-only. Edit .ultra/state.json to update._

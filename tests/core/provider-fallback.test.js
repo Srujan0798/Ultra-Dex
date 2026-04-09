@@ -113,11 +113,9 @@ describe('Provider fallback infrastructure', () => {
     };
     router.pickProviders = () => ['failing-provider', 'succeeding-provider'];
 
-    const result = await router.routeRequest(
-      [{ role: 'user', content: 'hello' }],
-      'quality',
-      { fallback: true }
-    );
+    const result = await router.routeRequest([{ role: 'user', content: 'hello' }], 'quality', {
+      fallback: true,
+    });
 
     assert.equal(result.provider, 'succeeding-provider');
     assert.equal(result.content, 'fallback succeeded');
@@ -136,12 +134,16 @@ describe('CircuitBreaker', () => {
       resetTimeoutMs: 100,
     });
 
-    await assert.rejects(() => breaker.execute(async () => {
-      throw new Error('boom');
-    }));
-    await assert.rejects(() => breaker.execute(async () => {
-      throw new Error('boom');
-    }));
+    await assert.rejects(() =>
+      breaker.execute(async () => {
+        throw new Error('boom');
+      })
+    );
+    await assert.rejects(() =>
+      breaker.execute(async () => {
+        throw new Error('boom');
+      })
+    );
 
     assert.equal(breaker.state, 'OPEN');
   });

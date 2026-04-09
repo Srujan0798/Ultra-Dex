@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Diamond State Demo
- * 
+ *
  * Demonstrates the key features of the Diamond State architecture:
  * - Semantic routing
  * - Self-healing
@@ -9,8 +9,8 @@
  * - Real-time streaming
  */
 
-import { 
-  initializeDiamondState, 
+import {
+  initializeDiamondState,
   getDiamondStats,
   AlertSeverity,
 } from '../src/core/diamond-state.js';
@@ -31,7 +31,7 @@ async function main() {
   // Demo 1: Semantic Routing
   console.log('\n🧭 Demo 1: Semantic Routing');
   console.log('─────────────────────────────────');
-  
+
   const testTasks = [
     'Create a responsive navigation bar with mobile menu',
     'Set up PostgreSQL database with Prisma ORM',
@@ -54,7 +54,8 @@ async function main() {
   console.log('─────────────────────────────────');
 
   // Simulate a high latency alert
-  diamond.alertManager.builder()
+  diamond.alertManager
+    .builder()
     .type('provider.latency.high')
     .severity(AlertSeverity.HIGH)
     .message('OpenAI API latency exceeded 2000ms')
@@ -66,7 +67,8 @@ async function main() {
   console.log('Emitted high latency alert for OpenAI provider');
 
   // Simulate memory pressure
-  diamond.alertManager.builder()
+  diamond.alertManager
+    .builder()
     .type('memory.usage.high')
     .severity(AlertSeverity.HIGH)
     .message('Memory usage exceeded 85%')
@@ -77,7 +79,7 @@ async function main() {
   console.log('Emitted memory pressure alert');
 
   // Wait for healing to process
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await new Promise((resolve) => setTimeout(resolve, 1000));
 
   console.log('\nSelf-healing statistics:');
   console.log(JSON.stringify(diamond.siteReliability?.getStats(), null, 2));
@@ -98,8 +100,12 @@ async function main() {
     allowedModules: [],
     logger: diamond.logger,
     filesystem: {
-      readFile: async () => { throw new Error('FS disabled'); },
-      writeFile: async () => { throw new Error('FS disabled'); },
+      readFile: async () => {
+        throw new Error('FS disabled');
+      },
+      writeFile: async () => {
+        throw new Error('FS disabled');
+      },
       exists: async () => false,
       list: async () => [],
     },
@@ -154,7 +160,7 @@ async function main() {
   process.exit(0);
 }
 
-main().catch(error => {
+main().catch((error) => {
   console.error('Demo failed:', error);
   process.exit(1);
 });

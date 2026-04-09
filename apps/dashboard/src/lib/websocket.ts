@@ -184,109 +184,117 @@ export function useDashboardStream(url: string): DashboardStreamState {
   const [metrics, setMetrics] = useState<DashboardMetrics>(DEFAULT_METRICS);
   const [memory, setMemory] = useState<MemoryMetrics>(DEFAULT_MEMORY);
 
-  const onMessage = useCallback((message: unknown) => {
-    const event = normalizeEvent(message);
+  const onMessage = useCallback(
+    (message: unknown) => {
+      const event = normalizeEvent(message);
 
-    setEvents((previous) => [event, ...previous].slice(0, 200));
+      setEvents((previous) => [event, ...previous].slice(0, 200));
 
-    if (event.type === 'agent-status') {
-      const agent = normalizeAgent(event.payload);
-      if (agent) {
-        setAgentsById((previous) => ({
+      if (event.type === 'agent-status') {
+        const agent = normalizeAgent(event.payload);
+        if (agent) {
+          setAgentsById((previous) => ({
+            ...previous,
+            [agent.id]: agent,
+          }));
+        }
+      }
+
+      if (event.type === 'system-status') {
+        const agentCandidates = event.payload.agents;
+        if (Array.isArray(agentCandidates)) {
+          setAgentsById(() => {
+            const next: Record<string, AgentSnapshot> = {};
+            for (const candidate of agentCandidates) {
+              const normalized = normalizeAgent(candidate);
+              if (normalized) {
+                next[normalized.id] = normalized;
+              }
+            }
+            return Object.keys(next).length > 0 ? next : {};
+          });
+        }
+
+        const memoryCandidate = event.payload.memory;
+        if (memoryCandidate && typeof memoryCandidate === 'object') {
+          const value = memoryCandidate as Record<string, unknown>;
+          setMemory({
+            hot: toNumber(value.hot, memory.hot),
+            warm: toNumber(value.warm, memory.warm),
+            cold: toNumber(value.cold, memory.cold),
+          });
+        }
+
+        const providerCandidate = event.payload.providers;
+        const onlineProviders = Array.isArray(providerCandidate)
+          ? providerCandidate.length
+          : typeof providerCandidate === 'object' && providerCandidate
+            ? Object.keys(providerCandidate as Record<string, unknown>).length
+            : metrics.onlineProviders;
+
+        setMetrics((previous) => ({
           ...previous,
-          [agent.id]: agent,
+          activeAgents: Array.isArray(agentCandidates)
+            ? agentCandidates.length
+            : previous.activeAgents,
+          onlineProviders,
         }));
       }
-    }
 
-    if (event.type === 'system-status') {
-      const agentCandidates = event.payload.agents;
-      if (Array.isArray(agentCandidates)) {
-        setAgentsById(() => {
-          const next: Record<string, AgentSnapshot> = {};
-          for (const candidate of agentCandidates) {
-            const normalized = normalizeAgent(candidate);
-            if (normalized) {
-              next[normalized.id] = normalized;
-            }
-          }
-          return Object.keys(next).length > 0 ? next : {};
-        });
+      if (event.type === 'metrics-update') {
+        setMetrics((previous) => ({
+          latencyMs: toNumber(event.payload.latencyMs ?? event.payload.latency, previous.latencyMs),
+          memoryUsageMb: toNumber(
+            event.payload.memoryUsageMb ?? event.payload.memoryUsage,
+            previous.memoryUsageMb
+          ),
+          activeAgents: toNumber(event.payload.activeAgents, previous.activeAgents),
+          onlineProviders: toNumber(event.payload.onlineProviders, previous.onlineProviders),
+          activeClients: toNumber(
+            event.payload.activeClients ?? event.payload.clients,
+            previous.activeClients
+          ),
+        }));
       }
 
-      const memoryCandidate = event.payload.memory;
-      if (memoryCandidate && typeof memoryCandidate === 'object') {
-        const value = memoryCandidate as Record<string, unknown>;
-        setMemory({
-          hot: toNumber(value.hot, memory.hot),
-          warm: toNumber(value.warm, memory.warm),
-          cold: toNumber(value.cold, memory.cold),
-        });
+      if (event.type === 'memory-update') {
+        setMemory((previous) => ({
+          hot: toNumber(event.payload.hot, previous.hot),
+          warm: toNumber(event.payload.warm, previous.warm),
+          cold: toNumber(event.payload.cold, previous.cold),
+        }));
       }
 
-      const providerCandidate = event.payload.providers;
-      const onlineProviders = Array.isArray(providerCandidate)
-        ? providerCandidate.length
-        : typeof providerCandidate === 'object' && providerCandidate
-          ? Object.keys(providerCandidate as Record<string, unknown>).length
-          : metrics.onlineProviders;
+      if (event.type === 'cost-update') {
+        const amount = toNumber(event.payload.amount ?? event.payload.cost, 0);
+        const source = String(event.payload.provider ?? event.payload.source ?? 'router');
 
-      setMetrics((previous) => ({
-        ...previous,
-        activeAgents: Array.isArray(agentCandidates)
-          ? agentCandidates.length
-          : previous.activeAgents,
-        onlineProviders,
-      }));
-    }
+        setCostSeries((previous) => [
+          ...previous.slice(-47),
+          {
+            timestamp: event.timestamp,
+            amount,
+            source,
+          },
+        ]);
+      }
 
-    if (event.type === 'metrics-update') {
-      setMetrics((previous) => ({
-        latencyMs: toNumber(event.payload.latencyMs ?? event.payload.latency, previous.latencyMs),
-        memoryUsageMb: toNumber(
-          event.payload.memoryUsageMb ?? event.payload.memoryUsage,
-          previous.memoryUsageMb
-        ),
-        activeAgents: toNumber(event.payload.activeAgents, previous.activeAgents),
-        onlineProviders: toNumber(event.payload.onlineProviders, previous.onlineProviders),
-        activeClients: toNumber(event.payload.activeClients ?? event.payload.clients, previous.activeClients),
-      }));
-    }
-
-    if (event.type === 'memory-update') {
-      setMemory((previous) => ({
-        hot: toNumber(event.payload.hot, previous.hot),
-        warm: toNumber(event.payload.warm, previous.warm),
-        cold: toNumber(event.payload.cold, previous.cold),
-      }));
-    }
-
-    if (event.type === 'cost-update') {
-      const amount = toNumber(event.payload.amount ?? event.payload.cost, 0);
-      const source = String(event.payload.provider ?? event.payload.source ?? 'router');
-
-      setCostSeries((previous) => [
-        ...previous.slice(-47),
-        {
-          timestamp: event.timestamp,
-          amount,
-          source,
-        },
-      ]);
-    }
-
-    if (event.type === 'live-log' || event.type === 'task-update' || event.type === 'error') {
-      setLogs((previous) => [
-        {
-          id: `${event.type}:${event.timestamp}:${previous.length}`,
-          level: normalizeLogLevel(event.payload.level ?? event.type),
-          message: String(event.payload.message ?? event.payload.task ?? event.type),
-          timestamp: event.timestamp,
-        },
-        ...previous,
-      ].slice(0, 400));
-    }
-  }, [memory.cold, memory.hot, memory.warm, metrics.onlineProviders]);
+      if (event.type === 'live-log' || event.type === 'task-update' || event.type === 'error') {
+        setLogs((previous) =>
+          [
+            {
+              id: `${event.type}:${event.timestamp}:${previous.length}`,
+              level: normalizeLogLevel(event.payload.level ?? event.type),
+              message: String(event.payload.message ?? event.payload.task ?? event.type),
+              timestamp: event.timestamp,
+            },
+            ...previous,
+          ].slice(0, 400)
+        );
+      }
+    },
+    [memory.cold, memory.hot, memory.warm, metrics.onlineProviders]
+  );
 
   const socket = useWebSocket<unknown>(url, {
     reconnect: true,
@@ -306,6 +314,16 @@ export function useDashboardStream(url: string): DashboardStreamState {
       metrics,
       memory,
     }),
-    [socket.connected, socket.status, socket.error, events, agentsById, logs, costSeries, metrics, memory]
+    [
+      socket.connected,
+      socket.status,
+      socket.error,
+      events,
+      agentsById,
+      logs,
+      costSeries,
+      metrics,
+      memory,
+    ]
   );
 }

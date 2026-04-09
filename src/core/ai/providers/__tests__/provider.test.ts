@@ -38,7 +38,7 @@ describe('AI Provider System Tests', () => {
         apiKey: 'test-key',
         defaultModel: 'claude-3-opus-20240229',
       });
-      
+
       assert.ok(provider);
       assert.strictEqual(provider.providerName, 'anthropic');
       assert.strictEqual(provider.config.defaultModel, 'claude-3-opus-20240229');
@@ -49,7 +49,7 @@ describe('AI Provider System Tests', () => {
         apiKey: 'test-key',
         defaultModel: 'gpt-4o',
       });
-      
+
       assert.ok(provider);
       assert.strictEqual(provider.providerName, 'openai');
       assert.strictEqual(provider.config.defaultModel, 'gpt-4o');
@@ -60,7 +60,7 @@ describe('AI Provider System Tests', () => {
         apiKey: 'test-key',
         defaultModel: 'gemini-1.5-pro',
       });
-      
+
       assert.ok(provider);
       assert.strictEqual(provider.providerName, 'google');
       assert.strictEqual(provider.config.defaultModel, 'gemini-1.5-pro');
@@ -71,7 +71,7 @@ describe('AI Provider System Tests', () => {
         apiKey: 'test-key',
         defaultModel: 'llama3-70b-8192',
       });
-      
+
       assert.ok(provider);
       assert.strictEqual(provider.providerName, 'groq');
       assert.strictEqual(provider.config.defaultModel, 'llama3-70b-8192');
@@ -82,7 +82,7 @@ describe('AI Provider System Tests', () => {
         apiKey: 'test-key',
         defaultModel: 'mistral-large-latest',
       });
-      
+
       assert.ok(provider);
       assert.strictEqual(provider.providerName, 'mistral');
       assert.strictEqual(provider.config.defaultModel, 'mistral-large-latest');
@@ -93,7 +93,7 @@ describe('AI Provider System Tests', () => {
         apiKey: 'test-key',
         defaultModel: 'meta-llama/Llama-3-70b-chat-hf',
       });
-      
+
       assert.ok(provider);
       assert.strictEqual(provider.providerName, 'together');
       assert.strictEqual(provider.config.defaultModel, 'meta-llama/Llama-3-70b-chat-hf');
@@ -104,7 +104,7 @@ describe('AI Provider System Tests', () => {
         apiKey: 'test-key',
         defaultModel: 'llama3-70b-8192',
       });
-      
+
       assert.ok(provider);
       assert.strictEqual(provider.providerName, 'llama');
       assert.strictEqual(provider.config.defaultModel, 'llama3-70b-8192');
@@ -115,7 +115,7 @@ describe('AI Provider System Tests', () => {
         apiKey: 'test-key',
         defaultModel: 'command-r-plus',
       });
-      
+
       assert.ok(provider);
       assert.strictEqual(provider.providerName, 'cohere');
       assert.strictEqual(provider.config.defaultModel, 'command-r-plus');
@@ -126,7 +126,7 @@ describe('AI Provider System Tests', () => {
         apiKey: 'test-key',
         defaultModel: 'glm-4-plus',
       });
-      
+
       assert.ok(provider);
       assert.strictEqual(provider.providerName, 'zhipu');
       assert.strictEqual(provider.config.defaultModel, 'glm-4-plus');
@@ -137,7 +137,7 @@ describe('AI Provider System Tests', () => {
         apiKey: 'test-key',
         defaultModel: 'qwen-max',
       });
-      
+
       assert.ok(provider);
       assert.strictEqual(provider.providerName, 'qwen');
       assert.strictEqual(provider.config.defaultModel, 'qwen-max');
@@ -148,7 +148,7 @@ describe('AI Provider System Tests', () => {
         apiKey: 'test-key',
         defaultModel: 'deepseek-chat',
       });
-      
+
       assert.ok(provider);
       assert.strictEqual(provider.providerName, 'deepseek');
       assert.strictEqual(provider.config.defaultModel, 'deepseek-chat');
@@ -170,7 +170,7 @@ describe('AI Provider System Tests', () => {
         apiKey: 'test-key',
         defaultModel: 'moonshot-v1-128k',
       });
-      
+
       assert.ok(provider);
       assert.strictEqual(provider.providerName, 'kimi');
       assert.strictEqual(provider.config.defaultModel, 'moonshot-v1-128k');
@@ -181,7 +181,7 @@ describe('AI Provider System Tests', () => {
         apiKey: 'test-key',
         defaultModel: 'yi-large',
       });
-      
+
       assert.ok(provider);
       assert.strictEqual(provider.providerName, 'yi');
       assert.strictEqual(provider.config.defaultModel, 'yi-large');
@@ -192,7 +192,7 @@ describe('AI Provider System Tests', () => {
         apiKey: 'test-key',
         defaultModel: 'openclaw-model',
       });
-      
+
       assert.ok(provider);
       assert.strictEqual(provider.providerName, 'openclaw');
       assert.strictEqual(provider.config.defaultModel, 'openclaw-model');
@@ -257,7 +257,7 @@ describe('AI Provider System Tests', () => {
       });
 
       const registered = registerProvider('openai', provider);
-      
+
       assert.strictEqual(registered, provider);
       assert.ok(getProvider('openai'));
     });
@@ -270,7 +270,7 @@ describe('AI Provider System Tests', () => {
 
       registerProvider('openai', provider);
       const retrieved = getProvider('openai');
-      
+
       assert.strictEqual(retrieved, provider);
     });
 
@@ -287,9 +287,9 @@ describe('AI Provider System Tests', () => {
 
       registerProvider('openai', openaiProvider);
       registerProvider('anthropic', anthropicProvider);
-      
+
       const providers = listProviders();
-      
+
       assert.ok(providers.includes('openai'));
       assert.ok(providers.includes('anthropic'));
     });
@@ -304,7 +304,7 @@ describe('AI Provider System Tests', () => {
       // This test assumes MODEL_PROVIDER_MAP has some mappings
       // We'll test with a generic approach since we can't predict all mappings
       const result = resolveModel('gpt-4o'); // Assuming this maps to openai
-      
+
       // The result might be null if the model isn't in the mapping, but we can at least test the function exists
       assert.ok(resolveModel);
     });
@@ -333,27 +333,25 @@ describe('AI Provider System Tests', () => {
             read() {
               this.push('Mocked stream chunk');
               this.push(null);
-            }
+            },
           });
           return stream;
         },
         embed: async (text, opts) => ({
           embedding: [0.1, 0.2, 0.3],
           dimensions: 3,
-        })
+        }),
       };
 
       registerProvider('test-provider', mockProvider);
-      
+
       // Mock the initialize method to avoid auto-discovery
       router.initialize = async () => {};
-      
-      const result = await router.routeRequest(
-        [{ role: 'user', content: 'Hello' }], 
-        'quality', 
-        { provider: 'test-provider' }
-      );
-      
+
+      const result = await router.routeRequest([{ role: 'user', content: 'Hello' }], 'quality', {
+        provider: 'test-provider',
+      });
+
       assert.ok(result);
       assert.strictEqual(result.provider, 'test-provider');
       assert.strictEqual(result.content, 'Mocked response from router');
@@ -370,7 +368,7 @@ describe('AI Provider System Tests', () => {
         },
         embed: async () => {
           throw new Error('Provider failed');
-        }
+        },
       };
 
       const succeedingProvider = {
@@ -384,22 +382,22 @@ describe('AI Provider System Tests', () => {
             read() {
               this.push('Fallback stream chunk');
               this.push(null);
-            }
+            },
           });
           return stream;
         },
         embed: async (text, opts) => ({
           embedding: [0.5, 0.6, 0.7],
           dimensions: 3,
-        })
+        }),
       };
 
       registerProvider('failing-provider', failingProvider);
       registerProvider('succeeding-provider', succeedingProvider);
-      
+
       // Mock the initialize method to avoid auto-discovery
       router.initialize = async () => {};
-      
+
       // Configure the router to try failing provider first, then succeeding
       router.pickProviders = (strategy, opts) => {
         if (opts.provider) {
@@ -408,13 +406,11 @@ describe('AI Provider System Tests', () => {
         // Return both providers in sequence for fallback test
         return ['failing-provider', 'succeeding-provider'];
       };
-      
-      const result = await router.routeRequest(
-        [{ role: 'user', content: 'Hello' }], 
-        'quality', 
-        { fallback: true }
-      );
-      
+
+      const result = await router.routeRequest([{ role: 'user', content: 'Hello' }], 'quality', {
+        fallback: true,
+      });
+
       assert.ok(result);
       assert.strictEqual(result.provider, 'succeeding-provider');
       assert.strictEqual(result.content, 'Fallback succeeded');
@@ -430,7 +426,7 @@ describe('AI Provider System Tests', () => {
         },
         embed: async () => {
           throw new Error('First provider failed');
-        }
+        },
       };
 
       const failingProvider2 = {
@@ -442,26 +438,22 @@ describe('AI Provider System Tests', () => {
         },
         embed: async () => {
           throw new Error('Second provider failed');
-        }
+        },
       };
 
       registerProvider('failing-provider-1', failingProvider1);
       registerProvider('failing-provider-2', failingProvider2);
-      
+
       // Mock the initialize method to avoid auto-discovery
       router.initialize = async () => {};
-      
+
       // Configure the router to try both failing providers
       router.pickProviders = (strategy, opts) => {
         return ['failing-provider-1', 'failing-provider-2'];
       };
-      
+
       await assert.rejects(
-        router.routeRequest(
-          [{ role: 'user', content: 'Hello' }], 
-          'quality', 
-          { fallback: true }
-        ),
+        router.routeRequest([{ role: 'user', content: 'Hello' }], 'quality', { fallback: true }),
         /Request failed after providers/
       );
     });

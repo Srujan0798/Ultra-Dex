@@ -13,9 +13,11 @@ Comprehensive user manual covering all Ultra-Dex features, workflows, and best p
 Ultra-Dex is the **AI Orchestration Meta-Layer** that transforms how teams build software with AI. Rather than competing with AI tools like Claude, Cursor, or Devin, Ultra-Dex creates the infrastructure that makes them unstoppable together.
 
 ### Core Philosophy
+
 > **"We don't compete with Cursor/Devin. We are the Meta-Layer that makes them UNSTOPPABLE."**
 
 ### Key Benefits
+
 - **Persistent Context:** Context survives across all AI tools and sessions
 - **Coordinated Workflows:** Multi-agent orchestration for complex tasks
 - **Quality Assurance:** 21-step verification for production-ready code
@@ -27,6 +29,7 @@ Ultra-Dex is the **AI Orchestration Meta-Layer** that transforms how teams build
 ## 🏗️ SYSTEM OVERVIEW
 
 ### Architecture Components
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    ULTRA-DEX SYSTEM ARCHITECTURE                │
@@ -57,6 +60,7 @@ Ultra-Dex is the **AI Orchestration Meta-Layer** that transforms how teams build
 ## 🚀 ESSENTIAL COMMANDS
 
 ### 1. Project Initialization
+
 ```bash
 # Initialize a new project
 ultra-dex init [project-name]
@@ -69,6 +73,7 @@ ultra-dex init my-project --config ./custom-config.json
 ```
 
 ### 2. Plan Generation
+
 ```bash
 # Generate implementation plan from description
 ultra-dex generate "Build a SaaS with user authentication and payments"
@@ -81,6 +86,7 @@ ultra-dex plan --update
 ```
 
 ### 3. Agent Swarm Execution
+
 ```bash
 # Start agent swarm for a task
 ultra-dex swarm start "Implement user authentication"
@@ -96,6 +102,7 @@ ultra-dex swarm start "Deploy to staging" --dry-run
 ```
 
 ### 4. Quality Verification
+
 ```bash
 # Run complete 21-step verification
 ultra-dex verify --full
@@ -111,6 +118,7 @@ ultra-dex verify --config ./verification-config.json
 ```
 
 ### 5. Interactive Dashboard
+
 ```bash
 # Start interactive dashboard
 ultra-dex
@@ -127,34 +135,41 @@ ultra-dex --headless
 ## 🧠 CONTEXT MANAGEMENT
 
 ### CONTEXT.md Best Practices
+
 The `CONTEXT.md` file is your project's persistent memory:
 
 ```markdown
 # Project Context
 
 ## Mission
+
 - **Purpose:** [What the project does]
 - **Target Users:** [Who uses this project]
 - **Success Metrics:** [How we measure success]
 
 ## Architecture Decisions
+
 ### [Date] - Decision Title
+
 - **Context:** [Situation that led to decision]
 - **Decision:** [What was decided]
 - **Status:** [Accepted/Superseded/Amended]
 - **Consequences:** [Positive and negative impacts]
 
 ## Technical Stack
+
 - **Frontend:** [Framework and libraries]
 - **Backend:** [Framework and libraries]
 - **Database:** [Database system]
 - **Deployment:** [Hosting platform]
 
 ## Key Features
+
 - [List of key features with status]
 ```
 
 ### Context Commands
+
 ```bash
 # Update context with new information
 ultra-dex context update "Add new feature requirement"
@@ -174,49 +189,59 @@ ultra-dex context diff
 ## 🤖 AGENT SYSTEM
 
 ### Core Agent Personas
+
 Ultra-Dex includes 8 specialized core agents:
 
 #### 1. 🏛️ **Architect Agent**
+
 - **Role:** System design and architecture decisions
 - **Command:** `ultra-dex agent architect`
 - **Focus:** High-level design, scalability, security
 
 #### 2. 💻 **Coder Agent**
+
 - **Role:** Implementation and development
 - **Command:** `ultra-dex agent coder`
 - **Focus:** Code generation, implementation
 
 #### 3. 🪐 **Reviewer Agent**
+
 - **Role:** Quality assurance and code review
 - **Command:** `ultra-dex agent reviewer`
 - **Focus:** Code quality, security, performance
 
 #### 4. 🐞 **Debugger Agent**
+
 - **Role:** Issue identification and resolution
 - **Command:** `ultra-dex agent debugger`
 - **Focus:** Root cause analysis, bug fixing
 
 #### 5. 🐝 **Swarm Agent**
+
 - **Role:** Multi-agent orchestration
 - **Command:** `ultra-dex agent swarm`
 - **Focus:** Task coordination, workflow management
 
 #### 6. 💾 **Memory Agent**
+
 - **Role:** Context management and persistence
 - **Command:** `ultra-dex agent memory`
 - **Focus:** Context retrieval, knowledge management
 
 #### 7. ✅ **QA Agent**
+
 - **Role:** Quality verification and validation
 - **Command:** `ultra-dex agent qa`
 - **Focus:** 21-step verification, compliance
 
 #### 8. ⚖️ **Governor Agent**
+
 - **Role:** Compliance and governance
 - **Command:** `ultra-dex agent governor`
 - **Focus:** Security, compliance, governance
 
 ### Agent Orchestration Patterns
+
 ```bash
 # Sequential execution (each agent waits for previous)
 ultra-dex swarm start "Build auth system" --sequence
@@ -236,6 +261,7 @@ ultra-dex swarm start "Optimize performance" --iterative
 ## 🔌 MCP INTEGRATION
 
 ### Model Context Protocol (MCP)
+
 The MCP protocol enables real-time context synchronization across AI tools:
 
 ```bash
@@ -248,6 +274,7 @@ ultra-dex serve
 ```
 
 ### MCP Configuration
+
 ```json
 {
   "mcp": {
@@ -275,6 +302,7 @@ ultra-dex serve
 ## 🛠️ ADVANCED FEATURES
 
 ### 1. Template System
+
 ```bash
 # List available templates
 ultra-dex template list
@@ -290,6 +318,7 @@ ultra-dex template update my-template
 ```
 
 ### 2. Plugin System
+
 ```bash
 # Install plugin
 ultra-dex plugin install @ultra-dex/ai-model-selector
@@ -305,6 +334,7 @@ ultra-dex plugin remove @ultra-dex/ai-model-selector
 ```
 
 ### 3. Configuration Management
+
 ```bash
 # Show current configuration
 ultra-dex config show
@@ -320,6 +350,7 @@ ultra-dex config reset
 ```
 
 ### 4. Performance Monitoring
+
 ```bash
 # Show performance metrics
 ultra-dex metrics show
@@ -339,6 +370,7 @@ ultra-dex metrics alert --threshold 95
 ## 🚀 WORKFLOW PATTERNS
 
 ### 1. Standard Development Workflow
+
 ```
 1. ultra-dex init [project]
 2. ultra-dex generate "Project description"
@@ -350,6 +382,7 @@ ultra-dex metrics alert --threshold 95
 ```
 
 ### 2. Agile Sprint Workflow
+
 ```
 1. ultra-dex plan "Sprint goals and features"
 2. ultra-dex swarm start "Sprint tasks" --parallel
@@ -361,6 +394,7 @@ ultra-dex metrics alert --threshold 95
 ```
 
 ### 3. Bug Fix Workflow
+
 ```
 1. ultra-dex context update "Bug: [description]"
 2. ultra-dex swarm start "Debug: [issue]" --agents debugger,coder,reviewer
@@ -370,6 +404,7 @@ ultra-dex metrics alert --threshold 95
 ```
 
 ### 4. Feature Enhancement Workflow
+
 ```
 1. ultra-dex context update "Enhancement: [feature]"
 2. ultra-dex generate "Enhance [component] with [feature]"
@@ -384,12 +419,14 @@ ultra-dex metrics alert --threshold 95
 ## 🔐 SECURITY & COMPLIANCE
 
 ### Security Features
+
 - **Sandboxed Execution:** All code runs in secure Docker containers
 - **API Key Management:** Secure storage and rotation of API keys
 - **Access Control:** Role-based permissions for sensitive operations
 - **Audit Logging:** Complete audit trail of all operations
 
 ### Compliance Verification
+
 ```bash
 # Run compliance check
 ultra-dex compliance check --standard SOC2
@@ -406,6 +443,7 @@ ultra-dex security audit --deep
 ## 📊 PERFORMANCE OPTIMIZATION
 
 ### Performance Commands
+
 ```bash
 # Profile performance
 ultra-dex performance profile
@@ -421,6 +459,7 @@ ultra-dex performance benchmark --against [baseline]
 ```
 
 ### Performance Settings
+
 ```json
 {
   "performance": {
@@ -446,8 +485,10 @@ ultra-dex performance benchmark --against [baseline]
 ### Common Issues & Solutions
 
 #### Issue: "MCP server not responding"
+
 **Symptoms:** External tools can't connect to context bus
 **Solution:**
+
 ```bash
 # Check if server is running
 ultra-dex health check
@@ -460,8 +501,10 @@ lsof -i :3001
 ```
 
 #### Issue: "Agent swarm hanging"
+
 **Symptoms:** Agent swarm stops responding mid-execution
 **Solution:**
+
 ```bash
 # Check agent status
 ultra-dex swarm status
@@ -474,8 +517,10 @@ ultra-dex logs --agent [agent-name]
 ```
 
 #### Issue: "API key validation failed"
+
 **Symptoms:** AI provider returns authentication errors
 **Solution:**
+
 ```bash
 # Verify API key is set
 echo $OPENAI_API_KEY
@@ -488,8 +533,10 @@ ultra-dex config set openai.apiKey [new-key]
 ```
 
 #### Issue: "Context synchronization problems"
+
 **Symptoms:** CONTEXT.md not updating across tools
 **Solution:**
+
 ```bash
 # Force context sync
 ultra-dex sync --force
@@ -506,6 +553,7 @@ ultra-dex context reload
 ## 📋 CONFIGURATION REFERENCE
 
 ### Environment Variables
+
 ```bash
 # AI Provider Keys
 export OPENAI_API_KEY="sk-..."
@@ -521,6 +569,7 @@ export TEMP_DIR="./.ultra-temp"
 ```
 
 ### Configuration File (ultra-dex.config.json)
+
 ```json
 {
   "version": "6.0.0",
@@ -555,6 +604,7 @@ export TEMP_DIR="./.ultra-temp"
 ## 🧪 TESTING & VALIDATION
 
 ### Test Commands
+
 ```bash
 # Run all tests
 ultra-dex test
@@ -570,6 +620,7 @@ ultra-dex test --integration
 ```
 
 ### Quality Gates
+
 ```bash
 # Run 21-step verification
 ultra-dex verify --full
@@ -586,6 +637,7 @@ ultra-dex verify --config ./custom-verification.json
 ## 🚢 DEPLOYMENT WORKFLOWS
 
 ### Deployment Commands
+
 ```bash
 # Deploy to staging
 ultra-dex deploy --environment staging
@@ -601,6 +653,7 @@ ultra-dex deploy --feature [feature-name]
 ```
 
 ### Deployment Configuration
+
 ```json
 {
   "deployment": {
@@ -631,12 +684,14 @@ ultra-dex deploy --feature [feature-name]
 ## 📞 SUPPORT & RESOURCES
 
 ### Getting Help
+
 - **Documentation:** [docs.ultra-dex.ai](https://docs.ultra-dex.ai)
 - **Community:** [Discord](https://discord.gg/ultra-dex)
 - **Issues:** [GitHub Issues](https://github.com/Srujan0798/Ultra-Dex/issues)
 - **Email:** support@ultra-dex.ai
 
 ### Learning Resources
+
 - **[Getting Started](./basics/GETTING_STARTED.md)** - Installation and first project
 - **[Advanced Workflows](./advanced/ADVANCED-WORKFLOWS.md)** - Complex orchestration patterns
 - **[API Reference](../api/reference/CLI-REFERENCE.md)** - Complete command documentation
@@ -647,6 +702,7 @@ ultra-dex deploy --feature [feature-name]
 ## 🔄 UPDATES & MAINTENANCE
 
 ### Update Commands
+
 ```bash
 # Check for updates
 ultra-dex version check
@@ -666,6 +722,7 @@ ultra-dex version history
 ## 🏆 BEST PRACTICES
 
 ### Development Best Practices
+
 1. **Always Start with Context:** Update CONTEXT.md before beginning work
 2. **Use the Template System:** Leverage existing templates for consistency
 3. **Run Verification:** Execute 21-step verification before deployment
@@ -673,6 +730,7 @@ ultra-dex version history
 5. **Maintain Quality:** Follow established coding standards
 
 ### Team Collaboration Best Practices
+
 1. **Share Context:** Ensure all team members have access to CONTEXT.md
 2. **Coordinate Swarms:** Plan agent swarm execution to avoid conflicts
 3. **Document Decisions:** Record all architectural decisions in CONTEXT.md
@@ -684,6 +742,7 @@ ultra-dex version history
 ## 🚀 PROFESSIONAL TIPS
 
 ### Productivity Tips
+
 - **Use Tab Completion:** Ultra-Dex supports tab completion for commands
 - **Leverage Shortcuts:** Use command aliases for frequently used operations
 - **Customize Templates:** Create project-specific templates for efficiency
@@ -691,6 +750,7 @@ ultra-dex version history
 - **Automate Repetition:** Create scripts for repetitive tasks
 
 ### Advanced Tips
+
 - **Custom Agents:** Create specialized agents for domain-specific tasks
 - **Integration Hooks:** Add custom hooks for external system integration
 - **Performance Tuning:** Adjust concurrency and caching settings for your hardware

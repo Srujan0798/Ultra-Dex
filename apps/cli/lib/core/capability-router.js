@@ -109,9 +109,9 @@ export class CapabilityRouter {
       capabilityId: bestId,
       agent: best.capability.agent,
       confidence: Math.min(best.score, 1.0),
-      reason: `Matched keywords: ${best.capability.keywords.filter((k) =>
-        normalizedTask.includes(k.toLowerCase())
-      ).join(', ')}`,
+      reason: `Matched keywords: ${best.capability.keywords
+        .filter((k) => normalizedTask.includes(k.toLowerCase()))
+        .join(', ')}`,
     };
 
     logger.info(`Routed task to ${result.agent}`, {
@@ -167,9 +167,10 @@ export class CapabilityRouter {
     }
 
     // Normalize by keyword count to avoid bias toward capabilities with many keywords
-    const normalizedScore = capability.keywords.length > 0
-      ? (score / capability.keywords.length) * (capability.priority ?? 1)
-      : 0;
+    const normalizedScore =
+      capability.keywords.length > 0
+        ? (score / capability.keywords.length) * (capability.priority ?? 1)
+        : 0;
 
     return normalizedScore;
   }

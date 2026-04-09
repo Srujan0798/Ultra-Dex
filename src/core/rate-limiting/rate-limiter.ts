@@ -3,14 +3,13 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
-import { EventEmitter } from "events";
+import { singleton } from 'tsyringe';
+import { EventEmitter } from 'events';
 let SlidingWindow = class {
   constructor({ windowMs = 6e4, maxRequests = 100 }) {
     this.windowMs = windowMs;
@@ -44,11 +43,9 @@ let SlidingWindow = class {
    * Time until next slot opens (ms)
    */
   retryAfter() {
-    if (this.remaining() > 0)
-      return 0;
+    if (this.remaining() > 0) return 0;
     this._prune(Date.now());
-    if (this.requests.length === 0)
-      return 0;
+    if (this.requests.length === 0) return 0;
     return Math.max(0, this.requests[0] + this.windowMs - Date.now());
   }
   _prune(now) {
@@ -65,13 +62,11 @@ let SlidingWindow = class {
       windowMs: this.windowMs,
       remaining: this.remaining(),
       totalAllowed: this.totalAllowed,
-      totalDenied: this.totalDenied
+      totalDenied: this.totalDenied,
     };
   }
 };
-SlidingWindow = __decorateClass([
-  singleton()
-], SlidingWindow);
+SlidingWindow = __decorateClass([singleton()], SlidingWindow);
 let TokenBucket = class {
   constructor({ capacity = 100, refillRate = 10, refillIntervalMs = 1e3 }) {
     this.capacity = capacity;
@@ -103,7 +98,7 @@ let TokenBucket = class {
   _refill() {
     const now = Date.now();
     const elapsed = now - this.lastRefill;
-    const tokensToAdd = elapsed / this.refillIntervalMs * this.refillRate;
+    const tokensToAdd = (elapsed / this.refillIntervalMs) * this.refillRate;
     this.tokens = Math.min(this.capacity, this.tokens + tokensToAdd);
     this.lastRefill = now;
   }
@@ -112,20 +107,18 @@ let TokenBucket = class {
       tokens: Math.floor(this.available()),
       capacity: this.capacity,
       refillRate: this.refillRate,
-      totalConsumed: this.totalConsumed
+      totalConsumed: this.totalConsumed,
     };
   }
 };
-TokenBucket = __decorateClass([
-  singleton()
-], TokenBucket);
+TokenBucket = __decorateClass([singleton()], TokenBucket);
 let RateLimiter = class extends EventEmitter {
   constructor({
     defaultWindowMs = 6e4,
     defaultMaxRequests = 100,
-    strategy = "sliding-window",
+    strategy = 'sliding-window',
     // 'sliding-window' | 'token-bucket'
-    globalLimit = null
+    globalLimit = null,
   } = {}) {
     super();
     this.defaultWindowMs = defaultWindowMs;
@@ -133,7 +126,7 @@ let RateLimiter = class extends EventEmitter {
     this.strategy = strategy;
     this.limiters = /* @__PURE__ */ new Map();
     this.customLimits = /* @__PURE__ */ new Map();
-    this.globalLimiter = globalLimit ? this._createLimiter("__global__", globalLimit) : null;
+    this.globalLimiter = globalLimit ? this._createLimiter('__global__', globalLimit) : null;
     this.stats = { totalChecks: 0, totalAllowed: 0, totalDenied: 0 };
   }
   /**
@@ -150,11 +143,11 @@ let RateLimiter = class extends EventEmitter {
     this.stats.totalChecks++;
     if (this.globalLimiter && !this.globalLimiter.allow()) {
       this.stats.totalDenied++;
-      this.emit("rate-limit:denied", { key, reason: "global-limit" });
+      this.emit('rate-limit:denied', { key, reason: 'global-limit' });
       return {
         allowed: false,
-        reason: "Global rate limit exceeded",
-        retryAfterMs: this.globalLimiter.retryAfter ? this.globalLimiter.retryAfter() : 1e3
+        reason: 'Global rate limit exceeded',
+        retryAfterMs: this.globalLimiter.retryAfter ? this.globalLimiter.retryAfter() : 1e3,
       };
     }
     const limiter = this._getLimiter(key);
@@ -162,19 +155,19 @@ let RateLimiter = class extends EventEmitter {
     const allowed = isWindow ? limiter.allow() : limiter.consume(1);
     if (allowed) {
       this.stats.totalAllowed++;
-      this.emit("rate-limit:allowed", { key });
+      this.emit('rate-limit:allowed', { key });
       return {
         allowed: true,
-        remaining: isWindow ? limiter.remaining() : limiter.available()
+        remaining: isWindow ? limiter.remaining() : limiter.available(),
       };
     } else {
       this.stats.totalDenied++;
-      this.emit("rate-limit:denied", { key, reason: "per-key-limit" });
+      this.emit('rate-limit:denied', { key, reason: 'per-key-limit' });
       return {
         allowed: false,
         reason: `Rate limit exceeded for "${key}"`,
         retryAfterMs: isWindow ? limiter.retryAfter() : 1e3,
-        remaining: 0
+        remaining: 0,
       };
     }
   }
@@ -189,32 +182,32 @@ let RateLimiter = class extends EventEmitter {
     return this.limiters.get(key);
   }
   _createLimiter(key, config) {
-    if (this.strategy === "token-bucket") {
+    if (this.strategy === 'token-bucket') {
       return new TokenBucket({
         capacity: config.maxRequests || this.defaultMaxRequests,
         refillRate: config.refillRate || 10,
-        refillIntervalMs: config.refillIntervalMs || 1e3
+        refillIntervalMs: config.refillIntervalMs || 1e3,
       });
     }
     return new SlidingWindow({
       windowMs: config.windowMs || this.defaultWindowMs,
-      maxRequests: config.maxRequests || this.defaultMaxRequests
+      maxRequests: config.maxRequests || this.defaultMaxRequests,
     });
   }
   /**
    * Express-style middleware
    */
-  middleware(keyExtractor = (req) => req.ip || "default") {
+  middleware(keyExtractor = (req) => req.ip || 'default') {
     return (req, res, next) => {
       const key = keyExtractor(req);
       const result = this.check(key);
-      res.setHeader("X-RateLimit-Remaining", result.remaining || 0);
+      res.setHeader('X-RateLimit-Remaining', result.remaining || 0);
       if (!result.allowed) {
-        res.setHeader("Retry-After", Math.ceil((result.retryAfterMs || 1e3) / 1e3));
+        res.setHeader('Retry-After', Math.ceil((result.retryAfterMs || 1e3) / 1e3));
         res.status(429).json({
-          error: "Too Many Requests",
+          error: 'Too Many Requests',
           message: result.reason,
-          retryAfterMs: result.retryAfterMs
+          retryAfterMs: result.retryAfterMs,
         });
         return;
       }
@@ -226,8 +219,7 @@ let RateLimiter = class extends EventEmitter {
    */
   getKeyStats(key) {
     const limiter = this.limiters.get(key);
-    if (!limiter)
-      return null;
+    if (!limiter) return null;
     return limiter.getStats();
   }
   /**
@@ -236,7 +228,7 @@ let RateLimiter = class extends EventEmitter {
   getDashboard() {
     const keyStats = {};
     for (const [key, limiter] of this.limiters) {
-      if (key !== "__global__") {
+      if (key !== '__global__') {
         keyStats[key] = limiter.getStats();
       }
     }
@@ -245,7 +237,7 @@ let RateLimiter = class extends EventEmitter {
       totalKeys: this.limiters.size - (this.globalLimiter ? 1 : 0),
       global: this.globalLimiter ? this.globalLimiter.getStats() : null,
       keys: keyStats,
-      stats: { ...this.stats }
+      stats: { ...this.stats },
     };
   }
   /**
@@ -253,7 +245,7 @@ let RateLimiter = class extends EventEmitter {
    */
   reset(key) {
     this.limiters.delete(key);
-    this.emit("rate-limit:reset", { key });
+    this.emit('rate-limit:reset', { key });
   }
   /**
    * Reset all limits
@@ -262,20 +254,13 @@ let RateLimiter = class extends EventEmitter {
     this.limiters.clear();
     if (this.globalLimiter) {
       this.globalLimiter = this._createLimiter(
-        "__global__",
-        this.customLimits.get("__global__") || { maxRequests: this.defaultMaxRequests * 10 }
+        '__global__',
+        this.customLimits.get('__global__') || { maxRequests: this.defaultMaxRequests * 10 }
       );
     }
-    this.emit("rate-limit:reset-all");
+    this.emit('rate-limit:reset-all');
   }
 };
-RateLimiter = __decorateClass([
-  singleton()
-], RateLimiter);
+RateLimiter = __decorateClass([singleton()], RateLimiter);
 var rate_limiter_default = RateLimiter;
-export {
-  RateLimiter,
-  SlidingWindow,
-  TokenBucket,
-  rate_limiter_default as default
-};
+export { RateLimiter, SlidingWindow, TokenBucket, rate_limiter_default as default };

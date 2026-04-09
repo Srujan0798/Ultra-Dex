@@ -7,6 +7,7 @@ Ultra-Dex is an AI orchestration platform that enables teams to leverage multipl
 ## Core Features
 
 ### 1. Multi-Agent System
+
 - **8 Specialized Agents**: Each with defined roles and responsibilities
   - @Planner: Task breakdown and planning
   - @CTO: Architecture and technical decisions
@@ -18,6 +19,7 @@ Ultra-Dex is an AI orchestration platform that enables teams to leverage multipl
   - @Debugger: Bug fixing and troubleshooting
 
 ### 2. AI Provider Support
+
 - **OpenAI**: GPT-4, GPT-4 Turbo, GPT-4o, GPT-4o Mini
 - **Anthropic**: Claude models
 - **Google**: Gemini models
@@ -25,6 +27,7 @@ Ultra-Dex is an AI orchestration platform that enables teams to leverage multipl
 - **Router**: Semantic routing between providers
 
 ### 3. Agent Tools
+
 - `>> READ_CODE`: Read files from the project
 - `>> WRITE_CODE`: Write/modify files
 - `>> SEARCH_CODE`: Search the codebase
@@ -32,12 +35,14 @@ Ultra-Dex is an AI orchestration platform that enables teams to leverage multipl
 - `>> DELEGATE`: Assign tasks to other agents
 
 ### 4. Safety & Governance
+
 - Permission system for agent operations
 - Verification gates (linting, type safety, security)
 - Error recovery mechanisms
 - Token usage tracking
 
 ### 5. Project Management
+
 - Automatic project scaffolding
 - Implementation planning
 - State management and persistence
@@ -46,6 +51,7 @@ Ultra-Dex is an AI orchestration platform that enables teams to leverage multipl
 ## Command Line Interface
 
 ### Core Commands
+
 - `ultra-dex init`: Initialize new projects
 - `ultra-dex generate`: Create implementation plans
 - `ultra-dex run <agent>`: Execute agent tasks
@@ -54,6 +60,7 @@ Ultra-Dex is an AI orchestration platform that enables teams to leverage multipl
 - `ultra-dex agents show <name>`: View agent prompts
 
 ### Advanced Commands
+
 - `ultra-dex plan`: Manage project plans
 - `ultra-dex review`: Code review against plans
 - `ultra-dex verify`: Execute verification checks
@@ -63,12 +70,15 @@ Ultra-Dex is an AI orchestration platform that enables teams to leverage multipl
 ## Technical Architecture
 
 ### Provider Abstraction Layer
+
 The platform uses a unified provider interface supporting multiple AI services with consistent APIs, cost estimation, and error handling.
 
 ### Memory System
+
 Persistent project context with graph-based codebase analysis and state management.
 
 ### Security Model
+
 Role-based access control, file system protections, and command execution safeguards.
 
 ## Competitive Advantages
@@ -82,16 +92,19 @@ Role-based access control, file system protections, and command execution safegu
 ## Use Cases
 
 ### Individual Developers
+
 - Rapid prototyping with AI assistance
 - Code review and quality improvement
 - Task breakdown and planning
 
 ### Development Teams
+
 - Standardized AI workflows
 - Consistent code quality
 - Collaborative AI-assisted development
 
 ### Organizations
+
 - Governance and compliance for AI usage
 - Cost management and tracking
 - Security controls for AI operations
@@ -107,16 +120,19 @@ Role-based access control, file system protections, and command execution safegu
 ## Roadmap
 
 ### Near Term
+
 - Enhanced agent communication protocols
 - Improved project graph analysis
 - Better error recovery mechanisms
 
 ### Medium Term
+
 - Plugin ecosystem for custom agents
 - Integration with popular IDEs
 - Advanced project visualization
 
 ### Long Term
+
 - Enterprise governance features
 - Team collaboration tools
 - Advanced AI model fine-tuning capabilities

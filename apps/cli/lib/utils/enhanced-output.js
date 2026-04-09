@@ -5,7 +5,6 @@
  * Provides consistent, styled output across all commands
  */
 
-
 import {
   formatSuccess,
   formatError,

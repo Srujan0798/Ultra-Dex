@@ -78,9 +78,10 @@ export function summarizeMemories(memories, maxItems = 5) {
     .slice(0, maxItems)
     .map((memory) => {
       const text = truncateText(memory.text || memory.content || '', 180);
-      const tags = Array.isArray(memory.tags) && memory.tags.length > 0
-        ? ` [tags: ${memory.tags.slice(0, 4).join(', ')}]`
-        : '';
+      const tags =
+        Array.isArray(memory.tags) && memory.tags.length > 0
+          ? ` [tags: ${memory.tags.slice(0, 4).join(', ')}]`
+          : '';
       return `- ${text}${tags}`;
     })
     .join('\n');

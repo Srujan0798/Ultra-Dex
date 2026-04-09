@@ -13,7 +13,7 @@ export class TaskDecomposer {
     this.priorityWeights = {
       dependencies: 0.3,
       complexity: 0.4,
-      urgency: 0.3
+      urgency: 0.3,
     };
   }
 
@@ -24,10 +24,10 @@ export class TaskDecomposer {
    */
   decompose(plan) {
     const tasks = plan.tasks || [];
-    
+
     // Build dependency graph
     this.buildGraph(tasks);
-    
+
     // Check for cycles
     const cycleCheck = this.detectCycles(tasks);
     if (cycleCheck.hasCycle) {
@@ -36,10 +36,10 @@ export class TaskDecomposer {
 
     // Topological sort
     const orderedTasks = this.topologicalSort(tasks);
-    
+
     // Calculate priority scores
     const scoredTasks = this.calculatePriorityScores(orderedTasks);
-    
+
     // Group into parallelizable batches
     const batches = this.createBatches(scoredTasks);
 
@@ -51,9 +51,9 @@ export class TaskDecomposer {
       metadata: {
         totalTasks: tasks.length,
         batchCount: batches.length,
-        maxParallelism: Math.max(...batches.map(b => b.tasks.length)),
-        criticalPath: this.findCriticalPath(scoredTasks)
-      }
+        maxParallelism: Math.max(...batches.map((b) => b.tasks.length)),
+        criticalPath: this.findCriticalPath(scoredTasks),
+      },
     };
   }
 
@@ -63,12 +63,12 @@ export class TaskDecomposer {
    */
   buildGraph(tasks) {
     this.dependencyGraph.clear();
-    
+
     for (const task of tasks) {
       this.dependencyGraph.set(task.id, {
         task,
         dependencies: task.dependencies || [],
-        dependents: []
+        dependents: [],
       });
     }
 
@@ -108,7 +108,7 @@ export class TaskDecomposer {
             const cycleStart = path.indexOf(depId);
             return {
               hasCycle: true,
-              cycle: [...path.slice(cycleStart), depId]
+              cycle: [...path.slice(cycleStart), depId],
             };
           }
         }
@@ -135,19 +135,17 @@ export class TaskDecomposer {
    * @returns {Array} Sorted tasks
    */
   topologicalSort(tasks) {
-    const taskMap = new Map(tasks.map(t => [t.id, t]));
+    const taskMap = new Map(tasks.map((t) => [t.id, t]));
     const inDegree = new Map();
     const result = [];
 
     // Initialize in-degrees
     for (const task of tasks) {
-      inDegree.set(task.id, (task.dependencies || []).filter(d => taskMap.has(d)).length);
+      inDegree.set(task.id, (task.dependencies || []).filter((d) => taskMap.has(d)).length);
     }
 
     // Find all tasks with no dependencies
-    const queue = tasks
-      .filter(t => inDegree.get(t.id) === 0)
-      .map(t => t.id);
+    const queue = tasks.filter((t) => inDegree.get(t.id) === 0).map((t) => t.id);
 
     while (queue.length > 0) {
       const taskId = queue.shift();
@@ -180,19 +178,19 @@ export class TaskDecomposer {
   calculatePriorityScores(tasks) {
     const complexityMap = { low: 1, medium: 2, high: 3 };
 
-    return tasks.map(task => {
+    return tasks.map((task) => {
       const depCount = (task.dependencies || []).length;
       const complexity = complexityMap[task.estimatedComplexity] || 2;
       const urgency = task.priority || 5;
 
-      const score = 
+      const score =
         (10 - depCount) * this.priorityWeights.dependencies +
         (4 - complexity) * this.priorityWeights.complexity +
         urgency * this.priorityWeights.urgency;
 
       return {
         ...task,
-        priorityScore: Math.round(score * 100) / 100
+        priorityScore: Math.round(score * 100) / 100,
       };
     });
   }
@@ -211,12 +209,12 @@ export class TaskDecomposer {
       const batch = {
         id: `batch-${batches.length + 1}`,
         tasks: [],
-        canParallelize: true
+        canParallelize: true,
       };
 
       // Find tasks whose dependencies are all completed
-      const ready = remaining.filter(task =>
-        (task.dependencies || []).every(dep => completed.has(dep))
+      const ready = remaining.filter((task) =>
+        (task.dependencies || []).every((dep) => completed.has(dep))
       );
 
       if (ready.length === 0 && remaining.length > 0) {
@@ -226,7 +224,7 @@ export class TaskDecomposer {
       } else {
         // Sort by priority score (descending)
         ready.sort((a, b) => b.priorityScore - a.priorityScore);
-        
+
         for (const task of ready) {
           batch.tasks.push(task);
           completed.add(task.id);
@@ -247,7 +245,7 @@ export class TaskDecomposer {
    * @returns {Array} Critical path task IDs
    */
   findCriticalPath(tasks) {
-    const taskMap = new Map(tasks.map(t => [t.id, t]));
+    const taskMap = new Map(tasks.map((t) => [t.id, t]));
     const memo = new Map();
 
     const longestPath = (taskId) => {

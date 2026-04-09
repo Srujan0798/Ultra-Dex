@@ -34,7 +34,7 @@ describe('Ollama Provider - Models', () => {
   test('should support llama models', () => {
     const models = ['llama2', 'llama3', 'llama2:13b', 'llama3:70b'];
 
-    models.forEach(model => {
+    models.forEach((model) => {
       assert.ok(model.includes('llama'));
     });
   });
@@ -42,7 +42,7 @@ describe('Ollama Provider - Models', () => {
   test('should support mistral models', () => {
     const models = ['mistral', 'mistral:7b', 'mixtral'];
 
-    models.forEach(model => {
+    models.forEach((model) => {
       assert.ok(typeof model === 'string');
       assert.ok(model.length > 0);
     });
@@ -51,7 +51,7 @@ describe('Ollama Provider - Models', () => {
   test('should support codellama', () => {
     const models = ['codellama', 'codellama:13b', 'codellama:34b'];
 
-    models.forEach(model => {
+    models.forEach((model) => {
       assert.ok(model.includes('codellama'));
     });
   });
@@ -59,7 +59,7 @@ describe('Ollama Provider - Models', () => {
   test('should allow model tags', () => {
     const modelsWithTags = ['llama2:7b-chat', 'mistral:7b-instruct'];
 
-    modelsWithTags.forEach(model => {
+    modelsWithTags.forEach((model) => {
       assert.ok(model.includes(':'));
     });
   });
@@ -69,7 +69,7 @@ describe('Ollama Provider - Configuration', () => {
   test('should allow temperature setting', () => {
     const validTemperatures = [0, 0.5, 0.8, 1.0];
 
-    validTemperatures.forEach(temp => {
+    validTemperatures.forEach((temp) => {
       assert.ok(temp >= 0 && temp <= 2.0);
     });
   });
@@ -77,7 +77,7 @@ describe('Ollama Provider - Configuration', () => {
   test('should allow top_k parameter', () => {
     const validTopK = [10, 20, 40, 80];
 
-    validTopK.forEach(k => {
+    validTopK.forEach((k) => {
       assert.ok(k > 0);
       assert.ok(Number.isInteger(k));
     });
@@ -86,7 +86,7 @@ describe('Ollama Provider - Configuration', () => {
   test('should allow top_p parameter', () => {
     const validTopP = [0.1, 0.5, 0.9, 1.0];
 
-    validTopP.forEach(p => {
+    validTopP.forEach((p) => {
       assert.ok(p > 0 && p <= 1.0);
     });
   });
@@ -94,7 +94,7 @@ describe('Ollama Provider - Configuration', () => {
   test('should allow context window setting', () => {
     const contextSizes = [2048, 4096, 8192, 16384];
 
-    contextSizes.forEach(size => {
+    contextSizes.forEach((size) => {
       assert.ok(size > 0);
       assert.ok(Number.isInteger(size));
     });
@@ -132,7 +132,7 @@ describe('Ollama Provider - Request Format', () => {
     const generateRequest = {
       model: 'llama2',
       prompt: 'Hello!',
-      stream: false
+      stream: false,
     };
 
     assert.ok(generateRequest.model);
@@ -143,9 +143,7 @@ describe('Ollama Provider - Request Format', () => {
   test('should format chat request', () => {
     const chatRequest = {
       model: 'llama2',
-      messages: [
-        { role: 'user', content: 'Hello!' }
-      ]
+      messages: [{ role: 'user', content: 'Hello!' }],
     };
 
     assert.ok(chatRequest.messages);
@@ -157,8 +155,8 @@ describe('Ollama Provider - Request Format', () => {
       model: 'llama2',
       messages: [
         { role: 'system', content: 'You are helpful' },
-        { role: 'user', content: 'Hi' }
-      ]
+        { role: 'user', content: 'Hi' },
+      ],
     };
 
     assert.strictEqual(withSystem.messages[0].role, 'system');
@@ -170,7 +168,7 @@ describe('Ollama Provider - Response Parsing', () => {
     const mockResponse = {
       model: 'llama2',
       response: 'Hello! How can I help?',
-      done: true
+      done: true,
     };
 
     assert.strictEqual(mockResponse.done, true);
@@ -181,7 +179,7 @@ describe('Ollama Provider - Response Parsing', () => {
     const mockChatResponse = {
       model: 'llama2',
       message: { role: 'assistant', content: 'Hello!' },
-      done: true
+      done: true,
     };
 
     assert.ok(mockChatResponse.message);
@@ -192,7 +190,7 @@ describe('Ollama Provider - Response Parsing', () => {
     const streamChunks = [
       { response: 'Hello', done: false },
       { response: ' world', done: false },
-      { response: '!', done: true }
+      { response: '!', done: true },
     ];
 
     streamChunks.forEach((chunk, index) => {
@@ -209,7 +207,7 @@ describe('Ollama Provider - Error Handling', () => {
   test('should handle connection errors', () => {
     const connectionError = {
       code: 'ECONNREFUSED',
-      message: 'Connection refused'
+      message: 'Connection refused',
     };
 
     assert.strictEqual(connectionError.code, 'ECONNREFUSED');
@@ -217,7 +215,7 @@ describe('Ollama Provider - Error Handling', () => {
 
   test('should handle model not found', () => {
     const notFoundError = {
-      error: 'model not found'
+      error: 'model not found',
     };
 
     assert.ok(notFoundError.error.includes('not found'));
@@ -226,7 +224,7 @@ describe('Ollama Provider - Error Handling', () => {
   test('should handle timeout', () => {
     const timeoutError = {
       code: 'ETIMEDOUT',
-      message: 'Request timeout'
+      message: 'Request timeout',
     };
 
     assert.strictEqual(timeoutError.code, 'ETIMEDOUT');
@@ -244,8 +242,8 @@ describe('Ollama Provider - Model Management', () => {
     const mockModelList = {
       models: [
         { name: 'llama2', size: '3.8GB' },
-        { name: 'mistral', size: '4.1GB' }
-      ]
+        { name: 'mistral', size: '4.1GB' },
+      ],
     };
 
     assert.ok(mockModelList.models);
@@ -258,7 +256,7 @@ describe('Ollama Provider - Model Management', () => {
       name: 'llama2',
       parameters: '7B',
       context_length: 4096,
-      quantization: 'Q4_0'
+      quantization: 'Q4_0',
     };
 
     assert.ok(modelInfo.name);
@@ -267,7 +265,7 @@ describe('Ollama Provider - Model Management', () => {
 
   test('should support model deletion', () => {
     const deleteRequest = {
-      name: 'llama2'
+      name: 'llama2',
     };
 
     assert.ok(deleteRequest.name);
@@ -280,7 +278,7 @@ describe('Ollama Provider - Performance', () => {
       total_duration: 1000000000, // nanoseconds
       load_duration: 100000000,
       prompt_eval_count: 10,
-      eval_count: 20
+      eval_count: 20,
     };
 
     assert.ok(perfMetrics.total_duration > 0);
@@ -299,10 +297,10 @@ describe('Ollama Provider - Performance', () => {
     const modelSizes = {
       '7B': '3.8GB',
       '13B': '7.3GB',
-      '70B': '38GB'
+      '70B': '38GB',
     };
 
-    Object.values(modelSizes).forEach(size => {
+    Object.values(modelSizes).forEach((size) => {
       assert.ok(size.includes('GB'));
     });
   });

@@ -10,14 +10,14 @@ const githubApp = createProbot({
   appId: process.env.GITHUB_APP_ID,
   privateKey: process.env.GITHUB_PRIVATE_KEY,
   webhooks: {
-    secret: process.env.GITHUB_WEBHOOK_SECRET
-  }
+    secret: process.env.GITHUB_WEBHOOK_SECRET,
+  },
 });
 
 // Initialize Ultra-Dex client
 const ultraDex = new ultraDexClient({
   apiKey: process.env.ULTRA_DEX_API_KEY,
-  endpoint: process.env.ULTRA_DEX_ENDPOINT
+  endpoint: process.env.ULTRA_DEX_ENDPOINT,
 });
 
 // Webhook endpoints
@@ -26,14 +26,14 @@ app.post('/webhook', githubApp.webhooks.middleware());
 // PR review automation
 githubApp.on('pull_request.opened', async (context) => {
   const { pull_request: pr, repository } = context.payload;
-  
+
   try {
     // Analyze PR with Ultra-Dex
     const analysis = await ultraDex.analyzeCode(pr.diff_url, {
       repository: repository.full_name,
       pullRequestId: pr.number,
       title: pr.title,
-      description: pr.body
+      description: pr.body,
     });
 
     // Post review comments
@@ -46,7 +46,7 @@ githubApp.on('pull_request.opened', async (context) => {
           commit_id: pr.head.sha,
           body: comment.body,
           path: comment.path,
-          line: comment.line
+          line: comment.line,
         });
       }
     }
@@ -57,9 +57,8 @@ githubApp.on('pull_request.opened', async (context) => {
       owner: repository.owner.login,
       repo: repository.name,
       issue_number: pr.number,
-      body: summary
+      body: summary,
     });
-
   } catch (error) {
     console.error('Error processing PR:', error);
   }
@@ -68,14 +67,14 @@ githubApp.on('pull_request.opened', async (context) => {
 // Issue automation
 githubApp.on('issues.opened', async (context) => {
   const { issue, repository } = context.payload;
-  
+
   try {
     // Analyze issue with Ultra-Dex
     const analysis = await ultraDex.analyzeIssue({
       title: issue.title,
       body: issue.body,
       repository: repository.full_name,
-      issueNumber: issue.number
+      issueNumber: issue.number,
     });
 
     // Add labels and assignees
@@ -84,7 +83,7 @@ githubApp.on('issues.opened', async (context) => {
         owner: repository.owner.login,
         repo: repository.name,
         issue_number: issue.number,
-        labels: analysis.labels
+        labels: analysis.labels,
       });
     }
 
@@ -93,10 +92,9 @@ githubApp.on('issues.opened', async (context) => {
         owner: repository.owner.login,
         repo: repository.name,
         issue_number: issue.number,
-        assignees: [analysis.assignee]
+        assignees: [analysis.assignee],
       });
     }
-
   } catch (error) {
     console.error('Error processing issue:', error);
   }
@@ -105,13 +103,13 @@ githubApp.on('issues.opened', async (context) => {
 // Commit analysis
 githubApp.on('push', async (context) => {
   const { ref, commits, repository } = context.payload;
-  
+
   try {
     // Analyze commits with Ultra-Dex
     const analysis = await ultraDex.analyzeCommits({
       commits,
       repository: repository.full_name,
-      branch: ref.replace('refs/heads/', '')
+      branch: ref.replace('refs/heads/', ''),
     });
 
     // Post analysis as commit comment or status
@@ -121,11 +119,10 @@ githubApp.on('push', async (context) => {
           owner: repository.owner.login,
           repo: repository.name,
           commit_sha: issue.commitSha,
-          body: `⚠️ Potential issue detected: ${issue.description}`
+          body: `⚠️ Potential issue detected: ${issue.description}`,
         });
       }
     }
-
   } catch (error) {
     console.error('Error processing push:', error);
   }
@@ -134,15 +131,14 @@ githubApp.on('push', async (context) => {
 // Repository setup
 githubApp.on('repository.created', async (context) => {
   const { repository } = context.payload;
-  
+
   try {
     // Set up Ultra-Dex for new repository
     await ultraDex.setupRepository({
       repository: repository.full_name,
       webhookUrl: `${process.env.WEBHOOK_BASE_URL}/webhook`,
-      installationId: context.payload.installation.id
+      installationId: context.payload.installation.id,
     });
-
   } catch (error) {
     console.error('Error setting up repository:', error);
   }

@@ -9,5 +9,5 @@ export {
   UnifiedMemory,
   contextCache,
   ppmManager,
-  predictiveEngine
+  predictiveEngine,
 };

@@ -60,10 +60,7 @@ export const Overview = memo(function Overview() {
     },
     {
       label: 'Completed',
-      value:
-        (Array.isArray(state?.completedTasks)
-          ? state.completedTasks.length
-          : undefined) ?? 38,
+      value: (Array.isArray(state?.completedTasks) ? state.completedTasks.length : undefined) ?? 38,
       delta: '+6%',
       icon: CheckCircle2,
       tone: 'emerald',
@@ -83,16 +80,8 @@ export const Overview = memo(function Overview() {
   ];
 
   return (
-    <main
-      className="space-y-6"
-      role="main"
-      aria-label="Dashboard Overview"
-    >
-      <section
-        className="grid gap-4 lg:grid-cols-4"
-        aria-label="Key Metrics"
-        role="region"
-      >
+    <main className="space-y-6" role="main" aria-label="Dashboard Overview">
+      <section className="grid gap-4 lg:grid-cols-4" aria-label="Key Metrics" role="region">
         {metrics.map((metric) => (
           <MetricCard key={metric.label} {...metric} />
         ))}
@@ -146,7 +135,9 @@ export const Overview = memo(function Overview() {
                 aria-label={`${item.label}: ${item.value}, ${item.status}`}
               >
                 <div className="text-sm text-slate-400">{item.label}</div>
-                <div className="mt-2 text-xl font-semibold text-slate-100" aria-hidden="true">{item.value}</div>
+                <div className="mt-2 text-xl font-semibold text-slate-100" aria-hidden="true">
+                  {item.value}
+                </div>
                 <div
                   className="mt-1 text-xs uppercase tracking-[0.2em] text-emerald-400"
                   role="status"

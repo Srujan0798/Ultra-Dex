@@ -18,7 +18,7 @@ class EnterpriseAnalytics extends EventEmitter {
       enableAnomalyDetection: options.enableAnomalyDetection !== false,
       enablePredictiveAnalytics: options.enablePredictiveAnalytics !== false,
       metricsStoragePath: options.metricsStoragePath || '.ultra-dex/analytics',
-      ...options
+      ...options,
     };
 
     this.metrics = new Map(); // metricName -> metricData
@@ -28,7 +28,7 @@ class EnterpriseAnalytics extends EventEmitter {
     this.predictiveModels = new Map();
     this.alerts = new Map();
     this.dashboards = new Map();
-    
+
     this.initialize();
   }
 
@@ -38,20 +38,20 @@ class EnterpriseAnalytics extends EventEmitter {
     await fs.mkdir(path.join(this.options.metricsStoragePath, 'metrics'), { recursive: true });
     await fs.mkdir(path.join(this.options.metricsStoragePath, 'reports'), { recursive: true });
     await fs.mkdir(path.join(this.options.metricsStoragePath, 'dashboards'), { recursive: true });
-    
+
     // Initialize analytics engine
     this.initializeAnalyticsEngine();
-    
+
     // Initialize anomaly detection if enabled
     if (this.options.enableAnomalyDetection) {
       this.initializeAnomalyDetection();
     }
-    
+
     // Initialize predictive analytics if enabled
     if (this.options.enablePredictiveAnalytics) {
       this.initializePredictiveModels();
     }
-    
+
     logger.log('📊 Enterprise Analytics System Initialized');
   }
 
@@ -64,7 +64,7 @@ class EnterpriseAnalytics extends EventEmitter {
       unit: 'score',
       currentValue: 100,
       history: [],
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     this.metrics.set('agents.active', {
@@ -74,7 +74,7 @@ class EnterpriseAnalytics extends EventEmitter {
       unit: 'count',
       currentValue: 0,
       history: [],
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     this.metrics.set('memory.utilization', {
@@ -84,7 +84,7 @@ class EnterpriseAnalytics extends EventEmitter {
       unit: 'percent',
       currentValue: 0,
       history: [],
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     this.metrics.set('api.requests', {
@@ -94,7 +94,7 @@ class EnterpriseAnalytics extends EventEmitter {
       unit: 'count',
       currentValue: 0,
       history: [],
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     this.metrics.set('costs.daily', {
@@ -104,7 +104,7 @@ class EnterpriseAnalytics extends EventEmitter {
       unit: 'usd',
       currentValue: 0,
       history: [],
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     this.metrics.set('security.incidents', {
@@ -114,7 +114,7 @@ class EnterpriseAnalytics extends EventEmitter {
       unit: 'count',
       currentValue: 0,
       history: [],
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     this.metrics.set('user.saturation', {
@@ -124,7 +124,7 @@ class EnterpriseAnalytics extends EventEmitter {
       unit: 'score',
       currentValue: 0,
       history: [],
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     this.metrics.set('performance.latency', {
@@ -136,7 +136,7 @@ class EnterpriseAnalytics extends EventEmitter {
       p95: 0,
       p99: 0,
       history: [],
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
@@ -146,24 +146,25 @@ class EnterpriseAnalytics extends EventEmitter {
       thresholds: new Map(),
       patterns: new Map(),
       detectionAlgorithms: new Map(),
-      
+
       // Set up default thresholds
       setThreshold: (metric, threshold) => {
         this.anomalyDetector.thresholds.set(metric, threshold);
       },
-      
+
       // Detect anomalies in metric data
       detectAnomalies: (metricName, value) => {
         const threshold = this.anomalyDetector.thresholds.get(metricName);
         if (!threshold) return false;
-        
+
         // Simple threshold-based detection (in production, would use ML models)
         if (threshold.type === 'upper' && value > threshold.value) return true;
         if (threshold.type === 'lower' && value < threshold.value) return true;
-        if (threshold.type === 'range' && (value < threshold.min || value > threshold.max)) return true;
-        
+        if (threshold.type === 'range' && (value < threshold.min || value > threshold.max))
+          return true;
+
         return false;
-      }
+      },
     };
 
     // Set up default thresholds
@@ -183,7 +184,7 @@ class EnterpriseAnalytics extends EventEmitter {
       algorithm: 'linear_regression',
       trainedAt: new Date().toISOString(),
       accuracy: 0.85,
-      predictions: []
+      predictions: [],
     });
 
     this.predictiveModels.set('cost', {
@@ -192,7 +193,7 @@ class EnterpriseAnalytics extends EventEmitter {
       algorithm: 'time_series',
       trainedAt: new Date().toISOString(),
       accuracy: 0.82,
-      predictions: []
+      predictions: [],
     });
 
     this.predictiveModels.set('capacity', {
@@ -201,7 +202,7 @@ class EnterpriseAnalytics extends EventEmitter {
       algorithm: 'time_series',
       trainedAt: new Date().toISOString(),
       accuracy: 0.88,
-      predictions: []
+      predictions: [],
     });
   }
 
@@ -226,7 +227,7 @@ class EnterpriseAnalytics extends EventEmitter {
       history: [],
       tags: {},
       metadata: {},
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     // Update metric value based on type
@@ -236,13 +237,13 @@ class EnterpriseAnalytics extends EventEmitter {
       // Update histogram percentiles
       if (!metric.samples) metric.samples = [];
       metric.samples.push(value);
-      
+
       // Calculate percentiles (simplified)
       metric.samples.sort((a, b) => a - b);
       metric.p50 = metric.samples[Math.floor(metric.samples.length * 0.5)] || 0;
       metric.p95 = metric.samples[Math.floor(metric.samples.length * 0.95)] || 0;
       metric.p99 = metric.samples[Math.floor(metric.samples.length * 0.99)] || 0;
-      
+
       // Keep only last 1000 samples
       if (metric.samples.length > 1000) {
         metric.samples = metric.samples.slice(-1000);
@@ -261,7 +262,7 @@ class EnterpriseAnalytics extends EventEmitter {
       value,
       timestamp: new Date().toISOString(),
       tags,
-      metadata
+      metadata,
     });
 
     if (metric.history.length > 1000) {
@@ -279,26 +280,27 @@ class EnterpriseAnalytics extends EventEmitter {
     if (this.options.enableAnomalyDetection && this.anomalyDetector) {
       const isAnomaly = this.anomalyDetector.detectAnomalies(name, value);
       if (isAnomaly) {
-        this.emit('anomaly:detected', { 
-          metric: name, 
-          value, 
+        this.emit('anomaly:detected', {
+          metric: name,
+          value,
           threshold: this.anomalyDetector.thresholds.get(name),
-          timestamp: new Date().toISOString() 
+          timestamp: new Date().toISOString(),
         });
       }
     }
 
     // Emit event for real-time monitoring
-    this.emit('metric:updated', { 
-      name, 
-      value, 
-      tags, 
-      metadata, 
-      timestamp: new Date().toISOString() 
+    this.emit('metric:updated', {
+      name,
+      value,
+      tags,
+      metadata,
+      timestamp: new Date().toISOString(),
     });
 
     // Periodically save metrics to disk
-    if (Math.random() < 0.1) { // Save ~10% of the time to avoid excessive I/O
+    if (Math.random() < 0.1) {
+      // Save ~10% of the time to avoid excessive I/O
       await this.saveMetrics();
     }
   }
@@ -321,7 +323,7 @@ class EnterpriseAnalytics extends EventEmitter {
       value,
       timestamp: new Date().toISOString(),
       tags,
-      metadata
+      metadata,
     });
 
     // Keep only last 100 entries for real-time
@@ -355,11 +357,11 @@ class EnterpriseAnalytics extends EventEmitter {
 
     // Apply time filters
     if (options.startTime) {
-      history = history.filter(entry => new Date(entry.timestamp) >= new Date(options.startTime));
+      history = history.filter((entry) => new Date(entry.timestamp) >= new Date(options.startTime));
     }
 
     if (options.endTime) {
-      history = history.filter(entry => new Date(entry.timestamp) <= new Date(options.endTime));
+      history = history.filter((entry) => new Date(entry.timestamp) <= new Date(options.endTime));
     }
 
     // Apply limit
@@ -397,34 +399,34 @@ class EnterpriseAnalytics extends EventEmitter {
       summary: {
         totalMetrics: metrics.length,
         startTime,
-        endTime
+        endTime,
       },
       anomalies: [],
-      predictions: {}
+      predictions: {},
     };
 
     for (const metricName of metrics) {
       const metric = this.getMetric(metricName);
       if (metric) {
         const history = this.getMetricHistory(metricName, { startTime, endTime });
-        
+
         // Calculate statistics
-        const values = history.map(entry => entry.value);
+        const values = history.map((entry) => entry.value);
         const stats = {
           count: values.length,
           sum: values.reduce((sum, val) => sum + val, 0),
           avg: values.length > 0 ? values.reduce((sum, val) => sum + val, 0) / values.length : 0,
           min: values.length > 0 ? Math.min(...values) : 0,
           max: values.length > 0 ? Math.max(...values) : 0,
-          latest: values.length > 0 ? values[values.length - 1] : 0
+          latest: values.length > 0 ? values[values.length - 1] : 0,
         };
 
         report.metrics[metricName] = {
           ...metric,
           history: history.slice(-options.historyLimit || 50), // Last 50 entries by default
-          stats
+          stats,
         };
-        
+
         // Check for anomalies in this metric's history
         if (this.options.enableAnomalyDetection) {
           for (const entry of history) {
@@ -433,7 +435,7 @@ class EnterpriseAnalytics extends EventEmitter {
                 metric: metricName,
                 value: entry.value,
                 timestamp: entry.timestamp,
-                threshold: this.anomalyDetector.thresholds.get(metricName)
+                threshold: this.anomalyDetector.thresholds.get(metricName),
               });
             }
           }
@@ -459,7 +461,7 @@ class EnterpriseAnalytics extends EventEmitter {
       durationHours: (new Date(endTime) - new Date(startTime)) / (1000 * 60 * 60),
       totalMetrics: Object.keys(report.metrics).length,
       anomalyCount: report.anomalies.length,
-      predictionCount: Object.keys(report.predictions).length
+      predictionCount: Object.keys(report.predictions).length,
     };
 
     // Save report if persistence is enabled
@@ -517,7 +519,7 @@ class EnterpriseAnalytics extends EventEmitter {
         day: i,
         date: new Date(Date.now() + i * 24 * 60 * 60 * 1000).toISOString(),
         predictedValue: Math.round(predictedValue),
-        confidence: 0.85 // Fixed confidence for mock implementation
+        confidence: 0.85, // Fixed confidence for mock implementation
       });
     }
 
@@ -527,7 +529,7 @@ class EnterpriseAnalytics extends EventEmitter {
       accuracy: model.accuracy,
       predictions,
       confidence: 0.85,
-      generatedAt: new Date().toISOString()
+      generatedAt: new Date().toISOString(),
     };
   }
 
@@ -548,7 +550,7 @@ class EnterpriseAnalytics extends EventEmitter {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       owners: config.owners || [],
-      viewers: config.viewers || []
+      viewers: config.viewers || [],
     };
 
     this.dashboards.set(dashboardId, dashboard);
@@ -580,7 +582,7 @@ class EnterpriseAnalytics extends EventEmitter {
     return {
       ...dashboard,
       widgetData,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 
@@ -602,7 +604,7 @@ class EnterpriseAnalytics extends EventEmitter {
       recipients: config.recipients || [],
       enabled: config.enabled !== false,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
 
     this.alerts.set(alertId, alert);
@@ -646,7 +648,7 @@ class EnterpriseAnalytics extends EventEmitter {
             alert,
             metricName,
             value,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           });
         }
       }
@@ -662,11 +664,11 @@ class EnterpriseAnalytics extends EventEmitter {
   async saveMetrics() {
     const metricsPath = path.join(this.options.metricsStoragePath, 'metrics', 'current.json');
     const metricsObj = {};
-    
+
     for (const [name, metric] of this.metrics) {
       metricsObj[name] = metric;
     }
-    
+
     await fs.writeFile(metricsPath, JSON.stringify(metricsObj, null, 2));
   }
 
@@ -679,7 +681,7 @@ class EnterpriseAnalytics extends EventEmitter {
       const metricsPath = path.join(this.options.metricsStoragePath, 'metrics', 'current.json');
       const metricsContent = await fs.readFile(metricsPath, 'utf8');
       const metricsObj = JSON.parse(metricsContent);
-      
+
       for (const [name, metric] of Object.entries(metricsObj)) {
         this.metrics.set(name, metric);
       }
@@ -724,16 +726,16 @@ class EnterpriseAnalytics extends EventEmitter {
    */
   getEnterpriseMetrics() {
     const metrics = {};
-    
+
     for (const [name, metric] of this.metrics) {
       metrics[name] = {
         currentValue: metric.currentValue,
         unit: metric.unit,
         description: metric.description,
-        timestamp: metric.timestamp
+        timestamp: metric.timestamp,
       };
     }
-    
+
     return {
       metrics,
       summary: {
@@ -743,9 +745,9 @@ class EnterpriseAnalytics extends EventEmitter {
         securityIncidents: this.metrics.get('security.incidents')?.currentValue || 0,
         memoryUtilization: this.metrics.get('memory.utilization')?.currentValue || 0,
         apiRequests: this.metrics.get('api.requests')?.currentValue || 0,
-        systemHealth: this.metrics.get('system.health')?.currentValue || 0
+        systemHealth: this.metrics.get('system.health')?.currentValue || 0,
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
   }
 }

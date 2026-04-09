@@ -35,14 +35,14 @@ export class DecentralizedSwarm extends EventEmitter {
       id: agentId,
       data: agentData,
       joinedAt: new Date(),
-      status: 'active'
+      status: 'active',
     };
 
     this.agents.set(agentId, agent);
-    
+
     // Emit event for other peers to handle
     this.emit('agent:joined', { agentId, agentData });
-    
+
     return agent;
   }
 
@@ -57,9 +57,9 @@ export class DecentralizedSwarm extends EventEmitter {
 
     const agent = this.agents.get(agentId);
     agent.status = 'disconnected';
-    
+
     this.emit('agent:left', { agentId });
-    
+
     // Actually remove after a grace period to allow cleanup
     setTimeout(() => {
       this.agents.delete(agentId);
@@ -77,10 +77,10 @@ export class DecentralizedSwarm extends EventEmitter {
     }
 
     this.isRunning = true;
-    
+
     // Initialize P2P networking here
     // This would typically involve WebRTC, libp2p, or similar
-    
+
     this.emit('swarm:started', { id: this.id });
   }
 
@@ -127,7 +127,7 @@ export class DecentralizedSwarm extends EventEmitter {
       from: fromAgentId,
       to: toAgentId,
       context,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     this.emit('handoff:coordinated', handoff);
@@ -144,7 +144,7 @@ export class DecentralizedSwarm extends EventEmitter {
       isRunning: this.isRunning,
       agentCount: this.agents.size,
       agents: Array.from(this.agents.values()),
-      connectionCount: this.connections.size
+      connectionCount: this.connections.size,
     };
   }
 }

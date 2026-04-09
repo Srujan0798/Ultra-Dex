@@ -3,10 +3,7 @@
 import { wasmRuntime, WasmPlugin } from './runtime.js';
 import { logger } from '../../lib/utils/logger.js';
 
-export {
-    wasmRuntime,
-    WasmPlugin
-};
+export { wasmRuntime, WasmPlugin };
 
 export default wasmRuntime;
 

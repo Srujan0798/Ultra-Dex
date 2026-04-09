@@ -29,14 +29,16 @@ After months of building, we're thrilled to announce that Ultra-Dex is now avail
 ### 🚀 Ready to Transform Your AI Development?
 
 Start your free trial today and experience the difference:
+
 - 2-minute setup with guided initialization
-- Visual debugging for complex AI workflows  
+- Visual debugging for complex AI workflows
 - Enterprise-grade security out of the box
 - 100+ pages of documentation and examples
 
 👉 **Get Started**: https://ultra-dex.ai
 
 ### 📚 Learn More:
+
 - **Documentation**: https://docs.ultra-dex.ai
 - **Enterprise Guide**: https://ultra-dex.ai/enterprise
 - **Security Whitepaper**: https://ultra-dex.ai/security

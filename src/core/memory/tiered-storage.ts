@@ -3,13 +3,12 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __decorateClass = (decorators, target, key, kind) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
-    if (decorator = decorators[i])
+    if ((decorator = decorators[i]))
       result = (kind ? decorator(target, key, result) : decorator(result)) || result;
-  if (kind && result)
-    __defProp(target, key, result);
+  if (kind && result) __defProp(target, key, result);
   return result;
 };
-import { singleton } from "tsyringe";
+import { singleton } from 'tsyringe';
 let TieredStorage = class {
   constructor(options = {}) {
     this.hotStorage = /* @__PURE__ */ new Map();
@@ -28,8 +27,8 @@ let TieredStorage = class {
         ...metadata,
         created: /* @__PURE__ */ new Date(),
         lastAccessed: /* @__PURE__ */ new Date(),
-        accessCount: 1
-      }
+        accessCount: 1,
+      },
     };
     this.hotStorage.set(key, entry);
     await this.rebalance();
@@ -108,16 +107,11 @@ let TieredStorage = class {
       total: this.hotStorage.size + this.warmStorage.size + this.coldStorage.size,
       limits: {
         hot: this.hotLimit,
-        warm: this.warmLimit
-      }
+        warm: this.warmLimit,
+      },
     };
   }
 };
-TieredStorage = __decorateClass([
-  singleton()
-], TieredStorage);
+TieredStorage = __decorateClass([singleton()], TieredStorage);
 var tiered_storage_default = TieredStorage;
-export {
-  TieredStorage,
-  tiered_storage_default as default
-};
+export { TieredStorage, tiered_storage_default as default };

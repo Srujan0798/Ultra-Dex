@@ -37,10 +37,10 @@ class UltraDexAPIServer {
     this.io = new Server(this.server, {
       cors: {
         origin: process.env.CORS_ORIGIN || '*',
-        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH']
-      }
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+      },
     });
-    
+
     this.setupHealthChecks();
     this.setupMiddlewares();
     this.setupRoutes();
@@ -55,7 +55,7 @@ class UltraDexAPIServer {
         const resolved = {
           ultraDex: Boolean(ultraDex),
           agentOrchestrator: Boolean(agentOrchestrator),
-          memoryManager: Boolean(ppmManager)
+          memoryManager: Boolean(ppmManager),
         };
         const unresolved = Object.entries(resolved)
           .filter(([, ok]) => !ok)
@@ -64,7 +64,7 @@ class UltraDexAPIServer {
           throw new Error(`DI unresolved dependencies: ${unresolved.join(', ')}`);
         }
         return { resolved };
-      }
+      },
     });
 
     this.healthService.addReadinessCheck({
@@ -75,7 +75,7 @@ class UltraDexAPIServer {
           throw new Error('Memory manager is not initialized');
         }
         return { initialized };
-      }
+      },
     });
 
     this.healthService.addDeepCheck({
@@ -90,7 +90,7 @@ class UltraDexAPIServer {
           lazyConnect: true,
           connectTimeout: 2000,
           maxRetriesPerRequest: 1,
-          enableOfflineQueue: false
+          enableOfflineQueue: false,
         });
         try {
           await client.connect();
@@ -104,7 +104,7 @@ class UltraDexAPIServer {
             client.disconnect();
           });
         }
-      }
+      },
     });
 
     this.healthService.addDeepCheck({
@@ -116,10 +116,10 @@ class UltraDexAPIServer {
           agentId: 'system',
           task: 'audit_db_writable',
           outcome: 'ok',
-          details: { source: 'health/deep' }
+          details: { source: 'health/deep' },
         });
         return { entryId: entry.id };
-      }
+      },
     });
 
     this.healthService.addDeepCheck({
@@ -134,65 +134,69 @@ class UltraDexAPIServer {
           throw new Error('No reachable provider configured');
         }
         return { reachable, providerStatus };
-      }
+      },
     });
   }
 
   setupMiddlewares() {
     // Security middlewares
-    this.app.use(helmet({
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: ["'self'"],
-          styleSrc: ["'self'", "'unsafe-inline'"],
-          scriptSrc: ["'self'"],
-          imgSrc: ["'self'", "data:", "https:"],
-          connectSrc: ["'self'", "https:"]
-        }
-      }
-    }));
-    
+    this.app.use(
+      helmet({
+        contentSecurityPolicy: {
+          directives: {
+            defaultSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            scriptSrc: ["'self'"],
+            imgSrc: ["'self'", 'data:', 'https:'],
+            connectSrc: ["'self'", 'https:'],
+          },
+        },
+      })
+    );
+
     // Rate limiting
     const limiter = rateLimit({
       windowMs: 15 * 60 * 1000, // 15 minutes
       max: 100, // limit each IP to 100 requests per windowMs
-      message: 'Too many requests from this IP, please try again later.'
+      message: 'Too many requests from this IP, please try again later.',
     });
     this.app.use(limiter);
-    
+
     // CORS
-    this.app.use(cors({
-      origin: process.env.CORS_ORIGIN || '*',
-      credentials: true
-    }));
-    
+    this.app.use(
+      cors({
+        origin: process.env.CORS_ORIGIN || '*',
+        credentials: true,
+      })
+    );
+
     // Compression
     this.app.use(compression());
-    
+
     // Body parsing
     this.app.use(express.json({ limit: '10mb' }));
     this.app.use(express.urlencoded({ extended: true }));
-    
+
     // Request logging
     this.app.use(requestLogger);
-    
+
     // API versioning
     this.app.use('/api/:version', validateAPIVersion);
   }
 
   setupRoutes() {
     this.healthService.registerRoutes(this.app, { basePath: '/health' });
-    
+
     // API routes with authentication
     this.app.use('/api/v1/agents', authenticateToken, agentsRouter);
     this.app.use('/api/v1/memory', authenticateToken, memoryRouter);
     this.app.use('/api/v1/tasks', authenticateToken, tasksRouter);
     this.app.use('/api/v1/providers', authenticateToken, providersRouter);
     this.app.use('/api/v1/webhooks', webhookRouter); // Webhooks don't require auth
-    
+
     // Static files
     this.app.use('/static', express.static(path.join(__dirname, 'public')));
-    
+
     // API documentation
     this.app.get('/api-docs', (req, res) => {
       res.json({
@@ -205,8 +209,8 @@ class UltraDexAPIServer {
           { method: 'GET', path: '/api/v1/memory', description: 'Search memory' },
           { method: 'POST', path: '/api/v1/tasks', description: 'Create new task' },
           { method: 'GET', path: '/api/v1/providers', description: 'List AI providers' },
-          { method: 'POST', path: '/api/v1/webhooks', description: 'Handle webhooks' }
-        ]
+          { method: 'POST', path: '/api/v1/webhooks', description: 'Handle webhooks' },
+        ],
       });
     });
   }
@@ -214,34 +218,34 @@ class UltraDexAPIServer {
   setupSocketIO() {
     this.io.on('connection', (socket) => {
       console.log('Client connected:', socket.id);
-      
+
       // Send initial system status
       socket.emit('system-status', {
         agents: agentOrchestrator.getMetrics(),
         memory: ppmManager.stats(),
-        providers: ultraDex.getProviderStatus()
+        providers: ultraDex.getProviderStatus(),
       });
-      
+
       // Listen for agent status updates
       agentOrchestrator.on('agent:status', (status) => {
         socket.emit('agent-status', status);
       });
-      
+
       // Listen for memory updates
       ppmManager.on('memory:update', (update) => {
         socket.emit('memory-update', update);
       });
-      
+
       // Listen for task updates
       agentOrchestrator.on('task:status', (task) => {
         socket.emit('task-update', task);
       });
-      
+
       // Listen for cost updates
       ultraDex.on('cost:update', (cost) => {
         socket.emit('cost-update', cost);
       });
-      
+
       socket.on('disconnect', () => {
         console.log('Client disconnected:', socket.id);
       });
@@ -254,7 +258,7 @@ class UltraDexAPIServer {
       res.status(404).json({
         error: 'Route not found',
         path: req.originalUrl,
-        method: req.method
+        method: req.method,
       });
     });
 
@@ -301,13 +305,13 @@ class UltraDexAPIServer {
 
   async start() {
     await this.initialize();
-    
+
     this.server.listen(this.port, () => {
       console.log(`✅ Ultra-Dex API Server listening on port ${this.port}`);
       console.log(`📊 API Documentation: http://localhost:${this.port}/api-docs`);
       console.log(`📈 Health Check: http://localhost:${this.port}/health`);
     });
-    
+
     return this.server;
   }
 
@@ -326,7 +330,7 @@ export default apiServer;
 
 // For direct execution
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  apiServer.start().catch(error => {
+  apiServer.start().catch((error) => {
     console.error('Failed to start API server:', error);
     process.exit(1);
   });
