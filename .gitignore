@@ -114,3 +114,9 @@ package-lock*.json
 docker-compose.override.yml
 
 .archive/
+
+# AI Agent Temp Directories
+.SagaVoyager/
+.claude/
+.cursor/
+.qwen/

@@ -158,13 +158,22 @@ For advanced configuration including K8s deployment and mesh scaling, see the [C
 
 ## 📚 Documentation
 
-Detailed documentation is available in the `docs/` directory:
+### Active Documentation (`docs/`)
 
-- [**Architecture**](docs/ARCHITECTURE.md) — Deep dive into the meta-layer design.
-- [**Deployment**](docs/DEPLOYMENT.md) — Production setup, Docker, and Kubernetes.
-- [**API Reference**](docs/API.md) — REST and WebSocket API documentation.
-- [**Operations**](docs/OPERATIONS.md) — Monitoring, scaling, and maintenance.
-- [**Agent Integration**](docs/AGENT_INTEGRATION_GUIDE.md) — Building custom agents.
+| Document | Description |
+|----------|-------------|
+| [**Quick Start**](docs/guides/basics/QUICKSTART.md) | Get up and running in 5 minutes |
+| [**Architecture**](docs/ARCHITECTURE.md) | System design and meta-layer overview |
+| [**Deployment**](docs/DEPLOYMENT.md) | Production setup, Docker, and Kubernetes |
+| [**API Reference**](docs/API.md) | REST and WebSocket API documentation |
+| [**Operations**](docs/OPERATIONS.md) | Monitoring, scaling, and maintenance |
+| [**V2.0 Roadmap**](docs/V2.0-ROADMAP.md) | Future development plans |
+
+See [`docs/INDEX.md`](docs/INDEX.md) for the complete documentation index.
+
+### Historical Documentation
+
+Historical planning documents, completion reports, and archived content are available in the [`archive/`](archive/) directory.
 
 ## 🤝 Contributing
 

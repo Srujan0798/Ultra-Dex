@@ -1,5 +1,0 @@
-
-> @ultra-dex/monorepo@2.1.0 lint
-> node scripts/run-lint.js
-
-Syntax check passed for 602 files.

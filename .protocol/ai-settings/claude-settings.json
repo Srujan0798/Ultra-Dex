@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -l \"^export\" /Users/srujansai/Desktop/Ultra-Dex/src/core/agents/*.js)",
+      "Read(//Users/srujansai/.claude/**)",
+      "Bash(npm run:*)",
+      "Bash(git stash:*)",
+      "Bash(NODE_ENV=test node --test tests/core/orchestration.test.js tests/core/agent-registry.test.js tests/core/ralph-loop.test.js tests/core/memory-manager.test.js)",
+      "Bash(NODE_ENV=test node --test tests/core/agent-registry.test.js tests/core/ralph-loop.test.js tests/core/memory-manager.test.js)",
+      "Bash(NODE_ENV=test timeout 45 node --test tests/core/ralph-loop.test.js)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(NODE_ENV=test timeout 30 node --test tests/core/agent-registry.test.js)",
+      "Bash(NODE_ENV=test timeout 30 node --test tests/core/memory-manager.test.js)",
+      "Bash(NODE_ENV=test timeout 30 node --test tests/core/orchestration.test.js)",
+      "Bash(NODE_ENV=test node --test --test-timeout=10000 tests/core/orchestration.test.js)",
+      "Bash(node:*)",
+      "Bash(kubectl apply:*)",
+      "Bash(cd /Users/srujansai/Desktop/Ultra-Dex echo \"=== P2 ===\" echo \"W10 wall-clock timeout:\" grep -c 'maxExecutionTimeMs' src/core/agents/ralph-loop.js)",
+      "Bash(npm audit:*)",
+      "Bash(npx tsc:*)",
+      "Bash(kill %1)",
+      "Bash(echo \"MISSING\" ls /Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/*.js)",
+      "Bash(MOCK_AI=true timeout 15 node apps/cli/bin/ultra-dex.js --help)",
+      "Bash(MOCK_AI=true timeout 20 node apps/cli/bin/ultra-dex-full.js --help)",
+      "Bash(MOCK_AI=true ULTRA_DEX_DEBUG=1 timeout 20 node apps/cli/bin/ultra-dex-full.js --help)",
+      "Bash(MOCK_AI=true timeout 25 node apps/cli/bin/ultra-dex-full.js --help)",
+      "Bash(MOCK_AI=true timeout 25 node --no-deprecation apps/cli/bin/ultra-dex-full.js --help)",
+      "Bash(MOCK_AI=true ULTRA_DEX_DEBUG=1 timeout 5 node apps/cli/bin/ultra-dex-full.js --help)",
+      "Bash(MOCK_AI=true ULTRA_DEX_DEBUG=1 timeout 5 node apps/cli/bin/ultra-dex-full.js)",
+      "Bash(MOCK_AI=true timeout 8 node apps/cli/bin/ultra-dex-full.js --help)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(timeout 30 ULTRA_DEX_DEBUG=1 node /Users/srujansai/Desktop/Ultra-Dex/apps/cli/bin/ultra-dex-full.js --help)",
+      "Bash(grep:*)",
+      "Bash(echo \"ws: $?\")",
+      "Bash(echo \"express: $?\")",
+      "Bash(python3 -c \"import sys,json;d=json.load\\(sys.stdin\\);print\\(d['version'],d.get\\('main',''\\)\\)\")",
+      "Bash(ls /Users/srujansai/Desktop/Ultra-Dex/apps/cli/lib/commands/*.js)",
+      "Bash(timeout 60 npm test)",
+      "Bash(timeout 60 npm test -- tests/core/capability-router.test.js)"
+    ]
+  }
+}
