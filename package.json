@@ -1,7 +1,9 @@
 {
-  "name": "@ultra-dex/monorepo",
+  "name": "@ultra-dex/cli",
   "version": "3.1.0",
-  "private": true,
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "The AI Orchestration Meta-Layer for SaaS Development - OVERPOWERED Edition (1000% Efficiency)",
   "keywords": [
     "ai",
@@ -37,6 +39,7 @@
   "bin": {
     "ultra-dex": "./dist/ultra-dex.js"
   },
+  "main": "./dist/ultra-dex.js",
   "files": [
     "apps/cli/bin",
     "apps/cli/lib",

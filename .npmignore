@@ -1,13 +1,62 @@
-_old/
-docs/
-marketing/
-examples/
-assets/
-website/
-web/
-cloud/
-mobile/
-jetbrains-plugin/
-nvim-plugin/
-node_modules/
+# Source files not needed in published package
+.git/
+.github/
+.vscode/
+.idea/
+
+# Tests
+tests/
+*.test.js
+*.test.ts
+__tests__/
+coverage/
+
+# Documentation (keep only essential)
+docs/**/*.md
+!docs/ARCHITECTURE.md
+!docs/CHANGELOG.md
+
+# Development files
+.env
+.env.local
+.env.*.local
+.eslintrc*
+.prettierrc*
+tsconfig*.json
+jest.config.*
+vitest.config.*
+
+# Build artifacts (keep dist)
+*.tsbuildinfo
+.node_modules/.cache/
+
+# Logs
+logs/
 *.log
+npm-debug.log*
+
+# Archive and temp files
+archive/
+.archive/
+tmp/
+temp/
+
+# Development data
+.ultra-dex/
+.ultra/
+
+# Example files
+examples/
+*.example.js
+
+# CI/CD
+.github/workflows/
+.travis.yml
+.circleci/
+
+# Misc
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
