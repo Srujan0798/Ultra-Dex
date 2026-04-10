@@ -1,42 +1,44 @@
 ## Description
+<!-- Provide a clear description of your changes -->
 
-Brief description of what this PR does.
+Fixes # (issue)
 
 ## Type of Change
+<!-- Mark relevant options with [x] -->
+- [ ] Bug fix (non-breaking change which fixes an issue)
+- [ ] New feature (non-breaking change which adds functionality)
+- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- [ ] Documentation update
+- [ ] Performance improvement
+- [ ] Code refactoring
+- [ ] Test improvement
 
-- [ ] Bug fix (typo, error correction)
-- [ ] New feature (new section, content addition)
-- [ ] Enhancement (improvement to existing content)
-- [ ] Documentation (README, guides)
-- [ ] Example (new filled template)
-
-## Files Changed
-
-## List the main files modified:
-
-## Checklist
-
-- [ ] I have read [CONTRIBUTING.md](../CONTRIBUTING.md)
-- [ ] I have completed [GitHub compliance checklist](../gitFail/compliance/GITHUB_COMPLIANCE_CHECKLIST.md)
-- [ ] Markdown renders correctly
-- [ ] No placeholder text (everything is specific)
-- [ ] Links work correctly
-- [ ] Commit messages follow conventional format
-- [ ] No secrets, tokens, or personal data were added
-- [ ] New dependencies/assets are license-compatible
+## Phase Alignment
+<!-- Which strategic phase does this support? -->
+- [ ] Phase 1: Foundation
+- [ ] Phase 2: Intelligence
+- [ ] Phase 3: Distribution
+- [ ] Phase 4: Enterprise
 
 ## Testing
+<!-- Describe the tests you ran -->
+- [ ] `npm test` passes
+- [ ] `npm run typecheck` passes
+- [ ] `npm run lint` passes
+- [ ] New tests added for new functionality
+- [ ] Manual testing performed
 
-How did you verify this works?
+## Checklist
+- [ ] My code follows the project's style guidelines
+- [ ] I have performed a self-review of my code
+- [ ] I have commented my code, particularly in hard-to-understand areas
+- [ ] I have made corresponding changes to the documentation
+- [ ] My changes generate no new warnings
+- [ ] I have added tests that prove my fix is effective or that my feature works
+- [ ] New and existing unit tests pass locally with my changes
 
-- [ ] Previewed markdown rendering
-- [ ] Checked all links
-- [ ] Validated code examples (if any)
+## Screenshots (if applicable)
+<!-- Add screenshots to help explain your changes -->
 
-## Screenshots
-
-(If applicable, show before/after)
-
-## Related Issues
-
-Closes #(issue number)
+## Additional Notes
+<!-- Any additional information that reviewers should know -->

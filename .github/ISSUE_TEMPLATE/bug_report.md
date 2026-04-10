@@ -1,33 +1,40 @@
 ---
-name: Bug Report
-about: Report an error or issue in the templates
+name: Bug report
+about: Create a report to help us improve Ultra-Dex
 title: '[BUG] '
 labels: bug
 assignees: ''
+
 ---
 
-## Describe the Bug
+**Describe the bug**
+A clear and concise description of what the bug is.
 
-A clear description of what's wrong.
+**To Reproduce**
+Steps to reproduce the behavior:
+1. Run command '...'
+2. With arguments '...'
+3. See error
 
-## Location
+**Expected behavior**
+A clear and concise description of what you expected to happen.
 
-- **File:** (e.g., `Imp Template.md`)
-- **Section:** (e.g., Section 15.2)
-- **Line number:** (if applicable)
+**Screenshots/Logs**
+If applicable, add screenshots or log output to help explain your problem.
 
-## Expected Behavior
+```bash
+# Paste relevant logs here
+```
 
-What should it say/do?
+**Environment (please complete the following information):**
+ - OS: [e.g. macOS, Linux, Windows]
+ - Node.js version: [e.g. 22.11.0]
+ - Ultra-Dex version: [e.g. 3.1.0]
+ - Installation method: [e.g. npm, Docker, source]
 
-## Current Behavior
+**Provider Configuration:**
+ - Provider(s) affected: [e.g. OpenAI, Anthropic, NVIDIA]
+ - Auth method: [e.g. API key, OAuth]
 
-What does it currently say/do?
-
-## Suggested Fix
-
-(Optional) How would you fix it?
-
-## Additional Context
-
-Any other relevant information.
+**Additional context**
+Add any other context about the problem here.

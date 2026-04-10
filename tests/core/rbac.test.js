@@ -14,8 +14,13 @@ describe('RBACManager', () => {
     assert.strictEqual(rbac.getRole('user-1'), ROLES.ADMIN);
   });
 
-  it('should default to viewer role', () => {
-    assert.strictEqual(rbac.getRole('unknown-user'), ROLES.VIEWER);
+  it('should default to viewer role in production', () => {
+    // Mock production environment
+    const originalEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+    const rbacProd = new RBACManager();
+    assert.strictEqual(rbacProd.getRole('unknown-user'), ROLES.VIEWER);
+    process.env.NODE_ENV = originalEnv;
   });
 
   it('should check permissions based on role hierarchy', () => {

@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ultra-Dex Documentation
+    url: https://docs.ultra-dex.dev
+    about: Check the documentation for usage guides and API reference
+  - name: Discord Community
+    url: https://discord.gg/ultra-dex
+    about: Ask questions and discuss with the community
+  - name: Security Vulnerability
+    url: https://github.com/yourusername/ultra-dex/security/advisories/new
+    about: Please report security vulnerabilities here

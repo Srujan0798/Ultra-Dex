@@ -1,42 +1,33 @@
 ---
-name: Feature Request
-about: Suggest a new section, improvement, or addition
+name: Feature request
+about: Suggest an idea for Ultra-Dex
 title: '[FEATURE] '
 labels: enhancement
 assignees: ''
+
 ---
 
-## Problem Statement
+**Is your feature request related to a problem? Please describe.**
+A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
 
-What problem does this solve? Why is it needed?
+**Describe the solution you'd like**
+A clear and concise description of what you want to happen.
 
-## Proposed Solution
+**Describe alternatives you've considered**
+A clear and concise description of any alternative solutions or features you've considered.
 
-Describe what you'd like to see added.
+**Use case**
+Describe the specific use case this feature would enable:
+- Who would use this? (e.g. solo developer, platform team, enterprise)
+- What workflow would it improve?
+- How often would it be used?
 
-## Which File Would This Affect?
+**Additional context**
+Add any other context, mockups, or examples about the feature request here.
 
-- [ ] Imp Template.md
-- [ ] QUICK-START.md
-- [ ] METHODOLOGY.md
-- [ ] Rule Book 21.md
-- [ ] Examples
-- [ ] Other: \_\_\_
-
-## Example Content
-
-(Optional) Draft of what this might look like:
-
-```markdown
-## New Section Title
-
-Content here...
-```
-
-## Alternatives Considered
-
-Other approaches you've thought about.
-
-## Additional Context
-
-Any other relevant information, links, or references.
+**Phase alignment**
+Which strategic phase does this align with?
+- [ ] Phase 1: Foundation (stability, npm publish)
+- [ ] Phase 2: Intelligence (routing, memory, marketplace)
+- [ ] Phase 3: Distribution (VS Code, GitHub App, Slack)
+- [ ] Phase 4: Enterprise (SSO, SOC 2, multi-tenant)
