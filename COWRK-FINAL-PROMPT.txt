@@ -1,0 +1,101 @@
+Use your Engineering and Data plugins to analyze Ultra-Dex and create detailed .protocol execution plans.
+
+## Plugins You Have Active
+
+**Engineering Plugin:**
+- /architecture - Design system architecture
+- /code-review - Review code quality
+- /system-design - Design scalable systems
+- /tech-debt - Identify technical debt
+- /testing-strategy - Plan test coverage
+- /documentation - Create technical docs
+- /debug - Debug issues
+- /deploy-checklist - Deployment planning
+- /incident-response - Handle failures
+- /standup - Track progress
+
+**Data Plugin:**
+- /analyze - Analyze datasets
+- /sql-queries - Write optimized SQL
+- /explore-data - Profile data shape
+- /build-dashboard - Create dashboards
+
+## Your Task
+
+Read these files:
+1. docs/strategic/v2.0-strategic-plan.md (the strategy)
+2. .protocol/orchestration.md (the format)
+3. CLAUDE.md (project context)
+
+Then create:
+
+### Output File 1: .protocol/state/v20-phase1-dispatches.md
+Use /architecture + /system-design + /deploy-checklist to plan:
+- Week 1-2: Redis + Postgres migration
+- Week 3: npm publish + Docker
+- Week 4: Public repo + README
+
+Include: 4 parallel windows per week, .protocol format, 3 fallbacks each
+
+### Output File 2: .protocol/state/v20-phase2-dispatches.md
+Use /architecture + /code-review to plan:
+- MCP server completion
+- Swarm command + LLM router
+- Memory RAG improvements
+- Provider fallback chains
+
+### Output File 3: .protocol/state/v20-phase3-dispatches.md
+Use /system-design + /testing-strategy to plan:
+- VSCode extension
+- Plugin system
+- Team/enterprise features
+- Performance optimization
+
+### Output File 4: .protocol/state/v20-phase4-dispatches.md
+Use /architecture + /tech-debt to plan:
+- Web dashboard
+- Community marketplace
+- Certification program
+- Enterprise sales
+
+### Output File 5: .protocol/state/v20-master-timeline.md
+Use /analyze to create:
+- Dependency graph
+- Critical path
+- Resource allocation
+- Risk analysis
+
+## Format Requirements
+
+Each window must use .protocol dispatch format:
+
+```
+### [WINDOW N] <TOOL + MODEL>
+Task ID: [unique ID]
+Objective: [one sentence]
+Target Files: [files to modify]
+Why this lane: [rationale]
+Power Tier: LOW|BALANCED|HIGH
+Command: [exact command]
+Prompt: [full prompt]
+Expected Output: [success criteria]
+Validation: [how to verify]
+Fallback #1: [backup option]
+Fallback #2: [backup option]
+Fallback #3: [OpenCode/NVIDIA]
+Cost Class: FREE|SUBSCRIPTION|API-KEY
+```
+
+## Do NOT
+- Execute any code
+- Modify files
+- Run tests
+
+## DO
+- Use Engineering plugin skills for technical planning
+- Use Data plugin for analysis and metrics
+- Create detailed, actionable plans
+- Include 3 fallbacks per window
+- Think about dependencies and parallel execution
+
+Output all 5 files to .protocol/state/
