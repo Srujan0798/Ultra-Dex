@@ -1,6 +1,0 @@
-# HIPAA Compliance Guidelines
-
-- Encrypt PHI at rest and in transit
-- Maintain audit logs for access
-- Apply least-privilege access control
-- Mask sensitive data in logs

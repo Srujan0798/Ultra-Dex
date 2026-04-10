@@ -1,8 +1,0 @@
-{
-  "name": "TEMPLATE",
-  "version": "1.0.0",
-  "description": "Ultra-Dex TEMPLATE plugin",
-  "main": "index.js",
-  "capabilities": ["TEMPLATE"],
-  "requiredPermissions": ["file-read"]
-}

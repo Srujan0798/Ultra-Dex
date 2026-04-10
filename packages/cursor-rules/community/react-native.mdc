@@ -1,6 +1,0 @@
-# React Native Mobile Standards
-
-- Use functional components with hooks
-- Prefer TypeScript for all new files
-- Keep styles in StyleSheet.create
-- Avoid inline styles in JSX

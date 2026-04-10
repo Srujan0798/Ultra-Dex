@@ -1,8 +1,0 @@
-{
-  "name": "docker",
-  "version": "1.0.0",
-  "description": "Ultra-Dex docker plugin",
-  "main": "index.js",
-  "capabilities": ["docker"],
-  "requiredPermissions": ["file-read"]
-}

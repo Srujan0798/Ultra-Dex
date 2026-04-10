@@ -1,7 +1,0 @@
-{
-  "name": "continue.dev",
-  "version": "0.1.0",
-  "description": "Placeholder Continue.dev integration for Ultra-Dex",
-  "entry": "index.js",
-  "type": "integration"
-}

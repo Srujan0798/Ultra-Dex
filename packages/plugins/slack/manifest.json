@@ -1,8 +1,0 @@
-{
-  "name": "slack",
-  "version": "1.0.0",
-  "description": "Ultra-Dex slack plugin",
-  "main": "index.js",
-  "capabilities": ["slack"],
-  "requiredPermissions": ["file-read"]
-}

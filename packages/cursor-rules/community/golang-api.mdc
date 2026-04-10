@@ -1,6 +1,0 @@
-# Go API Service Standards
-
-- Use context.Context in all handlers
-- Separate transport, service, repository layers
-- Validate input with go-playground/validator
-- Always return structured errors

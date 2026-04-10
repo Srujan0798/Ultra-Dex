@@ -1,8 +1,0 @@
-{
-  "name": "viz",
-  "version": "1.0.0",
-  "description": "Ultra-Dex viz plugin",
-  "main": "index.js",
-  "capabilities": ["viz"],
-  "requiredPermissions": ["file-read"]
-}

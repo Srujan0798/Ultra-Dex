@@ -1,7 +1,0 @@
-{
-  "name": "docker-enhanced",
-  "version": "1.0.0",
-  "description": "Enhanced Docker sandbox configurations",
-  "main": "index.js",
-  "author": "Ultra-Dex Team"
-}

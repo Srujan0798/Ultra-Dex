@@ -1,6 +1,0 @@
-# SOC2 Security Guidelines
-
-- Enforce MFA for admin access
-- Log security-sensitive actions
-- Rotate secrets regularly
-- Apply rate limits on public endpoints
