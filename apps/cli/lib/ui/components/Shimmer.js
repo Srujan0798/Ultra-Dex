@@ -19,6 +19,8 @@ var Shimmer_default = Shimmer;
 function _handleError(error) {
   try {
     console.error('[Shimmer]', error instanceof Error ? error.message : String(error));
-  } catch (_) {}
+  } catch {
+    // Error logging failed - fail silently to prevent cascading errors
+  }
 }
 export { Shimmer_default as default };

@@ -23,6 +23,14 @@ export interface BanditProviderConfig {
   weight?: number; // Manual override weight (0-1)
 }
 
+export interface BanditConstraints {
+  provider?: string;
+  maxCostUsd?: number;
+  estimatedTokens?: number;
+  maxLatencyMs?: number;
+  [key: string]: unknown;
+}
+
 export interface BanditSelectionResult {
   provider: string;
   strategy: 'exploration' | 'exploitation' | 'cost-optimized' | 'manual';
@@ -43,16 +51,13 @@ export class ThompsonSamplingRouter {
 
   // Beta distribution parameters per provider
   private alpha: Map<string, number> = new Map(); // successes + 1
-  private beta: Map<string, number> = new Map();  // failures + 1
+  private beta: Map<string, number> = new Map(); // failures + 1
 
   // Exploration bonus decay
   private explorationDecay: number;
   private totalSelections: number = 0;
 
-  constructor(
-    configs: BanditProviderConfig[] = [],
-    options: { explorationDecay?: number } = {}
-  ) {
+  constructor(configs: BanditProviderConfig[] = [], options: { explorationDecay?: number } = {}) {
     this.explorationDecay = options.explorationDecay ?? 0.99;
 
     for (const config of configs) {
@@ -93,13 +98,14 @@ export class ThompsonSamplingRouter {
    * Select a provider using Thompson Sampling.
    * Returns the selected provider name and metadata.
    */
-  selectProvider(task: any, constraints: any = {}): BanditSelectionResult {
+  selectProvider(task: unknown, constraints: BanditConstraints = {}): BanditSelectionResult {
     this.totalSelections++;
 
     // If a specific provider is requested via constraints, use it
-    if (constraints.provider && this.providers.has(constraints.provider)) {
+    const requestedProvider = constraints.provider;
+    if (typeof requestedProvider === 'string' && this.providers.has(requestedProvider)) {
       return {
-        provider: constraints.provider,
+        provider: requestedProvider,
         strategy: 'manual',
         sampledScores: {},
       };
@@ -310,17 +316,19 @@ export class ThompsonSamplingRouter {
    */
   private _applyCostAdjustment(
     samples: Record<string, number>,
-    constraints: any
+    constraints: BanditConstraints
   ): Record<string, number> {
     const adjusted = { ...samples };
 
     // If cost constraint is set, filter out expensive providers
-    if (constraints.maxCostUsd) {
+    const maxCostUsd = constraints.maxCostUsd;
+    const estimatedTokens = constraints.estimatedTokens;
+    if (typeof maxCostUsd === 'number' && typeof estimatedTokens === 'number') {
       for (const [name] of this.providers) {
         const config = this.providerConfigs.get(name);
-        if (config?.costPerToken && constraints.estimatedTokens) {
-          const estimatedCost = config.costPerToken * constraints.estimatedTokens;
-          if (estimatedCost > constraints.maxCostUsd) {
+        if (config?.costPerToken) {
+          const estimatedCost = config.costPerToken * estimatedTokens;
+          if (estimatedCost > maxCostUsd) {
             adjusted[name] = 0; // Disqualify
           }
         }
@@ -341,7 +349,7 @@ export class ThompsonSamplingRouter {
       if (config?.costPerToken) {
         // Cost penalty: up to 10% reduction for most expensive provider
         const costRatio = config.costPerToken / maxCost;
-        adjusted[name] *= (1 - 0.1 * costRatio);
+        adjusted[name] *= 1 - 0.1 * costRatio;
       }
     }
 

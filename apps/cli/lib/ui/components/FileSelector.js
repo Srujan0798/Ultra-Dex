@@ -24,6 +24,6 @@ var FileSelector_default = FileSelector;
 function _handleError(error) {
   try {
     console.error('[FileSelector]', error instanceof Error ? error.message : String(error));
-  } catch (_) {}
+  } catch { // Error logging failed - fail silently to prevent cascading errors }
 }
 export { FileSelector_default as default };

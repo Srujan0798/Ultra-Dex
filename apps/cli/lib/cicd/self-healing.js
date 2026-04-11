@@ -508,9 +508,15 @@ export class SelfHealingCICD {
             case 'increase-timeout':
               // This would modify timeout settings
               break;
-            case 'disable-ssl-verification':
-              process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-              break;
+            case 'disable-ssl-verification': {
+              // SECURITY: Never disable SSL verification in production
+              // This action has been disabled to prevent MITM attacks
+              console.error(
+                '[SelfHealing] SSL verification cannot be disabled for security reasons'
+              );
+              console.error('[SelfHealing] Please fix the certificate issue instead');
+              return { applied: false, error: 'SSL verification disable is not allowed' };
+            }
             case 'increase-memory':
               // This would modify node memory settings
               break;

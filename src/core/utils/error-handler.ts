@@ -139,7 +139,9 @@ async function handleError(error, context = {}) {
       stack: error.stack,
       metadata: context,
     });
-  } catch {}
+  } catch {
+    // Error recording is best-effort - don't fail if analytics is unavailable
+  }
   logger.error(chalk.red('\n\u274C Error:'), errorMessage);
   const smart = formatSmartError(error);
   if (smart?.summary) {

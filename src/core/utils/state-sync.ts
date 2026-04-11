@@ -10,11 +10,15 @@ async function syncState() {
   try {
     const stateStat = await fs.stat(statePath);
     stateMtime = stateStat.mtimeMs;
-  } catch (_e) {}
+  } catch (_e) {
+    // State file doesn't exist yet, use mtime of 0
+  }
   try {
     const planStat = await fs.stat(planPath);
     planMtime = planStat.mtimeMs;
-  } catch (_e) {}
+  } catch (_e) {
+    // Plan file doesn't exist yet, use mtime of 0
+  }
   if (stateMtime === 0 && planMtime === 0) return null;
   if (planMtime > stateMtime) {
     const phases = await parsePlanFromMarkdown();

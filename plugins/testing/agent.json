@@ -1,0 +1,44 @@
+{
+  "name": "@ultra-dex/testing",
+  "version": "1.0.0",
+  "description": "Testing specialist agent for test generation, coverage analysis, and quality assurance",
+  "author": "ultra-dex",
+  "agents": [
+    {
+      "role": "testing-specialist",
+      "model": "gpt-4o",
+      "systemPrompt": "prompt.md",
+      "capabilities": ["test-generation", "coverage-analysis", "mutation-testing"],
+      "costTier": "standard"
+    }
+  ],
+  "tools": [
+    {
+      "name": "generate_tests",
+      "description": "Generate unit or integration tests for a given source file",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "filePath": { "type": "string" },
+          "testType": { "type": "string", "enum": ["unit", "integration"] }
+        },
+        "required": ["filePath", "testType"]
+      },
+      "handler": "tools/generate-tests.ts"
+    },
+    {
+      "name": "run_coverage",
+      "description": "Run test coverage analysis for the project or a specific directory",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "path": { "type": "string" }
+        }
+      },
+      "handler": "tools/run-coverage.ts"
+    }
+  ],
+  "hooks": {},
+  "dependencies": [],
+  "minUltraDexVersion": "4.0.0"
+}

@@ -29,6 +29,8 @@ var Thinking_default = Thinking;
 function _handleError(error) {
   try {
     console.error('[Thinking]', error instanceof Error ? error.message : String(error));
-  } catch (_) {}
+  } catch {
+    // Error logging failed - fail silently to prevent cascading errors
+  }
 }
 export { Thinking_default as default };

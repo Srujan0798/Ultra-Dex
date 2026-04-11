@@ -6,6 +6,10 @@ import { MarketplaceService } from '../../../src/core/marketplace/marketplace-se
 const program = new Command();
 const marketplace = new MarketplaceService();
 
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 program.name('marketplace').description('Ultra-Dex Agent Marketplace').version('1.0.0');
 
 // List command
@@ -59,8 +63,8 @@ program
         console.log(`✗ Failed to install ${agentId}`);
         process.exit(1);
       }
-    } catch (error: any) {
-      console.error(`Error: ${error.message}`);
+    } catch (error: unknown) {
+      console.error(`Error: ${errorMessage(error)}`);
       process.exit(1);
     }
   });
@@ -81,8 +85,8 @@ program
         console.log(`✗ Failed to uninstall ${agentId}`);
         process.exit(1);
       }
-    } catch (error: any) {
-      console.error(`Error: ${error.message}`);
+    } catch (error: unknown) {
+      console.error(`Error: ${errorMessage(error)}`);
       process.exit(1);
     }
   });
@@ -161,8 +165,8 @@ program
     try {
       const agentId = await marketplace.publishAgent(directory);
       console.log(`✓ Published as ${agentId}`);
-    } catch (error: any) {
-      console.error(`Error: ${error.message}`);
+    } catch (error: unknown) {
+      console.error(`Error: ${errorMessage(error)}`);
       process.exit(1);
     }
   });

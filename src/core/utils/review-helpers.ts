@@ -23,7 +23,9 @@ async function scanCodeFiles(dir, extensions = ['.ts', '.tsx', '.js', '.jsx', '.
           }
         }
       }
-    } catch {}
+    } catch (error) {
+      // Directory may not exist or be accessible - skip silently
+    }
   }
   await scan(dir);
   return files;

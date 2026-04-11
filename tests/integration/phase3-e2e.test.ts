@@ -7,7 +7,7 @@
  * Run with: MOCK_AI=true npx tsx --test tests/integration/phase3-e2e.test.ts
  */
 
-import { describe, it, before, after } from 'node:test';
+import { describe, it, before, after, beforeEach } from 'node:test';
 import assert from 'node:assert';
 import { execSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -25,6 +25,11 @@ const ENV = { ...process.env, MOCK_AI: 'true' };
 describe('Phase 3 — Scenario 1: Plugin Lifecycle', () => {
   const testPluginDir = path.join(os.tmpdir(), 'ultra-dex-test-plugin');
 
+  beforeEach(async () => {
+    const { pluginManager } = await import('../../packages/plugins/src/index.ts');
+    await pluginManager.destroyAll();
+  });
+
   before(() => {
     // Create a minimal test plugin
     fs.mkdirSync(path.join(testPluginDir, 'src'), { recursive: true });
@@ -34,8 +39,6 @@ describe('Phase 3 — Scenario 1: Plugin Lifecycle', () => {
       main: './src/index.js',
     }, null, 2));
     fs.writeFileSync(path.join(testPluginDir, 'src', 'index.js'), `
-const { PluginManager } = require('@ultra-dex/plugins');
-
 class TestLifecyclePlugin {
   constructor() {
     this.manifest = {

@@ -368,6 +368,39 @@ export class ComplianceService {
   }
 
   /**
+   * Backward-compatible lightweight report API used by integration tests.
+   */
+  async generateReport(
+    kind: 'audit' | 'soc2' = 'audit',
+    options: { organizationId?: string; generatedBy?: string; period?: { start: Date; end: Date } } = {}
+  ): Promise<ComplianceReport | { kind: 'audit'; generatedAt: string; summary: Record<string, number> }> {
+    await this.initialize();
+
+    if (kind === 'soc2') {
+      const period = options.period || {
+        start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+        end: new Date(),
+      };
+      return this.generateSOC2Report(
+        options.organizationId || 'default-org',
+        period,
+        options.generatedBy || 'system'
+      );
+    }
+
+    const endDate = options.period?.end || new Date();
+    const startDate = options.period?.start || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const events = await auditLogger.query({ startDate, endDate, limit: 10000 });
+    return {
+      kind: 'audit',
+      generatedAt: new Date().toISOString(),
+      summary: {
+        totalEvents: events.length,
+      },
+    };
+  }
+
+  /**
    * Generate SOC 2 report
    */
   async generateSOC2Report(

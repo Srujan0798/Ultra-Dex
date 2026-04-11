@@ -18,7 +18,8 @@ async function pathExists(targetPath, type = 'file') {
     if (type === 'file') return stats.isFile();
     if (type === 'dir') return stats.isDirectory();
     return false;
-  } catch {
+  } catch (error) {
+    // Path doesn't exist or is not accessible
     return false;
   }
 }

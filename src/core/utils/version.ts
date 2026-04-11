@@ -11,6 +11,8 @@ function _handleModuleError(error, context = 'version') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     logger.error(`[${context}] Error: ${message}`);
-  } catch (_) {}
+  } catch (_) {
+    // Logging failure should not break version retrieval
+  }
 }
 export { PACKAGE_NAME, VERSION, version_default as default, getVersion };

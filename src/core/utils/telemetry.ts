@@ -19,7 +19,8 @@ function loadTelemetryConfigSync() {
     if (!fs.existsSync(CONFIG_PATH)) return null;
     const raw = fs.readFileSync(CONFIG_PATH, 'utf8');
     return JSON.parse(raw);
-  } catch {
+  } catch (error) {
+    // Config file may be corrupted or unreadable - return null to use defaults
     return null;
   }
 }
@@ -27,7 +28,8 @@ async function loadTelemetryConfig() {
   try {
     const raw = await fsPromises.readFile(CONFIG_PATH, 'utf8');
     return JSON.parse(raw);
-  } catch {
+  } catch (error) {
+    // Config file may be corrupted or unreadable - return null to use defaults
     return null;
   }
 }

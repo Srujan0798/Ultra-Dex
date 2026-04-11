@@ -46,6 +46,8 @@ function _handleModuleError(error, context = 'spinners') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     logger.error(`[${context}] Error: ${message}`);
-  } catch (_) {}
+  } catch (_) {
+    // Logging failure should not break spinner functionality
+  }
 }
 export { SPINNERS, createSpinner, spinners_default as default, startSpinner };

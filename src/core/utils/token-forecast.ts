@@ -195,7 +195,9 @@ function _handleModuleError(error, context = 'token-forecast') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     logger.error(`[${context}] Error: ${message}`);
-  } catch (_) {}
+  } catch (_) {
+    // Logging failure should not break token forecasting
+  }
 }
 export {
   TokenBudget,

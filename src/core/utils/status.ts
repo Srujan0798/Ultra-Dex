@@ -244,7 +244,9 @@ function _handleModuleError(error, context = 'status') {
   try {
     const message = error instanceof Error ? error.message : String(error);
     logger.error(`[${context}] Error: ${message}`);
-  } catch {}
+  } catch {
+    // Logging failure should not break the caller
+  }
 }
 export {
   colorize,

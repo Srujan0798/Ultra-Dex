@@ -7,7 +7,8 @@ async function loadImplementationPlan(dir = '.') {
     try {
       const content = await fs.readFile(filePath, 'utf-8');
       return { content, path: filePath };
-    } catch {
+    } catch (error) {
+      // File doesn't exist or can't be read - try next filename
       continue;
     }
   }
@@ -18,7 +19,8 @@ async function loadContext(dir = '.') {
   for (const name of possibleNames) {
     try {
       return await fs.readFile(path.join(dir, name), 'utf-8');
-    } catch {
+    } catch (error) {
+      // File doesn't exist or can't be read - try next filename
       continue;
     }
   }

@@ -9,6 +9,6 @@ var icons_default = {
 function _handleError(error) {
   try {
     console.error('[icons]', error instanceof Error ? error.message : String(error));
-  } catch (_) {}
+  } catch { // Error logging failed - fail silently to prevent cascading errors }
 }
 export { ChevronDown, ChevronRight, icons_default as default };

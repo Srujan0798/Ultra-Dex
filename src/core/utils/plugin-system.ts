@@ -38,7 +38,9 @@ let PluginManager = class {
           await this.loadPlugin(path.join(pluginDir, entry.name));
         }
       }
-    } catch {}
+    } catch (error) {
+      // Plugin directory doesn't exist or is not accessible - skip plugin loading
+    }
   }
   /**
    * Load a single plugin
@@ -117,7 +119,8 @@ let PluginManager = class {
       try {
         await fs.stat(target);
         return true;
-      } catch {
+      } catch (error) {
+        // Path doesn't exist or is not accessible
         return false;
       }
     };
@@ -125,7 +128,8 @@ let PluginManager = class {
       try {
         const stat = await fs.stat(target);
         return stat.isDirectory();
-      } catch {
+      } catch (error) {
+        // Path doesn't exist or is not accessible
         return false;
       }
     };

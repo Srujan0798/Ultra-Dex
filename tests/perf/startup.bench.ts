@@ -39,7 +39,7 @@ describe('Startup Performance Benchmarks', () => {
     const startTime = performance.now();
 
     // Import cached
-    await import('../../../apps/cli/bin/ultra-dex.js');
+    await import('../../apps/cli/bin/ultra-dex.js');
 
     const duration = performance.now() - startTime;
 

@@ -28,7 +28,9 @@ export class RedisMemoryAdapter extends EventEmitter implements IMemoryStorage {
   ) {
     super();
     const tenantId =
-      typeof tenantIdOrOptions === 'string' ? tenantIdOrOptions : tenantIdOrOptions.tenantId || 'default';
+      typeof tenantIdOrOptions === 'string'
+        ? tenantIdOrOptions
+        : tenantIdOrOptions.tenantId || 'default';
     const url =
       (typeof tenantIdOrOptions === 'object' && tenantIdOrOptions.url) ||
       process.env.REDIS_URL ||
@@ -122,7 +124,8 @@ export class RedisMemoryAdapter extends EventEmitter implements IMemoryStorage {
         '1',
         `ultra-dex:${this.tenantId}:memory:`,
         'SCHEMA',
-        'data', 'TEXT'
+        'data',
+        'TEXT'
       );
       console.log(`RediSearch index '${indexName}' created`);
     } catch (error: unknown) {
@@ -280,14 +283,14 @@ export class RedisMemoryAdapter extends EventEmitter implements IMemoryStorage {
 
       // Attempt RediSearch text query on the 'data' field
       const searchQuery = `@data:(${query})`;
-      const results = await this.client.call(
+      const results = (await this.client.call(
         'FT.SEARCH',
         indexName,
         searchQuery,
         'LIMIT',
         '0',
         String(topK)
-      ) as any[];
+      )) as [number, ...(string | string[])[]];
 
       if (!results || results.length <= 1) {
         return this._searchFallback(query, topK);
@@ -296,9 +299,9 @@ export class RedisMemoryAdapter extends EventEmitter implements IMemoryStorage {
       const formattedResults: Array<{ id: string; score: number; value: unknown }> = [];
       // FT.SEARCH returns [count, key1, [field1, val1, ...], key2, ...]
       for (let i = 1; i < results.length && formattedResults.length < topK; i += 2) {
-        const key = results[i];
-        const fields = results[i + 1];
-        const entry: any = {};
+        const key = results[i] as string;
+        const fields = results[i + 1] as string[];
+        const entry: Record<string, string> = {};
         for (let j = 0; j < fields.length; j += 2) {
           entry[fields[j]] = fields[j + 1];
         }
@@ -343,7 +346,14 @@ export class RedisMemoryAdapter extends EventEmitter implements IMemoryStorage {
       // Use SCAN for safe iteration over large key spaces
       let cursor = '0';
       do {
-        const scanResult = await this.client.call('SCAN', cursor, 'MATCH', pattern, 'COUNT', '100') as [string, string[]];
+        const scanResult = (await this.client.call(
+          'SCAN',
+          cursor,
+          'MATCH',
+          pattern,
+          'COUNT',
+          '100'
+        )) as [string, string[]];
         cursor = scanResult[0];
         const keys = scanResult[1];
 

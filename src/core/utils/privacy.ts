@@ -16,7 +16,9 @@ function getPrivacyConfig() {
       const raw = fs.readFileSync(configPath, 'utf8');
       const config = JSON.parse(raw);
       return { ...DEFAULT_CONFIG, ...(config.privacy || {}) };
-    } catch {}
+    } catch (error) {
+      // Config file may be corrupted or unreadable - continue to next path or use defaults
+    }
   }
   return { ...DEFAULT_CONFIG };
 }

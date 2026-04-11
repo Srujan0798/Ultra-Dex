@@ -1,7 +1,7 @@
 import { performance } from 'perf_hooks';
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { ThompsonSamplingRouter } from '../../../src/core/routing/bandit-router.js';
+import { ThompsonSamplingRouter } from '../../src/core/routing/bandit-router.js';
 
 describe('Routing Performance Benchmarks', () => {
   const router = new ThompsonSamplingRouter();

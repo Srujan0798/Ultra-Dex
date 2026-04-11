@@ -60,7 +60,9 @@ class PerformanceTracker {
     if (fs.existsSync(perfPath)) {
       try {
         existing = JSON.parse(fs.readFileSync(perfPath, 'utf8'));
-      } catch {}
+      } catch (error) {
+        // Corrupted metrics file - will be overwritten with new data
+      }
     } else {
       fs.mkdirSync(join(process.cwd(), PERF_DIR), { recursive: true });
     }
@@ -261,7 +263,9 @@ function trackMetric(name, value, unit = 'ms') {
   if (fs.existsSync(perfPath)) {
     try {
       data = JSON.parse(fs.readFileSync(perfPath, 'utf8'));
-    } catch {}
+    } catch (error) {
+      // Corrupted metrics file - start fresh
+    }
   }
   data.push(metric);
   fs.writeFileSync(perfPath, JSON.stringify(data.slice(-1e3), null, 2));

@@ -17,6 +17,6 @@ var LoadingSpinner_default = LoadingSpinner;
 function _handleError(error) {
   try {
     console.error('[LoadingSpinner]', error instanceof Error ? error.message : String(error));
-  } catch (_) {}
+  } catch { // Error logging failed - fail silently to prevent cascading errors }
 }
 export { LoadingSpinner_default as default };

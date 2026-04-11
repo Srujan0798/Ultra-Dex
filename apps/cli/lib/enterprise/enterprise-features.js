@@ -1,5 +1,13 @@
 import { randomBytes } from 'crypto';
 import jwt from 'jsonwebtoken';
+
+/**
+ * Generate a secure random password for SSO temporary accounts
+ * @returns {string} Secure random password
+ */
+function generateSecurePassword() {
+  return randomBytes(32).toString('base64');
+}
 class EnterpriseFeatures {
   users;
   teams;
@@ -228,11 +236,15 @@ class EnterpriseFeatures {
     }
     let user = Array.from(this.users.values()).find((u) => u.email === email);
     if (!user) {
+      // Generate secure random password for SSO user (not used for auth since SSO is primary)
+      const secureTempPassword = generateSecurePassword();
       user = await this.createUser({
         email,
         name: assertion.name || email.split('@')[0],
-        password: 'sso_temp_password',
-        // Will be replaced with SSO auth
+        password: secureTempPassword,
+        authMethod: 'sso',
+        ssoProvider: this.ssoConfig?.provider || 'unknown',
+        // Note: Password is not used for authentication when SSO is enabled
       });
     }
     user.lastLogin = /* @__PURE__ */ new Date();

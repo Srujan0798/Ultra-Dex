@@ -12,6 +12,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { randomBytes } from 'crypto';
 import {
   createProvider,
   getDefaultProvider,
@@ -113,8 +114,7 @@ async function resolvePostgresClientFactory() {
 function resolveTraceUserId() {
   const userId = process.env.ULTRA_DEX_USER_ID;
   if (!userId) return null;
-  const uuidRegex =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return uuidRegex.test(userId) ? userId : null;
 }
 
@@ -413,7 +413,7 @@ async function acquireRuntimeStateLock() {
     });
   }
 
-  const lockId = Math.random().toString(36).slice(2, 15);
+  const lockId = randomBytes(16).toString('hex');
   runtimeStateLock = lockId;
   return lockId;
 }
@@ -448,7 +448,7 @@ async function saveRuntimeState(state) {
   const statePath = path.resolve(ultraDir, 'state.json');
   const tempPath = path.resolve(
     ultraDir,
-    `state.json.tmp.${Date.now()}.${Math.random().toString(36).slice(2, 11)}`
+    `state.json.tmp.${Date.now()}.${randomBytes(8).toString('hex')}`
   );
 
   try {

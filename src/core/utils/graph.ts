@@ -55,7 +55,9 @@ async function buildGraph(useCache = true) {
         fileNode.exports.push(funcName);
       }
       graph.nodes.push(fileNode);
-    } catch (_e) {}
+    } catch (_e) {
+      // File read error (e.g., permission denied, binary file) - skip silently
+    }
   });
   await Promise.allSettled(promises);
   cachedGraph = graph;
