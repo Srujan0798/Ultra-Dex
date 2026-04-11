@@ -1,0 +1,10 @@
+{
+  "name": "@ultra-dex/${agent}",
+  "version": "4.0.0",
+  "description": "AI agent for ${agent} tasks",
+  "author": "Ultra-Dex",
+  "capabilities": ["${agent}"],
+  "providers": ["claude", "openai", "nvidia", "gemini"],
+  "category": "${agent}",
+  "minVersion": "3.1.0"
+}

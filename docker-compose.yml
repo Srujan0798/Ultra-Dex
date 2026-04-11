@@ -1,118 +1,36 @@
-# Ultra-Dex Production Stack
-# Includes: CLI, Redis (memory), PostgreSQL (audit/billing)
-
-version: '3.8'
-
 services:
-  # Redis - L1/L2 memory tier
-  redis:
-    image: redis:7-alpine
-    container_name: ultra-dex-redis
-    restart: unless-stopped
+  ultra-dex:
+    build: .
     ports:
-      - "6379:6379"
+      - '3000:3000'
+      - '3002:3002'
+    env_file: .env
+    depends_on:
+      - redis
+      - postgres
     volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 3
-    networks:
-      - ultra-dex-network
+      - '.:/app'
+      - '/app/node_modules'
 
-  # PostgreSQL - Audit logs, billing, persistent storage
+  redis:
+    image: redis/redis-stack:latest
+    ports:
+      - '6379:6379'
+      - '8001:8001'
+    volumes:
+      - 'redis-data:/data'
+
   postgres:
     image: postgres:16-alpine
-    container_name: ultra-dex-postgres
-    restart: unless-stopped
     ports:
-      - "5432:5432"
+      - '5432:5432'
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-ultra_dex}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ultra_dex_secret}
-      POSTGRES_DB: ${POSTGRES_DB:-ultra_dex}
+      POSTGRES_DB: ultradex
+      POSTGRES_USER: ultradex
+      POSTGRES_PASSWORD: ultradex_dev
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./scripts/postgres-init:/docker-entrypoint-initdb.d
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ultra_dex}"]
-      interval: 10s
-      timeout: 3s
-      retries: 3
-    networks:
-      - ultra-dex-network
-
-  # Ultra-Dex CLI (interactive mode)
-  ultra-dex:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: ultra-dex-cli
-    environment:
-      # AI Providers (set in .env file)
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
-      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
-      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
-      
-      # Storage configuration
-      - ULTRA_DEX_MEMORY_TYPE=redis
-      - REDIS_URL=redis://redis:6379
-      - ULTRA_DEX_AUDIT_TYPE=postgres
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-ultra_dex}:${POSTGRES_PASSWORD:-ultra_dex_secret}@postgres:5432/${POSTGRES_DB:-ultra_dex}
-      
-      # General
-      - NODE_ENV=production
-      - LOG_LEVEL=${LOG_LEVEL:-info}
-    volumes:
-      - .:/workspace
-      - ultra_dex_data:/root/.ultra-dex
-    working_dir: /workspace
-    depends_on:
-      redis:
-        condition: service_healthy
-      postgres:
-        condition: service_healthy
-    networks:
-      - ultra-dex-network
-    stdin_open: true
-    tty: true
-    command: ["sh", "-c", "echo 'Ultra-Dex ready! Run: ultra-dex --help' && /bin/sh"]
-
-  # Optional: Dashboard server
-  dashboard:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: ultra-dex-dashboard
-    ports:
-      - "3000:3000"
-    environment:
-      - PORT=3000
-      - NODE_ENV=production
-      - ULTRA_DEX_MEMORY_TYPE=redis
-      - REDIS_URL=redis://redis:6379
-      - ULTRA_DEX_AUDIT_TYPE=postgres
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-ultra_dex}:${POSTGRES_PASSWORD:-ultra_dex_secret}@postgres:5432/${POSTGRES_DB:-ultra_dex}
-    depends_on:
-      redis:
-        condition: service_healthy
-      postgres:
-        condition: service_healthy
-    networks:
-      - ultra-dex-network
-    command: ["ultra-dex", "serve", "--port", "3000"]
+      - 'postgres-data:/var/lib/postgresql/data'
 
 volumes:
-  redis_data:
-    driver: local
-  postgres_data:
-    driver: local
-  ultra_dex_data:
-    driver: local
-
-networks:
-  ultra-dex-network:
-    driver: bridge
+  redis-data:
+  postgres-data:

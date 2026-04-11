@@ -1,0 +1,9 @@
+{
+  "name": "@ultra-dex/daemon",
+  "version": "3.1.0",
+  "description": "Background process and health monitoring specialist",
+  "author": "Ultra-Dex",
+  "capabilities": ["monitoring", "auto-heal", "background-ops"],
+  "providers": ["any"],
+  "minVersion": "3.1.0"
+}

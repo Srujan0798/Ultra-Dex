@@ -1,0 +1,98 @@
+#!/bin/sh
+# Ultra-Dex Pre-Commit Hook v3.0
+# Validates project alignment and structure before allowing commits
+# Install with: npx ultra-dex hooks install
+# Remove with: npx ultra-dex hooks remove
+
+set -e
+
+echo ""
+echo "🎯 Ultra-Dex: Running pre-commit validation..."
+echo ""
+
+# Configuration
+MIN_ALIGNMENT_SCORE=70
+VALIDATION_LOG="/tmp/ultra-dex-validate.log"
+ALIGN_LOG="/tmp/ultra-dex-align.log"
+
+# Check if ultra-dex is available
+if ! command -v ultra-dex &> /dev/null && ! npx ultra-dex --version &> /dev/null 2>&1; then
+    echo "⚠️  Ultra-Dex not found. Skipping validation."
+    echo "   Install with: npm install -g ultra-dex"
+    exit 0
+fi
+
+# Run alignment check and capture score
+echo "📊 Checking alignment score..."
+npx ultra-dex align --dir . > "$ALIGN_LOG" 2>&1 || true
+
+# Extract score from output (looking for percentage)
+SCORE=$(grep -oE '[0-9]+%' "$ALIGN_LOG" | head -1 | tr -d '%' || echo "0")
+
+if [ -z "$SCORE" ] || [ "$SCORE" = "0" ]; then
+    # Try alternative extraction
+    SCORE=$(grep -oE 'Score: [0-9]+' "$ALIGN_LOG" | grep -oE '[0-9]+' | head -1 || echo "85")
+fi
+
+echo "   Current alignment score: ${SCORE}%"
+
+# Check minimum score threshold
+if [ "$SCORE" -lt "$MIN_ALIGNMENT_SCORE" ]; then
+    echo ""
+    echo "❌ COMMIT BLOCKED: Alignment score ($SCORE%) is below minimum ($MIN_ALIGNMENT_SCORE%)"
+    echo ""
+    echo "📋 To fix this:"
+    echo "   1. Run: npx ultra-dex validate"
+    echo "   2. Run: npx ultra-dex fix (to auto-fix issues)"
+    echo "   3. Review and commit again"
+    echo ""
+    echo "🔓 To bypass (not recommended):"
+    echo "   git commit --no-verify"
+    echo ""
+    exit 1
+fi
+
+# Run validation
+echo "🔍 Running validation checks..."
+npx ultra-dex validate --dir . --scan > "$VALIDATION_LOG" 2>&1
+VALIDATE_RESULT=$?
+
+if [ $VALIDATE_RESULT -ne 0 ]; then
+    echo ""
+    echo "❌ COMMIT BLOCKED: Validation failed"
+    echo ""
+    cat "$VALIDATION_LOG"
+    echo ""
+    echo "📋 Run 'npx ultra-dex validate' for details"
+    echo "🔓 To bypass: git commit --no-verify"
+    echo ""
+    exit 1
+fi
+
+# Check for required documentation
+WARNINGS=""
+
+if [ ! -f "IMPLEMENTATION-PLAN.md" ]; then
+    WARNINGS="${WARNINGS}   ⚠️  IMPLEMENTATION-PLAN.md not found\n"
+fi
+
+if [ ! -f "README.md" ]; then
+    WARNINGS="${WARNINGS}   ⚠️  README.md not found\n"
+fi
+
+if [ -n "$WARNINGS" ]; then
+    echo ""
+    echo "📝 Warnings (commit allowed):"
+    printf "$WARNINGS"
+fi
+
+# Success
+echo ""
+echo "✅ Ultra-Dex validation passed!"
+echo "   Score: ${SCORE}% (minimum: ${MIN_ALIGNMENT_SCORE}%)"
+echo ""
+
+# Cleanup
+rm -f "$VALIDATION_LOG" "$ALIGN_LOG" 2>/dev/null || true
+
+exit 0

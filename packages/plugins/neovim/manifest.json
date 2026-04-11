@@ -1,0 +1,8 @@
+{
+  "name": "neovim",
+  "version": "1.0.0",
+  "description": "Ultra-Dex neovim plugin",
+  "main": "index.js",
+  "capabilities": ["neovim"],
+  "requiredPermissions": ["file-read"]
+}

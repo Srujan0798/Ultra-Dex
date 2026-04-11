@@ -1,19 +1,40 @@
-name: CI Checks
+name: CI
 
 on:
   push:
-    branches-ignore:
-      - 'dependabot/**'
+    branches: [main]
   pull_request:
     branches: [main]
 
 jobs:
-  checks:
+  test:
     runs-on: ubuntu-latest
+    env:
+      REDIS_URL: redis://localhost:6379
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+      MOCK_AI: true
 
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [18, 20, 22]
+
+    services:
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - uses: actions/checkout@v4
@@ -22,12 +43,28 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+          cache: npm
 
       - name: Install dependencies
-        run: npm ci --ignore-scripts --no-audit --fund=false --legacy-peer-deps
+        run: npm ci
 
-      - name: Run comprehensive tests
-        run: npm test || echo "Tests completed"
+      - name: Typecheck
+        run: npm run typecheck
 
-      - name: Build all components
-        run: npm run build || echo "Build completed"
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit Tests
+        run: npm run test:unit
+
+      - name: Integration Tests
+        run: npm run test:integration
+
+      - name: Build
+        run: npm run build
+
+      - name: Pack CLI
+        run: cd apps/cli && npm pack
+
+      - name: Pack SDK
+        run: cd packages/sdk && npm pack

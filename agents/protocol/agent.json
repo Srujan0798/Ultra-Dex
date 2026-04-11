@@ -1,0 +1,9 @@
+{
+  "name": "@ultra-dex/protocol",
+  "version": "3.1.0",
+  "description": "Inter-agent communication and trace collection specialist",
+  "author": "Ultra-Dex",
+  "capabilities": ["communication", "tracing", "standardization"],
+  "providers": ["any"],
+  "minVersion": "3.1.0"
+}

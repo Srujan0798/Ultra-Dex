@@ -1,0 +1,488 @@
+# Multi-Tenant Architecture Patterns
+## Ultra-Dex Cursor Rule 27-multi-tenant.mdc
+
+### Context
+Multi-tenancy is essential for SaaS applications serving multiple customers from a single codebase. Proper implementation ensures data isolation, performance, and scalability while maintaining security.
+
+### Pattern
+```javascript
+// 1. Database Schema with Row Level Security (RLS)
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  tenantId  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  
+  @@map("users")
+  @@unique([email, tenantId])  // Prevent same email in same tenant
+}
+
+model Tenant {
+  id          String   @id @default(cuid())
+  name        String
+  subdomain   String   @unique
+  stripeId    String?  // For billing
+  plan        Plan     @default(FREE)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  users       User[]
+  projects    Project[]
+  
+  @@map("tenants")
+}
+
+model Project {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String
+  tenantId  String
+  userId    String   // Owner
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  owner     User     @relation(fields: [userId], references: [id])
+  
+  @@map("projects")
+  @@unique([slug, tenantId])  // Unique slug per tenant
+}
+
+enum Role {
+  ADMIN
+  USER
+  MODERATOR
+}
+
+enum Plan {
+  FREE
+  PRO
+  TEAM
+  ENTERPRISE
+}
+
+// 2. Tenant Context Middleware
+// middleware/tenant-context.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/lib/db';
+import { getCurrentUser } from '@/lib/auth';
+
+export async function withTenantContext(
+  request: NextRequest,
+  handler: (request: NextRequest, context: { tenantId: string; userId: string }) => Promise<NextResponse>
+) {
+  try {
+    // Extract tenant from subdomain or header
+    const hostname = request.headers.get('host');
+    const subdomain = extractSubdomain(hostname);
+    
+    if (!subdomain) {
+      return NextResponse.json(
+        { error: 'No tenant subdomain found' },
+        { status: 400 }
+      );
+    }
+
+    // Get tenant by subdomain
+    const tenant = await db.tenant.findUnique({
+      where: { subdomain },
+      select: { id: true, isActive: true }
+    });
+
+    if (!tenant || !tenant.isActive) {
+      return NextResponse.json(
+        { error: 'Tenant not found or inactive' },
+        { status: 404 }
+      );
+    }
+
+    // Get current user
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    // Verify user belongs to tenant
+    const userTenant = await db.user.findFirst({
+      where: {
+        id: user.id,
+        tenantId: tenant.id
+      },
+      select: { id: true }
+    });
+
+    if (!userTenant) {
+      return NextResponse.json(
+        { error: 'User does not belong to this tenant' },
+        { status: 403 }
+      );
+    }
+
+    // Add tenant context to request
+    const tenantContext = { tenantId: tenant.id, userId: user.id };
+    return await handler(request, tenantContext);
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Tenant context error', details: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+function extractSubdomain(hostname: string | null): string | null {
+  if (!hostname) return null;
+  
+  const parts = hostname.split('.');
+  if (parts.length >= 3) {
+    return parts[0]; // subdomain.example.com -> subdomain
+  }
+  
+  // For localhost with ports
+  if (hostname.includes(':')) {
+    const [host] = hostname.split(':');
+    return host;
+  }
+  
+  return null;
+}
+
+// 3. Tenant-Aware Database Queries
+// lib/tenant-db.ts
+import { db } from './db';
+
+export class TenantDB {
+  constructor(private tenantId: string) {}
+
+  async getUser(userId: string) {
+    return await db.user.findFirst({
+      where: {
+        id: userId,
+        tenantId: this.tenantId
+      }
+    });
+  }
+
+  async getProjects(userId?: string) {
+    const whereClause: any = { tenantId: this.tenantId };
+    if (userId) {
+      whereClause.userId = userId;
+    }
+
+    return await db.project.findMany({
+      where: whereClause,
+      include: {
+        owner: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
+    });
+  }
+
+  async createProject(data: { name: string; slug: string; userId: string }) {
+    return await db.project.create({
+      data: {
+        ...data,
+        tenantId: this.tenantId
+      }
+    });
+  }
+
+  async updateProject(projectId: string, data: any) {
+    return await db.project.update({
+      where: {
+        id: projectId,
+        tenantId: this.tenantId
+      },
+      data
+    });
+  }
+
+  async deleteProject(projectId: string) {
+    return await db.project.delete({
+      where: {
+        id: projectId,
+        tenantId: this.tenantId
+      }
+    });
+  }
+}
+
+// 4. API Route with Tenant Context
+// app/api/projects/route.ts
+import { NextRequest } from 'next/server';
+import { withTenantContext } from '@/middleware/tenant-context';
+import { TenantDB } from '@/lib/tenant-db';
+
+export async function GET(request: NextRequest) {
+  return withTenantContext(request, async (req, context) => {
+    const tenantDB = new TenantDB(context.tenantId);
+    const projects = await tenantDB.getProjects(context.userId);
+    
+    return Response.json(projects);
+  });
+}
+
+export async function POST(request: NextRequest) {
+  return withTenantContext(request, async (req, context) => {
+    try {
+      const body = await req.json();
+      const tenantDB = new TenantDB(context.tenantId);
+      
+      const project = await tenantDB.createProject({
+        name: body.name,
+        slug: body.slug,
+        userId: context.userId
+      });
+      
+      return Response.json(project, { status: 201 });
+    } catch (error) {
+      return Response.json(
+        { error: 'Failed to create project', details: error.message },
+        { status: 500 }
+      );
+    }
+  });
+}
+
+// 5. Tenant-Aware Hooks
+// hooks/use-tenant-data.ts
+import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+
+export function useTenantData() {
+  const [tenantId, setTenantId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const hostname = window.location.hostname;
+      const subdomain = extractSubdomain(hostname);
+      
+      if (subdomain) {
+        setTenantId(subdomain);
+      } else {
+        setError('No tenant subdomain found');
+      }
+    } catch (err) {
+      setError('Failed to extract tenant context');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  return { tenantId, isLoading, error };
+}
+
+function extractSubdomain(hostname: string): string | null {
+  const parts = hostname.split('.');
+  if (parts.length >= 3) {
+    return parts[0];
+  }
+  return null;
+}
+
+// 6. Tenant-Aware Components
+// components/tenant-layout.tsx
+'use client';
+
+import { useTenantData } from '@/hooks/use-tenant-data';
+import { LoadingSpinner } from '@/components/loading-spinner';
+
+export function TenantLayout({ children }: { children: React.ReactNode }) {
+  const { tenantId, isLoading, error } = useTenantData();
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (error || !tenantId) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-xl font-bold text-red-600">Tenant Error</h2>
+          <p className="text-gray-600">{error || 'No tenant context found'}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="tenant-layout" data-tenant={tenantId}>
+      {children}
+    </div>
+  );
+}
+
+// 7. Tenant Isolation in Services
+// services/email-service.ts
+import { TenantDB } from '@/lib/tenant-db';
+
+export class EmailService {
+  constructor(private tenantId: string) {}
+
+  async sendWelcomeEmail(userId: string) {
+    const tenantDB = new TenantDB(this.tenantId);
+    const user = await tenantDB.getUser(userId);
+    
+    if (!user) {
+      throw new Error('User not found in tenant');
+    }
+
+    // Send email with tenant-specific branding
+    return await sendEmail({
+      to: user.email,
+      subject: `Welcome to ${this.getTenantName()}!`,
+      template: 'welcome',
+      data: {
+        userName: user.name,
+        tenantName: await this.getTenantName(),
+        tenantId: this.tenantId
+      }
+    });
+  }
+
+  private async getTenantName(): Promise<string> {
+    const tenant = await db.tenant.findUnique({
+      where: { id: this.tenantId },
+      select: { name: true }
+    });
+    
+    return tenant?.name || 'Your Application';
+  }
+}
+
+// 8. Tenant Configuration Management
+// lib/tenant-config.ts
+export interface TenantConfig {
+  id: string;
+  name: string;
+  branding: {
+    logo: string;
+    primaryColor: string;
+    secondaryColor: string;
+  };
+  features: {
+    aiEnabled: boolean;
+    analyticsEnabled: boolean;
+    customDomain: boolean;
+  };
+  limits: {
+    maxUsers: number;
+    maxProjects: number;
+    maxStorage: number; // in MB
+  };
+}
+
+export async function getTenantConfig(tenantId: string): Promise<TenantConfig> {
+  const tenant = await db.tenant.findUnique({
+    where: { id: tenantId },
+    select: {
+      id: true,
+      name: true,
+      plan: true
+    }
+  });
+
+  if (!tenant) {
+    throw new Error('Tenant not found');
+  }
+
+  // Return configuration based on plan
+  const planConfig = getPlanConfig(tenant.plan);
+  
+  return {
+    id: tenant.id,
+    name: tenant.name,
+    branding: {
+      logo: `/api/tenant/${tenant.id}/logo`,
+      primaryColor: '#6366f1',
+      secondaryColor: '#8b5cf6'
+    },
+    features: {
+      aiEnabled: planConfig.aiEnabled,
+      analyticsEnabled: planConfig.analyticsEnabled,
+      customDomain: planConfig.customDomain
+    },
+    limits: planConfig.limits
+  };
+}
+
+function getPlanConfig(plan: Plan) {
+  switch (plan) {
+    case Plan.FREE:
+      return {
+        aiEnabled: false,
+        analyticsEnabled: false,
+        customDomain: false,
+        limits: { maxUsers: 1, maxProjects: 5, maxStorage: 100 }
+      };
+    case Plan.PRO:
+      return {
+        aiEnabled: true,
+        analyticsEnabled: true,
+        customDomain: true,
+        limits: { maxUsers: 5, maxProjects: 25, maxStorage: 1000 }
+      };
+    case Plan.TEAM:
+      return {
+        aiEnabled: true,
+        analyticsEnabled: true,
+        customDomain: true,
+        limits: { maxUsers: 15, maxProjects: 100, maxStorage: 5000 }
+      };
+    case Plan.ENTERPRISE:
+      return {
+        aiEnabled: true,
+        analyticsEnabled: true,
+        customDomain: true,
+        limits: { maxUsers: -1, maxProjects: -1, maxStorage: -1 } // Unlimited
+      };
+  }
+}
+```
+
+### Production Considerations
+- **Data Isolation**: Ensure complete data separation between tenants
+- **Performance**: Optimize queries with proper indexing and tenantId filters
+- **Security**: Implement RLS at database level for additional protection
+- **Billing**: Integrate with Stripe for per-tenant billing
+- **Monitoring**: Track tenant-specific metrics and usage
+
+### Anti-Patterns to Avoid
+- ❌ Sharing data between tenants without proper isolation
+- ❌ Forgetting tenantId in WHERE clauses
+- ❌ Not validating tenant access for each operation
+- ❌ Hardcoding tenant-specific configurations
+- ❌ Not implementing proper rate limiting per tenant
+
+### Quality Gates
+- [ ] All queries include tenantId filters
+- [ ] Tenant context validated for every request
+- [ ] Data isolation verified with tests
+- [ ] Performance benchmarks met
+- [ ] Security audit passed
+- [ ] Billing integration implemented

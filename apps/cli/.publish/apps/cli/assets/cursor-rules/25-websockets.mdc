@@ -1,0 +1,100 @@
+# WebSocket & Real-time Rules
+
+## Connection Management
+```typescript
+// Server setup with ws
+import { WebSocketServer } from 'ws';
+
+const wss = new WebSocketServer({ port: 8080 });
+const clients = new Map<string, WebSocket>();
+
+wss.on('connection', (ws, req) => {
+  const userId = authenticateFromHeaders(req);
+  if (!userId) return ws.close(4001, 'Unauthorized');
+
+  clients.set(userId, ws);
+
+  ws.on('message', (data) => handleMessage(userId, data));
+  ws.on('close', () => clients.delete(userId));
+  ws.on('error', (err) => console.error('WS error:', err));
+
+  // Heartbeat
+  ws.isAlive = true;
+  ws.on('pong', () => { ws.isAlive = true; });
+});
+
+// Ping interval
+setInterval(() => {
+  wss.clients.forEach((ws) => {
+    if (!ws.isAlive) return ws.terminate();
+    ws.isAlive = false;
+    ws.ping();
+  });
+}, 30000);
+```
+
+## Message Protocol
+```typescript
+interface WSMessage {
+  type: string;
+  payload: unknown;
+  timestamp: number;
+  correlationId?: string;
+}
+
+function handleMessage(userId: string, data: Buffer) {
+  const message: WSMessage = JSON.parse(data.toString());
+
+  switch (message.type) {
+    case 'subscribe':
+      subscribeToChannel(userId, message.payload.channel);
+      break;
+    case 'unsubscribe':
+      unsubscribeFromChannel(userId, message.payload.channel);
+      break;
+    default:
+      sendError(userId, 'Unknown message type');
+  }
+}
+```
+
+## Broadcasting
+```typescript
+// Pub/sub with Redis for horizontal scaling
+import { Redis } from 'ioredis';
+
+const pub = new Redis(process.env.REDIS_URL);
+const sub = new Redis(process.env.REDIS_URL);
+
+sub.subscribe('notifications');
+sub.on('message', (channel, message) => {
+  const { userIds, data } = JSON.parse(message);
+  userIds.forEach((userId: string) => {
+    clients.get(userId)?.send(JSON.stringify(data));
+  });
+});
+
+export function broadcast(userIds: string[], data: unknown) {
+  pub.publish('notifications', JSON.stringify({ userIds, data }));
+}
+```
+
+## Client Reconnection
+```typescript
+function createReconnectingSocket(url: string) {
+  let ws: WebSocket;
+  let reconnectDelay = 1000;
+
+  function connect() {
+    ws = new WebSocket(url);
+    ws.onopen = () => { reconnectDelay = 1000; };
+    ws.onclose = () => {
+      setTimeout(connect, reconnectDelay);
+      reconnectDelay = Math.min(reconnectDelay * 2, 30000);
+    };
+  }
+
+  connect();
+  return { send: (data: unknown) => ws.send(JSON.stringify(data)) };
+}
+```

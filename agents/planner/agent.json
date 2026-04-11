@@ -1,0 +1,10 @@
+{
+  "name": "@ultra-dex/planner",
+  "version": "4.0.0",
+  "description": "Task decomposition and planning specialist",
+  "author": "Ultra-Dex",
+  "capabilities": ["planning", "decomposition", "architecture"],
+  "providers": ["claude", "openai", "nvidia", "gemini"],
+  "category": "planning",
+  "minVersion": "3.1.0"
+}

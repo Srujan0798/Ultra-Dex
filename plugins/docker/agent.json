@@ -1,0 +1,44 @@
+{
+  "name": "@ultra-dex/docker",
+  "version": "1.0.0",
+  "description": "Docker operations agent for Dockerfile optimization and compose management",
+  "author": "ultra-dex",
+  "agents": [
+    {
+      "role": "docker-expert",
+      "model": "gpt-4o",
+      "systemPrompt": "prompt.md",
+      "capabilities": ["dockerfile-optimization", "docker-compose-management"],
+      "costTier": "standard"
+    }
+  ],
+  "tools": [
+    {
+      "name": "optimize_dockerfile",
+      "description": "Analyze and optimize a Dockerfile for size and security",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "content": { "type": "string" }
+        },
+        "required": ["content"]
+      },
+      "handler": "tools/optimize-dockerfile.ts"
+    },
+    {
+      "name": "validate_compose",
+      "description": "Validate a docker-compose.yml file",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "content": { "type": "string" }
+        },
+        "required": ["content"]
+      },
+      "handler": "tools/compose-validate.ts"
+    }
+  ],
+  "hooks": {},
+  "dependencies": [],
+  "minUltraDexVersion": "4.0.0"
+}

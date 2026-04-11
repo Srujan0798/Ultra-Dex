@@ -1,0 +1,318 @@
+# Comprehensive Logging & Observability Pattern
+## Ultra-Dex Cursor Rule 21-logging.mdc
+
+### Context
+Structured logging provides visibility into application behavior, enables debugging, and supports monitoring. Critical for production systems requiring observability.
+
+### Pattern
+```javascript
+// 1. Structured logging with Winston
+import winston from 'winston';
+import { format } from 'winston';
+import Transport from 'winston-transport';
+import { redis } from './lib/redis.js';
+
+// Custom transport for sending logs to external monitoring
+class MonitoringTransport extends Transport {
+  constructor(opts) {
+    super(opts);
+  }
+
+  async log(info, callback) {
+    setImmediate(() => {
+      this.emit('logged', info);
+    });
+
+    // Send to external monitoring system
+    try {
+      await fetch('https://monitoring.example.com/logs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          timestamp: new Date().toISOString(),
+          level: info.level,
+          message: info.message,
+          service: info.service || 'ultra-dex',
+          environment: process.env.NODE_ENV || 'development',
+          ...info.metadata
+        })
+      });
+    } catch (error) {
+      // Don't let logging errors affect main application
+      console.error('Failed to send log to monitoring:', error.message);
+    }
+
+    callback();
+  }
+}
+
+// 2. Logger factory with different contexts
+const loggerFactory = {
+  create(serviceName) {
+    return winston.createLogger({
+      level: process.env.LOG_LEVEL || 'info',
+      format: format.combine(
+        format.timestamp(),
+        format.errors({ stack: true }),
+        format.splat(),
+        format.json()
+      ),
+      defaultMeta: { service: serviceName },
+      transports: [
+        new winston.transports.File({ 
+          filename: `.ultra-dex/logs/${serviceName}.error.log`,
+          level: 'error',
+          maxsize: 5242880, // 5MB
+          maxFiles: 5
+        }),
+        new winston.transports.File({ 
+          filename: `.ultra-dex/logs/${serviceName}.combined.log`,
+          maxsize: 5242880, // 5MB
+          maxFiles: 5
+        }),
+        new winston.transports.Console({
+          format: format.combine(
+            format.colorize(),
+            format.printf(({ level, message, timestamp, ...metadata }) => {
+              let msg = `${timestamp} [${level}] ${message}`;
+              if (metadata && Object.keys(metadata).length > 0) {
+                msg += ` ${JSON.stringify(metadata)}`;
+              }
+              return msg;
+            })
+          )
+        }),
+        ...(process.env.MONITORING_ENABLED ? [new MonitoringTransport()] : [])
+      ]
+    });
+  }
+};
+
+// 3. Context-aware logger with correlation IDs
+class ContextLogger {
+  constructor(serviceName) {
+    this.logger = loggerFactory.create(serviceName);
+    this.correlationId = null;
+  }
+
+  setCorrelationId(id) {
+    this.correlationId = id;
+    return this;
+  }
+
+  async withContext(context, fn) {
+    const originalCorrelationId = this.correlationId;
+    this.correlationId = context.correlationId || crypto.randomUUID();
+    
+    try {
+      const result = await fn(this);
+      return result;
+    } finally {
+      this.correlationId = originalCorrelationId;
+    }
+  }
+
+  log(level, message, metadata = {}) {
+    const logMetadata = {
+      correlationId: this.correlationId,
+      ...metadata
+    };
+    
+    this.logger.log(level, message, logMetadata);
+  }
+
+  info(message, metadata = {}) {
+    this.log('info', message, metadata);
+  }
+
+  error(message, metadata = {}) {
+    this.log('error', message, metadata);
+  }
+
+  warn(message, metadata = {}) {
+    this.log('warn', message, metadata);
+  }
+
+  debug(message, metadata = {}) {
+    this.log('debug', message, metadata);
+  }
+
+  // 4. Performance logging with timing
+  async time(operation, fn, metadata = {}) {
+    const start = process.hrtime.bigint();
+    
+    try {
+      const result = await fn();
+      const end = process.hrtime.bigint();
+      const duration = Number(end - start) / 1000000; // Convert to milliseconds
+      
+      this.info(`${operation} completed`, {
+        ...metadata,
+        duration: `${duration.toFixed(2)}ms`,
+        status: 'success'
+      });
+      
+      return result;
+    } catch (error) {
+      const end = process.hrtime.bigint();
+      const duration = Number(end - start) / 1000000;
+      
+      this.error(`${operation} failed`, {
+        ...metadata,
+        duration: `${duration.toFixed(2)}ms`,
+        status: 'error',
+        error: error.message
+      });
+      
+      throw error;
+    }
+  }
+
+  // 5. Audit logging for security-sensitive operations
+  audit(operation, user, resource, metadata = {}) {
+    this.info('AUDIT', {
+      operation,
+      user: user.id || user,
+      resource,
+      ip: metadata.ip,
+      userAgent: metadata.userAgent,
+      timestamp: new Date().toISOString(),
+      ...metadata
+    });
+  }
+}
+
+// 6. Request logging middleware
+export function createRequestLogger(logger) {
+  return (req, res, next) => {
+    const start = Date.now();
+    const correlationId = req.headers['x-correlation-id'] || crypto.randomUUID();
+    
+    // Set correlation ID for downstream operations
+    req.correlationId = correlationId;
+    
+    logger.setCorrelationId(correlationId);
+    
+    res.on('finish', () => {
+      const duration = Date.now() - start;
+      
+      logger.info('REQUEST_COMPLETED', {
+        method: req.method,
+        url: req.url,
+        statusCode: res.statusCode,
+        duration: `${duration}ms`,
+        ip: req.ip,
+        userAgent: req.get('User-Agent'),
+        correlationId
+      });
+    });
+    
+    next();
+  };
+}
+
+// 7. Error logging with context
+export function createErrorLogger(logger) {
+  return (error, req, res, next) => {
+    logger.error('UNHANDLED_ERROR', {
+      error: {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      },
+      request: {
+        method: req.method,
+        url: req.url,
+        params: req.params,
+        query: req.query,
+        body: req.body,
+        headers: req.headers
+      },
+      correlationId: req.correlationId
+    });
+    
+    res.status(500).json({ error: 'Internal Server Error' });
+  };
+}
+
+// 8. Performance monitoring with metrics
+class PerformanceMonitor {
+  constructor(logger) {
+    this.logger = logger;
+    this.metrics = new Map();
+  }
+
+  async measure(operation, fn, tags = {}) {
+    const start = process.hrtime.bigint();
+    let success = true;
+    
+    try {
+      const result = await fn();
+      return result;
+    } catch (error) {
+      success = false;
+      throw error;
+    } finally {
+      const end = process.hrtime.bigint();
+      const duration = Number(end - start) / 1000000; // ms
+      
+      // Log performance metric
+      this.logger.info('PERFORMANCE_METRIC', {
+        operation,
+        duration: `${duration.toFixed(2)}ms`,
+        success,
+        tags,
+        timestamp: new Date().toISOString()
+      });
+      
+      // Store for aggregation
+      const key = `${operation}_${JSON.stringify(tags)}`;
+      if (!this.metrics.has(key)) {
+        this.metrics.set(key, []);
+      }
+      this.metrics.get(key).push(duration);
+    }
+  }
+
+  getMetricsSummary() {
+    const summary = {};
+    
+    for (const [key, values] of this.metrics) {
+      const avg = values.reduce((a, b) => a + b, 0) / values.length;
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      
+      summary[key] = {
+        count: values.length,
+        avg: avg.toFixed(2),
+        min: min.toFixed(2),
+        max: max.toFixed(2)
+      };
+    }
+    
+    return summary;
+  }
+}
+```
+
+### Production Considerations
+- **Structured Format**: Use JSON for easy parsing and analysis
+- **Correlation IDs**: Track requests across services and components
+- **Performance Impact**: Minimize logging overhead in hot paths
+- **Security**: Don't log sensitive data like passwords or tokens
+- **Retention**: Implement log rotation and archival
+
+### Anti-Patterns to Avoid
+- ❌ Plain text logs without structure (hard to parse)
+- ❌ No correlation IDs (impossible to trace requests)
+- ❌ Logging sensitive information (security breach risk)
+- ❌ Excessive logging in performance-critical paths
+- ❌ No log rotation (disk space exhaustion)
+
+### Quality Gates
+- [ ] Structured JSON logging
+- [ ] Correlation ID support
+- [ ] Performance metrics collection
+- [ ] Audit logging for sensitive operations
+- [ ] Log rotation and retention
+- [ ] External monitoring integration

@@ -1,0 +1,98 @@
+{
+  "title": "Ultra-Dex Interactive Tutorial",
+  "description": "Learn Ultra-Dex features in 10 easy steps",
+  "version": "6.0.0",
+  "steps": [
+    {
+      "id": 1,
+      "title": "Welcome to Ultra-Dex",
+      "description": "Introduction to the AI orchestration platform",
+      "command": "",
+      "explanation": "Ultra-Dex is an AI orchestration meta-layer that coordinates agents, models, memory, and tools.",
+      "challenge": null
+    },
+    {
+      "id": 2,
+      "title": "Check Your Setup",
+      "description": "Verify Ultra-Dex is properly installed",
+      "command": "ultra-dex --version",
+      "explanation": "This command shows your Ultra-Dex version.",
+      "challenge": "Run the command and verify you see version 6.0.0"
+    },
+    {
+      "id": 3,
+      "title": "View Available Commands",
+      "description": "See all available Ultra-Dex commands",
+      "command": "ultra-dex --help",
+      "explanation": "This shows all available commands and options.",
+      "challenge": "Find the 'run' command and its description"
+    },
+    {
+      "id": 4,
+      "title": "Initialize a Project",
+      "description": "Set up Ultra-Dex in your current directory",
+      "command": "ultra-dex init",
+      "explanation": "This creates configuration files and prepares your environment.",
+      "challenge": "Run init and observe the configuration created"
+    },
+    {
+      "id": 5,
+      "title": "Configure AI Providers",
+      "description": "Set up your AI model providers",
+      "command": "ultra-dex config --wizard",
+      "explanation": "This guides you through setting up OpenAI, Anthropic, or other providers.",
+      "challenge": "Start the wizard (you can exit without saving)"
+    },
+    {
+      "id": 6,
+      "title": "Run Your First Task",
+      "description": "Execute a simple task with Ultra-Dex",
+      "command": "ultra-dex run --task \"Say hello to the world\"",
+      "explanation": "This sends a task to the AI orchestrator.",
+      "challenge": "Run a simple task of your choice"
+    },
+    {
+      "id": 7,
+      "title": "Check Status",
+      "description": "View the status of your orchestrator",
+      "command": "ultra-dex status",
+      "explanation": "This shows the current state of agents and memory.",
+      "challenge": "Run the status command and observe the output"
+    },
+    {
+      "id": 8,
+      "title": "Explore Agents",
+      "description": "Learn about specialized agents",
+      "command": "ultra-dex agents list",
+      "explanation": "This shows all available specialized agents (planner, cto, backend, etc.)",
+      "challenge": "Identify at least 3 different agent types"
+    },
+    {
+      "id": 9,
+      "title": "View Memory",
+      "description": "Check the persistent memory system",
+      "command": "ultra-dex memory list",
+      "explanation": "This shows information stored in Ultra-Dex's tiered memory system.",
+      "challenge": "Observe the memory tiers (hot, warm, cold)"
+    },
+    {
+      "id": 10,
+      "title": "Complete Tutorial",
+      "description": "Congratulations! You've completed the tutorial",
+      "command": "",
+      "explanation": "You now know the basics of Ultra-Dex. Explore advanced features!",
+      "challenge": "Try creating a more complex task using multiple agents"
+    }
+  ],
+  "learning_objectives": [
+    "Understand Ultra-Dex architecture",
+    "Navigate the command line interface",
+    "Configure AI providers",
+    "Execute tasks with agents",
+    "Monitor system status",
+    "Use the memory system",
+    "Extend functionality"
+  ],
+  "estimated_duration": "15-20 minutes",
+  "difficulty": "beginner"
+}

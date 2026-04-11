@@ -1,0 +1,9 @@
+{
+  "name": "@ultra-dex/computer-use-agent",
+  "version": "3.1.0",
+  "description": "GUI automation and system interaction specialist",
+  "author": "Ultra-Dex",
+  "capabilities": ["gui-automation", "browser-control", "system-commands"],
+  "providers": ["anthropic"],
+  "minVersion": "3.1.0"
+}

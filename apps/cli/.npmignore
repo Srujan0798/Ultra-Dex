@@ -1,0 +1,17 @@
+tests/
+test/
+*.test.js
+*.test.ts
+.env*
+node_modules/
+*.map
+*.tgz
+.git/
+.github/
+.ultra/
+.ultra-dex/
+logs/
+*.log
+dist/*.map
+coverage/
+.nyc_output/

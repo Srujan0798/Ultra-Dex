@@ -1,0 +1,8 @@
+{
+  "name": "logger",
+  "version": "1.0.0",
+  "description": "Ultra-Dex logger plugin",
+  "main": "index.js",
+  "capabilities": ["logger"],
+  "requiredPermissions": ["file-read"]
+}

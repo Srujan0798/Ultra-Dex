@@ -1,0 +1,28 @@
+// Copyright (c) 2026 Ultra-Dex
+
+/**
+ * MCP Module Index
+ */
+
+import { Logger } from '../utils/logger.js';
+
+const logger = new Logger({ prefix: 'MCP' });
+
+export * from './wizard.js';
+export * from './server.js';
+export { registerResources } from './resources.js';
+export { registerTools } from './tools.js';
+export { projectGraph } from './graph.js';
+export { ultraMemory } from '../../../../src/core/memory/manager.js';
+
+/**
+ * Error handler for index
+ * @param {Error} error - Error to handle
+ */
+function _handleError(error) {
+  try {
+    logger.error('[index]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

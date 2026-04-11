@@ -1,0 +1,56 @@
+name: 💡 Feature Request
+description: Suggest an idea or improvement
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature! Please describe your idea in detail.
+  - type: textarea
+    id: problem
+    attributes:
+      label: 🤔 Problem Statement
+      description: What problem does this solve?
+      placeholder: "I'm always frustrated when..."
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💡 Proposed Solution
+      description: How should this work?
+      placeholder: 'I think we should add...'
+    validations:
+      required: true
+  - type: textarea
+    id: alternative
+    attributes:
+      label: 🔄 Alternative Solutions
+      description: How else could this be solved?
+  - type: textarea
+    id: usage
+    attributes:
+      label: 📋 Example Usage
+      description: How would users use this feature?
+      placeholder: |
+        ultra-dex run planner -t "Build auth" --new-flag
+    validations:
+      required: true
+  - type: dropdown
+    id: priority
+    attributes:
+      label: ⚡ Priority
+      options:
+        - Nice to have
+        - Important
+        - Critical
+    validations:
+      required: true
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: ✅ Checklist
+      options:
+        - label: I've searched existing feature requests
+        - label: This feature would improve my workflow
+        - label: I'm willing to help implement this

@@ -1,0 +1,7 @@
+{
+  "name": "@ultra-dex/agent-protocol",
+  "version": "6.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./index.js"
+}

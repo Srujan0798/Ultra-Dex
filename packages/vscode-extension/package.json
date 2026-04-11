@@ -1,0 +1,171 @@
+{
+  "name": "ultra-dex-vscode",
+  "displayName": "Ultra-Dex",
+  "description": "AI orchestration from within VSCode",
+  "version": "4.0.0",
+  "publisher": "ultra-dex",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Machine Learning",
+    "Debuggers",
+    "Programming Languages"
+  ],
+  "keywords": [
+    "ai",
+    "llm",
+    "orchestration",
+    "agents",
+    "chatgpt",
+    "claude"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:ultra-dex.run",
+    "onCommand:ultra-dex.swarm",
+    "onCommand:ultra-dex.config"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ultra-dex-sidebar",
+          "title": "Ultra-Dex",
+          "icon": "$(circuit-board)"
+        }
+      ]
+    },
+    "views": {
+      "ultra-dex-sidebar": [
+        {
+          "id": "ultra-dex.agents",
+          "name": "Agents",
+          "type": "webview"
+        },
+        {
+          "id": "ultra-dex.tasks",
+          "name": "Tasks",
+          "type": "webview"
+        },
+        {
+          "id": "ultra-dex.memory",
+          "name": "Memory",
+          "type": "webview"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "ultra-dex.run",
+        "title": "Ultra-Dex: Run Agent",
+        "icon": "$(play)"
+      },
+      {
+        "command": "ultra-dex.swarm",
+        "title": "Ultra-Dex: Run Swarm",
+        "icon": "$(run-all)"
+      },
+      {
+        "command": "ultra-dex.config",
+        "title": "Ultra-Dex: Configure",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "ultra-dex.stop",
+        "title": "Ultra-Dex: Stop Task",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "ultra-dex.replay",
+        "title": "Ultra-Dex: Replay Last Task",
+        "icon": "$(history)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "ultra-dex.run",
+          "when": "view == ultra-dex.agents",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "ultra-dex.run",
+          "when": "true"
+        },
+        {
+          "command": "ultra-dex.swarm",
+          "when": "true"
+        },
+        {
+          "command": "ultra-dex.config",
+          "when": "true"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Ultra-Dex",
+      "properties": {
+        "ultra-dex.cliPath": {
+          "type": "string",
+          "default": "ultra-dex",
+          "description": "Path to ultra-dex CLI executable"
+        },
+        "ultra-dex.defaultProvider": {
+          "type": "string",
+          "default": "nvidia",
+          "enum": [
+            "nvidia",
+            "claude",
+            "openai",
+            "gemini"
+          ],
+          "description": "Default AI provider"
+        },
+        "ultra-dex.defaultAgent": {
+          "type": "string",
+          "default": "planner",
+          "description": "Default agent to use"
+        },
+        "ultra-dex.autoSaveOutput": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically save task output to workspace"
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "ultra-dex.run",
+        "key": "ctrl+shift+u",
+        "mac": "cmd+shift+u",
+        "when": "editorTextFocus"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "esbuild src/extension.ts --bundle --outfile=out/extension.js --external:vscode --platform=node --format=cjs",
+    "watch": "esbuild src/extension.ts --bundle --outfile=out/extension.js --external:vscode --platform=node --format=cjs --watch",
+    "test": "node out/test/runTest.js",
+    "lint": "eslint src --ext ts",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "esbuild": "^0.19.0",
+    "eslint": "^8.0.0",
+    "typescript": "^5.3.0",
+    "vsce": "^2.15.0"
+  },
+  "dependencies": {
+    "eventemitter3": "^5.0.1"
+  }
+}

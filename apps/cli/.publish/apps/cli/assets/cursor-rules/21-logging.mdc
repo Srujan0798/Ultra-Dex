@@ -1,0 +1,58 @@
+# Structured Logging Rules
+
+## Log Levels
+- ERROR: System failures, requires immediate action
+- WARN: Unexpected but recoverable situations
+- INFO: Business events, request lifecycle
+- DEBUG: Detailed diagnostic information
+
+## Structured Format
+```typescript
+import pino from 'pino';
+
+const logger = pino({
+  level: process.env.LOG_LEVEL || 'info',
+  formatters: {
+    level: (label) => ({ level: label }),
+  },
+  timestamp: pino.stdTimeFunctions.isoTime,
+  base: {
+    service: 'ultra-dex',
+    version: process.env.VERSION,
+    env: process.env.NODE_ENV,
+  },
+});
+
+// Usage
+logger.info({ userId, action: 'login' }, 'User logged in');
+logger.error({ err, requestId }, 'Payment failed');
+```
+
+## Request Context
+```typescript
+// Add request ID to all logs
+import { AsyncLocalStorage } from 'async_hooks';
+
+const requestContext = new AsyncLocalStorage<{ requestId: string }>();
+
+export function withRequestId(req: Request, fn: () => Promise<Response>) {
+  const requestId = req.headers.get('x-request-id') || crypto.randomUUID();
+  return requestContext.run({ requestId }, fn);
+}
+
+export function getRequestId() {
+  return requestContext.getStore()?.requestId;
+}
+```
+
+## What to Log
+- Request: method, path, user, duration, status
+- Errors: stack, context, correlation ID
+- Business: user actions, state changes, payments
+- Never log: passwords, tokens, PII, credit cards
+
+## Log Aggregation
+- Use JSON format for machine parsing
+- Send to centralized service (Datadog, Logtail, Axiom)
+- Set up alerts for error rate spikes
+- Implement log sampling for high-volume endpoints

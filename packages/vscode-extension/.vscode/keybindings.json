@@ -1,0 +1,20 @@
+[
+  {
+    "key": "ctrl+shift+u",
+    "mac": "cmd+shift+u",
+    "command": "ultra-dex.run",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+shift+s",
+    "mac": "cmd+shift+s",
+    "command": "ultra-dex.swarm",
+    "when": "editorTextFocus"
+  },
+  {
+    "key": "ctrl+shift+m",
+    "mac": "cmd+shift+m",
+    "command": "ultra-dex.memorySearch",
+    "when": "editorTextFocus"
+  }
+]

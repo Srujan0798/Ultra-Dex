@@ -1,0 +1,9 @@
+{
+  "name": "@ultra-dex/swarm",
+  "version": "3.1.0",
+  "description": "Multi-agent coordination and swarm management specialist",
+  "author": "Ultra-Dex",
+  "capabilities": ["coordination", "delegation", "aggregation"],
+  "providers": ["any"],
+  "minVersion": "3.1.0"
+}

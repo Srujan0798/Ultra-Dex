@@ -1,0 +1,92 @@
+# Frontend Rules
+
+## Component Structure
+
+```
+src/
+├── app/                 # Next.js App Router pages
+├── components/
+│   ├── ui/              # Reusable UI (Button, Input, Modal)
+│   ├── features/        # Feature-specific (TaskCard, UserAvatar)
+│   └── layout/          # Layout (Header, Footer, Sidebar)
+├── hooks/               # Custom React hooks
+├── lib/                 # Utilities (api, utils, constants)
+└── types/               # TypeScript types
+```
+
+## Component Patterns
+
+### Server vs Client Components
+
+```typescript
+// Default: Server Component (no 'use client')
+// Use for: data fetching, SEO, static content
+
+// Client Component
+'use client';
+// Use for: interactivity, useState, useEffect, event handlers
+```
+
+### Props Interface
+
+```typescript
+interface ButtonProps {
+  variant?: 'primary' | 'secondary' | 'danger';
+  size?: 'sm' | 'md' | 'lg';
+  loading?: boolean;
+  children: React.ReactNode;
+  onClick?: () => void;
+}
+
+export function Button({ variant = 'primary', size = 'md', ...props }: ButtonProps) {
+  // ...
+}
+```
+
+## State Management
+
+- Local state: `useState`
+- Form state: `react-hook-form` + Zod
+- Server state: `@tanstack/react-query` or Server Components
+- Global state: Zustand (if needed)
+
+## Data Fetching
+
+```typescript
+// Server Component (preferred)
+async function TaskList() {
+  const tasks = await prisma.task.findMany();
+  return <ul>{tasks.map(t => <li key={t.id}>{t.title}</li>)}</ul>;
+}
+
+// Client Component with React Query
+const { data, isLoading } = useQuery({
+  queryKey: ['tasks'],
+  queryFn: () => fetch('/api/tasks').then(r => r.json()),
+});
+```
+
+## Forms
+
+```typescript
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+const form = useForm({
+  resolver: zodResolver(taskSchema),
+  defaultValues: { title: '', description: '' },
+});
+```
+
+## Loading & Error States
+
+- Always show loading indicator
+- Always handle error state
+- Use Suspense boundaries for streaming
+
+## Accessibility
+
+- Semantic HTML (button, nav, main, article)
+- ARIA labels for icons
+- Keyboard navigation support
+- Focus management in modals

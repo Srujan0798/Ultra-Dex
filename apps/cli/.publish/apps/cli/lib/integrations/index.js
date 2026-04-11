@@ -1,0 +1,45 @@
+// Copyright (c) 2026 Ultra-Dex
+
+import jira from './jira.js';
+import linear from './linear.js';
+import notion from './notion.js';
+import trello from './trello.js';
+import slack from './slack.js';
+import discord from './discord.js';
+import githubProjects from './github-projects.js';
+import vercel from './vercel.js';
+import supabase from './supabase.js';
+import neon from './neon.js';
+import netlify from './netlify.js';
+import stripe from './stripe.js';
+import segment from './segment.js';
+
+export const integrations = {
+  jira,
+  linear,
+  notion,
+  trello,
+  slack,
+  discord,
+  'github-projects': githubProjects,
+  vercel,
+  supabase,
+  neon,
+  netlify,
+  stripe,
+  segment,
+};
+
+export default integrations;
+
+/**
+ * Error handler for index
+ * @param {Error} error - Error to handle
+ */
+function _handleError(error) {
+  try {
+    console.error('[index]', error instanceof Error ? error.message : String(error));
+  } catch (_) {
+    // Fail silently
+  }
+}

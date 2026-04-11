@@ -1,0 +1,17 @@
+{
+  "name": "@ultra-dex/core",
+  "version": "2.0.0",
+  "description": "Core logic for the Ultra-Dex Meta-Layer",
+  "type": "module",
+  "main": "./index.js",
+  "scripts": {
+    "build": "echo 'Core package built'"
+  },
+  "keywords": [
+    "ultra-dex",
+    "core",
+    "agents",
+    "orchestration"
+  ],
+  "license": "MIT"
+}

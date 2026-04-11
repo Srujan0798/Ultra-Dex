@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MCP Dashboard Component",
+  "type": "object",
+  "required": ["project", "score"],
+  "properties": {
+    "project": { "type": "string" },
+    "score": { "type": "number", "minimum": 0, "maximum": 100 },
+    "status": { "type": "string" },
+    "agents": { "type": "array", "items": { "type": "string" } },
+    "updatedAt": { "type": "string", "format": "date-time" }
+  }
+}

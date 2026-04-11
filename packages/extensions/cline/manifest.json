@@ -1,0 +1,11 @@
+{
+  "name": "ultra-dex-cline",
+  "displayName": "Ultra-Dex Cline Integration",
+  "version": "0.1.0",
+  "description": "Connect Ultra-Dex orchestration to Cline.",
+  "main": "index.js",
+  "commands": [
+    { "id": "ultraDex.sync", "title": "Ultra-Dex: Sync Context" },
+    { "id": "ultraDex.swarm", "title": "Ultra-Dex: Run Swarm" }
+  ]
+}

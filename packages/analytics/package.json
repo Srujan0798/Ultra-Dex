@@ -1,0 +1,55 @@
+{
+  "name": "@ultra-dex/analytics",
+  "version": "1.0.0",
+  "description": "Advanced analytics and insights platform for Ultra-Dex",
+  "type": "module",
+  "main": "./src/index.js",
+  "types": "./types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.js",
+      "types": "./types/index.d.ts"
+    },
+    "./engine": "./src/engine.js",
+    "./collector": "./src/collector.js",
+    "./insights": "./src/insights.js",
+    "./dashboard": "./src/dashboard.js"
+  },
+  "files": [
+    "src",
+    "types",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "build": "echo 'No build step required for ESM JavaScript sources'",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "ultra-dex",
+    "analytics",
+    "insights",
+    "metrics",
+    "predictive",
+    "dashboard"
+  ],
+  "author": "Srujan Sai Karna",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Srujan0798/Ultra-Dex"
+  },
+  "dependencies": {
+    "chart.js": "^4.5.1",
+    "d3": "^7.9.0",
+    "lodash": "^4.18.1",
+    "moment": "^2.30.1",
+    "simple-statistics": "^7.8.9",
+    "winston": "^3.19.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.2",
+    "@types/lodash": "^4.17.24",
+    "typescript": "^6.0.2"
+  }
+}

@@ -1,0 +1,80 @@
+# Alert rules for Ultra-Dex
+groups:
+  - name: ultra-dex-alerts
+    rules:
+      # High error rate
+      - alert: HighErrorRate
+        expr: rate(ultradex_http_errors_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+          service: ultra-dex
+        annotations:
+          summary: 'High error rate detected in Ultra-Dex'
+          description: 'Error rate is {{ $value }} per second (threshold: 0.1)'
+
+      # High latency
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, rate(ultradex_request_duration_seconds_bucket[5m])) > 2
+        for: 2m
+        labels:
+          severity: warning
+          service: ultra-dex
+        annotations:
+          summary: 'High latency detected in Ultra-Dex'
+          description: '95th percentile latency is {{ $value }} seconds'
+
+      # Memory usage
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          service: ultra-dex
+        annotations:
+          summary: 'High memory usage'
+          description: 'Memory usage is at {{ $value | humanizePercentage }}'
+
+      # CPU usage
+      - alert: HighCPUUsage
+        expr: rate(node_cpu_seconds_total{mode="system"}[5m]) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: ultra-dex
+        annotations:
+          summary: 'High CPU usage'
+          description: 'CPU usage is at {{ $value | humanizePercentage }}'
+
+      # Service down
+      - alert: ServiceDown
+        expr: up{job="ultra-dex"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: ultra-dex
+        annotations:
+          summary: 'Ultra-Dex service is down'
+          description: 'Service has been down for more than 1 minute'
+
+      # Database connections
+      - alert: HighDatabaseConnections
+        expr: pg_stat_database_numbackends{datname="ultradex"} > 50
+        for: 2m
+        labels:
+          severity: warning
+          service: postgres
+        annotations:
+          summary: 'High database connections'
+          description: 'Database connections: {{ $value }}'
+
+      # Redis memory
+      - alert: RedisHighMemory
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.8
+        for: 2m
+        labels:
+          severity: warning
+          service: redis
+        annotations:
+          summary: 'Redis memory usage high'
+          description: 'Redis memory usage at {{ $value | humanizePercentage }}'

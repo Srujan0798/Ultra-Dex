@@ -1,0 +1,112 @@
+# Authentication Rules
+
+## Provider: NextAuth.js (Auth.js)
+
+## Configuration
+
+```typescript
+// auth.ts
+import NextAuth from 'next-auth';
+import { PrismaAdapter } from '@auth/prisma-adapter';
+import Google from 'next-auth/providers/google';
+import { prisma } from '@/lib/prisma';
+
+export const { handlers, auth, signIn, signOut } = NextAuth({
+  adapter: PrismaAdapter(prisma),
+  providers: [Google],
+  callbacks: {
+    session: ({ session, user }) => ({
+      ...session,
+      user: { ...session.user, id: user.id },
+    }),
+  },
+});
+```
+
+## Protected Routes
+
+```typescript
+// Server Component
+import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
+
+export default async function DashboardPage() {
+  const session = await auth();
+  if (!session) redirect('/login');
+
+  return <Dashboard user={session.user} />;
+}
+```
+
+## API Route Protection
+
+```typescript
+import { auth } from '@/auth';
+
+export async function GET() {
+  const session = await auth();
+  if (!session) {
+    return Response.json({ error: { code: 'UNAUTHORIZED' } }, { status: 401 });
+  }
+  // ... proceed
+}
+```
+
+## Role-Based Access
+
+```typescript
+// Check role in session callback or middleware
+if (session.user.role !== 'ADMIN') {
+  return Response.json({ error: { code: 'FORBIDDEN' } }, { status: 403 });
+}
+```
+
+## Security Checklist
+
+- [ ] Session expiry configured (default: 30 days)
+- [ ] CSRF protection enabled (NextAuth default)
+- [ ] Secure cookies in production
+- [ ] Rate limit login attempts
+- [ ] Log authentication events
+
+## Before/After Examples
+
+### Example 1 (Fintech) - Bad -> Good
+```typescript
+// BAD: Trusts client-provided role for finance admin actions
+const body = await req.json();
+if (body.role === 'ADMIN') {
+  await approveTransfer(body.transferId);
+}
+```
+
+```typescript
+// GOOD: Use session role from server-side auth
+const session = await auth();
+if (!session || session.user.role !== 'FINANCE_ADMIN') {
+  return Response.json({ error: { code: 'FORBIDDEN' } }, { status: 403 });
+}
+await approveTransfer(transferId);
+```
+
+### Example 2 (Healthcare) - Bad -> Good
+```typescript
+// BAD: Server component renders patient data without auth
+export default async function PatientPage() {
+  const patient = await prisma.patient.findFirst();
+  return <PatientView patient={patient} />;
+}
+```
+
+```typescript
+// GOOD: Require session before returning patient data
+export default async function PatientPage() {
+  const session = await auth();
+  if (!session) redirect('/login');
+
+  const patient = await prisma.patient.findFirst({
+    where: { clinicId: session.user.clinicId },
+  });
+  return <PatientView patient={patient} />;
+}
+```

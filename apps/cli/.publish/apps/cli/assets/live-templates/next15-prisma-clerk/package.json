@@ -1,0 +1,24 @@
+{
+  "name": "ultra-dex-next15-prisma-clerk",
+  "description": "Next.js 15, Prisma, and Clerk starter template",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "prisma:generate": "prisma generate"
+  },
+  "dependencies": {
+    "next": "15.0.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "@clerk/nextjs": "^5.0.0",
+    "@prisma/client": "^5.19.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "prisma": "^5.19.0",
+    "typescript": "^5.4.0"
+  }
+}

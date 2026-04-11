@@ -1,0 +1,45 @@
+{
+  "name": "@ultra-dex/marketplace",
+  "version": "1.0.0",
+  "description": "Plugin marketplace server for Ultra-Dex",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "cors": "^2.8.6",
+    "helmet": "^8.1.0",
+    "compression": "^1.8.1",
+    "express-rate-limit": "^8.3.2",
+    "zod": "^4.3.6",
+    "semver": "^7.7.4",
+    "uuid": "^13.0.0",
+    "winston": "^3.19.0",
+    "sqlite3": "^6.0.1",
+    "sqlite": "^5.1.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/cors": "^2.8.19",
+    "@types/compression": "^1.8.1",
+    "@types/uuid": "^10.0.0",
+    "@types/semver": "^7.7.1",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2",
+    "eslint": "^10.2.0"
+  },
+  "keywords": [
+    "ultra-dex",
+    "marketplace",
+    "plugins",
+    "api"
+  ],
+  "author": "Srujan Sai Karna",
+  "license": "MIT"
+}

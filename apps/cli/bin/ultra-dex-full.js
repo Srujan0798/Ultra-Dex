@@ -53,6 +53,9 @@ const commandRegistrars = [
   { path: '../lib/commands/auto-implement.js', register: 'registerAutoImplementCommand' },
   { path: '../lib/commands/check.js', register: 'registerCheckCommand' },
   { path: '../lib/commands/enterprise.js', register: 'registerEnterpriseCommand' },
+  { path: '../lib/commands/skill.js', register: 'registerSkillCommand' },
+  { path: '../lib/commands/replay.js', register: 'registerReplayCommand' },
+  { path: '../lib/commands/plugin.js', register: 'registerPluginCommand' },
 ];
 
 export async function registerFullProgram(targetProgram = program) {

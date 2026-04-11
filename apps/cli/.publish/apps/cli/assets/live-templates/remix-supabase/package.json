@@ -1,0 +1,22 @@
+{
+  "name": "ultra-dex-remix-supabase",
+  "description": "Remix and Supabase starter template",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "dev": "remix dev",
+    "build": "remix build",
+    "start": "remix-serve build"
+  },
+  "dependencies": {
+    "@remix-run/node": "^2.10.0",
+    "@remix-run/react": "^2.10.0",
+    "@remix-run/serve": "^2.10.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "@supabase/supabase-js": "^2.45.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "@ultra-dex/cursor-rules",
+  "version": "6.0.0",
+  "private": true,
+  "description": "Cursor rules for Ultra-Dex development"
+}

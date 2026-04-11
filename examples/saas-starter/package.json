@@ -1,0 +1,18 @@
+{
+  "name": "@ultra-dex/example-saas-starter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Example SaaS starter built with Ultra-Dex SDK v6.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "ultra-dex swarm 'Initialize dev environment'",
+    "build": "ultra-dex verify && next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@ultra-dex/sdk": "*",
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}

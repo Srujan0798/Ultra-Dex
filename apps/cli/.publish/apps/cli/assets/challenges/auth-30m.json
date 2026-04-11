@@ -1,0 +1,16 @@
+{
+  "id": "auth-30m",
+  "title": "Build Auth in 30 Minutes",
+  "stages": [
+    { "name": "Planning", "minutes": 5, "agent": "@Planner" },
+    { "name": "Design", "minutes": 7, "agent": "@Architect" },
+    { "name": "Security", "minutes": 8, "agent": "@Security" },
+    { "name": "Build", "minutes": 10, "agent": "@Backend" }
+  ],
+  "checks": [
+    "Has Prisma schema",
+    "Has Auth route",
+    "Has session handling",
+    "Final verification run"
+  ]
+}

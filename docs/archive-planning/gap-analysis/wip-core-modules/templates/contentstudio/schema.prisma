@@ -1,0 +1,80 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Author {
+  id       String    @id @default(cuid())
+  name     String
+  contents Content[]
+}
+
+model Category {
+  id       String    @id @default(cuid())
+  name     String
+  contents Content[]
+}
+
+model Tag {
+  id       String      @id @default(cuid())
+  name     String      @unique
+  contents ContentTag[]
+}
+
+model Content {
+  id          String          @id @default(cuid())
+  title       String
+  slug        String          @unique
+  body        String
+  status      String          @default("draft")
+  publishedAt DateTime?
+  authorId    String
+  categoryId  String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  author    Author   @relation(fields: [authorId], references: [id])
+  category  Category? @relation(fields: [categoryId], references: [id])
+  versions  ContentVersion[]
+  tags      ContentTag[]
+  media     Media[]
+}
+
+model ContentVersion {
+  id            String   @id @default(cuid())
+  contentId     String
+  versionNumber Int
+  content       String
+  createdAt     DateTime @default(now())
+
+  contentItem Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@unique([contentId, versionNumber])
+}
+
+model ContentTag {
+  contentId String
+  tagId     String
+
+  content Content @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([contentId, tagId])
+}
+
+model Media {
+  id        String   @id @default(cuid())
+  ownerId   String
+  url       String
+  type      String
+  size      Int?
+  metadata  Json?
+  contentId String?
+  createdAt DateTime @default(now())
+
+  content Content? @relation(fields: [contentId], references: [id], onDelete: SetNull)
+}

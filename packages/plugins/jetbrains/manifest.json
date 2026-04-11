@@ -1,0 +1,8 @@
+{
+  "name": "jetbrains",
+  "version": "1.0.0",
+  "description": "Ultra-Dex jetbrains plugin",
+  "main": "index.js",
+  "capabilities": ["jetbrains"],
+  "requiredPermissions": ["file-read"]
+}

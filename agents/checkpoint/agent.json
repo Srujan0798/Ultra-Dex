@@ -1,0 +1,9 @@
+{
+  "name": "@ultra-dex/checkpoint",
+  "version": "3.1.0",
+  "description": "Agent state persistence and recovery specialist",
+  "author": "Ultra-Dex",
+  "capabilities": ["persistence", "recovery", "versioning"],
+  "providers": ["any"],
+  "minVersion": "3.1.0"
+}

@@ -1,0 +1,22 @@
+{
+  "name": "ultra-dex-nuxt3-supabase",
+  "description": "Nuxt 3 and Supabase starter template",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@nuxtjs/supabase": "^1.2.0",
+    "nuxt": "^3.12.0",
+    "vue": "^3.4.0",
+    "vue-router": "^4.4.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}

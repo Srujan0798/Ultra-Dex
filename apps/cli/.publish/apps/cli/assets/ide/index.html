@@ -1,0 +1,254 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Ultra-Dex Cloud IDE</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        background-color: #1e1e1e;
+        color: #d4d4d4;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      #ide-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+      }
+
+      #toolbar {
+        background-color: #3c3c3c;
+        padding: 8px;
+        border-bottom: 1px solid #454545;
+        display: flex;
+        gap: 8px;
+      }
+
+      button {
+        background-color: #007acc;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+
+      button:hover {
+        background-color: #005a9e;
+      }
+
+      #ide-main {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+      }
+
+      #sidebar {
+        width: 250px;
+        background-color: #252526;
+        border-right: 1px solid #454545;
+        overflow-y: auto;
+      }
+
+      #file-tree {
+        padding: 8px;
+      }
+
+      .file-item {
+        padding: 2px 4px;
+        cursor: pointer;
+        border-radius: 2px;
+      }
+
+      .file-item:hover {
+        background-color: #2a2d2e;
+      }
+
+      #editor-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background-color: #1e1e1e;
+      }
+
+      #editor-container {
+        flex: 1;
+        padding: 8px;
+      }
+
+      #editor {
+        width: 100%;
+        height: 100%;
+        background-color: #1e1e1e;
+        color: #d4d4d4;
+        border: 1px solid #454545;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 14px;
+        resize: none;
+        outline: none;
+      }
+
+      #terminal-panel {
+        height: 200px;
+        background-color: #0c0c0c;
+        border-top: 1px solid #454545;
+        display: flex;
+        flex-direction: column;
+      }
+
+      #terminal-output {
+        flex: 1;
+        padding: 8px;
+        overflow-y: auto;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+      }
+
+      #terminal-input {
+        padding: 4px;
+        background-color: #0c0c0c;
+        color: #d4d4d4;
+        border: 1px solid #454545;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 12px;
+      }
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+  </head>
+  <body>
+    <div id="ide-container">
+      <!-- Toolbar -->
+      <div id="toolbar">
+        <button id="save-btn">💾 Save</button>
+        <button id="run-btn">▶️ Run</button>
+        <button id="terminal-btn">💻 Terminal</button>
+        <button id="ultra-dex-btn">🤖 Ultra-Dex</button>
+      </div>
+
+      <div id="ide-main">
+        <!-- Sidebar -->
+        <div id="sidebar">
+          <div id="file-tree"></div>
+        </div>
+
+        <!-- Editor Area -->
+        <div id="editor-area">
+          <div id="editor-container">
+            <textarea id="editor" spellcheck="false"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Terminal -->
+      <div id="terminal-panel" style="display: none">
+        <div id="terminal-output"></div>
+        <input type="text" id="terminal-input" placeholder="Enter command..." />
+      </div>
+    </div>
+
+    <script>
+      const socket = io();
+
+      // DOM elements
+      const editor = document.getElementById('editor');
+      const fileTree = document.getElementById('file-tree');
+      const terminalPanel = document.getElementById('terminal-panel');
+      const terminalOutput = document.getElementById('terminal-output');
+      const terminalInput = document.getElementById('terminal-input');
+      const saveBtn = document.getElementById('save-btn');
+      const runBtn = document.getElementById('run-btn');
+      const terminalBtn = document.getElementById('terminal-btn');
+      const ultraDexBtn = document.getElementById('ultra-dex-btn');
+
+      let currentFile = null;
+
+      // Load file tree
+      fetch('/api/files')
+        .then((response) => response.json())
+        .then((files) => {
+          fileTree.innerHTML = '';
+          files.forEach((file) => {
+            const div = document.createElement('div');
+            div.className = 'file-item';
+            div.textContent = file.name;
+            div.onclick = () => loadFile(file.path);
+            fileTree.appendChild(div);
+          });
+        });
+
+      function loadFile(filePath) {
+        fetch(`/api/file/${encodeURIComponent(filePath)}`)
+          .then((response) => response.json())
+          .then((data) => {
+            editor.value = data.content;
+            currentFile = filePath;
+            document.title = `Ultra-Dex IDE - ${filePath}`;
+          });
+      }
+
+      // Save button
+      saveBtn.addEventListener('click', () => {
+        if (currentFile) {
+          fetch(`/api/file/${encodeURIComponent(currentFile)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: editor.value }),
+          });
+        }
+      });
+
+      // File change detection
+      editor.addEventListener('input', () => {
+        if (currentFile) {
+          socket.emit('file-change', {
+            path: currentFile,
+            content: editor.value,
+          });
+        }
+      });
+
+      // Terminal functionality
+      terminalBtn.addEventListener('click', () => {
+        terminalPanel.style.display = terminalPanel.style.display === 'none' ? 'flex' : 'none';
+      });
+
+      terminalInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          const command = terminalInput.value;
+          terminalInput.value = '';
+
+          // Display command
+          terminalOutput.textContent += `$ ${command}\n`;
+
+          // Send to server
+          socket.emit('run-command', { command });
+        }
+      });
+
+      // Socket listeners
+      socket.on('command-result', (data) => {
+        terminalOutput.textContent += data.stdout;
+        if (data.stderr) {
+          terminalOutput.textContent += data.stderr;
+        }
+        terminalOutput.scrollTop = terminalOutput.scrollHeight;
+      });
+
+      socket.on('file-updated', (data) => {
+        if (currentFile === data.path) {
+          editor.value = data.content;
+        }
+      });
+
+      // Ultra-Dex integration
+      ultraDexBtn.addEventListener('click', () => {
+        alert('Ultra-Dex integration is not available in this build.');
+      });
+    </script>
+  </body>
+</html>

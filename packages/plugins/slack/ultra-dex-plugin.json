@@ -1,0 +1,8 @@
+{
+  "name": "slack",
+  "version": "1.0.0",
+  "description": "Send task updates to a Slack webhook",
+  "main": "index.js",
+  "author": "Ultra-Dex Team",
+  "hooks": ["post-run"]
+}

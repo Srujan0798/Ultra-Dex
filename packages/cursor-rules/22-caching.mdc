@@ -1,0 +1,332 @@
+# Caching & Performance Optimization Pattern
+## Ultra-Dex Cursor Rule 22-caching.mdc
+
+### Context
+Caching is critical for performance optimization, reducing database load, and improving response times. Proper caching strategies can dramatically improve user experience and system scalability.
+
+### Pattern
+```javascript
+// 1. Multi-layer caching system
+import NodeCache from 'node-cache';
+import { redis } from './lib/redis.js';
+import LRUCache from 'lru-cache';
+
+class CacheManager {
+  constructor() {
+    // In-memory cache for frequently accessed data (fastest)
+    this.memoryCache = new NodeCache({ stdTTL: 300, checkperiod: 120 }); // 5 min TTL
+    
+    // Redis cache for distributed/shared data
+    this.redisEnabled = !!process.env.REDIS_URL;
+    
+    // LRU cache for memory-constrained environments
+    this.lruCache = new LRUCache({
+      max: 1000,
+      ttl: 300000, // 5 minutes
+      allowStale: false,
+      updateAgeOnGet: true,
+      updateAgeOnHas: true
+    });
+  }
+
+  // 2. Smart caching with cache-aside pattern
+  async getWithCache(key, fetchFn, options = {}) {
+    const { ttl = 300, forceRefresh = false, useRedis = false } = options;
+    
+    // Try memory cache first (fastest)
+    let cached = this.memoryCache.get(key);
+    if (cached && !forceRefresh) {
+      return cached;
+    }
+
+    // Try LRU cache
+    cached = this.lruCache.get(key);
+    if (cached && !forceRefresh) {
+      return cached;
+    }
+
+    // Try Redis cache if enabled
+    if (this.redisEnabled && useRedis && !forceRefresh) {
+      try {
+        const redisKey = `cache:${key}`;
+        const redisCached = await redis.get(redisKey);
+        if (redisCached) {
+          const parsed = JSON.parse(redisCached);
+          // Update memory caches
+          this.memoryCache.set(key, parsed, ttl);
+          this.lruCache.set(key, parsed);
+          return parsed;
+        }
+      } catch (error) {
+        console.warn('Redis cache error:', error.message);
+      }
+    }
+
+    // Fetch fresh data
+    const freshData = await fetchFn();
+    
+    // Update all cache layers
+    this.memoryCache.set(key, freshData, ttl);
+    this.lruCache.set(key, freshData);
+    
+    if (this.redisEnabled && useRedis) {
+      try {
+        await redis.setex(`cache:${key}`, ttl, JSON.stringify(freshData));
+      } catch (error) {
+        console.warn('Redis cache set error:', error.message);
+      }
+    }
+
+    return freshData;
+  }
+
+  // 3. Cache invalidation strategies
+  async invalidate(keyPattern) {
+    // Invalidate memory cache
+    const keys = this.memoryCache.keys().filter(k => k.includes(keyPattern));
+    keys.forEach(k => this.memoryCache.del(k));
+    
+    // Invalidate LRU cache
+    if (keyPattern === '*') {
+      this.lruCache.clear();
+    } else {
+      // For specific patterns, we'd need to track key mappings
+      // This is a simplified approach
+      this.lruCache.delete(keyPattern);
+    }
+    
+    // Invalidate Redis cache
+    if (this.redisEnabled) {
+      try {
+        const redisKeys = await redis.keys(`cache:${keyPattern}*`);
+        if (redisKeys.length > 0) {
+          await redis.del(redisKeys);
+        }
+      } catch (error) {
+        console.warn('Redis cache invalidation error:', error.message);
+      }
+    }
+  }
+
+  // 4. Write-through cache pattern
+  async setWithCache(key, data, options = {}) {
+    const { ttl = 300, useRedis = false } = options;
+    
+    // Update all cache layers
+    this.memoryCache.set(key, data, ttl);
+    this.lruCache.set(key, data);
+    
+    if (this.redisEnabled && useRedis) {
+      try {
+        await redis.setex(`cache:${key}`, ttl, JSON.stringify(data));
+      } catch (error) {
+        console.warn('Redis cache set error:', error.message);
+      }
+    }
+    
+    return data;
+  }
+
+  // 5. Cache warming for critical data
+  async warmCache(cacheSpecs) {
+    const promises = cacheSpecs.map(async ({ key, fetchFn, ttl, useRedis }) => {
+      try {
+        const data = await fetchFn();
+        await this.setWithCache(key, data, { ttl, useRedis });
+        return { key, success: true };
+      } catch (error) {
+        console.error(`Cache warming failed for ${key}:`, error.message);
+        return { key, success: false, error: error.message };
+      }
+    });
+
+    return Promise.all(promises);
+  }
+
+  // 6. Cache metrics and monitoring
+  getCacheStats() {
+    return {
+      memory: {
+        keys: this.memoryCache.getStats().keys,
+        hitRate: this.memoryCache.getStats().hget_hits / 
+                (this.memoryCache.getStats().hget_hits + this.memoryCache.getStats().hget_misses || 1)
+      },
+      lru: {
+        size: this.lruCache.size,
+        itemCount: this.lruCache.itemCount,
+        hitRate: this.lruCache.stats.hits / 
+                (this.lruCache.stats.hits + this.lruCache.stats.misses || 1)
+      },
+      redis: this.redisEnabled ? 'available' : 'disabled'
+    };
+  }
+}
+
+// 7. Cache decorators for automatic caching
+export function cached(ttl = 300, keyFn = null) {
+  return function(target, propertyName, descriptor) {
+    const method = descriptor.value;
+    const cacheKey = keyFn || ((...args) => `${target.constructor.name}.${propertyName}(${JSON.stringify(args)})`);
+    
+    descriptor.value = async function(...args) {
+      const key = typeof cacheKey === 'function' ? cacheKey(...args) : cacheKey;
+      const cache = this.cacheManager || globalCacheManager;
+      
+      if (!cache) {
+        return await method.apply(this, args);
+      }
+      
+      return await cache.getWithCache(key, async () => {
+        return await method.apply(this, args);
+      }, { ttl });
+    };
+    
+    return descriptor;
+  };
+}
+
+// 8. Cache configuration with different strategies
+export const cacheStrategies = {
+  // Short-lived cache for volatile data
+  ephemeral: (ttl = 60) => ({ ttl, useRedis: false }), // Memory only
+  
+  // Long-lived cache for static data
+  persistent: (ttl = 3600) => ({ ttl, useRedis: true }), // Redis + memory
+  
+  // Session-based cache
+  session: (sessionId, ttl = 1800) => ({
+    ttl,
+    key: `session:${sessionId}:`,
+    useRedis: true
+  }),
+  
+  // Query-based cache
+  query: (queryHash, ttl = 300) => ({
+    ttl,
+    key: `query:${queryHash}`,
+    useRedis: true
+  })
+};
+
+// 9. Cache warming on application startup
+export async function initializeCache() {
+  const cacheManager = new CacheManager();
+  
+  // Warm up critical caches
+  const criticalData = [
+    {
+      key: 'system-config',
+      fetchFn: async () => {
+        // Fetch system configuration
+        return await loadSystemConfig();
+      },
+      ttl: 3600, // 1 hour
+      useRedis: true
+    },
+    {
+      key: 'feature-flags',
+      fetchFn: async () => {
+        // Fetch feature flags
+        return await loadFeatureFlags();
+      },
+      ttl: 300, // 5 minutes
+      useRedis: true
+    },
+    {
+      key: 'popular-files',
+      fetchFn: async () => {
+        // Fetch popular files for graph analysis
+        return await getPopularFiles();
+      },
+      ttl: 900, // 15 minutes
+      useRedis: false // Memory only
+    }
+  ];
+  
+  await cacheManager.warmCache(criticalData);
+  return cacheManager;
+}
+
+// 10. Cache-aware data access layer
+class CacheAwareRepository {
+  constructor(cacheManager) {
+    this.cache = cacheManager;
+  }
+
+  async findById(id) {
+    const key = `entity:${id}`;
+    return await this.cache.getWithCache(key, async () => {
+      return await this._fetchById(id);
+    }, { ttl: 300, useRedis: true });
+  }
+
+  async findByQuery(query) {
+    const queryHash = this._hashQuery(query);
+    const key = `query:${queryHash}`;
+    
+    return await this.cache.getWithCache(key, async () => {
+      return await this._fetchByQuery(query);
+    }, { ttl: 180, useRedis: true });
+  }
+
+  async save(entity) {
+    // Save to database
+    const result = await this._saveToDb(entity);
+    
+    // Invalidate related cache entries
+    await this.cache.invalidate(`entity:${entity.id}`);
+    await this.cache.invalidate(`query:*`);
+    
+    return result;
+  }
+
+  async _fetchById(id) {
+    // Implementation to fetch from database
+    return await db.entities.findById(id);
+  }
+
+  async _fetchByQuery(query) {
+    // Implementation to fetch from database
+    return await db.entities.findByQuery(query);
+  }
+
+  async _saveToDb(entity) {
+    // Implementation to save to database
+    return await db.entities.save(entity);
+  }
+
+  _hashQuery(query) {
+    // Simple hash function for query caching
+    const str = JSON.stringify(query);
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash.toString();
+  }
+}
+```
+
+### Production Considerations
+- **Cache Invalidation**: Implement proper invalidation strategies to prevent stale data
+- **Memory Management**: Monitor cache memory usage and implement eviction policies
+- **Distributed Systems**: Use Redis for shared cache across multiple instances
+- **Cache-Aside vs Write-Through**: Choose appropriate strategy based on use case
+- **Monitoring**: Track hit rates, memory usage, and performance metrics
+
+### Anti-Patterns to Avoid
+- ❌ No cache invalidation (leads to stale data)
+- ❌ Caching sensitive data without encryption
+- ❌ Infinite cache TTL (memory leaks)
+- ❌ No fallback when cache fails
+- ❌ Caching computationally cheap operations
+
+### Quality Gates
+- [ ] Multi-layer caching (memory + Redis)
+- [ ] Proper cache invalidation
+- [ ] Cache warming for critical data
+- [ ] Performance metrics collection
+- [ ] Memory usage monitoring
+- [ ] Cache hit rate tracking

@@ -1,0 +1,9 @@
+{
+  "name": "@ultra-dex/scheduler",
+  "version": "3.1.0",
+  "description": "Task scheduling and resource allocation specialist",
+  "author": "Ultra-Dex",
+  "capabilities": ["scheduling", "allocation", "optimization"],
+  "providers": ["any"],
+  "minVersion": "3.1.0"
+}

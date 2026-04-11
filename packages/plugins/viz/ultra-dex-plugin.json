@@ -1,0 +1,7 @@
+{
+  "name": "viz-dash",
+  "version": "1.0.0",
+  "description": "Visual dashboard extensions for MCP",
+  "main": "index.js",
+  "author": "Ultra-Dex Team"
+}

@@ -1,0 +1,843 @@
+# Voice Input & Natural Language Processing Patterns
+## Ultra-Dex Cursor Rule 33-voice-nlp.mdc
+
+### Context
+Voice input enables hands-free operation and natural interaction with the Ultra-Dex system. Critical for developers who prefer voice commands over typing, especially for high-level orchestration tasks.
+
+### Pattern
+```javascript
+// 1. Voice Command Processor
+// lib/voice/processor.js
+import { spawn } from 'child_process';
+import fs from 'fs/promises';
+import path from 'path';
+import { monitoring } from '../utils/monitoring.js';
+import { errorRecovery } from '../utils/error-recovery.js';
+
+export class VoiceCommandProcessor {
+  constructor(options = {}) {
+    this.recognitionEngine = options.engine || 'whisper'; // whisper, vosk, browser
+    this.language = options.language || 'en-US';
+    this.model = options.model || 'base.en';
+    this.timeout = options.timeout || 30000; // 30 seconds
+    this.tempDir = path.join(process.cwd(), '.ultra-dex', 'voice-temp');
+  }
+
+  async initialize() {
+    // Create temp directory
+    await fs.mkdir(this.tempDir, { recursive: true });
+    
+    // Check if required tools are available
+    if (this.recognitionEngine === 'whisper') {
+      try {
+        await this.checkWhisperAvailability();
+      } catch (error) {
+        throw new Error(`Whisper not available: ${error.message}. Install with: pip install openai-whisper`);
+      }
+    }
+    
+    monitoring.info('Voice command processor initialized', {
+      engine: this.recognitionEngine,
+      language: this.language,
+      model: this.model
+    });
+  }
+
+  async checkWhisperAvailability() {
+    return new Promise((resolve, reject) => {
+      const child = spawn('whisper', ['--help'], { stdio: 'pipe' });
+      
+      child.on('error', () => reject(new Error('Whisper CLI not found')));
+      child.on('close', (code) => {
+        if (code === 0 || code === 1) { // Help command returns 1, which is normal
+          resolve(true);
+        } else {
+          reject(new Error('Whisper CLI not working properly'));
+        }
+      });
+    });
+  }
+
+  async processAudio(audioBuffer) {
+    // Save audio to temporary file
+    const tempFile = path.join(this.tempDir, `audio-${Date.now()}.wav`);
+    await fs.writeFile(tempFile, audioBuffer);
+
+    try {
+      let transcription;
+      
+      switch (this.recognitionEngine) {
+        case 'whisper':
+          transcription = await this.transcribeWithWhisper(tempFile);
+          break;
+        case 'vosk':
+          transcription = await this.transcribeWithVosk(tempFile);
+          break;
+        default:
+          throw new Error(`Unsupported recognition engine: ${this.recognitionEngine}`);
+      }
+
+      // Clean up temp file
+      await fs.unlink(tempFile);
+
+      // Process the transcribed command
+      const processedCommand = await this.processTranscribedCommand(transcription);
+      
+      return {
+        success: true,
+        transcription,
+        command: processedCommand,
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      // Clean up temp file even on error
+      try {
+        await fs.unlink(tempFile);
+      } catch (cleanupError) {
+        monitoring.warn('Failed to clean up temp audio file', { error: cleanupError.message });
+      }
+      
+      monitoring.error('Voice processing failed', { error: error.message });
+      return {
+        success: false,
+        error: error.message,
+        timestamp: new Date().toISOString()
+      };
+    }
+  }
+
+  async transcribeWithWhisper(audioFile) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+
+    try {
+      const child = spawn('whisper', [
+        audioFile,
+        '--model', this.model,
+        '--language', this.language,
+        '--output_format', 'text'
+      ], {
+        signal: controller.signal
+      });
+
+      let output = '';
+      let errorOutput = '';
+
+      child.stdout.on('data', (data) => output += data.toString());
+      child.stderr.on('data', (data) => errorOutput += data.toString());
+
+      await new Promise((resolve, reject) => {
+        child.on('close', (code) => {
+          if (code === 0) {
+            resolve();
+          } else {
+            reject(new Error(`Whisper exited with code ${code}: ${errorOutput}`));
+          }
+        });
+      });
+
+      clearTimeout(timeoutId);
+
+      // Read the transcription from the output file
+      const outputFile = audioFile.replace('.wav', '.txt');
+      const transcription = await fs.readFile(outputFile, 'utf8');
+      
+      // Clean up output file
+      await fs.unlink(outputFile);
+
+      return transcription.trim();
+    } catch (error) {
+      clearTimeout(timeoutId);
+      throw error;
+    }
+  }
+
+  async transcribeWithVosk(audioFile) {
+    // Placeholder for Vosk implementation
+    // In a real implementation, this would use the Vosk API
+    throw new Error('Vosk implementation not yet available');
+  }
+
+  async processTranscribedCommand(transcription) {
+    // Natural language processing to convert speech to CLI commands
+    const normalized = transcription.toLowerCase().trim();
+    
+    // Command mapping rules
+    const commandMappings = {
+      // Build/Development commands
+      'build the project': 'build',
+      'run the build': 'build',
+      'compile everything': 'build',
+      'start development': 'dev',
+      'run development server': 'dev',
+      
+      // Agent commands
+      'run backend agent': 'run backend',
+      'run frontend agent': 'run frontend',
+      'run database agent': 'run database',
+      'start agent swarm': 'swarm',
+      'orchestrate agents': 'swarm',
+      
+      // Generation commands
+      'generate implementation plan': 'generate',
+      'create the plan': 'generate',
+      'make the plan': 'generate',
+      'build the app': 'generate',
+      
+      // Review commands
+      'review the code': 'review',
+      'check the code': 'review',
+      'audit the code': 'review',
+      'verify the code': 'verify',
+      
+      // Status commands
+      'show status': 'status',
+      'what is the status': 'status',
+      'check project status': 'status',
+      'show metrics': 'metrics',
+      'check health': 'health',
+      'system health': 'health',
+      
+      // Configuration commands
+      'configure the system': 'sys-config',
+      'show configuration': 'sys-config --list',
+      'set configuration': 'sys-config --set',
+      'debug system': 'debug',
+      
+      // Scaffolding
+      'scaffold project': 'scaffold',
+      'create boilerplate': 'scaffold',
+      'generate template': 'scaffold',
+      
+      // Dashboard
+      'open dashboard': 'dashboard',
+      'show dashboard': 'dashboard',
+      'start server': 'serve'
+    };
+
+    // Find best matching command
+    for (const [phrase, command] of Object.entries(commandMappings)) {
+      if (normalized.includes(phrase)) {
+        return command;
+      }
+    }
+
+    // Try to extract more complex commands using regex
+    const complexPatterns = [
+      {
+        pattern: /build\s+(.+)$/i,
+        command: (match) => `build --feature "${match[1]}"`
+      },
+      {
+        pattern: /generate\s+(.+)$/i,
+        command: (match) => `generate "${match[1]}"`
+      },
+      {
+        pattern: /swarm\s+(.+)$/i,
+        command: (match) => `swarm "${match[1]}"`
+      },
+      {
+        pattern: /run\s+(\w+)\s+(.+)$/i,
+        command: (match) => `run ${match[1]} --task "${match[2]}"`
+      },
+      {
+        pattern: /scaffold\s+(.+)$/i,
+        command: (match) => `scaffold ${match[1]}`
+      }
+    ];
+
+    for (const pattern of complexPatterns) {
+      const match = normalized.match(pattern.pattern);
+      if (match) {
+        return pattern.command(match);
+      }
+    }
+
+    // If no mapping found, return the original transcription for manual processing
+    return `say "${transcription}"`; // Default to echo command
+  }
+}
+
+// 2. Browser-based Voice Recognition (for dashboard)
+// lib/voice/browser-recognizer.js
+export class BrowserVoiceRecognizer {
+  constructor(options = {}) {
+    this.language = options.language || 'en-US';
+    this.interimResults = options.interimResults || true;
+    this.continuous = options.continuous || false;
+    this.recognition = null;
+    this.isSupported = this.checkSupport();
+  }
+
+  checkSupport() {
+    return 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
+  }
+
+  async initialize() {
+    if (!this.isSupported) {
+      throw new Error('Speech recognition not supported in this browser');
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    this.recognition = new SpeechRecognition();
+    
+    this.recognition.continuous = this.continuous;
+    this.recognition.interimResults = this.interimResults;
+    this.recognition.lang = this.language;
+
+    return new Promise((resolve, reject) => {
+      this.recognition.onstart = () => {
+        monitoring.info('Browser voice recognition started');
+        resolve();
+      };
+
+      this.recognition.onerror = (event) => {
+        monitoring.error('Browser voice recognition error', { error: event.error });
+        reject(new Error(`Voice recognition error: ${event.error}`));
+      };
+
+      this.recognition.start();
+    });
+  }
+
+  async recognizeOnce() {
+    if (!this.isSupported) {
+      throw new Error('Speech recognition not supported');
+    }
+
+    return new Promise((resolve, reject) => {
+      let finalTranscript = '';
+
+      this.recognition.onresult = (event) => {
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const result = event.results[i];
+          if (result.isFinal) {
+            finalTranscript += result[0].transcript;
+          }
+        }
+      };
+
+      this.recognition.onend = () => {
+        if (finalTranscript) {
+          resolve({
+            transcript: finalTranscript,
+            confidence: 0.8 // Browser doesn't provide confidence
+          });
+        } else {
+          reject(new Error('No speech detected'));
+        }
+      };
+
+      this.recognition.onerror = (event) => {
+        reject(new Error(`Recognition error: ${event.error}`));
+      };
+    });
+  }
+
+  stop() {
+    if (this.recognition) {
+      this.recognition.stop();
+    }
+  }
+}
+
+// 3. Voice Command Integration with CLI
+// lib/commands/voice.js
+import { VoiceCommandProcessor } from '../voice/processor.js';
+import { monitoring } from '../utils/monitoring.js';
+
+export async function voiceCommand(input, options) {
+  console.log('🎤 Processing voice command...\n');
+
+  const processor = new VoiceCommandProcessor({
+    engine: options.engine || 'whisper',
+    language: options.language || 'en-US',
+    model: options.model || 'base.en',
+    timeout: options.timeout || 30000
+  });
+
+  try {
+    await processor.initialize();
+
+    let result;
+    if (options.file) {
+      // Process audio file
+      const audioBuffer = await fs.readFile(options.file);
+      result = await processor.processAudio(audioBuffer);
+    } else if (input) {
+      // Process text input (for testing)
+      result = {
+        success: true,
+        transcription: input,
+        command: await processor.processTranscribedCommand(input),
+        timestamp: new Date().toISOString()
+      };
+    } else {
+      // Record from microphone (requires additional setup)
+      throw new Error('Microphone recording not implemented. Use --file to process audio files.');
+    }
+
+    if (result.success) {
+      console.log('✅ Transcription successful:');
+      console.log(`   "${result.transcription}"`);
+      console.log(`\n🤖 Recognized command: ${result.command}`);
+      
+      if (options.execute) {
+        console.log(`\n🚀 Executing: ${result.command}`);
+        // Execute the recognized command
+        // This would require spawning the appropriate CLI command
+        // For now, we'll just log it
+        console.log('   Command execution would happen here');
+      }
+      
+      monitoring.info('Voice command processed successfully', {
+        transcription: result.transcription,
+        recognizedCommand: result.command,
+        executionRequested: options.execute
+      });
+    } else {
+      console.log('❌ Voice processing failed:');
+      console.log(`   ${result.error}`);
+      monitoring.error('Voice command processing failed', { error: result.error });
+    }
+
+    return result;
+  } catch (error) {
+    console.log('❌ Voice command processing error:', error.message);
+    monitoring.error('Voice command processing error', { error: error.message });
+    throw error;
+  }
+}
+
+export function registerVoiceCommand(program) {
+  program
+    .command('voice [input]')
+    .description('Process voice commands and convert to Ultra-Dex operations')
+    .option('-e, --engine <engine>', 'Recognition engine (whisper, vosk)', 'whisper')
+    .option('-l, --language <lang>', 'Language code', 'en-US')
+    .option('-m, --model <model>', 'Model to use', 'base.en')
+    .option('-t, --timeout <ms>', 'Timeout in milliseconds', '30000')
+    .option('-f, --file <path>', 'Audio file to process')
+    .option('-x, --execute', 'Execute the recognized command')
+    .option('--continuous', 'Continuous listening mode')
+    .action(voiceCommand);
+}
+
+// 4. Voice-Enabled Dashboard Integration
+// dashboard/components/voice-control.jsx
+import { useState, useEffect, useRef } from 'react';
+import { BrowserVoiceRecognizer } from '../../lib/voice/browser-recognizer.js';
+
+export function VoiceControl({ onCommand }) {
+  const [isListening, setIsListening] = useState(false);
+  const [transcript, setTranscript] = useState('');
+  const [isSupported, setIsSupported] = useState(false);
+  const recognizerRef = useRef(null);
+
+  useEffect(() => {
+    const recognizer = new BrowserVoiceRecognizer();
+    setIsSupported(recognizer.checkSupport());
+    recognizerRef.current = recognizer;
+  }, []);
+
+  const startListening = async () => {
+    if (!isSupported) {
+      alert('Speech recognition is not supported in your browser');
+      return;
+    }
+
+    try {
+      await recognizerRef.current.initialize();
+      setIsListening(true);
+      
+      const result = await recognizerRef.current.recognizeOnce();
+      setTranscript(result.transcript);
+      
+      // Process the voice command
+      const processedCommand = await processVoiceCommand(result.transcript);
+      if (onCommand) {
+        onCommand(processedCommand);
+      }
+      
+      setIsListening(false);
+    } catch (error) {
+      console.error('Voice recognition error:', error);
+      setIsListening(false);
+    }
+  };
+
+  const stopListening = () => {
+    if (recognizerRef.current) {
+      recognizerRef.current.stop();
+      setIsListening(false);
+    }
+  };
+
+  return (
+    <div className="voice-control">
+      <button 
+        onClick={isListening ? stopListening : startListening}
+        className={`px-4 py-2 rounded ${isListening ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'}`}
+        disabled={!isSupported}
+      >
+        {isSupported ? (
+          isListening ? '🎤 Listening...' : '🎤 Voice Command'
+        ) : '❌ Not Supported'}
+      </button>
+      
+      {transcript && (
+        <div className="mt-2 p-2 bg-gray-100 rounded">
+          <strong>Heard:</strong> {transcript}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// 5. Natural Language Command Parser
+// lib/voice/nlp-parser.js
+export class NLPCommandParser {
+  constructor() {
+    this.commandPatterns = [
+      // Build commands
+      {
+        pattern: /build|compile|make|create|implement|develop|code|write|generate|produce/i,
+        category: 'build',
+        confidence: 0.9
+      },
+      // Review commands
+      {
+        pattern: /review|check|audit|verify|inspect|examine|analyze|test|quality|assess/i,
+        category: 'review',
+        confidence: 0.9
+      },
+      // Agent commands
+      {
+        pattern: /agent|swarm|orchestrate|coordinate|manage|execute|run|start|launch/i,
+        category: 'agent',
+        confidence: 0.85
+      },
+      // Configuration commands
+      {
+        pattern: /config|settings|preferences|setup|configure|adjust|modify|change/i,
+        category: 'config',
+        confidence: 0.9
+      },
+      // Status commands
+      {
+        pattern: /status|health|metrics|monitor|dashboard|stats|performance|speed|fast|slow/i,
+        category: 'status',
+        confidence: 0.85
+      }
+    ];
+
+    this.entityExtractors = [
+      {
+        pattern: /project|app|application|software|system|platform|tool|framework/i,
+        entity: 'project'
+      },
+      {
+        pattern: /feature|functionality|capability|function|method|endpoint|api|route|page|screen/i,
+        entity: 'feature'
+      },
+      {
+        pattern: /user|customer|client|account|profile|identity|person|individual/i,
+        entity: 'user'
+      },
+      {
+        pattern: /auth|authentication|login|sign in|access|permission|security|secure|protect/i,
+        entity: 'auth'
+      },
+      {
+        pattern: /database|db|storage|data|table|record|schema|model|collection/i,
+        entity: 'database'
+      }
+    ];
+  }
+
+  async parseCommand(text) {
+    const normalized = text.toLowerCase();
+    const entities = this.extractEntities(normalized);
+    const intent = this.identifyIntent(normalized);
+    
+    return {
+      text,
+      intent,
+      entities,
+      confidence: intent.confidence,
+      extractedCommand: this.buildCommand(intent.category, entities)
+    };
+  }
+
+  identifyIntent(text) {
+    let bestMatch = { category: 'unknown', confidence: 0, matchedPattern: null };
+    
+    for (const pattern of this.commandPatterns) {
+      if (pattern.pattern.test(text)) {
+        if (pattern.confidence > bestMatch.confidence) {
+          bestMatch = {
+            category: pattern.category,
+            confidence: pattern.confidence,
+            matchedPattern: pattern.pattern
+          };
+        }
+      }
+    }
+    
+    return bestMatch;
+  }
+
+  extractEntities(text) {
+    const entities = {};
+    
+    for (const extractor of this.entityExtractors) {
+      const matches = text.match(extractor.pattern);
+      if (matches) {
+        entities[extractor.entity] = matches;
+      }
+    }
+    
+    return entities;
+  }
+
+  buildCommand(category, entities) {
+    switch (category) {
+      case 'build':
+        if (entities.feature) {
+          return `generate "${entities.feature.join(' ')}"`;
+        }
+        return 'build';
+        
+      case 'review':
+        if (entities.project) {
+          return 'review';
+        }
+        return 'verify';
+        
+      case 'agent':
+        if (entities.feature) {
+          return `swarm "${entities.feature.join(' ')}"`;
+        }
+        return 'agents';
+        
+      case 'config':
+        return 'sys-config --wizard';
+        
+      case 'status':
+        return 'status --all';
+        
+      default:
+        return 'help';
+    }
+  }
+}
+
+// 6. Voice Command Middleware
+// lib/voice/middleware.js
+export function createVoiceMiddleware(voiceProcessor) {
+  return async (req, res, next) => {
+    // Check if request contains voice data
+    if (req.headers['content-type']?.includes('audio') || req.body?.isVoiceCommand) {
+      try {
+        let audioBuffer;
+        
+        if (req.body.audioData) {
+          // Audio data in request body
+          audioBuffer = Buffer.from(req.body.audioData, 'base64');
+        } else if (req.file) {
+          // Audio file uploaded
+          audioBuffer = req.file.buffer;
+        } else {
+          // No audio data found
+          return next();
+        }
+
+        const result = await voiceProcessor.processAudio(audioBuffer);
+        
+        if (result.success) {
+          // Add processed command to request
+          req.voiceCommand = result.command;
+          req.voiceTranscription = result.transcription;
+          req.voiceConfidence = result.confidence;
+        } else {
+          req.voiceError = result.error;
+        }
+      } catch (error) {
+        req.voiceError = error.message;
+        monitoring.error('Voice middleware error', { error: error.message });
+      }
+    }
+    
+    next();
+  };
+}
+
+// 7. Voice Command Validation
+// lib/voice/validator.js
+export class VoiceCommandValidator {
+  static validateCommand(command) {
+    // Security validation: prevent dangerous commands
+    const dangerousPatterns = [
+      /rm\s+-rf/,
+      /sudo/,
+      /chmod/,
+      /chown/,
+      /eval/,
+      /exec/,
+      /spawn/,
+      /system/,
+      /shell/,
+      /command/,
+      /script/
+    ];
+
+    for (const pattern of dangerousPatterns) {
+      if (pattern.test(command)) {
+        return {
+          valid: false,
+          error: 'Command contains potentially dangerous operations',
+          command: command
+        };
+      }
+    }
+
+    // Validate command structure
+    const parts = command.split(' ');
+    const validCommands = [
+      'init', 'generate', 'build', 'review', 'run', 'swarm', 'serve',
+      'status', 'sys-config', 'metrics', 'health', 'debug', 'agents',
+      'scaffold', 'dashboard', 'validate', 'fix', 'hooks', 'fetch',
+      'sync', 'auto-implement', 'ci-monitor', 'align', 'doctor',
+      'plan', 'suggest', 'export', 'upgrade', 'config', 'state',
+      'diff', 'watch', 'verify', 'pack', 'workflow', 'team', 'memory',
+      'exec', 'github', 'search', 'cloud'
+    ];
+
+    if (!validCommands.includes(parts[0])) {
+      return {
+        valid: false,
+        error: `Invalid command: ${parts[0]}`,
+        command: command
+      };
+    }
+
+    return {
+      valid: true,
+      command: command
+    };
+  }
+
+  static sanitizeCommand(command) {
+    // Remove potentially harmful characters
+    return command
+      .replace(/;/g, '')  // Remove semicolons
+      .replace(/\|\|/g, '')  // Remove OR operators
+      .replace(/&&/g, '')  // Remove AND operators
+      .replace(/\$\(/g, '')  // Remove command substitution
+      .replace(/`/g, '')  // Remove backticks
+      .trim();
+  }
+}
+
+// 8. Voice Command History & Learning
+// lib/voice/history.js
+export class VoiceCommandHistory {
+  constructor() {
+    this.historyFile = path.join(process.cwd(), '.ultra-dex', 'voice-history.json');
+    this.maxEntries = 100;
+  }
+
+  async loadHistory() {
+    try {
+      const content = await fs.readFile(this.historyFile, 'utf8');
+      return JSON.parse(content);
+    } catch {
+      return [];
+    }
+  }
+
+  async saveHistory(history) {
+    // Keep only the most recent entries
+    const trimmedHistory = history.slice(-this.maxEntries);
+    
+    await fs.mkdir(path.dirname(this.historyFile), { recursive: true });
+    await fs.writeFile(this.historyFile, JSON.stringify(trimmedHistory, null, 2));
+  }
+
+  async addEntry(entry) {
+    const history = await this.loadHistory();
+    history.push({
+      ...entry,
+      timestamp: new Date().toISOString()
+    });
+    
+    await this.saveHistory(history);
+  }
+
+  async getLearningInsights() {
+    const history = await this.loadHistory();
+    
+    // Analyze patterns in voice commands
+    const insights = {
+      mostUsedCommands: this.getMostUsedCommands(history),
+      commonPhrases: this.getCommonPhrases(history),
+      accuracyTrends: this.getAccuracyTrends(history),
+      improvementAreas: this.getImprovementAreas(history)
+    };
+    
+    return insights;
+  }
+
+  getMostUsedCommands(history) {
+    const commandCounts = {};
+    history.forEach(entry => {
+      if (entry.command) {
+        commandCounts[entry.command] = (commandCounts[entry.command] || 0) + 1;
+      }
+    });
+    
+    return Object.entries(commandCounts)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 5);
+  }
+
+  getCommonPhrases(history) {
+    // This would implement phrase clustering for common voice patterns
+    return [];
+  }
+
+  getAccuracyTrends(history) {
+    // This would analyze transcription accuracy over time
+    return {};
+  }
+
+  getImprovementAreas(history) {
+    // This would identify areas where voice recognition could be improved
+    return [];
+  }
+}
+```
+
+### Production Considerations
+- **Privacy**: Audio data should be processed locally when possible
+- **Performance**: Voice processing can be resource-intensive
+- **Accuracy**: Different accents and environments affect recognition
+- **Security**: Validate all voice-derived commands before execution
+- **Reliability**: Fallback to text input when voice fails
+
+### Anti-Patterns to Avoid
+- ❌ Sending audio to external services without privacy consideration
+- ❌ Not validating voice-derived commands before execution
+- ❌ Blocking UI during voice processing
+- ❌ Not handling poor audio quality gracefully
+- ❌ Executing destructive commands from voice input without confirmation
+
+### Quality Gates
+- [ ] Voice recognition accuracy validated
+- [ ] Command validation implemented
+- [ ] Privacy considerations addressed
+- [ ] Performance optimized for real-time use
+- [ ] Error handling for poor audio quality
+- [ ] Security validation for derived commands
+- [ ] Fallback to text input available
+- [ ] User confirmation for destructive commands

@@ -1,0 +1,70 @@
+# Caching Strategy Rules
+
+## Cache Layers
+1. Browser cache (Cache-Control headers)
+2. CDN/Edge cache (Vercel, Cloudflare)
+3. Application cache (Redis, in-memory)
+4. Database cache (query cache, materialized views)
+
+## HTTP Caching
+```typescript
+// Next.js cache headers
+export async function GET() {
+  const data = await fetchData();
+
+  return Response.json(data, {
+    headers: {
+      'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+    },
+  });
+}
+
+// Static pages
+export const revalidate = 3600; // ISR: revalidate every hour
+```
+
+## Redis Caching
+```typescript
+import { Redis } from '@upstash/redis';
+
+const redis = Redis.fromEnv();
+
+async function getCached<T>(
+  key: string,
+  fetcher: () => Promise<T>,
+  ttl = 3600
+): Promise<T> {
+  const cached = await redis.get<T>(key);
+  if (cached) return cached;
+
+  const fresh = await fetcher();
+  await redis.set(key, fresh, { ex: ttl });
+  return fresh;
+}
+
+// Usage
+const user = await getCached(
+  `user:${userId}`,
+  () => db.user.findUnique({ where: { id: userId } }),
+  300
+);
+```
+
+## Cache Invalidation
+```typescript
+// Event-driven invalidation
+async function updateUser(userId: string, data: UpdateData) {
+  await db.user.update({ where: { id: userId }, data });
+
+  // Invalidate related caches
+  await redis.del(`user:${userId}`);
+  await redis.del(`user:${userId}:profile`);
+  await redis.del(`team:${data.teamId}:members`);
+}
+```
+
+## Cache Patterns
+- Cache-aside: App manages cache
+- Write-through: Write to cache + DB
+- Write-behind: Write to cache, async DB
+- Read-through: Cache fetches on miss

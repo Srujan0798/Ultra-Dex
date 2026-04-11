@@ -1,0 +1,28 @@
+{
+  "version": "1.0",
+  "strategies": {
+    "cost_optimized": {
+      "description": "Minimize API costs, use smaller models for simple tasks",
+      "default": "gpt-4o-mini",
+      "complex": "claude-3-haiku",
+      "architect": "gpt-4o"
+    },
+    "performance": {
+      "description": "Maximize code quality and reasoning, ignore cost",
+      "default": "claude-3-5-sonnet",
+      "complex": "o1-preview",
+      "architect": "claude-3-5-sonnet"
+    },
+    "privacy": {
+      "description": "Local-only processing using Ollama",
+      "default": "ollama:llama3",
+      "complex": "ollama:deepseek-coder",
+      "architect": "ollama:mixtral"
+    }
+  },
+  "overrides": [
+    { "keyword": "security", "model": "gpt-4o" },
+    { "keyword": "refactor", "model": "claude-3-haiku" },
+    { "keyword": "docs", "model": "gemini-1.5-pro" }
+  ]
+}

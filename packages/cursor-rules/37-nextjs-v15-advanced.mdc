@@ -1,0 +1,281 @@
+# Next.js 15 Production Patterns
+## Ultra-Dex Cursor Rule 26-nextjs-v15.mdc
+
+### Context
+Next.js 15 introduces significant improvements including enhanced React Server Components, improved Server Actions, and better streaming capabilities. Critical for modern SaaS applications requiring high performance and SEO.
+
+### Pattern
+```javascript
+// 1. App Router with Server Components (Primary Pattern)
+// app/page.tsx
+import { Suspense } from 'react';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/lib/auth';
+import { getUserData } from '@/lib/data-fetching';
+import { Header } from '@/components/header';
+import { Sidebar } from '@/components/sidebar';
+import { DashboardContent } from '@/components/dashboard-content';
+
+export default async function DashboardPage() {
+  const session = await getServerSession(authOptions);
+  const user = await getUserData(session?.user.id);
+
+  if (!session || !user) {
+    redirect('/login');
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header user={user} />
+      <div className="flex">
+        <Sidebar user={user} />
+        <main className="flex-1 p-6">
+          <Suspense fallback={<div>Loading dashboard...</div>}>
+            <DashboardContent userId={user.id} />
+          </Suspense>
+        </main>
+      </div>
+    </div>
+  );
+}
+
+// 2. Server Actions with Zod Validation
+'use server';
+
+import { z } from 'zod';
+import { revalidatePath } from 'next/cache';
+import { db } from '@/lib/db';
+import { currentUser } from '@clerk/nextjs';
+
+const updateUserSchema = z.object({
+  name: z.string().min(2).max(50),
+  email: z.string().email(),
+  bio: z.string().max(500).optional()
+});
+
+export async function updateUserProfile(formData: FormData) {
+  try {
+    const user = await currentUser();
+    if (!user) {
+      throw new Error('Unauthorized');
+    }
+
+    const validatedFields = updateUserSchema.safeParse({
+      name: formData.get('name'),
+      email: formData.get('email'),
+      bio: formData.get('bio')
+    });
+
+    if (!validatedFields.success) {
+      return {
+        error: 'Invalid fields',
+        details: validatedFields.error.flatten()
+      };
+    }
+
+    await db.user.update({
+      where: { id: user.id },
+      data: validatedFields.data
+    });
+
+    revalidatePath('/profile');
+    
+    return {
+      success: true,
+      message: 'Profile updated successfully'
+    };
+  } catch (error) {
+    return {
+      error: 'Failed to update profile',
+      details: error.message
+    };
+  }
+}
+
+// 3. Streaming with React Suspense
+// components/streaming-content.tsx
+import { Suspense } from 'react';
+
+async function ExpensiveDataComponent() {
+  // Simulate expensive data fetching
+  await new Promise(resolve => setTimeout(resolve, 2000));
+  const data = await fetchExpensiveData();
+  
+  return <div>{JSON.stringify(data)}</div>;
+}
+
+export function StreamingContent() {
+  return (
+    <div>
+      <h2>Fast Content</h2>
+      <p>This renders immediately</p>
+      
+      <Suspense fallback={<div>Loading expensive data...</div>}>
+        <ExpensiveDataComponent />
+      </Suspense>
+    </div>
+  );
+}
+
+// 4. Route Handlers (API Routes replacement)
+// app/api/users/route.ts
+import { NextRequest } from 'next/server';
+import { z } from 'zod';
+import { db } from '@/lib/db';
+
+const createUserSchema = z.object({
+  name: z.string().min(2),
+  email: z.string().email(),
+  role: z.enum(['user', 'admin', 'moderator'])
+});
+
+export async function GET(request: NextRequest) {
+  const searchParams = request.nextUrl.searchParams;
+  const page = parseInt(searchParams.get('page') || '1');
+  const limit = parseInt(searchParams.get('limit') || '10');
+  
+  const users = await db.user.findMany({
+    skip: (page - 1) * limit,
+    take: limit
+  });
+
+  return Response.json(users);
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const validated = createUserSchema.safeParse(body);
+
+    if (!validated.success) {
+      return Response.json(
+        { error: 'Invalid input', details: validated.error.flatten() },
+        { status: 400 }
+      );
+    }
+
+    const user = await db.user.create({
+      data: validated.data
+    });
+
+    return Response.json(user, { status: 201 });
+  } catch (error) {
+    return Response.json(
+      { error: 'Failed to create user', details: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+// 5. Middleware for Authentication
+// middleware.ts
+import { authMiddleware } from '@clerk/nextjs/server';
+
+export default authMiddleware({
+  publicRoutes: [
+    '/',
+    '/api/webhook',
+    '/api/uploadthing',
+    '/api/health'
+  ],
+  ignoredRoutes: [
+    '/api/webhook',
+    '/api/uploadthing'
+  ]
+});
+
+export const config = {
+  matcher: [
+    // Skip Next.js internals and all static files, unless found in search params
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Always run for API routes
+    '/(api|trpc)(.*)',
+  ],
+};
+
+// 6. Environment Configuration
+// next.config.js
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '2mb',
+    },
+    typedRoutes: true,
+  },
+  images: {
+    domains: ['utfs.io', 'lh3.googleusercontent.com', 'avatars.githubusercontent.com'],
+  },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+      };
+    }
+    return config;
+  },
+};
+
+export default nextConfig;
+
+// 7. Database Integration with Prisma
+// lib/db.ts
+import { PrismaClient } from '@prisma/client';
+
+declare global {
+  var prisma: PrismaClient | undefined;
+}
+
+export const db = global.prisma || new PrismaClient();
+
+if (process.env.NODE_ENV === 'production') {
+  global.prisma = db;
+}
+
+// 8. Authentication with Clerk
+// lib/auth.ts
+import { currentUser } from '@clerk/nextjs/server';
+
+export async function getCurrentUser() {
+  const user = await currentUser();
+  
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+  
+  return user;
+}
+
+export async function requireUser() {
+  const user = await getCurrentUser();
+  
+  if (!user) {
+    redirect('/sign-in');
+  }
+  
+  return user;
+}
+```
+
+### Production Considerations
+- **Security**: Always validate server action inputs with Zod
+- **Performance**: Use streaming and suspense for better UX
+- **SEO**: Leverage static generation where possible
+- **Caching**: Implement proper revalidation strategies
+- **Error Handling**: Handle server action errors gracefully
+
+### Anti-Patterns to Avoid
+- ❌ Client-side data mutations (use server actions)
+- ❌ No input validation on server actions
+- ❌ Blocking rendering for non-critical data
+- ❌ Not handling loading states with Suspense
+- ❌ Hardcoding environment-specific values
+
+### Quality Gates
+- [ ] Server actions validated with Zod
+- [ ] Streaming implemented with Suspense boundaries
+- [ ] Middleware properly configured
+- [ ] Database connections optimized
+- [ ] Environment variables secured
+- [ ] Error boundaries implemented

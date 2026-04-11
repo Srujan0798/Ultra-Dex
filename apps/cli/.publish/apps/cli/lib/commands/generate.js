@@ -1,0 +1,433 @@
+// Copyright (c) 2026 Ultra-Dex
+
+/**
+ * ultra-dex generate command
+ * Generates a full 34-section implementation plan from an idea using AI
+ */
+
+import chalk from 'chalk';
+import ora from '../utils/ora.js';
+import inquirer from 'inquirer';
+import fs from 'fs/promises';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import {
+  createProvider,
+  getDefaultProvider,
+  checkConfiguredProviders,
+  canUseProviderWithoutApiKey,
+} from '../providers/index.js';
+import { streamWithProvider, getStreamingProviders } from '../providers/streaming.js';
+import { recordAndTranscribe } from '../input/voice.js';
+import { SYSTEM_PROMPT, generateUserPrompt } from '../templates/prompts/generate-plan.js';
+import { validateSafePath } from '../utils/validation.js';
+import { githubTreeUrl, githubWebUrl } from '../config/urls.js';
+import { saveState } from './plan.js';
+import { getRandomMessage } from '../utils/messages.js';
+import { printError, printInfo, printSuccess, printWarning } from '../utils/output.js';
+import { handleError } from '../utils/error-handler.js';
+import { getCache } from '../cache/index.js';
+
+/**
+ * Register the generate command with Commander
+ * @param {Command} program - Commander program instance
+ * @returns {void}
+ */
+export function registerGenerateCommand(program) {
+  program
+    .command('generate [idea]')
+    .description('Create the plan (Thanos style) - AI Generates Full Plan')
+    .option('-p, --provider <provider>', 'AI provider (claude, openai, gemini, nvidia)')
+    .option('-m, --model <model>', 'Specific model to use')
+    .option('-o, --output <directory>', 'Output directory', '.')
+    .option('-k, --key <apiKey>', 'API key (or use environment variable)')
+    .option('--stream', 'Stream output in real-time', true)
+    .option('--no-stream', 'Disable streaming')
+    .option('--voice', 'Use voice input for the prompt')
+    .option('--cache', 'Use response caching to reduce API costs')
+    /**
+     * Generate plan action
+     * @param {string} idea - The project idea
+     * @param {Object} options - Command options
+     */
+    .action(async (idea, options) => {
+      try {
+        printInfo(chalk.cyan('\n🚀 Ultra-Dex Plan Generator (Reality Stone Mode)\n'));
+        printInfo(chalk.hex('#7c3aed').italic(`"${getRandomMessage('start')}"`));
+        process.stdout.write('\n');
+
+        const dirValidation = validateSafePath(options.output, 'Output directory');
+        if (dirValidation !== true) {
+          printError(chalk.red(dirValidation));
+          process.exitCode = 1;
+          process.exit(process.exitCode);
+        }
+
+        // Check configured providers
+        const configured = checkConfiguredProviders();
+        const selectedProviderId = options.provider || getDefaultProvider();
+        const hasProvider =
+          configured.some((p) => p.configured) ||
+          Boolean(options.key) ||
+          canUseProviderWithoutApiKey(selectedProviderId);
+
+        if (!hasProvider) {
+          printWarning(chalk.yellow('⚠️  No Infinity Stones (AI Keys) configured.\n'));
+          printInfo(chalk.white('Set one of these environment variables:'));
+          configured
+            .filter((p) => p.envKey)
+            .forEach((p) => {
+              process.stdout.write(chalk.gray(`  export ${p.envKey}=your-key-here\n`));
+            });
+          printInfo(chalk.white('\nOr use --key option:'));
+          process.stdout.write(
+            chalk.gray('  node apps/cli/bin/ultra-dex.js generate "your idea" --key sk-...\n')
+          );
+          return;
+        }
+
+        // Get idea if not provided
+        if (!idea) {
+          if (options.voice) {
+            printInfo(chalk.blue('🎤 Voice input enabled. Recording for 15 seconds...\n'));
+            idea = await recordAndTranscribe({ duration: 15 });
+            printInfo(chalk.gray(`Transcribed: ${idea}`));
+          } else {
+            const answers = await inquirer.prompt([
+              {
+                type: 'input',
+                name: 'idea',
+                message: 'Describe the reality you wish to create:',
+                validate: (input) =>
+                  input.trim().length > 10 || 'Please provide a more detailed description',
+              },
+            ]);
+            idea = answers.idea;
+          }
+        }
+
+        // Select provider
+        const providerId = selectedProviderId;
+        if (!providerId) {
+          printError(chalk.red('No provider available. Set an API key.'));
+          return;
+        }
+
+        const basePrompt = generateUserPrompt(idea);
+        const featureContext = await buildFeatureContext(idea);
+        const finalPrompt = featureContext ? `${basePrompt}\n\n${featureContext}` : basePrompt;
+
+        printInfo(chalk.gray(`Using provider: ${providerId}`));
+        printInfo(chalk.gray(`Idea: "${idea}"\n`));
+
+        // Create provider instance
+        let provider;
+        try {
+          provider = await createProvider(providerId, {
+            apiKey: options.key,
+            model: options.model,
+            maxTokens: 16000, // Large output for full plan
+          });
+        } catch (err) {
+          printError(chalk.red(`Error: ${err.message}`));
+          return;
+        }
+
+        // Generate the plan
+        const spinner = ora('Reshaping reality (Generating Plan)...').start();
+        const startTime = Date.now();
+
+        try {
+          let result;
+          let planContent = '';
+
+          // Check cache if enabled
+          let cachedResult = null;
+          let cache = null;
+          if (options.cache) {
+            cache = getCache();
+            const model =
+              options.model || (provider.getDefaultModel ? provider.getDefaultModel() : 'default');
+            cachedResult = await cache.get(providerId, model, SYSTEM_PROMPT, finalPrompt);
+          }
+
+          if (options.cache && cachedResult) {
+            spinner.succeed('Plan retrieved from cache!');
+            printInfo(chalk.green(`  💾 Cache hit! Saved API call and costs.`));
+            result = cachedResult.response;
+            planContent = result.content;
+
+            // Show cache metrics
+            const stats = cache.getStats();
+            printInfo(
+              chalk.gray(
+                `  📊 Cache Hit Rate: ${(stats.hitRate * 100).toFixed(1)}% | Estimated Savings: $${stats.estimatedSavings.toFixed(2)}`
+              )
+            );
+          } else {
+            if (options.stream) {
+              spinner.stop();
+              printInfo(chalk.cyan('📝 Manifesting Reality:\n'));
+              process.stdout.write(chalk.gray('─'.repeat(60)) + '\n');
+
+              const streamingProviders = getStreamingProviders();
+              if (streamingProviders.includes(providerId)) {
+                const streamed = await streamWithProvider({
+                  providerId,
+                  model: options.model,
+                  apiKey: options.key,
+                  systemPrompt: SYSTEM_PROMPT,
+                  prompt: finalPrompt,
+                  onToken: (chunk) => {
+                    process.stdout.write(chunk);
+                    planContent += chunk;
+                  },
+                });
+                result = {
+                  content: streamed.text,
+                  usage: streamed.usage || { inputTokens: 0, outputTokens: 0 },
+                };
+              } else {
+                result = await provider.generateStream(SYSTEM_PROMPT, finalPrompt, (chunk) => {
+                  process.stdout.write(chunk);
+                  planContent += chunk;
+                });
+              }
+
+              process.stdout.write(chalk.gray('\n' + '─'.repeat(60)) + '\n');
+            } else {
+              result = await provider.generate(SYSTEM_PROMPT, finalPrompt);
+              planContent = result.content;
+              spinner.succeed('Plan generated!');
+            }
+
+            // Cache the result if caching is enabled
+            if (options.cache) {
+              const cache = getCache();
+              const model =
+                options.model ||
+                (provider.getDefaultModel ? provider.getDefaultModel() : 'default');
+              await cache.set(providerId, model, SYSTEM_PROMPT, finalPrompt, result);
+
+              // Show cache metrics
+              const stats = cache.getStats();
+              printInfo(
+                chalk.gray(
+                  `  💾 Cached for future use. Estimated Savings: $${stats.estimatedSavings.toFixed(2)}`
+                )
+              );
+            }
+          }
+
+          // Calculate stats
+          const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+          const cost = provider.estimateCost(result.usage.inputTokens, result.usage.outputTokens);
+
+          // Save the plan
+          const outputDir = path.resolve(options.output);
+          await fs.mkdir(outputDir, { recursive: true });
+
+          const planPath = path.join(outputDir, 'IMPLEMENTATION-PLAN.md');
+          const contextPath = path.join(outputDir, 'CONTEXT.md');
+          const quickStartPath = path.join(outputDir, 'QUICK-START.md');
+
+          // Add header to plan
+          const header = `# Implementation Plan
+
+> Generated by Ultra-Dex AI Plan Generator (Doomsday Edition)
+
+`;
+          if (!planContent.startsWith('#')) {
+            planContent = header + planContent;
+          }
+
+          await fs.writeFile(planPath, planContent);
+
+          // --- NEW: Generate state.json (ACTIVE SCALFOLDING) ---
+          const projectName = idea
+            .split(' ')
+            .slice(0, 3)
+            .join('-')
+            .toLowerCase()
+            .replace(/[^a-z0-9-]/g, '');
+
+          const state = {
+            project: {
+              name: projectName,
+              version: '0.1.0',
+              mode: 'AI-First',
+              idea: idea,
+            },
+            phases: [
+              {
+                id: '1',
+                name: 'Phase 1: Foundation',
+                status: 'in_progress',
+                steps: [
+                  { id: '1.1', task: 'Setup project boilerplate', status: 'pending' },
+                  { id: '1.2', task: 'Database schema design', status: 'pending' },
+                  { id: '1.3', task: 'Authentication implementation', status: 'pending' },
+                ],
+              },
+              {
+                id: '2',
+                name: 'Phase 2: Core Features',
+                status: 'pending',
+                steps: [
+                  { id: '2.1', task: 'Implement primary feature loop', status: 'pending' },
+                  { id: '2.2', task: 'API endpoint development', status: 'pending' },
+                ],
+              },
+            ],
+            agents: {
+              active: ['planner', 'cto'],
+              registry: [
+                'planner',
+                'cto',
+                'backend',
+                'frontend',
+                'database',
+                'testing',
+                'reviewer',
+              ],
+            },
+          };
+
+          await saveState(state);
+
+          // Generate CONTEXT.md
+          const contextContent = `# Project Context
+
+## Project Info
+**Created:** ${new Date().toLocaleDateString()}
+**Idea:** ${idea}
+**Status:** Planning
+
+## Summary
+${idea}
+
+## Current Focus
+Review implementation plan and begin development.
+
+## Ultra-Dex Resources
+- Official Template: ${githubWebUrl()}
+- Documentation: ${githubTreeUrl('docs')}
+`;
+
+          await fs.writeFile(contextPath, contextContent);
+
+          // Generate QUICK-START.md
+          const quickStartContent = `# Quick Start
+
+## Project Idea
+${idea}
+
+## Next Steps
+1. Review IMPLEMENTATION-PLAN.md
+2. Start with the first feature
+3. Use Ultra-Dex agents for guidance
+
+## AI Agents (The Avengers)
+- @Planner (Nick Fury): Break down tasks
+- @CTO (Iron Man): Architecture decisions
+- @Backend (Thor): API logic
+- @Frontend (Spider-Man): UI components
+- @Testing (Ant-Man): QA and tests
+`;
+
+          await fs.writeFile(quickStartPath, quickStartContent);
+
+          spinner.succeed(chalk.green('Reality successfully rewritten!'));
+
+          printSuccess(chalk.green('\n✅ Files created:'));
+          printInfo(chalk.gray(`  ${planPath}`));
+          printInfo(chalk.gray(`  ${contextPath}`));
+          printInfo(chalk.gray(`  ${quickStartPath}`));
+          printInfo(chalk.gray(`  .ultra/state.json (GOD MODE ACTIVE)`));
+          printInfo(chalk.gray(`\n⏱️  Time: ${elapsed}s`));
+          printInfo(chalk.gray(`💰 Est. cost: ${cost}`));
+
+          printInfo(chalk.bold('\nNext steps:'));
+          printInfo(chalk.cyan('  1. Review IMPLEMENTATION-PLAN.md'));
+          printInfo(chalk.cyan('  2. Run `ultra-dex dashboard` to visualize your progress'));
+          printInfo(chalk.cyan('  3. Run `ultra-dex build` to let Auto-Pilot take the first task'));
+          printInfo(chalk.cyan('  4. Summon Avengers (AI agents) for guidance\n'));
+        } catch (err) {
+          spinner.fail(chalk.red('Failed to manifest reality'));
+          printError(chalk.red('Error:'), err.message);
+          process.exitCode = 1;
+          process.exit(process.exitCode);
+        }
+      } catch (error) {
+        await handleError(error, { command: 'generate', idea, options });
+        process.exitCode = error.exitCode || 1;
+        process.exit(process.exitCode);
+      }
+    });
+}
+
+const MODULE_DIR = path.dirname(fileURLToPath(import.meta.url));
+
+/**
+ * Build context from feature templates based on idea keywords
+ * @param {string} idea - Project idea description
+ * @returns {Promise<string>} Context string with feature snippets
+ */
+async function buildFeatureContext(idea) {
+  if (!idea) return '';
+  const text = idea.toLowerCase();
+  const snippets = [];
+
+  if (/(revenue|billing|stripe|subscription|payment)/.test(text)) {
+    snippets.push(await readTemplateSnippet('stripe-billing.ts', 'Stripe Billing'));
+  }
+
+  if (/(analytics|posthog|event tracking|metrics)/.test(text)) {
+    snippets.push(await readTemplateSnippet('analytics-posthog.ts', 'PostHog Analytics'));
+  }
+
+  if (/(email|resend|notification)/.test(text)) {
+    snippets.push(await readTemplateSnippet('email-resend.ts', 'Resend Email'));
+  }
+
+  if (/(feature flag|feature flags|rollout)/.test(text)) {
+    snippets.push(await readTemplateSnippet('flags.ts', 'Feature Flags'));
+  }
+
+  if (/(rate limit|rate-limiting|throttle|ddos)/.test(text)) {
+    snippets.push(await readTemplateSnippet('rate-limit.ts', 'Rate Limiting Middleware'));
+  }
+
+  const cleaned = snippets.filter(Boolean);
+  if (!cleaned.length) return '';
+
+  return ['Reference feature snippets (for implementation guidance):', ...cleaned].join('\n\n');
+}
+
+/**
+ * Read a template snippet file
+ * @param {string} fileName - Name of the template file
+ * @param {string} title - Title for the snippet
+ * @returns {Promise<string>} Formatted snippet string
+ */
+async function readTemplateSnippet(fileName, title) {
+  const candidatePaths = [
+    path.resolve(process.cwd(), 'templates', 'features', fileName),
+    path.resolve(process.cwd(), 'templates', 'middleware', fileName),
+    path.resolve(process.cwd(), 'cli', 'assets', 'templates', 'features', fileName),
+    path.resolve(process.cwd(), 'cli', 'assets', 'features', fileName),
+    path.resolve(MODULE_DIR, '..', '..', 'assets', 'templates', 'features', fileName),
+    path.resolve(MODULE_DIR, '..', '..', 'assets', 'features', fileName),
+  ];
+
+  for (const candidate of candidatePaths) {
+    try {
+      const content = await fs.readFile(candidate, 'utf8');
+      return `### ${title}\n\`\`\`\n${content.trim()}\n\`\`\``;
+    } catch {
+      // continue
+    }
+  }
+
+  return '';
+}

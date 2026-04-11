@@ -1,8 +1,10 @@
 {
   "name": "@ultra-dex/cli",
-  "version": "3.1.0",
+  "version": "5.0.0",
+  "private": true,
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "description": "The AI Orchestration Meta-Layer for SaaS Development - OVERPOWERED Edition (1000% Efficiency)",
   "keywords": [
@@ -92,8 +94,8 @@
     "nemotron": "node examples/nemotron-cli.js",
     "nemotron:example": "node examples/nemotron-example.js",
     "nemotron:models": "node examples/multi-model-example.js",
-    "test": "NODE_ENV=test node --import=tsx --import=reflect-metadata --test --test-concurrency=1 --test-force-exit --test-timeout=30000 tests/core/*.test.{js,ts} tests/integration/*.test.{js,ts} tests/cli/*.test.{js,ts}",
-    "test:unit": "NODE_ENV=test node --import=tsx --import=reflect-metadata --test --test-concurrency=1 --test-force-exit --test-timeout=30000 tests/core/*.test.{js,ts}",
+    "test": "MEMORY_BACKEND=file SKIP_POSTGRES=true NODE_ENV=test node --import=tsx --import=reflect-metadata --test --test-concurrency=1 --test-force-exit --test-timeout=30000 tests/core/*.test.{js,ts} tests/integration/*.test.{js,ts} tests/cli/*.test.{js,ts}",
+    "test:unit": "MEMORY_BACKEND=file SKIP_POSTGRES=true NODE_ENV=test node --import=tsx --import=reflect-metadata --test --test-concurrency=1 --test-force-exit --test-timeout=30000 tests/core/*.test.{js,ts}",
     "test:integration": "NODE_ENV=test node --import=tsx --import=reflect-metadata --test --test-force-exit --test-timeout=60000 tests/integration/*.test.{js,ts}",
     "test:cli": "NODE_ENV=test node --import=tsx --import=reflect-metadata --test --test-force-exit --test-timeout=30000 tests/cli/*.test.{js,ts}",
     "test:push:smoke": "NODE_ENV=test node --import=tsx --import=reflect-metadata --test --test-force-exit --test-timeout=30000 tests/core/provider-fallback.test.js tests/core/approval-workflow.test.js tests/core/git-integration.test.js tests/cli/plan.test.js tests/cli/serve.test.js tests/cli/swarm.test.js apps/cli/test/git-workflow.test.js",
@@ -117,6 +119,8 @@
     "build:vscode": "cd packages/extensions/vscode && npm run build",
     "publish": "npm publish",
     "publish:beta": "npm publish --tag beta",
+    "publish:cli": "cd apps/cli && npm publish --access public",
+    "publish:sdk": "cd packages/sdk && npm publish --access public",
     "version:bump": "npm version",
     "clean": "rm -rf node_modules package-lock.json && npm install",
     "governance": "node scripts/pre-commit-governor.js",
@@ -165,6 +169,7 @@
     "@logtail/node": "^0.5.8",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@notionhq/client": "^5.17.0",
+    "@redis/search": "^5.11.0",
     "@sentry/node": "^10.47.0",
     "@xenova/transformers": "^2.17.2",
     "acorn": "^8.16.0",
@@ -232,7 +237,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@rolldown/binding-darwin-arm64": "1.0.0-rc.15",
-    "@types/node": "^25.5.2",
+    "@types/node": "^25.6.0",
     "@types/pg": "^8.20.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
@@ -271,10 +276,6 @@
     "langchain": {
       "langsmith": "0.5.16"
     }
-  },
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
   },
   "volta": {
     "node": "20.18.0",

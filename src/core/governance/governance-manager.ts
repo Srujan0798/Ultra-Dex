@@ -12,6 +12,7 @@ import { singleton } from 'tsyringe';
 import { GovernanceEngine } from './governance-engine.ts';
 import { AuditDatabase } from './audit-db.ts';
 import { v4 as uuidv4 } from 'uuid';
+import { AuditTrail } from '../audit/audit-trail.ts';
 let GovernanceDeniedException = class extends Error {
   constructor(message, context = {}) {
     super(message);
@@ -40,6 +41,7 @@ let GovernanceManager = class {
     };
     const dbPath = options.auditDbPath || void 0;
     this._auditDb = new AuditDatabase(dbPath);
+    this._enterpriseAuditTrail = new AuditTrail();
     this.audit = {
       /**
        * Initialize the audit store and expose the underlying mode.
@@ -77,9 +79,24 @@ let GovernanceManager = class {
   }
   async gate(context = {}) {
     await this.engine.init();
+    const auditAction = context.action || 'governance.check';
+    const auditResource = context.resource || context.task || 'unknown';
     for (const policy of this._customPolicies) {
       const result = policy.condition(context);
       if (!result) {
+        await this._enterpriseAuditTrail.log({
+          userId: context.agentId || 'unknown',
+          teamId: context.teamId || null,
+          action: 'task.fail',
+          resource: String(auditResource),
+          details: {
+            governanceAction: auditAction,
+            policyId: policy.id,
+            reason: policy.name,
+          },
+          result: 'blocked',
+          cost: 0,
+        });
         await this.audit.record({
           agentId: context.agentId,
           action: context.action,
@@ -92,6 +109,15 @@ let GovernanceManager = class {
       }
     }
     if (this._customPolicies.length > 0) {
+      await this._enterpriseAuditTrail.log({
+        userId: context.agentId || 'unknown',
+        teamId: context.teamId || null,
+        action: 'task.complete',
+        resource: String(auditResource),
+        details: { governanceAction: auditAction },
+        result: 'allowed',
+        cost: 0,
+      });
       await this.audit.record({
         agentId: context.agentId,
         action: context.action,
@@ -102,6 +128,15 @@ let GovernanceManager = class {
       });
       return { allowed: true };
     }
+    await this._enterpriseAuditTrail.log({
+      userId: context.agentId || 'unknown',
+      teamId: context.teamId || null,
+      action: 'task.complete',
+      resource: String(auditResource),
+      details: { governanceAction: auditAction },
+      result: 'allowed',
+      cost: 0,
+    });
     await this.audit.record({
       agentId: context.agentId,
       action: context.action,

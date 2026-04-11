@@ -1,0 +1,9 @@
+{
+  "name": "@ultra-dex/executor",
+  "version": "3.1.0",
+  "description": "Task execution and result verification specialist",
+  "author": "Ultra-Dex",
+  "capabilities": ["execution", "verification", "retry-logic"],
+  "providers": ["any"],
+  "minVersion": "3.1.0"
+}

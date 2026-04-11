@@ -1,24 +1,117 @@
-Use your Engineering and Data plugins to analyze Ultra-Dex and create detailed .protocol execution plans.
+Use ALL 9 Claude plugins to analyze Ultra-Dex and create detailed .protocol execution plans.
 
-## Plugins You Have Active
+## Plugins You Have Active (ALL 9 COMPLETE)
 
-**Engineering Plugin:**
-- /architecture - Design system architecture
-- /code-review - Review code quality
-- /system-design - Design scalable systems
-- /tech-debt - Identify technical debt
-- /testing-strategy - Plan test coverage
-- /documentation - Create technical docs
-- /debug - Debug issues
-- /deploy-checklist - Deployment planning
-- /incident-response - Handle failures
-- /standup - Track progress
+### Engineering Plugin (10/10 skills) ✅
+- /architecture - 6 ADRs created (TypeScript, ESM, AI routing, Memory, Testing, Architecture)
+- /code-review - Security & performance review complete
+- /system-design - Scalable architecture documented
+- /tech-debt - 156 issues catalogued
+- /testing-strategy - 300+ tests documented
+- /documentation - Operational docs complete
+- /debug - Root cause analysis done
+- /deploy-checklist - 49-point checklist
+- /incident-response - Playbooks & procedures
+- /standup - Daily standup templates
 
-**Data Plugin:**
-- /analyze - Analyze datasets
-- /sql-queries - Write optimized SQL
-- /explore-data - Profile data shape
-- /build-dashboard - Create dashboards
+**Reference:** docs/skills/engineering/ (21 files, 6,327 lines)
+
+### Data Plugin (10/10 skills) ✅
+- /analysis - Ultra-Dex data analysis complete
+- /context - Data context documented
+- /dashboards - Dashboard templates created
+- /exploration - Dataset profiling done
+- /queries - Optimized query library
+- /statistical - Statistical analysis complete
+- /validation - Data validation reports
+- /visualization - Visualization guides
+
+**Reference:** docs/skills/data/ (10 files, 4,160 lines)
+
+### Product Management Plugin (9/9 skills) ✅
+- /brainstorm - Pricing strategy brainstormed
+- /competitive-brief - Competitive analysis complete
+- /metrics-review - Metrics analysis done
+- /product-brainstorming - Marketplace brainstormed
+- /roadmap-update - Roadmap documented
+- /sprint-planning - Sprint 16 planned
+- /stakeholder-update - Executive brief created
+- /synthesize-research - User research synthesized
+- /write-spec - Feature specifications written
+
+**Reference:** docs/skills/product-management/ (13 files, 1,402 lines)
+
+### Enterprise Search Plugin (5/5 skills) ✅
+- /digest - Weekly digest template
+- /knowledge-synthesis - Architecture synthesis done
+- /search - Redis search configured
+- /search-strategy - Query decomposition complete
+- /source-management - 4 sources connected
+
+**Reference:** docs/skills/enterprise-search/ (6 files, 586 lines)
+
+### Operations Plugin (9/9 skills) ✅
+- /capacity-plan - Q2-Q4 capacity planned
+- /change-request - Redis migration CR done
+- /compliance-tracking - SOC 2 tracking active
+- /process-doc - Bug tracking SOP created
+- /process-optimization - Code review optimized
+- /risk-assessment - v3.2.0 risks assessed
+- /runbook - Production deploy runbook complete
+- /status-report - Weekly status template
+- /vendor-review - Render.com review done
+
+**Reference:** docs/skills/operations/ (11 files, 1,137 lines)
+
+### Customer Support Plugin (5/5 skills) ✅
+- /customer-escalation - Enterprise escalation brief
+- /customer-research - Provider timeout analysis
+- /draft-response - Response templates created
+- /kb-article - Knowledge base article
+- /ticket-triage - Triage framework complete
+
+**Reference:** docs/skills/customer-support/ (7 files, 628 lines)
+
+### Productivity Plugin (4/4 skills) ✅
+- /memory-management - Context memory system
+- /start - System initialization complete
+- /task-management - Task list tracked
+- /update - Sync and triage workflow
+
+**Reference:** docs/skills/productivity/ (5 files, 454 lines)
+
+### Design Plugin (7/7 skills) ✅
+- /accessibility-review - 8 issues identified
+- /design-critique - 4.3/5 rating
+- /design-handsoff - Component specs done
+- /design-system - Token audit complete
+- /research-synthesis - 45 data points synthesized
+- /user-research - Research plan created
+- /ux-copy - Interface copy guidelines
+
+**Reference:** docs/skills/design/ (9 files, 1,065 lines)
+
+### Marketing Plugin (8/8 skills) ✅
+- /brand-review - Brand voice audit (87/100 score)
+- /campaign-plan - v3.2.0 launch campaign
+- /competitive-brief - Competitive positioning
+- /content-creation - Multi-channel content
+- /draft-content - Launch blog post
+- /email-sequence - 7-email nurture flow
+- /performance-report - Q1 marketing report
+- /seo-audit - Complete SEO audit (76/100 score)
+
+**Reference:** docs/skills/marketing/ (10 files, 3,961 lines)
+
+---
+
+## Total Skills Coverage
+
+**67/67 skills (100%) | 92+ documents | 21,000+ lines**
+
+All plugins documented in `docs/skills/` at Engineering benchmark quality.
+
+---
 
 ## Your Task
 
@@ -26,11 +119,23 @@ Read these files:
 1. docs/strategic/v2.0-strategic-plan.md (the strategy)
 2. .protocol/orchestration.md (the format)
 3. CLAUDE.md (project context)
+4. docs/skills/README.md (master plugin index)
+
+Reference the complete skill outputs:
+- docs/skills/engineering/ - ADRs, code reviews, tech debt, testing strategy
+- docs/skills/data/ - Analysis reports, dashboards, SQL queries
+- docs/skills/product-management/ - Roadmaps, specs, competitive analysis
+- docs/skills/enterprise-search/ - Search config, knowledge synthesis
+- docs/skills/operations/ - Runbooks, compliance, capacity planning
+- docs/skills/customer-support/ - Triage, KB, escalation briefs
+- docs/skills/productivity/ - Tasks, memory, updates
+- docs/skills/design/ - Accessibility, critique, handoff, UX
+- docs/skills/marketing/ - Brand review, campaign plans, SEO audits
 
 Then create:
 
 ### Output File 1: .protocol/state/v20-phase1-dispatches.md
-Use /architecture + /system-design + /deploy-checklist to plan:
+Use /architecture + /system-design + /deploy-checklist + /runbook to plan:
 - Week 1-2: Redis + Postgres migration
 - Week 3: npm publish + Docker
 - Week 4: Public repo + README
@@ -38,32 +143,35 @@ Use /architecture + /system-design + /deploy-checklist to plan:
 Include: 4 parallel windows per week, .protocol format, 3 fallbacks each
 
 ### Output File 2: .protocol/state/v20-phase2-dispatches.md
-Use /architecture + /code-review to plan:
+Use /architecture + /code-review + /tech-debt + /testing-strategy to plan:
 - MCP server completion
 - Swarm command + LLM router
 - Memory RAG improvements
 - Provider fallback chains
 
 ### Output File 3: .protocol/state/v20-phase3-dispatches.md
-Use /system-design + /testing-strategy to plan:
+Use /system-design + /testing-strategy + /capacity-plan + /risk-assessment to plan:
 - VSCode extension
 - Plugin system
 - Team/enterprise features
 - Performance optimization
 
 ### Output File 4: .protocol/state/v20-phase4-dispatches.md
-Use /architecture + /tech-debt to plan:
+Use /architecture + /tech-debt + /competitive-brief + /campaign-plan to plan:
 - Web dashboard
 - Community marketplace
 - Certification program
 - Enterprise sales
 
 ### Output File 5: .protocol/state/v20-master-timeline.md
-Use /analyze to create:
+Use /analysis + /metrics-review + /performance-report + /seo-audit to create:
 - Dependency graph
 - Critical path
 - Resource allocation
 - Risk analysis
+- Marketing launch timeline
+
+---
 
 ## Format Requirements
 
@@ -86,16 +194,72 @@ Fallback #3: [OpenCode/NVIDIA]
 Cost Class: FREE|SUBSCRIPTION|API-KEY
 ```
 
+---
+
+## Cross-Plugin Intelligence
+
+Leverage these pre-generated outputs:
+
+**From Engineering:**
+- ADRs for architectural decisions
+- Tech debt backlog for prioritization
+- Testing strategy for coverage
+
+**From Data:**
+- Analysis reports for metrics
+- Dashboards for progress tracking
+- Optimized queries for implementation
+
+**From Product Management:**
+- Roadmap for timeline alignment
+- Competitive brief for positioning
+- Specs for feature planning
+
+**From Operations:**
+- Runbooks for execution
+- Risk assessment for mitigation
+- Capacity plan for scaling
+
+**From Marketing:**
+- Campaign plan for launches
+- SEO audit for visibility
+- Performance report for ROI
+
+**From Design:**
+- Accessibility review for compliance
+- Component specs for implementation
+- UX copy for messaging
+
+---
+
 ## Do NOT
 - Execute any code
 - Modify files
 - Run tests
 
 ## DO
-- Use Engineering plugin skills for technical planning
-- Use Data plugin for analysis and metrics
+- Use ALL plugin skills for comprehensive planning
+- Reference docs/skills/ for pre-generated context
 - Create detailed, actionable plans
 - Include 3 fallbacks per window
 - Think about dependencies and parallel execution
+- Cross-reference skill outputs across plugins
 
-Output all 5 files to .protocol/state/
+---
+
+## Quality Target
+
+Each output file should:
+- Match Engineering plugin quality (100/100)
+- Include real data from skill outputs
+- Have actionable dispatch windows
+- Reference specific skill outputs where applicable
+
+**Output all 5 files to .protocol/state/**
+
+---
+
+**Last Updated:** 2026-04-11
+**Plugin Coverage:** 9/9 (100%)
+**Total Skills:** 67/67 (100%)
+**Documentation Lines:** 21,000+

@@ -1,0 +1,529 @@
+# SEO (Search Engine Optimization) Rules
+
+> Rules for implementing technical SEO, meta tags, and search optimization
+
+## Core Principles
+
+- SEO is built-in, not bolted-on
+- Every page must have unique, descriptive metadata
+- Semantic HTML structure is mandatory
+- Performance impacts rankings (Core Web Vitals)
+- Mobile-first indexing compliance
+
+## Technology Stack
+
+- **Meta Management**: `next-seo` or `next/head`
+- **Sitemap**: `next-sitemap`
+- **Structured Data**: `schema-dts` + JSON-LD
+- **Robots**: `robots.txt` + meta robots tags
+- **Performance**: Lighthouse CI in build process
+
+## File Structure
+
+```
+├── app/
+│   ├── layout.tsx          # Global metadata
+│   ├── robots.ts           # Dynamic robots.txt
+│   ├── sitemap.ts          # Dynamic sitemap
+│   └── [...pages]
+├── lib/seo/
+│   ├── config.ts           # SEO defaults
+│   ├── schema.ts           # Structured data helpers
+│   └── utils.ts            # SEO utilities
+├── public/
+│   └── robots.txt          # Fallback robots
+└── next-sitemap.config.js  # Sitemap generation
+```
+
+## Global SEO Configuration
+
+```typescript
+// app/layout.tsx
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  // Basic
+  title: {
+    default: 'Ultra-Dex - AI Development Orchestration',
+    template: '%s | Ultra-Dex'
+  },
+  description: 'Production-ready AI orchestration for modern development. 46 CLI commands, 18 agents, MCP server integration.',
+  keywords: ['AI development', 'CLI tools', 'agent orchestration', 'MCP server', 'development workflow'],
+  
+  // Robots
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  
+  // Open Graph
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://ultra-dex.dev',
+    siteName: 'Ultra-Dex',
+    title: 'Ultra-Dex - AI Development Orchestration',
+    description: 'Production-ready AI orchestration for modern development',
+    images: [
+      {
+        url: 'https://ultra-dex.dev/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Ultra-Dex Dashboard'
+      }
+    ]
+  },
+  
+  // Twitter
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Ultra-Dex - AI Development Orchestration',
+    description: 'Production-ready AI orchestration',
+    images: ['https://ultra-dex.dev/og-image.png'],
+    creator: '@ultradex'
+  },
+  
+  // Icons
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon-16x16.png',
+    apple: '/apple-touch-icon.png',
+    other: [
+      { rel: 'icon', type: 'image/png', sizes: '32x32', url: '/favicon-32x32.png' }
+    ]
+  },
+  
+  // Manifest
+  manifest: '/site.webmanifest',
+  
+  // Verification
+  verification: {
+    google: 'google-site-verification-code',
+    yandex: 'yandex-verification-code'
+  },
+  
+  // Alternates
+  alternates: {
+    canonical: 'https://ultra-dex.dev',
+    languages: {
+      'en-US': 'https://ultra-dex.dev/en',
+      'es-ES': 'https://ultra-dex.dev/es'
+    }
+  },
+  
+  // Apple
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Ultra-Dex'
+  }
+};
+```
+
+## Dynamic SEO per Page
+
+```typescript
+// app/blog/[slug]/page.tsx
+import { Metadata } from 'next';
+import { getPostBySlug } from '@/lib/blog';
+
+export async function generateMetadata({ params }): Promise<Metadata> {
+  const post = await getPostBySlug(params.slug);
+  
+  if (!post) {
+    return { title: 'Post Not Found' };
+  }
+  
+  return {
+    title: post.title,
+    description: post.excerpt,
+    keywords: post.tags,
+    authors: [{ name: post.author.name }],
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      type: 'article',
+      publishedTime: post.publishedAt,
+      modifiedTime: post.updatedAt,
+      authors: [post.author.name],
+      images: [{
+        url: post.coverImage,
+        width: 1200,
+        height: 630
+      }]
+    },
+    alternates: {
+      canonical: `https://ultra-dex.dev/blog/${post.slug}`
+    }
+  };
+}
+```
+
+## Structured Data (JSON-LD)
+
+### Organization Schema
+
+```typescript
+// lib/seo/schema.ts
+export function OrganizationSchema() {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'Ultra-Dex',
+    url: 'https://ultra-dex.dev',
+    logo: 'https://ultra-dex.dev/logo.png',
+    sameAs: [
+      'https://twitter.com/ultradex',
+      'https://github.com/Srujan0798/Ultra-Dex',
+      'https://www.npmjs.com/package/ultra-dex'
+    ],
+    contactPoint: {
+      '@type': 'ContactPoint',
+      email: 'support@ultra-dex.dev',
+      contactType: 'customer support'
+    }
+  };
+  
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+```
+
+### Software Application Schema
+
+```typescript
+export function SoftwareApplicationSchema() {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'Ultra-Dex CLI',
+    applicationCategory: 'DeveloperApplication',
+    operatingSystem: 'Cross-platform',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD'
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '4.8',
+      ratingCount: '127'
+    },
+    featureList: [
+      '46 CLI commands',
+      '18 AI agents',
+      'MCP server integration',
+      'WebSocket real-time updates',
+      'Voice-to-code'
+    ]
+  };
+  
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+```
+
+### Breadcrumb Schema
+
+```typescript
+export function BreadcrumbSchema({ items }: { items: { name: string; url: string }[] }) {
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.name,
+      item: item.url
+    }))
+  };
+  
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+```
+
+## Sitemap Configuration
+
+```typescript
+// app/sitemap.ts
+import { MetadataRoute } from 'next';
+import { getAllPosts } from '@/lib/blog';
+import { getAllProducts } from '@/lib/products';
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const baseUrl = 'https://ultra-dex.dev';
+  
+  // Static pages
+  const staticPages = [
+    { url: baseUrl, priority: 1.0 },
+    { url: `${baseUrl}/features`, priority: 0.9 },
+    { url: `${baseUrl}/pricing`, priority: 0.9 },
+    { url: `${baseUrl}/docs`, priority: 0.8 },
+    { url: `${baseUrl}/blog`, priority: 0.7 },
+  ];
+  
+  // Dynamic pages
+  const posts = await getAllPosts();
+  const postPages = posts.map(post => ({
+    url: `${baseUrl}/blog/${post.slug}`,
+    lastModified: post.updatedAt,
+    priority: 0.6,
+    changeFrequency: 'weekly'
+  }));
+  
+  const products = await getAllProducts();
+  const productPages = products.map(product => ({
+    url: `${baseUrl}/products/${product.slug}`,
+    lastModified: product.updatedAt,
+    priority: 0.8,
+    changeFrequency: 'daily'
+  }));
+  
+  return [...staticPages, ...postPages, ...productPages];
+}
+```
+
+## Robots Configuration
+
+```typescript
+// app/robots.ts
+import { MetadataRoute } from 'next';
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: [
+      {
+        userAgent: '*',
+        allow: '/',
+        disallow: [
+          '/api/',
+          '/_next/',
+          '/private/',
+          '/admin/',
+          '/*.json$',
+          '/*.xml$'
+        ]
+      },
+      {
+        userAgent: 'GPTBot',
+        disallow: '/' // Block AI crawlers if desired
+      },
+      {
+        userAgent: 'Googlebot-Image',
+        allow: '/' // Allow image indexing
+      }
+    ],
+    sitemap: 'https://ultra-dex.dev/sitemap.xml',
+    host: 'https://ultra-dex.dev'
+  };
+}
+```
+
+## Image Optimization for SEO
+
+```typescript
+// components/OptimizedImage.tsx
+import Image from 'next/image';
+
+interface OptimizedImageProps {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  priority?: boolean;
+}
+
+export function OptimizedImage({ src, alt, width, height, priority = false }: OptimizedImageProps) {
+  return (
+    <Image
+      src={src}
+      alt={alt} // Must be descriptive
+      width={width}
+      height={height}
+      priority={priority} // Above the fold
+      loading={priority ? 'eager' : 'lazy'}
+      quality={85}
+      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+    />
+  );
+}
+```
+
+## Semantic HTML Structure
+
+```typescript
+// app/page.tsx
+export default function HomePage() {
+  return (
+    <main>
+      {/* Hero - H1 only on homepage */}
+      <section aria-labelledby="hero-heading">
+        <h1 id="hero-heading">Ultra-Dex: AI Development Orchestration</h1>
+        <p>Production-ready CLI for modern development workflows</p>
+      </section>
+      
+      {/* Features - H2 for sections */}
+      <section aria-labelledby="features-heading">
+        <h2 id="features-heading">Key Features</h2>
+        <article>
+          <h3>46 CLI Commands</h3>
+          <p>Complete toolkit for every development phase</p>
+        </article>
+        <article>
+          <h3>18 AI Agents</h3>
+          <p>Specialized agents for every role</p>
+        </article>
+      </section>
+      
+      {/* FAQ - FAQPage schema */}
+      <section aria-labelledby="faq-heading">
+        <h2 id="faq-heading">Frequently Asked Questions</h2>
+        <details>
+          <summary>What is Ultra-Dex?</summary>
+          <p>Ultra-Dex is an AI orchestration platform...</p>
+        </details>
+      </section>
+    </main>
+  );
+}
+```
+
+## URL Structure Best Practices
+
+1. **Use lowercase**: `/blog/post-name` not `/Blog/Post-Name`
+2. **Hyphens, not underscores**: `/my-post` not `/my_post`
+3. **No special characters**: Avoid `&`, `?`, `%` in URLs
+4. **Keep it short**: Max 60 characters
+5. **Keywords first**: `/ai-development-tools` not `/tools/ai-development`
+
+## Internal Linking Strategy
+
+```typescript
+// components/InternalLink.tsx
+import Link from 'next/link';
+
+interface InternalLinkProps {
+  href: string;
+  children: React.ReactNode;
+  anchorText?: string; // Override text for SEO
+}
+
+export function InternalLink({ href, children, anchorText }: InternalLinkProps) {
+  return (
+    <Link 
+      href={href}
+      className="text-blue-600 hover:underline"
+      // Anchor text should be descriptive
+      title={anchorText}
+    >
+      {children}
+    </Link>
+  );
+}
+
+// Usage: Descriptive anchor text
+<InternalLink href="/features/cli-commands" anchorText="Explore all 46 CLI commands">
+  Full CLI Documentation
+</InternalLink>
+```
+
+## Performance for SEO
+
+```typescript
+// next.config.js
+module.exports = {
+  // Image optimization
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60,
+  },
+  
+  // Compression
+  compress: true,
+  
+  // Headers for performance
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=3600, must-revalidate'
+          }
+        ]
+      }
+    ];
+  }
+};
+```
+
+## SEO Monitoring
+
+```typescript
+// lib/seo/monitor.ts
+export function trackSEOMetrics() {
+  // Track Core Web Vitals
+  trackCoreWebVitals();
+  
+  // Track search performance (if Search Console API available)
+  if (typeof window !== 'undefined') {
+    // Monitor 404s
+    window.addEventListener('error', (e) => {
+      if (e.message.includes('404')) {
+        track('404 Error', { path: window.location.pathname });
+      }
+    });
+    
+    // Monitor search queries (limited)
+    const referrer = document.referrer;
+    if (referrer.includes('google.com')) {
+      track('Organic Visit', { source: 'google' });
+    }
+  }
+}
+```
+
+## 21-Step Verification
+
+1. Title tags unique per page
+2. Meta descriptions under 160 chars
+3. Open Graph tags present
+4. Twitter Cards configured
+5. Canonical URLs set
+6. Sitemap generated
+7. Robots.txt configured
+8. Structured data implemented
+9. Semantic HTML structure
+10. Images have alt text
+11. URLs are SEO-friendly
+12. Internal links working
+13. No broken links (check with tool)
+14. Mobile responsive
+15. Core Web Vitals passing
+16. HTTPS enabled
+17. Page load < 3 seconds
+18. No index on admin pages
+19. Breadcrumb navigation
+20. 404 page configured
+21. Lighthouse score > 90

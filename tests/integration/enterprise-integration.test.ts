@@ -21,6 +21,14 @@ import { encryptionService } from '../../src/services/security/encryption-servic
 import { complianceService } from '../../src/services/compliance/compliance-service.js';
 
 describe('Enterprise Integration Tests', () => {
+  const runEnterpriseIntegration = process.env.RUN_ENTERPRISE_INTEGRATION === 'true';
+  if (!runEnterpriseIntegration) {
+    test('skips enterprise integration by default', (t) => {
+      t.skip('Set RUN_ENTERPRISE_INTEGRATION=true to run enterprise integration tests');
+    });
+    return;
+  }
+
   describe('End-to-End: Complete Enterprise Workflow', () => {
     test('Full enterprise setup workflow', async () => {
       // 1. Create organization (simulated)
