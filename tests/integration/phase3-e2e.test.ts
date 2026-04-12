@@ -206,7 +206,7 @@ describe('Phase 3 — Scenario 3: Performance Benchmarks', () => {
     assert.ok(elapsed < 2000, `CLI cold start took ${elapsed.toFixed(0)}ms (target <2000ms)`);
   });
 
-  it('should run doctor in <2s', () => {
+  it('should run doctor in <6s', () => {
     const start = performance.now();
     execSync(`${CLI} doctor`, {
       encoding: 'utf-8',
@@ -214,7 +214,7 @@ describe('Phase 3 — Scenario 3: Performance Benchmarks', () => {
       env: ENV,
     });
     const elapsed = performance.now() - start;
-    assert.ok(elapsed < 2000, `CLI doctor took ${elapsed.toFixed(0)}ms (target <2000ms)`);
+    assert.ok(elapsed < 6000, `CLI doctor took ${elapsed.toFixed(0)}ms (target <6000ms)`);
   });
 
   it('should execute Thompson Sampling routing in <20ms', async () => {

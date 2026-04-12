@@ -12,11 +12,12 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 const defaultConfig = {
   server: {
     port: parseInt(process.env.PORT) || 4000,
-    host: process.env.HOST || '0.0.0.0',
-    corsOrigin: process.env.CORS_ORIGIN || '*',
+    host: process.env.HOST || '127.0.0.1', // Default to localhost for security
+    corsOrigin: process.env.CORS_ORIGIN || null, // null = same-origin only, no wildcard
     rateLimit: {
       windowMs: 15 * 60 * 1000, // 15 minutes
       max: 100, // limit each IP to 100 requests per windowMs
+      skipSuccessfulRequests: false,
     },
   },
   database: {
@@ -33,10 +34,26 @@ const defaultConfig = {
     file: process.env.LOG_FILE || null,
   },
   security: {
-    jwtSecret: process.env.JWT_SECRET || 'ultra-dex-default-secret-change-in-production',
+    // SECURITY: JWT_SECRET MUST be set in production
+    jwtSecret:
+      process.env.JWT_SECRET ||
+      (() => {
+        if (process.env.NODE_ENV === 'production') {
+          throw new Error('JWT_SECRET must be set in production environment');
+        }
+        // Generate a random secret for development only
+        return require('crypto').randomBytes(64).toString('hex');
+      })(),
     jwtExpiry: process.env.JWT_EXPIRY || '24h',
     cors: {
-      origin: process.env.CORS_ORIGIN || '*',
+      // SECURITY: CORS_ORIGIN MUST be set in production, no wildcard allowed
+      origin:
+        process.env.CORS_ORIGIN ||
+        (process.env.NODE_ENV === 'production'
+          ? (() => {
+              throw new Error('CORS_ORIGIN must be set in production');
+            })()
+          : ['http://localhost:3000', 'http://127.0.0.1:3000']),
       credentials: true,
     },
   },

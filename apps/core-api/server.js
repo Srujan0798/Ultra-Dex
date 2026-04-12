@@ -162,13 +162,31 @@ class UltraDexAPIServer {
     });
     this.app.use(limiter);
 
-    // CORS
+    // CORS - No wildcard in production
+    const corsOrigin =
+      process.env.CORS_ORIGIN ||
+      (process.env.NODE_ENV === 'production'
+        ? false // Block all CORS in production if not explicitly configured
+        : ['http://localhost:3000', 'http://127.0.0.1:3000']);
+
     this.app.use(
       cors({
-        origin: process.env.CORS_ORIGIN || '*',
+        origin: corsOrigin,
         credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
       })
     );
+
+    // CSRF Protection for state-changing operations
+    if (process.env.NODE_ENV === 'production') {
+      import('csurf').then(({ default: csrf }) => {
+        const csrfProtection = csrf({ cookie: true });
+        this.app.use('/api/v1/agents', csrfProtection);
+        this.app.use('/api/v1/memory', csrfProtection);
+        this.app.use('/api/v1/tasks', csrfProtection);
+      });
+    }
 
     // Compression
     this.app.use(compression());

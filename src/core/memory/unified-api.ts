@@ -118,6 +118,9 @@ class UnifiedMemory extends EventEmitter {
   async initialize() {
     const startTime = Date.now();
     try {
+      if (this.redisAdapter) {
+        await this.redisAdapter.connect();
+      }
       await this._initSQLite();
       await this._initChroma();
       await this._initNeo4j();
@@ -146,6 +149,21 @@ class UnifiedMemory extends EventEmitter {
     const timestamp = /* @__PURE__ */ new Date().toISOString();
     try {
       const results = {};
+      if (this.redisAdapter && ['sql', 'vector', 'hybrid'].includes(strategy)) {
+        results.redis = await this.redisAdapter.set(
+          id,
+          {
+            id,
+            context,
+            strategy,
+            priority,
+            sessionId,
+            tags,
+            timestamp,
+          },
+          ttl || undefined
+        );
+      }
       if (['sql', 'hybrid'].includes(strategy) && context.text) {
         results.sqlite = await this._storeInSQLite(id, context, { priority, sessionId, tags });
       }
@@ -205,6 +223,16 @@ class UnifiedMemory extends EventEmitter {
           timeRange,
           tags,
         });
+      }
+      if (this.redisAdapter && typeof query === 'string' && ['sql', 'vector', 'hybrid'].includes(strategy)) {
+        const redisHits = await this.redisAdapter.search(query, limit);
+        results.sources.redis = redisHits.map((hit) => ({
+          id: hit.id,
+          content: (hit.value as { context?: unknown })?.context ?? hit.value,
+          priority: 'normal',
+          tags: [],
+          source: 'redis',
+        }));
       }
       if (['vector', 'hybrid'].includes(strategy)) {
         const embedding = await this._getEmbedding(query);
@@ -325,6 +353,9 @@ class UnifiedMemory extends EventEmitter {
       if (this.stores.neo4j?.session) {
         await this.stores.neo4j.session.close();
         await this.stores.neo4j.driver.close();
+      }
+      if (this.redisAdapter) {
+        await this.redisAdapter.disconnect();
       }
       this.initialized = false;
       this.emit('closed');

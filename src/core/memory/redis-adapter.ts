@@ -31,16 +31,18 @@ export class RedisMemoryAdapter extends EventEmitter implements IMemoryStorage {
       typeof tenantIdOrOptions === 'string'
         ? tenantIdOrOptions
         : tenantIdOrOptions.tenantId || 'default';
-    const url =
-      (typeof tenantIdOrOptions === 'object' && tenantIdOrOptions.url) ||
-      process.env.REDIS_URL ||
-      'redis://localhost:6379';
+    const explicitUrl =
+      (typeof tenantIdOrOptions === 'object' && tenantIdOrOptions.url) || process.env.REDIS_URL;
+    const normalizedUrl =
+      typeof explicitUrl === 'string' && explicitUrl.trim().length > 0
+        ? explicitUrl
+        : 'redis://localhost:6379';
     const keyPrefix =
       typeof tenantIdOrOptions === 'object' ? tenantIdOrOptions.keyPrefix : undefined;
 
     this.tenantId = tenantId;
-    this.config = { url, keyPrefix };
-    this.useRedis = !!process.env.REDIS_URL && process.env.MEMORY_BACKEND === 'redis';
+    this.config = { url: normalizedUrl, keyPrefix };
+    this.useRedis = true;
   }
 
   /**
@@ -71,6 +73,11 @@ export class RedisMemoryAdapter extends EventEmitter implements IMemoryStorage {
     }
 
     const redisUrl = url || this.config.url;
+    if (!redisUrl) {
+      this.useRedis = false;
+      this.isConnected = true;
+      return;
+    }
     try {
       this.client = new Redis(redisUrl, {
         lazyConnect: true,
@@ -106,8 +113,9 @@ export class RedisMemoryAdapter extends EventEmitter implements IMemoryStorage {
       // Check if index exists via FT.INFO
       await this.client.call('FT.INFO', indexName);
       return; // Index already exists
-    } catch {
-      // Index doesn't exist — create it
+    } catch (error) {
+      // Index doesn't exist — will create below
+      // This is expected behavior, not an error
     }
 
     try {
