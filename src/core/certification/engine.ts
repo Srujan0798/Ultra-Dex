@@ -1,6 +1,5 @@
 import crypto from 'crypto';
-
-export type CertificationLevel = 'foundation' | 'professional' | 'expert';
+import { certificateManager, SignedCertificate, CertificationLevel } from './certificate.js';
 
 export interface AssessmentSession {
   id: string;
@@ -11,32 +10,13 @@ export interface AssessmentSession {
   maxScore: number;
 }
 
-export interface CertificatePayload {
-  id: string;
-  candidateId: string;
-  level: CertificationLevel;
-  score: number;
-  issuedAt: string;
-}
-
-export interface SignedCertificate {
-  payload: CertificatePayload;
-  signature: string;
-}
-
 const LEVEL_THRESHOLD: Record<CertificationLevel, number> = {
-  foundation: 60,
-  professional: 75,
-  expert: 85,
+  practitioner: 70,
+  architect: 75,
+  expert: 80,
 };
 
 export class CertificationEngine {
-  private readonly secret: string;
-
-  constructor(secret = 'ultra-dex-cert-secret') {
-    this.secret = secret;
-  }
-
   startAssessment(level: CertificationLevel, durationMs: number): AssessmentSession {
     const now = Date.now();
     return {
@@ -79,25 +59,10 @@ export class CertificationEngine {
     level: CertificationLevel,
     percentage: number
   ): SignedCertificate {
-    const payload: CertificatePayload = {
-      id: crypto.randomUUID(),
-      candidateId,
-      level,
-      score: Number(percentage.toFixed(2)),
-      issuedAt: new Date().toISOString(),
-    };
-    return {
-      payload,
-      signature: this.sign(payload),
-    };
+    return certificateManager.generateCertificate(candidateId, level, percentage);
   }
 
   verifyCertificate(certificate: SignedCertificate): boolean {
-    return certificate.signature === this.sign(certificate.payload);
-  }
-
-  private sign(payload: CertificatePayload): string {
-    return crypto.createHmac('sha256', this.secret).update(JSON.stringify(payload)).digest('hex');
+    return certificateManager.verifyCertificate(certificate);
   }
 }
-

@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { EventEmitter } from 'eventemitter3';
+import { spawn } from 'child_process';
 
 export class CLIBridge extends EventEmitter {
   private cliPath: string;
@@ -18,7 +19,6 @@ export class CLIBridge extends EventEmitter {
    * Execute a task via Ultra-Dex CLI
    */
   async executeTask(prompt: string, options: TaskOptions = {}): Promise<TaskResult> {
-    const { spawn } = require('child_process');
     const agent = options.agent || this.defaultAgent;
     const provider = options.provider || this.defaultProvider;
 
@@ -83,8 +83,6 @@ export class CLIBridge extends EventEmitter {
    * Get list of available agents
    */
   async getAgents(): Promise<Agent[]> {
-    const { spawn } = require('child_process');
-
     return new Promise((resolve, reject) => {
       const proc = spawn(this.cliPath, ['marketplace', 'list', '--json']);
 
@@ -120,8 +118,6 @@ export class CLIBridge extends EventEmitter {
    * Get recent tasks
    */
   async getRecentTasks(limit: number = 10): Promise<Task[]> {
-    const { spawn } = require('child_process');
-
     return new Promise((resolve) => {
       const proc = spawn(this.cliPath, ['replay', '--list', '--json']);
 

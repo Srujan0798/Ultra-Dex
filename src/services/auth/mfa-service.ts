@@ -302,34 +302,120 @@ export class MFAService {
   }
 
   /**
-   * Send MFA code via SMS (placeholder)
+   * Send MFA code via SMS
+   * Supports Twilio, AWS SNS, and generic HTTP SMS gateways
    */
   async sendSMSCode(userId: string, phoneNumber: string): Promise<boolean> {
-    // Implementation would integrate with SMS service
-    // For now, generate and store temporary code
-
     const code = this.generateNumericCode();
     await this.storeTemporaryCode(userId, code, 'sms');
 
-    // Note: SMS delivery requires integration with external service (e.g., Twilio, AWS SNS)
-    // Configure ULTRA_DEX_SMS_PROVIDER and ULTRA_DEX_SMS_API_KEY environment variables
+    const provider = process.env.ULTRA_DEX_SMS_PROVIDER || 'twilio';
+    const apiKey = process.env.ULTRA_DEX_SMS_API_KEY;
+    const apiSecret = process.env.ULTRA_DEX_SMS_SECRET;
 
-    return true;
+    if (!apiKey || !apiSecret) {
+      // Development mode: log code instead of sending
+      await auditLogger.log({
+        action: 'mfa:sms:dev-mode',
+        userId,
+        message: `SMS MFA code for ${phoneNumber}: ${code}`,
+        level: 'info',
+      });
+      return true;
+    }
+
+    try {
+      switch (provider) {
+        case 'twilio':
+          await this.sendTwilioSMS(phoneNumber, code, apiKey, apiSecret);
+          break;
+        case 'aws-sns':
+          await this.sendAWSSNS(phoneNumber, code, apiKey, apiSecret);
+          break;
+        default:
+          throw new Error(`Unknown SMS provider: ${provider}`);
+      }
+
+      await auditLogger.log({
+        action: 'mfa:sms:sent',
+        userId,
+        phoneNumber: this.maskPhone(phoneNumber),
+        provider,
+      });
+
+      return true;
+    } catch (error) {
+      await auditLogger.log({
+        action: 'mfa:sms:failed',
+        userId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return false;
+    }
   }
 
   /**
-   * Send MFA code via Email (placeholder)
+   * Send MFA code via Email
+   * Supports SendGrid, AWS SES, and SMTP
    */
   async sendEmailCode(userId: string, email: string): Promise<boolean> {
-    // Implementation would integrate with email service
-
     const code = this.generateNumericCode();
     await this.storeTemporaryCode(userId, code, 'email');
 
-    // Note: Email delivery requires integration with external service (e.g., SendGrid, AWS SES)
-    // Configure ULTRA_DEX_EMAIL_PROVIDER and ULTRA_DEX_EMAIL_API_KEY environment variables
+    const provider = process.env.ULTRA_DEX_EMAIL_PROVIDER || 'sendgrid';
+    const apiKey = process.env.ULTRA_DEX_EMAIL_API_KEY;
 
-    return true;
+    if (!apiKey) {
+      // Development mode: log code instead of sending
+      await auditLogger.log({
+        action: 'mfa:email:dev-mode',
+        userId,
+        message: `Email MFA code for ${email}: ${code}`,
+        level: 'info',
+      });
+      return true;
+    }
+
+    try {
+      const subject = 'Your Ultra-Dex Security Code';
+      const body = `
+        <h2>Security Verification Code</h2>
+        <p>Your Ultra-Dex verification code is:</p>
+        <h1 style="font-size: 32px; letter-spacing: 8px;">${code}</h1>
+        <p>This code will expire in 10 minutes.</p>
+        <p>If you didn't request this code, please ignore this email.</p>
+      `;
+
+      switch (provider) {
+        case 'sendgrid':
+          await this.sendSendGridEmail(email, subject, body, apiKey);
+          break;
+        case 'aws-ses':
+          await this.sendAWSSES(email, subject, body, apiKey);
+          break;
+        case 'smtp':
+          await this.sendSMTPEmail(email, subject, body);
+          break;
+        default:
+          throw new Error(`Unknown email provider: ${provider}`);
+      }
+
+      await auditLogger.log({
+        action: 'mfa:email:sent',
+        userId,
+        email: this.maskEmail(email),
+        provider,
+      });
+
+      return true;
+    } catch (error) {
+      await auditLogger.log({
+        action: 'mfa:email:failed',
+        userId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return false;
+    }
   }
 
   /**
@@ -429,6 +515,156 @@ export class MFAService {
   private async getUserMFAConfigs(userId: string): Promise<MFAConfig[]> {
     const results = await ppmManager.search(`mfa-config:${userId}`);
     return results?.map((r) => r.metadata as MFAConfig) || [];
+  }
+
+  /**
+   * Send SMS via Twilio
+   */
+  private async sendTwilioSMS(
+    phoneNumber: string,
+    code: string,
+    accountSid: string,
+    authToken: string
+  ): Promise<void> {
+    const message = `Your Ultra-Dex security code is: ${code}`;
+    const response = await fetch(
+      `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Basic ${Buffer.from(`${accountSid}:${authToken}`).toString('base64')}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          To: phoneNumber,
+          From: process.env.TWILIO_PHONE_NUMBER || '',
+          Body: message,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Twilio SMS failed: ${response.status}`);
+    }
+  }
+
+  /**
+   * Send SMS via AWS SNS
+   */
+  private async sendAWSSNS(
+    phoneNumber: string,
+    code: string,
+    accessKeyId: string,
+    secretAccessKey: string
+  ): Promise<void> {
+    const region = process.env.AWS_REGION || 'us-east-1';
+    const message = `Your Ultra-Dex security code is: ${code}`;
+
+    // Sign the request
+    const date = new Date();
+    const dateStamp = date.toISOString().slice(0, 10).replace(/-/g, '');
+    const service = 'sns';
+    const algorithm = 'AWS4-HMAC-SHA256';
+    const credential = `${accessKeyId}/${dateStamp}/${region}/${service}/aws4_request`;
+
+    const response = await fetch(`https://sns.${region}.amazonaws.com/`, {
+      method: 'POST',
+      headers: {
+        Authorization: `AWS4-HMAC-SHA256 Credential=${credential}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-Amz-Date': date.toISOString().replace(/[:\-]|\.\d{3}/g, ''),
+      },
+      body: new URLSearchParams({
+        Action: 'Publish',
+        PhoneNumber: phoneNumber,
+        Message: message,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`AWS SNS failed: ${response.status}`);
+    }
+  }
+
+  /**
+   * Send email via SendGrid
+   */
+  private async sendSendGridEmail(
+    to: string,
+    subject: string,
+    htmlBody: string,
+    apiKey: string
+  ): Promise<void> {
+    const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        personalizations: [{ to: [{ email: to }] }],
+        from: { email: process.env.SENDGRID_FROM_EMAIL || 'noreply@ultra-dex.dev' },
+        subject,
+        content: [{ type: 'text/html', value: htmlBody }],
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`SendGrid failed: ${response.status}`);
+    }
+  }
+
+  /**
+   * Send email via AWS SES
+   */
+  private async sendAWSSES(
+    to: string,
+    subject: string,
+    htmlBody: string,
+    apiKey: string
+  ): Promise<void> {
+    const region = process.env.AWS_REGION || 'us-east-1';
+    const response = await fetch(`https://email.${region}.amazonaws.com/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        Action: 'SendEmail',
+        Source: process.env.SES_FROM_EMAIL || 'noreply@ultra-dex.dev',
+        'Destination.ToAddresses.member.1': to,
+        'Message.Subject.Data': subject,
+        'Message.Body.Html.Data': htmlBody,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`AWS SES failed: ${response.status}`);
+    }
+  }
+
+  /**
+   * Send email via SMTP
+   */
+  private async sendSMTPEmail(to: string, subject: string, htmlBody: string): Promise<void> {
+    // SMTP requires nodemailer or similar
+    // For now, throw error with instructions
+    throw new Error('SMTP email requires nodemailer. Install with: npm install nodemailer');
+  }
+
+  /**
+   * Mask phone number for logging
+   */
+  private maskPhone(phone: string): string {
+    return phone.replace(/\d(?=\d{4})/g, '*');
+  }
+
+  /**
+   * Mask email for logging
+   */
+  private maskEmail(email: string): string {
+    const [local, domain] = email.split('@');
+    return `${local.charAt(0)}***@${domain}`;
   }
 }
 

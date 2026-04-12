@@ -32,6 +32,8 @@ var ArrowMenu_default = ArrowMenu;
 function _handleError(error) {
   try {
     console.error('[ArrowMenu]', error instanceof Error ? error.message : String(error));
-  } catch { // Error logging failed - fail silently to prevent cascading errors }
+  } catch (_logError) {
+    // Error logging failed - fail silently to prevent cascading errors
+  }
 }
 export { ArrowMenu_default as default };

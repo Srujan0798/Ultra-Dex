@@ -1,5 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import * as child_process from 'child_process';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { EventEmitter } from 'events';
 
 // Manual mock for vscode
@@ -19,8 +18,9 @@ vi.mock('vscode', () => {
   };
 });
 
+const mockSpawn = vi.fn();
 vi.mock('child_process', () => ({
-  spawn: vi.fn(),
+  spawn: (...args: any[]) => mockSpawn(...args),
 }));
 
 import { CLIBridge } from '../cli-bridge';
@@ -33,12 +33,16 @@ describe('CLIBridge', () => {
     bridge = new CLIBridge();
   });
 
+  afterEach(() => {
+    mockSpawn.mockReset();
+  });
+
   it('executeTask() spawns CLI with correct args', async () => {
     const mockProcess = new EventEmitter() as any;
     mockProcess.stdout = new EventEmitter();
     mockProcess.stderr = new EventEmitter();
     
-    vi.mocked(child_process.spawn).mockReturnValue(mockProcess);
+    mockSpawn.mockReturnValue(mockProcess);
 
     const promise = bridge.executeTask('test task');
 
@@ -47,7 +51,7 @@ describe('CLIBridge', () => {
 
     const result = await promise;
 
-    expect(child_process.spawn).toHaveBeenCalledWith(
+    expect(mockSpawn).toHaveBeenCalledWith(
       'ultra-dex',
       ['run', 'planner', '-t', 'test task', '--provider', 'nvidia'],
       expect.any(Object)
@@ -63,7 +67,7 @@ describe('CLIBridge', () => {
     mockProcess.stdout = new EventEmitter();
     mockProcess.stderr = new EventEmitter();
     
-    vi.mocked(child_process.spawn).mockReturnValue(mockProcess);
+    mockSpawn.mockReturnValue(mockProcess);
 
     const chunks: string[] = [];
     bridge.streamOutput((chunk) => {
@@ -86,7 +90,7 @@ describe('CLIBridge', () => {
     mockProcess.stdout = new EventEmitter();
     mockProcess.stderr = new EventEmitter();
     
-    vi.mocked(child_process.spawn).mockReturnValue(mockProcess);
+    mockSpawn.mockReturnValue(mockProcess);
 
     const promise = bridge.getAgents();
 
@@ -96,7 +100,7 @@ describe('CLIBridge', () => {
 
     const agents = await promise;
 
-    expect(child_process.spawn).toHaveBeenCalledWith('ultra-dex', ['marketplace', 'list', '--json']);
+    expect(mockSpawn).toHaveBeenCalledWith('ultra-dex', ['marketplace', 'list', '--json']);
     expect(agents).toEqual(mockAgents);
   });
 
@@ -105,7 +109,7 @@ describe('CLIBridge', () => {
     mockProcess.stdout = new EventEmitter();
     mockProcess.stderr = new EventEmitter();
     
-    vi.mocked(child_process.spawn).mockReturnValue(mockProcess);
+    mockSpawn.mockReturnValue(mockProcess);
 
     const promise = bridge.executeTask('test task');
 
@@ -120,7 +124,7 @@ describe('CLIBridge', () => {
     mockProcess.stdout = new EventEmitter();
     mockProcess.stderr = new EventEmitter();
     
-    vi.mocked(child_process.spawn).mockReturnValue(mockProcess);
+    mockSpawn.mockReturnValue(mockProcess);
 
     const promise = bridge.executeTask('test task');
 
@@ -128,5 +132,77 @@ describe('CLIBridge', () => {
     mockProcess.emit('close', 1);
 
     await expect(promise).rejects.toThrow('CLI error message');
+  });
+
+  it('getAgents() falls back to default if parsing fails', async () => {
+    const mockProcess = new EventEmitter() as any;
+    mockProcess.stdout = new EventEmitter();
+    mockProcess.stderr = new EventEmitter();
+    
+    mockSpawn.mockReturnValue(mockProcess);
+
+    const promise = bridge.getAgents();
+
+    mockProcess.stdout.emit('data', Buffer.from('invalid json'));
+    mockProcess.emit('close', 0);
+
+    const agents = await promise;
+
+    expect(agents.length).toBe(5);
+    expect(agents[0].id).toBe('planner');
+  });
+
+  it('getAgents() rejects on non-zero exit code', async () => {
+    const mockProcess = new EventEmitter() as any;
+    mockProcess.stdout = new EventEmitter();
+    mockProcess.stderr = new EventEmitter();
+    
+    mockSpawn.mockReturnValue(mockProcess);
+
+    const promise = bridge.getAgents();
+    mockProcess.emit('close', 1);
+
+    await expect(promise).rejects.toThrow('Failed to list agents');
+  });
+
+  it('getRecentTasks() parses CLI output', async () => {
+    const mockProcess = new EventEmitter() as any;
+    mockProcess.stdout = new EventEmitter();
+    mockProcess.stderr = new EventEmitter();
+    
+    mockSpawn.mockReturnValue(mockProcess);
+
+    const promise = bridge.getRecentTasks(1);
+
+    const mockTasks = [{ runId: 't1', agent: 'planner' }, { runId: 't2', agent: 'coder' }];
+    mockProcess.stdout.emit('data', Buffer.from(JSON.stringify(mockTasks)));
+    mockProcess.emit('close', 0);
+
+    const tasks = await promise;
+
+    expect(tasks).toEqual([mockTasks[0]]);
+  });
+
+  it('getRecentTasks() returns empty array if parsing fails', async () => {
+    const mockProcess = new EventEmitter() as any;
+    mockProcess.stdout = new EventEmitter();
+    mockProcess.stderr = new EventEmitter();
+    
+    mockSpawn.mockReturnValue(mockProcess);
+
+    const promise = bridge.getRecentTasks();
+
+    mockProcess.stdout.emit('data', Buffer.from('invalid'));
+    mockProcess.emit('close', 0);
+
+    const tasks = await promise;
+
+    expect(tasks).toEqual([]);
+  });
+
+  it('dispose() removes all listeners', () => {
+    const spy = vi.spyOn(bridge, 'removeAllListeners');
+    bridge.dispose();
+    expect(spy).toHaveBeenCalled();
   });
 });

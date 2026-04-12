@@ -46,6 +46,8 @@ var CollapsibleDiff_default = CollapsibleDiff;
 function _handleError(error) {
   try {
     console.error('[CollapsibleDiff]', error instanceof Error ? error.message : String(error));
-  } catch { // Error logging failed - fail silently to prevent cascading errors }
+  } catch (_logError) {
+    // Error logging failed - fail silently to prevent cascading errors
+  }
 }
 export { CollapsibleDiff_default as default };

@@ -131,9 +131,26 @@ export class SkillExecutor extends EventEmitter {
     input: SkillInput,
     options: SkillExecutionOptions
   ): Promise<void> {
-    // Skip governance checks for demo/testing
-    // TODO: Implement proper governance system
-    return;
+    if (!this.config.governance) {
+      return;
+    }
+
+    const request = {
+      action: 'execute:skill',
+      resource: skill.id,
+      agent: skill.agent.id,
+      input: options.logInput ? input : undefined,
+      metadata: {
+        skillType: skill.config.responseFormat,
+        requiresMemory: skill.memory.storeOutput,
+        routingStrategy: skill.routing.providerPriority,
+      },
+    };
+
+    const allowed = await this.config.governance.gate(request);
+    if (!allowed) {
+      throw new Error(`Governance denied: Skill ${skill.id} execution blocked by policy`);
+    }
   }
 
   /**
@@ -221,9 +238,30 @@ export class SkillExecutor extends EventEmitter {
     aiResult: any,
     options: SkillExecutionOptions
   ): Promise<void> {
-    // Skip audit for demo/testing
-    // TODO: Implement proper governance audit system
-    return;
+    if (!this.config.governance) {
+      return;
+    }
+
+    const auditEntry = {
+      action: 'skill:execute',
+      resource: skill.id,
+      agent: skill.agent.id,
+      timestamp: Date.now(),
+      duration: aiResult.duration || 0,
+      provider: aiResult.provider,
+      model: aiResult.model,
+      tokens: aiResult.tokens,
+      cost: aiResult.cost,
+      success: !aiResult.error,
+      error: aiResult.error?.message,
+      metadata: {
+        routingStrategy: skill.routing.providerPriority[0],
+        taskType: skill.routing.taskType,
+        complexity: skill.routing.complexity,
+      },
+    };
+
+    await this.config.governance.audit(auditEntry);
   }
 
   /**
