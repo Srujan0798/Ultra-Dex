@@ -13,31 +13,43 @@
 **Template:**
 
 ```
-Built AI routing tool - is this useful for local LLM workflows?
+Question: How do you manage multiple local LLMs?
 
-I've been building Ultra-Dex for 2 months - an orchestration layer that routes between AI providers and optimizes costs.
+I run several local models (Llama 3, Mistral, etc.) and I'm curious how others handle this.
 
-What it does:
-- Multi-provider routing (OpenAI, Anthropic, Gemini, local models)
-- Cost optimization (picks cheapest adequate model)
-- Health monitoring with automatic failover
-- Runs locally with Redis caching
+Current setup:
+- Multiple models downloaded
+- Switching between them manually (stop one, start another)
+- No easy way to compare which is faster/better for a task
+- If one crashes, everything stops
 
-For those running local LLMs: Do you actually need multi-provider routing? Or is everyone just using single providers?
+My question: Is there a better way to manage this? Do you:
+- Just run one model at a time?
+- Use scripts to switch?
+- Something else I'm missing?
 
-If you use multiple providers - what's your biggest pain point? Switching APIs? Cost tracking? Model selection?
+Also: Do you ever wish you could automatically route different tasks to different models based on speed/VRAM? Or is that overkill for local setups?
 
-Before I spend more time on this, I need to know if local LLM users care about this at all.
+Not selling anything - genuinely trying to understand local LLM workflows before I spend time building tools.
 
-Don't be nice. Be honest.
+Thanks!
 ```
 
 **Why this works:**
 
-- References local LLMs (subreddit focus)
-- Asks about workflows (not product)
-- Technical but not salesy
-- "Don't be nice" fits community culture
+✅ **Rule 1 - Search before asking:** Asks specific workflow question, not FAQ
+✅ **Rule 2 - On-topic:** ONLY about local LLM management
+✅ **Rule 3 - Low effort:** Detailed context, genuine question
+✅ **Rule 4 - Self-promotion:** "Not selling anything" + asks advice
+✅ **Rule 5 - Content policy:** Clean, no violations
+
+**Key compliance:**
+
+- No product names mentioned
+- No links
+- Asks for advice/experience
+- "Trying to understand workflows" = research
+- Community culture: humble, seeking help
 
 ---
 

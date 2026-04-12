@@ -20,21 +20,34 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Check for AI action
+        id: check-action
+        run: |
+          if [ -d ".github/actions/ultra-dex" ] && [ -f ".github/actions/ultra-dex/action.yml" ]; then
+            echo "action_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "action_exists=false" >> $GITHUB_OUTPUT
+            echo "Ultra-Dex custom action not found - skipping AI review"
+          fi
+
       - name: Ultra-Dex AI Code Review
-        if: ${{ env.OPENAI_API_KEY != '' }}
+        if: ${{ env.OPENAI_API_KEY != '' && steps.check-action.outputs.action_exists == 'true' }}
         uses: ./.github/actions/ultra-dex
         with:
-          # task: 'Review the code changes in this pull request and suggest improvements focusing on security, performance, and maintainability'
-          # provider: 'openai'
-          # model: 'gpt-4o'
           agents: 'code-reviewer,security-audit'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
         env:
           OPENAI_API_KEY: ${{ env.OPENAI_API_KEY }}
+        continue-on-error: true
 
-      - name: Skip AI Code Review (missing secret)
-        if: ${{ env.OPENAI_API_KEY == '' }}
+      - name: Skip AI Code Review
+        if: ${{ env.OPENAI_API_KEY == '' || steps.check-action.outputs.action_exists != 'true' }}
         run: |
-          echo "Skipping AI code review: OPENAI_API_KEY is not configured."
+          if [ "${{ env.OPENAI_API_KEY }}" = "" ]; then
+            echo "Skipping AI code review: OPENAI_API_KEY is not configured."
+          else
+            echo "Skipping AI code review: Custom action not available."
+          fi
 
       # - name: Ultra-Dex Implementation
       #   uses: ./.github/actions/ultra-dex

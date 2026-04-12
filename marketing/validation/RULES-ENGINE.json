@@ -1,0 +1,136 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-04-12",
+  "description": "Automated rules checking and post management system",
+  "subreddits": {
+    "LocalLLaMA": {
+      "rules": [
+        {
+          "id": "R1",
+          "name": "Search before asking",
+          "check": "post.body must contain 'I've searched' or 'searched'",
+          "weight": "critical",
+          "autoFix": true,
+          "fixText": "Add 'I've searched the subreddit but couldn't find a clear answer.' at start"
+        },
+        {
+          "id": "R2",
+          "name": "Off-topic",
+          "check": "post.content must NOT contain ['OpenAI', 'Anthropic', 'Gemini', 'API']",
+          "allowed": ["Llama", "Mistral", "local models", "GPU", "VRAM", "on-device"],
+          "weight": "critical",
+          "autoFix": true,
+          "fixAction": "Remove API providers, replace with local model terms"
+        },
+        {
+          "id": "R3",
+          "name": "Low effort",
+          "check": "post.body.length > 200 chars AND has specific context",
+          "weight": "high",
+          "autoFix": false,
+          "rejectionReason": "Post too short or generic"
+        },
+        {
+          "id": "R4",
+          "name": "Self-promotion",
+          "check": "post must NOT contain ['before I build', 'would you pay', 'my product', 'ultra-dex']",
+          "weight": "critical",
+          "autoFix": true,
+          "fixText": "Replace with 'Not selling anything - genuinely trying to understand'"
+        },
+        {
+          "id": "R5",
+          "name": "Content policy",
+          "check": "post has no banned words",
+          "bannedWords": [],
+          "weight": "critical",
+          "autoFix": false
+        }
+      ],
+      "postingSchedule": {
+        "bestDays": ["Tuesday", "Wednesday", "Thursday"],
+        "bestTime": "08:00 EST",
+        "avoid": ["Weekends", "Monday mornings", "Friday evenings"]
+      },
+      "accountRequirements": {
+        "minAge": 7,
+        "minKarma": 10,
+        "checkBeforePost": true
+      }
+    },
+    "SaaS": {
+      "rules": [
+        {
+          "id": "S1",
+          "name": "No spam",
+          "check": "post not purely promotional",
+          "weight": "critical",
+          "autoFix": true
+        },
+        {
+          "id": "S2",
+          "name": "On-topic",
+          "check": "post about SaaS/business validation",
+          "weight": "critical",
+          "autoFix": false
+        }
+      ],
+      "postingSchedule": {
+        "bestDays": ["Monday", "Wednesday"],
+        "bestTime": "09:00 EST"
+      }
+    },
+    "Entrepreneur": {
+      "rules": [
+        {
+          "id": "E1",
+          "name": "Actionable advice",
+          "check": "post asks specific question",
+          "weight": "high",
+          "autoFix": false
+        },
+        {
+          "id": "E2",
+          "name": "Not motivation",
+          "check": "post asks for advice not encouragement",
+          "weight": "medium",
+          "autoFix": true
+        }
+      ],
+      "postingSchedule": {
+        "bestDays": ["Tuesday"],
+        "bestTime": "12:00 EST"
+      }
+    }
+  },
+  "automation": {
+    "prePostCheck": {
+      "enabled": true,
+      "steps": [
+        "Check subreddit rules",
+        "Verify account age/karma",
+        "Check existing similar posts",
+        "Validate content against rules",
+        "Auto-fix violations",
+        "Generate compliance report"
+      ]
+    },
+    "postManagement": {
+      "archiveOld": true,
+      "versionControl": true,
+      "autoUpdate": true,
+      "backupBeforeEdit": true
+    },
+    "responseTracking": {
+      "enabled": true,
+      "checkInterval": 30,
+      "trackMetrics": ["upvotes", "comments", "sentiment", "DMs"]
+    }
+  },
+  "commands": {
+    "checkPost": "validatePost(subreddit, content) -> returns {compliant: bool, violations: [], fixed: string}",
+    "autoFix": "fixViolations(content, rules) -> returns fixedContent",
+    "archiveOld": "archivePost(filename, reason) -> moves to archive/",
+    "updatePost": "updateExisting(filename, newContent) -> overwrites, backups old"
+  }
+}
