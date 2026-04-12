@@ -152,6 +152,11 @@
     "dashboard:preview": "cd apps/dashboard && npm run preview",
     "cli:dev": "node --watch apps/cli/bin/ultra-dex.js",
     "demo": "MOCK_AI=true node examples/nexus-demo.js",
+    "auto-ceo": "npx tsx src/automation/index.ts start",
+    "auto-ceo:status": "npx tsx src/automation/index.ts status",
+    "auto-ceo:once": "npx tsx src/automation/index.ts run-once",
+    "auto-ceo:decision": "npx tsx src/automation/decision-engine.ts",
+    "test:automation": "NODE_ENV=test node --import=tsx --test tests/automation/*.test.ts",
     "incidents:verify": "node gitFail/incidents/verify-incident-archive.js",
     "start:prod": "./scripts/start-production.sh",
     "start:server": "node --import=tsx src/core/server/production-server.ts"

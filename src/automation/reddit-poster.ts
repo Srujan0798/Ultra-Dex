@@ -484,32 +484,31 @@ export class RedditPoster extends RedditAuth {
 
     // POST
     try {
-      type SubmissionResult = { id: string; permalink: string };
-      const result = await this.request<SubmissionResult>('submitPost', async (client) => {
+      const permalink = await this.request('submitPost', async (client) => {
         const submission = await client.submitSelfpost({
           subredditName: subreddit,
           title,
           text: body,
         });
-        return { id: submission.id, permalink: submission.permalink };
+        return submission.permalink;
       });
 
-      const permalink = `https://reddit.com${result.permalink}`;
+      const fullPermalink = `https://reddit.com${permalink}`;
       this.postHistory.set(subreddit, new Date());
 
       // Update draft status
       if (contentId) {
-        this.markAsPosted(contentId, result.id, permalink);
+        this.markAsPosted(contentId, 'posted', fullPermalink);
       }
 
       this.log('post', contentId || 'direct', {
         subreddit,
         title: title.slice(0, 50),
         postedAt: new Date().toISOString(),
-        permalink,
+        permalink: fullPermalink,
       });
 
-      return permalink;
+      return fullPermalink;
     } catch (error) {
       this.log('error', contentId || 'direct', {
         error: error instanceof Error ? error.message : String(error),
@@ -543,20 +542,19 @@ export class RedditPoster extends RedditAuth {
     }
 
     try {
-      type ReplyResult = { id: string; permalink: string };
-      const result = await this.request<ReplyResult>('replyToComment', async (client) => {
+      const replyPermalink = await this.request('replyToComment', async (client) => {
         const comment = await client.getComment(commentId);
         const reply = await comment.reply(body);
-        return { id: reply.id, permalink: reply.permalink };
+        return reply.permalink;
       });
 
       this.log('reply', contentId || 'direct', {
         commentId,
-        replyId: result.id,
+        replyId: 'replied',
         repliedAt: new Date().toISOString(),
       });
 
-      return result.permalink;
+      return replyPermalink;
     } catch (error) {
       this.log('error', contentId || 'direct', {
         error: error instanceof Error ? error.message : String(error),
@@ -660,21 +658,14 @@ export class RedditPoster extends RedditAuth {
 
   private async getAccountInfo(): Promise<{ ageDays: number; karma: number }> {
     try {
-      const me = await this.request<{
-        created_utc: number;
-        comment_karma: number;
-        link_karma: number;
-      }>('getMe', async (client) => {
-        const user = await client.getMe();
-        return {
-          created_utc: (user as unknown as { created_utc: number }).created_utc,
-          comment_karma: (user as unknown as { comment_karma: number }).comment_karma,
-          link_karma: (user as unknown as { link_karma: number }).link_karma,
-        };
-      });
-      const created = new Date(me.created_utc * 1000);
+      const user = await this.request('getMe', async (client) => client.getMe());
+      const created_utc = (user as unknown as { created_utc: number }).created_utc;
+      const comment_karma = (user as unknown as { comment_karma: number }).comment_karma;
+      const link_karma = (user as unknown as { link_karma: number }).link_karma;
+
+      const created = new Date(created_utc * 1000);
       const ageDays = (Date.now() - created.getTime()) / (1000 * 60 * 60 * 24);
-      const karma = me.comment_karma + me.link_karma;
+      const karma = comment_karma + link_karma;
       return { ageDays, karma };
     } catch {
       return { ageDays: 999, karma: 9999 }; // Assume safe if can't check

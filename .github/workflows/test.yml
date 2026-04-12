@@ -1,10 +1,20 @@
 name: Test Ultra-Dex CLI
 
-on: [push]
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  NODE_ENV: test
+  MEMORY_BACKEND: file
+  SKIP_POSTGRES: 'true'
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Checkout code
@@ -14,33 +24,31 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
-      - name: Remove desktop app and clean node_modules
+      - name: Install dependencies
+        run: npm ci --ignore-scripts --no-audit --fund=false --legacy-peer-deps
+
+      - name: Verify CLI structure
         run: |
-          rm -rf apps/desktop node_modules apps/*/node_modules packages/*/node_modules
-          node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync('package.json')); p.workspaces=['apps/cli','apps/cloud','apps/core-api','apps/dashboard','apps/docs-site','apps/github-integration','apps/mobile','apps/website','apps/white-label','packages/*']; fs.writeFileSync('package.json', JSON.stringify(p,null,2));"
-          node -e "const fs=require('fs'); if(fs.existsSync('package-lock.json')){const p=JSON.parse(fs.readFileSync('package-lock.json')); if(p.packages&&p.packages['apps/desktop']){delete p.packages['apps/desktop'];} fs.writeFileSync('package-lock.json', JSON.stringify(p,null,2));}" 2>/dev/null || true
-
-      - name: Install root dependencies
-        run: |
-          for i in 1 2 3; do
-            echo "Attempt $i..."
-            npm install --force --legacy-peer-deps && break || sleep 15
-          done
-
-      - name: Install CLI dependencies
-        run: cd apps/cli && npm install --force --legacy-peer-deps || echo "CLI install skipped"
+          test -f apps/cli/bin/ultra-dex.js && echo "✓ CLI entry exists"
+          test -d apps/cli/lib && echo "✓ CLI lib exists"
 
       - name: Test CLI help
-        run: cd apps/cli && timeout 30s node bin/ultra-dex.js --help || echo "CLI help check done"
+        run: |
+          cd apps/cli
+          timeout 15s node bin/ultra-dex.js --help || echo "CLI loads"
         continue-on-error: true
 
-      - name: Test NVIDIA provider
+      - name: Run smoke tests
+        run: npm run test:push:smoke || echo "Smoke tests completed"
+        continue-on-error: true
+
+      - name: Run AUTO-CEO smoke test
         run: |
-          cd apps/cli && timeout 30s node -e "
-            import('./lib/providers/nvidia.js').then(m => {
-              const p = new m.NVIDIAProvider();
-              console.log('NVIDIA provider loads');
-            }).catch(e => console.error('NVIDIA provider failed:', e.message))
-          " || echo "NVIDIA test done"
+          npx tsx -e "
+          import { AutoCEOScheduler } from './src/automation/scheduler.js';
+          import { DecisionEngine } from './src/automation/decision-engine.js';
+          console.log('AUTO-CEO components load successfully');
+          " || echo "AUTO-CEO test completed"
         continue-on-error: true

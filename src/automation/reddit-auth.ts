@@ -53,7 +53,6 @@ export class RedditAuth {
     client.config({
       continueAfterRatelimitError: true,
       requestDelay: 0,
-      retries: 0,
     });
 
     await client.getMe();
@@ -67,16 +66,19 @@ export class RedditAuth {
     return { ...this.currentRateLimit };
   }
 
-  async request<T>(label: string, operation: (client: Snoowrap) => Promise<T>): Promise<T> {
-    const task = async (): Promise<T> => {
+  async request(
+    label: string,
+    operation: (client: Snoowrap) => Promise<unknown>
+  ): Promise<unknown> {
+    const task = async (): Promise<unknown> => {
       await this.enforceLocalRateLimit();
       return this.executeWithRetry(label, operation);
     };
 
     const resultPromise = this.requestQueue.then(task, task);
     this.requestQueue = resultPromise.then(
-      () => undefined,
-      () => undefined
+      () => Promise.resolve(),
+      () => Promise.resolve()
     );
 
     return resultPromise;
@@ -212,11 +214,7 @@ export class RedditAuth {
       response?: { statusCode?: number; status?: number };
     };
     return (
-      value.statusCode ??
-      value.status ??
-      value.response?.statusCode ??
-      value.response?.status ??
-      0
+      value.statusCode ?? value.status ?? value.response?.statusCode ?? value.response?.status ?? 0
     );
   }
 
@@ -232,4 +230,3 @@ async function delay(ms: number): Promise<void> {
   }
   await new Promise((resolve) => setTimeout(resolve, ms));
 }
-

@@ -1,5 +1,5 @@
 {
-  "continue_threshold": 0.7,
+  "continue_threshold": 0.65,
   "stop_threshold": 0.3,
   "min_signals_required": 5,
   "min_diversity": 3,

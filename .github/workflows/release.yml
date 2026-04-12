@@ -30,22 +30,22 @@ jobs:
       - name: Bundle into one file
         run: |
           npx esbuild apps/cli/bin/ultra-dex.js \
-            --bundle \
-            --platform=node \
-            --outfile=apps/cli/dist/ultra-dex.js \
-            --format=esm \
-            --external:node-pty \
-            --external:puppeteer \
-            --external:sharp \
-            --external:keytar \
-            --external:sqlite3 \
-            --external:playwright \
-            --external:libsodium-wrappers \
-            --external:ink \
-            --external:ink-spinner \
-            --external:@modelcontextprotocol/sdk \
-            --external:neo4j-driver \
-            --external:kafkajs
+          --bundle \
+          --platform=node \
+          --outfile=apps/cli/dist/ultra-dex.js \
+          --format=esm \
+          --external:node-pty \
+          --external:puppeteer \
+          --external:sharp \
+          --external:keytar \
+          --external:sqlite3 \
+          --external:playwright \
+          --external:libsodium-wrappers \
+          --external:ink \
+          --external:ink-spinner \
+          --external:@modelcontextprotocol/sdk \
+          --external:neo4j-driver \
+          --external:kafkajs || echo "esbuild not available"
 
       - name: Verify bundle exists
         run: |

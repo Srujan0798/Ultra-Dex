@@ -47,6 +47,7 @@ interface ImprovementState {
     stopThreshold: number;
   };
   lastAdjustmentAt?: string;
+  lastWeeklyReportAt?: string;
 }
 
 interface DecisionThresholdConfig {
@@ -268,7 +269,14 @@ export class SelfImprovement {
     };
   }
 
-  generateWeeklyReport(now = new Date()): string {
+  generateWeeklyReport(now = new Date(), force = false): string {
+    const lastReport = this.state.lastWeeklyReportAt
+      ? new Date(this.state.lastWeeklyReportAt).getTime()
+      : undefined;
+    if (!force && lastReport && now.getTime() - lastReport < ONE_WEEK_MS) {
+      return `Weekly report skipped: last report was generated at ${this.state.lastWeeklyReportAt}.`;
+    }
+
     const weekStart = now.getTime() - ONE_WEEK_MS;
     const previousWeekStart = weekStart - ONE_WEEK_MS;
 
@@ -304,6 +312,8 @@ export class SelfImprovement {
         : '- None this week'
     }\n\n### Recommendations for next week\n${recommendations.map((r) => `- ${r}`).join('\n')}\n`;
 
+    this.state.lastWeeklyReportAt = now.toISOString();
+    this.saveState();
     this.appendLogSection(report);
     return report;
   }
@@ -528,4 +538,3 @@ export class SelfImprovement {
     return value.replaceAll('|', '\\|');
   }
 }
-

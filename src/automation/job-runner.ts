@@ -11,6 +11,7 @@ import { RedditScraper } from './reddit-scraper';
 import { SentimentAnalyzer } from './sentiment-analyzer';
 import { DecisionEngine } from './decision-engine';
 import { OutreachManager } from './outreach-manager';
+import { SelfImprovement } from './self-improvement';
 
 export interface JobResult {
   success: boolean;
@@ -58,10 +59,8 @@ const HANDLERS: Record<string, JobHandler> = {
   scrapeReddit: async (ctx) => {
     try {
       ctx.log('info', 'Starting Reddit scrape');
-      const scraper = new RedditScraper();
-      // Run a dry scrape to get subreddit data
-      const results = await scraper.dryRunExample();
-      return { success: true, data: { posts: results }, dataVolume: results?.length || 0 };
+      const result = RedditScraper.dryRunExample();
+      return { success: true, data: { post: result }, dataVolume: result.comments.length };
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
       ctx.log('error', `scrapeReddit failed: ${msg}`);
@@ -185,8 +184,27 @@ const HANDLERS: Record<string, JobHandler> = {
   runSelfImprovement: async (ctx) => {
     try {
       ctx.log('info', 'Running self-improvement analysis');
-      // Analyze post log for patterns
-      return { success: true, data: { improvements: [] }, dataVolume: 1 };
+      const selfImprovement = new SelfImprovement();
+      const adjustment = selfImprovement.adjustThresholds();
+      const report = selfImprovement.generateWeeklyReport();
+      const failureArchive = selfImprovement.archiveFailures();
+      const patterns = selfImprovement.identifyPatterns();
+
+      return {
+        success: true,
+        data: {
+          adjustment,
+          report,
+          failureArchive,
+          accuracy: {
+            last7Days: selfImprovement.calculateAccuracy(7),
+            last30Days: selfImprovement.calculateAccuracy(30),
+            last90Days: selfImprovement.calculateAccuracy(90),
+          },
+          patterns,
+        },
+        dataVolume: 1,
+      };
     } catch (error) {
       const msg = error instanceof Error ? error.message : String(error);
       ctx.log('error', `runSelfImprovement failed: ${msg}`);
