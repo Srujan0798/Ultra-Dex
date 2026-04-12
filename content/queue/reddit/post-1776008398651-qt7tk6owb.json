@@ -1,0 +1,24 @@
+{
+  "id": "post-1776008398651-qt7tk6owb",
+  "type": "post",
+  "content": {
+    "subreddit": "LocalLLaMA",
+    "title": "Built AI tool for 2 months - is this useful or should I kill it?",
+    "body": "I'm a  building  - .\n\nWhat I've built in :\n10\n\nBefore I spend more time, I need brutal honesty:\n- Do you actually need this?\n- Or is this solving a problem that doesn't exist?\n\nIf you WOULD use this - what's the ONE feature you'd pay $50/month for?\nIf you WOULDN'T use this - tell me why.\n\nDon't hold back. I'd rather know now than waste more time.\n\nEdit: Reading every response.",
+    "titleVariantA": "Built AI tool for 2 months - is this useful or should I kill it?",
+    "titleVariantB": "Built AI product for 60 days - is this useful or should I kill it?"
+  },
+  "target": "r/LocalLLaMA",
+  "metadata": {
+    "version": "6.0.0",
+    "features": 10,
+    "testCount": 0,
+    "createdAt": "2026-04-12T15:39:58.651Z",
+    "personalizedFrom": "validation"
+  },
+  "status": "pending_approval",
+  "abTest": {
+    "variant": "manual",
+    "selectedTitle": "Built AI tool for 2 months - is this useful or should I kill it?"
+  }
+}

@@ -1,6 +1,6 @@
 {
   "name": "@ultra-dex/sdk",
-  "version": "3.1.0",
+  "version": "6.0.0",
   "description": "Official Ultra-Dex SDK for JavaScript and TypeScript",
   "type": "module",
   "main": "./dist/index.js",

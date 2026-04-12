@@ -4,33 +4,44 @@
 
 ---
 
-## Post 1: r/LocalLLaMA
+## Post 1: r/LocalLLaMA (REVISED - "My Approach" Format)
 
-**Title:** Question: How do you manage multiple local LLMs?
+**Title:** My approach to managing multiple local LLMs - what's yours?
 
 **Body:**
 
 ```
-I've searched the subreddit but couldn't find a clear consensus on this.
+I've been running local LLMs for a few months and wanted to share my setup + get feedback on how others handle this.
 
-I run several local models (Llama 3, Mistral, etc.) and manually switch between them by stopping one and starting another.
+**My current approach:**
 
-Currently:
-- Multiple models downloaded
-- Manual switching (stop/start)
-- No easy way to compare which is faster for specific tasks
-- If one crashes, I restart manually
+I have multiple models (Llama 3 8B/70B, Mistral, Qwen) downloaded. When I need to switch:
+- Stop current model
+- Start another one
+- Hope I have enough VRAM
+- If it crashes, manually restart
 
-My questions:
-1. How do you manage multiple local models? Scripts? Just one at a time?
-2. Has anyone built automation for automatic model selection based on task/VRAM?
-3. Is this even a problem worth solving, or is manual switching fine?
+I track which model works best for which task by keeping notes, but it's not systematic.
 
-Not selling anything - genuinely trying to understand local LLM workflows.
+**What I'm considering:**
 
-Thanks!
+I started building a lightweight manager that would:
+- Keep track of available VRAM
+- Route simple tasks to smaller models
+- Route complex tasks to larger models
+- Restart crashed models automatically
 
-Edit: Thanks for all the responses!
+But before I spend more time on this: **Is this overkill?**
+
+Most people I've talked to just run one model at a time and it's fine. Curious if anyone else has felt this friction.
+
+What's your workflow? Do you:
+- Just run one model and stick with it?
+- Use scripts to automate switching?
+- Not worry about optimization?
+- Something else entirely?
+
+Not promoting anything - just trying to understand if I'm solving a real problem or inventing one.
 ```
 
 **Link:** https://www.reddit.com/r/LocalLLaMA/submit

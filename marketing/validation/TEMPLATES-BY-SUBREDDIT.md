@@ -10,46 +10,61 @@
 
 ### r/LocalLLaMA (Post First)
 
-**Template:**
+**Title:** My approach to managing multiple local LLMs - what's yours?
+
+**Body:**
 
 ```
-Question: How do you manage multiple local LLMs?
+I've been running local LLMs for a few months and wanted to share my setup + get feedback on how others handle this.
 
-I run several local models (Llama 3, Mistral, etc.) and I'm curious how others handle this.
+**My current approach:**
 
-Current setup:
-- Multiple models downloaded
-- Switching between them manually (stop one, start another)
-- No easy way to compare which is faster/better for a task
-- If one crashes, everything stops
+I have multiple models (Llama 3 8B/70B, Mistral, Qwen) downloaded. When I need to switch:
+- Stop current model
+- Start another one
+- Hope I have enough VRAM
+- If it crashes, manually restart
 
-My question: Is there a better way to manage this? Do you:
-- Just run one model at a time?
-- Use scripts to switch?
-- Something else I'm missing?
+I track which model works best for which task by keeping notes, but it's not systematic.
 
-Also: Do you ever wish you could automatically route different tasks to different models based on speed/VRAM? Or is that overkill for local setups?
+**What I'm considering:**
 
-Not selling anything - genuinely trying to understand local LLM workflows before I spend time building tools.
+I started building a lightweight manager that would:
+- Keep track of available VRAM
+- Route simple tasks to smaller models
+- Route complex tasks to larger models
+- Restart crashed models automatically
 
-Thanks!
+But before I spend more time on this: **Is this overkill?**
+
+Most people I've talked to just run one model at a time and it's fine. Curious if anyone else has felt this friction.
+
+What's your workflow? Do you:
+- Just run one model and stick with it?
+- Use scripts to automate switching?
+- Not worry about optimization?
+- Something else entirely?
+
+Not promoting anything - just trying to understand if I'm solving a real problem or inventing one.
 ```
 
 **Why this works:**
 
-✅ **Rule 1 - Search before asking:** Asks specific workflow question, not FAQ
+✅ **"My approach" format** - r/LocalLLaMA prefers experience-sharing over questions
+✅ **Rule 1 - Search before asking:** Shares personal experience first
 ✅ **Rule 2 - On-topic:** ONLY about local LLM management
-✅ **Rule 3 - Low effort:** Detailed context, genuine question
-✅ **Rule 4 - Self-promotion:** "Not selling anything" + asks advice
+✅ **Rule 3 - Low effort:** Detailed context, genuine request for feedback
+✅ **Rule 4 - Self-promotion:** "Not promoting anything" + asks honest question
 ✅ **Rule 5 - Content policy:** Clean, no violations
 
 **Key compliance:**
 
+- Shares YOUR experience first (not asking for theirs directly)
 - No product names mentioned
 - No links
-- Asks for advice/experience
-- "Trying to understand workflows" = research
-- Community culture: humble, seeking help
+- Asks "am I solving a real problem or inventing one" = honest self-doubt
+- Community culture: humble, seeking feedback, not help
+- Frames as "my approach" not "question"
 
 ---
 

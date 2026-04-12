@@ -2,7 +2,7 @@
 
 Route any AI task to any provider with persistent memory.
 
-[![Version](https://img.shields.io/badge/version-3.1.0-blue.svg)](package.json) [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE) [![Node >=18](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg)](package.json) [![CI](https://github.com/Srujan0798/Ultra-Dex/actions/workflows/ci.yml/badge.svg)](https://github.com/Srujan0798/Ultra-Dex/actions/workflows/ci.yml)
+[![Version](https://img.shields.io/badge/version-6.0.0-blue.svg)](package.json) [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE) [![Node >=18](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg)](package.json) [![CI](https://github.com/Srujan0798/Ultra-Dex/actions/workflows/ci.yml/badge.svg)](https://github.com/Srujan0798/Ultra-Dex/actions/workflows/ci.yml)
 
 ## What Is Ultra-Dex?
 

@@ -197,7 +197,9 @@ export default function AutoCEOPage() {
   const [postModalOpen, setPostModalOpen] = useState(false);
   const [dmModalOpen, setDmModalOpen] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'responses' | 'users' | 'features' | 'scheduler'>('overview');
+  const [activeTab, setActiveTab] = useState<
+    'overview' | 'responses' | 'users' | 'features' | 'scheduler'
+  >('overview');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -359,7 +361,8 @@ export default function AutoCEOPage() {
         <CardContent>
           <div className="flex items-center gap-3 flex-wrap">
             <span className="text-sm text-muted-foreground">
-              Current: <strong className="text-foreground capitalize">{state?.decision ?? 'unknown'}</strong>
+              Current:{' '}
+              <strong className="text-foreground capitalize">{state?.decision ?? 'unknown'}</strong>
             </span>
             <Button
               variant={state?.decision === 'continue' ? 'default' : 'outline'}
@@ -383,7 +386,9 @@ export default function AutoCEOPage() {
               <Square className="w-3 h-3 mr-1" /> Stop
             </Button>
             <div className="ml-auto flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${state?.killSwitch ? 'bg-red-500' : 'bg-green-500 animate-pulse'}`} />
+              <div
+                className={`w-2 h-2 rounded-full ${state?.killSwitch ? 'bg-red-500' : 'bg-green-500 animate-pulse'}`}
+              />
               <span className="text-xs text-muted-foreground">
                 {state?.killSwitch ? 'Automation STOPPED' : 'Automation RUNNING'}
               </span>
@@ -400,7 +405,9 @@ export default function AutoCEOPage() {
               <FileText className="w-4 h-4" />
               Pending Post Approval
             </CardTitle>
-            <CardDescription>{draftPost?.subreddit} — scheduled {formatFutureTime(draftPost?.scheduledAt)}</CardDescription>
+            <CardDescription>
+              {draftPost?.subreddit} — scheduled {formatFutureTime(draftPost?.scheduledAt || null)}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm font-medium mb-1">{draftPost?.title}</p>
@@ -417,7 +424,9 @@ export default function AutoCEOPage() {
               <MessageSquare className="w-4 h-4" />
               Pending DM Approval
             </CardTitle>
-            <CardDescription>To: {draftDM?.username} — scheduled {formatFutureTime(draftDM?.scheduledAt)}</CardDescription>
+            <CardDescription>
+              To: {draftDM?.username} — scheduled {formatFutureTime(draftDM?.scheduledAt || null)}
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{draftDM?.message}</p>
@@ -464,9 +473,27 @@ export default function AutoCEOPage() {
                       <YAxis stroke="#9ca3af" />
                       <Tooltip />
                       <Legend />
-                      <Line type="monotone" dataKey="positive" stroke="#22c55e" strokeWidth={2} dot />
-                      <Line type="monotone" dataKey="neutral" stroke="#f59e0b" strokeWidth={2} dot />
-                      <Line type="monotone" dataKey="negative" stroke="#ef4444" strokeWidth={2} dot />
+                      <Line
+                        type="monotone"
+                        dataKey="positive"
+                        stroke="#22c55e"
+                        strokeWidth={2}
+                        dot
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="neutral"
+                        stroke="#f59e0b"
+                        strokeWidth={2}
+                        dot
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="negative"
+                        stroke="#ef4444"
+                        strokeWidth={2}
+                        dot
+                      />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -529,18 +556,30 @@ export default function AutoCEOPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Recent Responses</CardTitle>
-            <CardDescription>Latest Reddit responses with sentiment and signal analysis</CardDescription>
+            <CardDescription>
+              Latest Reddit responses with sentiment and signal analysis
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Author</th>
-                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Subreddit</th>
-                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Comment</th>
-                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Sentiment</th>
-                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Signals</th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">
+                      Author
+                    </th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">
+                      Subreddit
+                    </th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">
+                      Comment
+                    </th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">
+                      Sentiment
+                    </th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">
+                      Signals
+                    </th>
                     <th className="text-left py-2 px-3 font-medium text-muted-foreground">Time</th>
                   </tr>
                 </thead>
@@ -556,8 +595,8 @@ export default function AutoCEOPage() {
                             r.sentiment === 'positive'
                               ? 'bg-green-500/10 text-green-500'
                               : r.sentiment === 'negative'
-                              ? 'bg-red-500/10 text-red-500'
-                              : 'bg-yellow-500/10 text-yellow-500'
+                                ? 'bg-red-500/10 text-red-500'
+                                : 'bg-yellow-500/10 text-yellow-500'
                           }`}
                         >
                           {r.sentiment === 'positive' ? (
@@ -603,10 +642,18 @@ export default function AutoCEOPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Username</th>
-                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Signal Type</th>
-                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Comment</th>
-                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Status</th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">
+                      Username
+                    </th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">
+                      Signal Type
+                    </th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">
+                      Comment
+                    </th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">
+                      Status
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -619,10 +666,10 @@ export default function AutoCEOPage() {
                             u.signalType === 'buying'
                               ? 'bg-green-500/10 text-green-500'
                               : u.signalType === 'interest'
-                              ? 'bg-blue-500/10 text-blue-500'
-                              : u.signalType === 'feature-request'
-                              ? 'bg-yellow-500/10 text-yellow-500'
-                              : 'bg-red-500/10 text-red-500'
+                                ? 'bg-blue-500/10 text-blue-500'
+                                : u.signalType === 'feature-request'
+                                  ? 'bg-yellow-500/10 text-yellow-500'
+                                  : 'bg-red-500/10 text-red-500'
                           }`}
                         >
                           {u.signalType}
@@ -665,9 +712,13 @@ export default function AutoCEOPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Feature</th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">
+                      Feature
+                    </th>
                     <th className="text-left py-2 px-3 font-medium text-muted-foreground">Count</th>
-                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Example Comment</th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">
+                      Example Comment
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -703,10 +754,18 @@ export default function AutoCEOPage() {
                 <thead>
                   <tr className="border-b">
                     <th className="text-left py-2 px-3 font-medium text-muted-foreground">Job</th>
-                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Last Run</th>
-                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Next Run</th>
-                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Status</th>
-                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">Errors</th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">
+                      Last Run
+                    </th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">
+                      Next Run
+                    </th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">
+                      Status
+                    </th>
+                    <th className="text-left py-2 px-3 font-medium text-muted-foreground">
+                      Errors
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -725,8 +784,8 @@ export default function AutoCEOPage() {
                             job.status === 'success'
                               ? 'bg-green-500/10 text-green-500'
                               : job.status === 'error'
-                              ? 'bg-red-500/10 text-red-500'
-                              : 'bg-yellow-500/10 text-yellow-500'
+                                ? 'bg-red-500/10 text-red-500'
+                                : 'bg-yellow-500/10 text-yellow-500'
                           }`}
                         >
                           {job.status === 'success' ? (
@@ -756,7 +815,11 @@ export default function AutoCEOPage() {
       )}
 
       {/* Post Approval Modal */}
-      <Modal open={postModalOpen} onClose={() => setPostModalOpen(false)} title="Approve Reddit Post">
+      <Modal
+        open={postModalOpen}
+        onClose={() => setPostModalOpen(false)}
+        title="Approve Reddit Post"
+      >
         <div className="space-y-4">
           <div>
             <p className="text-sm font-medium">Title</p>
@@ -768,7 +831,9 @@ export default function AutoCEOPage() {
           </div>
           <div>
             <p className="text-sm font-medium">Content</p>
-            <p className="text-sm text-muted-foreground whitespace-pre-line">{draftPost?.content}</p>
+            <p className="text-sm text-muted-foreground whitespace-pre-line">
+              {draftPost?.content}
+            </p>
           </div>
           <div className="flex gap-2 justify-end">
             <Button variant="outline" onClick={() => setPostModalOpen(false)}>
@@ -782,7 +847,11 @@ export default function AutoCEOPage() {
       </Modal>
 
       {/* DM Approval Modal */}
-      <Modal open={dmModalOpen} onClose={() => setDmModalOpen(false)} title="Approve Direct Message">
+      <Modal
+        open={dmModalOpen}
+        onClose={() => setDmModalOpen(false)}
+        title="Approve Direct Message"
+      >
         <div className="space-y-4">
           <div>
             <p className="text-sm font-medium">To</p>

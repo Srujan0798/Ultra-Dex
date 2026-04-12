@@ -1,0 +1,14 @@
+{
+  "id": "linkedin-1776008331171-zb6fvuz8y",
+  "platform": "linkedin",
+  "content": "A technical challenge we solved building Ultra-Dex:\n\n**The Problem:**\nRerouting requests mid-stream when a provider fails\n\n**What we tried:**\n- Initially tried request queuing (too slow)\n- Then tried pre-warming all providers (too expensive)\n\n**The solution:**\nCircuit breaker pattern + health checks every 30s + fallback chain\n\n**Impact:**\n99.9% uptime with 50ms failover\n\n**Key lesson:**\nHealth checks matter more than retries\n\n#AI #Startups",
+  "tags": [
+    "technical",
+    "engineering"
+  ],
+  "status": "draft",
+  "sourceData": {
+    "type": "technical",
+    "reference": "{\"problem\":\"Rerouting requests mid-stream when a provider fails\",\"attempts\":\"- Initially tried request queuing (too slow)\\n- Then tried pre-warming all providers (too expensive)\",\"solution\":\"Circuit breaker pattern + health checks every 30s + fallback chain\",\"impact\":\"99.9% uptime with 50ms failover\",\"lesson\":\"Health checks matter more than retries\"}"
+  }
+}

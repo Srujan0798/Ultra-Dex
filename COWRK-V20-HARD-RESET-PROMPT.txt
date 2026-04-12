@@ -1,0 +1,540 @@
+# COWRK EXECUTION PLANNER PROMPT: Ultra-Dex v2.0 Hard Reset
+
+## PROTOCOL COMPLIANCE HEADER
+
+COWRK MUST:
+- Read .protocol/orchestration.md for dispatch format
+- Use skills from docs/skills/[plugin]/ for all planning
+- Reference specific skill outputs in each window
+- Create .protocol/state/v20-*-dispatches.md in proper format
+- Follow Phase 0 → Phase 12 strict sequence (NO deviation)
+- Each phase is a separate dispatch file (v20-phase0-dispatches.md, etc.)
+
+---
+
+## OBJECTIVE
+
+Execute Ultra-Dex v2.0 Hard Reset per NOTION/v2.0.MD:
+1. Phase 0: Clean foundation (folder structure, delete scattered logic)
+2. Phase 1-12: Build DexGraph core components in strict order
+3. Goal: Minimum Viable Orchestrator by Phase 12 completion
+
+**Golden Rule:** Ultra-Dex NEVER executes. It SUPERVISES execution.
+
+---
+
+## PHASE 0 — HARD RESET (Day 0–2)
+
+### Engineering Plugin Skills Required
+- /engineering:architecture → ADR patterns for new structure
+- /engineering:system-design → DexGraph component design
+- /engineering:tech-debt → Cleanup strategy
+
+### Output: v20-phase0-dispatches.md
+
+CREATE folder structure:
+```
+ultra-dex/
+├── core/
+│   ├── planner/
+│   ├── scheduler/
+│   └── task_graph/
+├── runtime/
+│   ├── worker/
+│   ├── executor/
+│   └── execution_engine/
+├── memory/
+│   ├── episodic/
+│   ├── semantic/
+│   └── state/
+├── dexgraph/
+│   ├── parser.ts
+│   ├── graph.ts
+│   ├── stateMachine.ts
+│   ├── scheduler.ts
+│   ├── dispatcher.ts
+│   └── verifier.ts
+├── adapters/
+│   └── executionAdapter.ts
+├── governance/
+│   └── rules.ts
+├── tools/
+│   └── registry/
+├── observability/
+├── cli/
+└── sdk/
+```
+
+WINDOW ASSIGNMENTS:
+- W1: Create folder structure (all directories)
+- W2: Delete scattered experimental logic (list what to remove)
+- W3: Consolidate Ultra-Dex + MUNI + An'tB into single platform
+- W4: Validate clean slate (no old logic remains)
+
+DO NOT BUILD YET:
+- agents
+- dashboards
+- integrations
+- Only infrastructure
+
+---
+
+## PHASE 1 — DexGraph Core: Workflow DSL Parser (Week 1)
+
+### File: dexgraph/parser.ts
+
+### Product Management Plugin Skills Required
+- /product-management:prd → Parser requirements spec
+
+### Engineering Plugin Skills Required
+- /engineering:api-design → Parser interface design
+
+### Output: v20-phase1-dispatches.md
+
+INPUT: YAML workflow definition
+OUTPUT: GraphNode[]
+
+IMPLEMENT:
+- YAML loader
+- schema validation
+- dependency extraction
+
+WINDOW ASSIGNMENTS:
+- W1: YAML loader + schema types
+- W2: Dependency extraction logic
+- W3: Validation rules
+- W4: Parser tests + integration
+
+RESULT: Workflow converts → internal graph
+
+---
+
+## PHASE 2 — Graph Builder (Week 1)
+
+### File: dexgraph/graph.ts
+
+### Engineering Plugin Skills Required
+- /engineering:system-design → DAG structure
+- /engineering:adr-001 → Graph patterns
+
+### Output: v20-phase2-dispatches.md
+
+IMPLEMENT:
+- node registry
+- edge creation
+- cycle detection
+- topological sort
+
+FUNCTIONS:
+- buildGraph()
+- validateGraph()
+- getExecutableNodes()
+
+WINDOW ASSIGNMENTS:
+- W1: Node registry + types
+- W2: Edge creation + graph structure
+- W3: Cycle detection algorithm
+- W4: Topological sort + validation
+
+RESULT: Valid DAG guaranteed
+
+---
+
+## PHASE 3 — Task State Machine (Week 1–2)
+
+### File: dexgraph/stateMachine.ts
+
+### Operations Plugin Skills Required
+- /operations:runbook → State transition rules
+
+### Output: v20-phase3-dispatches.md
+
+STATES:
+```
+CREATED → READY → RUNNING → VERIFYING → SUCCESS
+↘ FAILED → RETRY → RUNNING
+↘ BLOCKED (Governance)
+↘ ROLLBACK
+```
+
+REQUIRED API:
+- transition(node, state)
+- getState(node)
+
+WINDOW ASSIGNMENTS:
+- W1: State enum + types
+- W2: Transition logic
+- W3: Failure/retry handling
+- W4: Rollback mechanism
+
+RESULT: Deterministic execution control
+
+---
+
+## PHASE 4 — Scheduler Engine (Week 2)
+
+### File: dexgraph/scheduler.ts
+
+### Engineering Plugin Skills Required
+- /engineering:architecture → Scheduler design
+- /engineering:deploy-checklist → Validation criteria
+
+### Output: v20-phase4-dispatches.md
+
+LOGIC:
+```
+while workflow_not_complete:
+  find READY nodes
+  dispatch execution
+  wait result
+  update state
+```
+
+SUPPORT:
+- dependency unlock
+- retry counter
+- failure halt
+
+WINDOW ASSIGNMENTS:
+- W1: Scheduler loop structure
+- W2: Dependency unlock logic
+- W3: Retry + failure handling
+- W4: Full scheduler integration tests
+
+RESULT: Graph actually runs
+
+---
+
+## PHASE 5 — Execution Adapter Interface (Week 3)
+
+### File: adapters/executionAdapter.ts
+
+### Engineering Plugin Skills Required
+- /engineering:api-design → Adapter interface
+
+### Output: v20-phase5-dispatches.md
+
+interface ExecutionAdapter {
+  run(task, context): Promise<Result>
+}
+
+RETURN:
+{
+  status,
+  output,
+  logs,
+  cost,
+  confidence
+}
+
+CREATE MOCK ADAPTER FIRST.
+DO NOT integrate Composio yet.
+
+WINDOW ASSIGNMENTS:
+- W1: Adapter interface definition
+- W2: Mock adapter implementation
+- W3: Result contract types
+- W4: Adapter tests
+
+RESULT: Orchestrator separated from execution
+
+---
+
+## PHASE 6 — Dispatcher (Week 3)
+
+### File: dexgraph/dispatcher.ts
+
+### Output: v20-phase6-dispatches.md
+
+RESPONSIBILITIES:
+- send node → adapter
+- receive result
+- pass to verifier
+
+Scheduler NEVER talks to execution directly.
+
+WINDOW ASSIGNMENTS:
+- W1: Dispatcher queue
+- W2: Node → adapter bridge
+- W3: Result handling
+- W4: Verifier integration
+
+RESULT: Clean control plane boundary
+
+---
+
+## PHASE 7 — Memory Store (Week 4)
+
+### File: memory/workflowStore.ts
+
+### Data Plugin Skills Required
+- /data:schema-migration → Memory schema
+- /data:pipeline-design → Store patterns
+
+### Output: v20-phase7-dispatches.md
+
+STORE:
+- workflowId
+- nodeState
+- outputs
+- history
+- timestamps
+
+USE INITIALLY: JSON + filesystem
+LATER: Redis
+
+APIs:
+- saveNode()
+- loadWorkflow()
+- updateContext()
+
+WINDOW ASSIGNMENTS:
+- W1: Memory types + schema
+- W2: JSON filesystem store
+- W3: Context persistence
+- W4: Crash recovery test
+
+RESULT: Crash recovery possible
+
+---
+
+## PHASE 8 — Context Injection (Week 4)
+
+### Output: v20-phase8-dispatches.md
+
+When node runs:
+1. collect outputs of dependencies
+2. inject automatically into current node context
+
+WINDOW ASSIGNMENTS:
+- W1: Dependency output collector
+- W2: Context injection logic
+- W3: Propagation engine
+- W4: No re-prompting verification
+
+RESULT: No re-prompting required
+
+---
+
+## PHASE 9 — Governance Engine (Week 5)
+
+### File: governance/rules.ts
+
+### Enterprise Search Plugin Skills Required
+- /enterprise-search:governance → Policy patterns
+
+### Output: v20-phase9-dispatches.md
+
+EXAMPLE RULE:
+```
+if (!testsPassed) block("deploy");
+if (cost > budget) pause("workflow");
+if (confidence < 0.7) require("reviewer");
+```
+
+SUPPORT:
+- block node
+- pause workflow
+- require review
+
+Scheduler checks governance before RUNNING.
+
+WINDOW ASSIGNMENTS:
+- W1: Rule engine structure
+- W2: Block/pause logic
+- W3: Policy evaluation
+- W4: Governance integration
+
+RESULT: Controlled progression
+
+---
+
+## PHASE 10 — Verification System (Week 6)
+
+### File: dexgraph/verifier.ts
+
+### Output: v20-phase10-dispatches.md
+
+CHECKS:
+- execution success
+- output exists
+- optional validation
+
+verify(nodeResult)
+→ PASS: mark SUCCESS
+→ FAIL: mark FAILED → retry
+
+WINDOW ASSIGNMENTS:
+- W1: Verifier types
+- W2: Success checks
+- W3: Output validation
+- W4: Full verification flow
+
+RESULT: Reliable workflow completion
+
+---
+
+## PHASE 11 — CLI Control Plane (Week 7)
+
+### Output: v20-phase11-dispatches.md
+
+COMMANDS (locked):
+```
+ultradex init
+ultradex run workflow.dex
+ultradex status
+ultradex resume
+ultradex inspect
+```
+
+CLI talks ONLY to orchestrator. Nothing else.
+
+WINDOW ASSIGNMENTS:
+- W1: CLI structure + init
+- W2: run command
+- W3: status/resume commands
+- W4: inspect command
+
+RESULT: Usable system
+
+---
+
+## PHASE 12 — Event System (Week 8)
+
+### File: core/events.ts
+
+### Operations Plugin Skills Required
+- /operations:observability → Event patterns
+
+### Output: v20-phase12-dispatches.md
+
+EMIT:
+- workflow.started
+- task.started
+- task.completed
+- task.failed
+- workflow.completed
+
+USE: Node EventEmitter first
+
+WINDOW ASSIGNMENTS:
+- W1: Event types
+- W2: EventEmitter setup
+- W3: Event emitters in workflow
+- W4: Observability foundation
+
+RESULT: Observability foundation
+
+---
+
+## MINIMUM VIABLE ORCHESTRATOR MILESTONE
+
+At Phase 12 completion, system can:
+✅ read goal workflow (DSL)
+✅ build DexGraph
+✅ schedule tasks
+✅ delegate execution (via adapter)
+✅ persist state
+✅ verify output
+✅ recover failures
+✅ emit events
+✅ expose CLI
+
+**THIS = Ultra-Dex v2.0. Stop here and release.**
+
+---
+
+## DISPATCH FILE FORMAT
+
+Each v20-phaseX-dispatches.md MUST follow:
+
+```
+## Phase X: [Name]
+
+### OBJECTIVE
+Clear statement
+
+### SKILLS REFERENCED
+- /plugin:skill-name
+
+### WINDOWS
+
+#### W1: [Task Name]
+- Task ID: V20-W1-[PHASE]-[TASK]
+- Objective: Clear statement
+- Target Files: specific paths
+- Why this lane: Reasoning
+- Power Tier: HIGH/BALANCED/LOW
+- Command: Bash format
+- Expected Output: Success criteria
+- Validation: How to verify
+- Fallbacks #1, #2, #3
+- Cost Class: SUBSCRIPTION/FREE
+- Dependencies: None | W[X]
+
+#### W2, W3, W4...
+
+### SEQUENCE
+W1 → W2 → W3 → W4 (or parallel where safe)
+
+### VALIDATION CRITERIA
+- [ ] Check 1
+- [ ] Check 2
+
+### COST TRACKING
+| Window | Tier | Est. Tokens |
+|--------|------|-------------|
+| W1 | HIGH | X |
+
+### RISKS
+| Risk | Mitigation |
+|------|------------|
+| Risk | Mitigation |
+```
+
+---
+
+## CONSTRAINTS (NON-NEGOTIABLE)
+
+1. Ultra-Dex NEVER executes — only supervises
+2. Execution adapter interface MUST be clean
+3. Mock adapter before real integrations
+4. No UI/dashboard until Phase 12 complete
+5. No agent personalities — stateless workers only
+6. Four agents only: planner, coder, tester, reviewer
+7. Graph is truth — DexGraph is source of reality
+8. Follow strict Phase 0→12 order — NO deviation
+
+---
+
+## OUTPUT FILES TO CREATE
+
+1. `.protocol/state/v20-phase0-dispatches.md` — Hard Reset
+2. `.protocol/state/v20-phase1-dispatches.md` — Parser
+3. `.protocol/state/v20-phase2-dispatches.md` — Graph Builder
+4. `.protocol/state/v20-phase3-dispatches.md` — State Machine
+5. `.protocol/state/v20-phase4-dispatches.md` — Scheduler
+6. `.protocol/state/v20-phase5-dispatches.md` — Adapter
+7. `.protocol/state/v20-phase6-dispatches.md` — Dispatcher
+8. `.protocol/state/v20-phase7-dispatches.md` — Memory
+9. `.protocol/state/v20-phase8-dispatches.md` — Context
+10. `.protocol/state/v20-phase9-dispatches.md` — Governance
+11. `.protocol/state/v20-phase10-dispatches.md` — Verification
+12. `.protocol/state/v20-phase11-dispatches.md` — CLI
+13. `.protocol/state/v20-phase12-dispatches.md` — Events
+14. `.protocol/state/v20-master-timeline.md` — Full timeline
+
+---
+
+## REMEMBER
+
+- Create ONE dispatch file per phase
+- Reference specific skills in each window
+- Define clear validation criteria
+- Include fallback strategies
+- Track costs per window
+- No deviation from Phase 0→12 order
+
+---
+
+END OF PROMPT
