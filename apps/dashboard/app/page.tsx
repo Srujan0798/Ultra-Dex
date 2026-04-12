@@ -12,17 +12,17 @@ import {
   Sparkles,
   Workflow,
 } from 'lucide-react';
-import { Bebas_Neue, IBM_Plex_Mono } from 'next/font/google';
+import { Space_Grotesk, JetBrains_Mono } from 'next/font/google';
 import styles from './dashboard-home.module.css';
 
-const displayFont = Bebas_Neue({
-  weight: '400',
+const displayFont = Space_Grotesk({
+  weight: ['400', '500', '600', '700'],
   subsets: ['latin'],
   variable: '--font-dashboard-display',
 });
 
-const bodyFont = IBM_Plex_Mono({
-  weight: ['400', '500', '600'],
+const bodyFont = JetBrains_Mono({
+  weight: ['400', '500', '600', '700'],
   subsets: ['latin'],
   variable: '--font-dashboard-body',
 });
@@ -120,8 +120,8 @@ export default function DashboardPage() {
           <p className={styles.heroEyebrow}>NODE MAIN · LIVE ORCHESTRATION GRID</p>
           <h1 className={styles.heroTitle}>MISSION CONTROL</h1>
           <p className={styles.heroLead}>
-            Ultra-Dex is routing multi-agent execution across providers in real time with deterministic
-            governance and memory-backed recovery paths.
+            Ultra-Dex is routing multi-agent execution across providers in real time with
+            deterministic governance and memory-backed recovery paths.
           </p>
         </div>
 
@@ -160,11 +160,7 @@ export default function DashboardPage() {
             </div>
             <p className={styles.statValue}>{stat.value}</p>
             <p className={styles.statBottom}>
-              <span
-                className={
-                  stat.trendDirection === 'up' ? styles.trendUp : styles.trendDown
-                }
-              >
+              <span className={stat.trendDirection === 'up' ? styles.trendUp : styles.trendDown}>
                 {stat.trendDirection === 'up' ? (
                   <ArrowUpRight size={14} />
                 ) : (
@@ -202,7 +198,11 @@ export default function DashboardPage() {
             </span>
           </div>
 
-          <div className={styles.bars} role="img" aria-label="Ingress and completion volume by hour">
+          <div
+            className={styles.bars}
+            role="img"
+            aria-label="Ingress and completion volume by hour"
+          >
             {THROUGHPUT.map((point, index) => (
               <div className={styles.barGroup} key={point.hour}>
                 <div className={styles.barTrack}>
