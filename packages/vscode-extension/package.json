@@ -150,7 +150,7 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "esbuild src/extension.ts --bundle --outfile=out/extension.js --external:vscode --platform=node --format=cjs",
-    "build:webview": "esbuild src/webview/index.ts --bundle --outfile=out/webview.js --platform=browser --format=iife",
+    "build:webview": "esbuild src/webview/index.tsx --bundle --outfile=out/webview.js --platform=browser --format=iife --loader:.tsx=tsx --minify",
     "watch": "esbuild src/extension.ts --bundle --outfile=out/extension.js --external:vscode --platform=node --format=cjs --watch",
     "test": "vitest run",
     "lint": "eslint src --ext ts",
