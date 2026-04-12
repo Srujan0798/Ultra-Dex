@@ -15,8 +15,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Clear platform-specific lock
+        run: rm -f package-lock.json apps/*/package-lock.json packages/*/package-lock.json || true
+
       - name: Install root dependencies
-        run: npm ci --ignore-scripts --no-audit --fund=false --legacy-peer-deps
+        run: npm install --ignore-scripts --no-audit --fund=false --legacy-peer-deps
+
       - name: Rebuild native modules (sqlite3)
         run: npm rebuild sqlite3 || true
       - name: Verify fast-path CLI commands

@@ -57,8 +57,11 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
+      - name: Clear platform-specific lock
+        run: rm -f package-lock.json apps/*/package-lock.json packages/*/package-lock.json || true
+
       - name: Install dependencies
-        run: npm ci --ignore-scripts --no-audit --fund=false --legacy-peer-deps
+        run: npm install --ignore-scripts --no-audit --fund=false --legacy-peer-deps
 
       - name: Build project
         run: npm run build || echo "Build skipped (optional components)"
@@ -80,8 +83,11 @@ jobs:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Clear platform-specific lock
+        run: rm -f package-lock.json apps/*/package-lock.json packages/*/package-lock.json || true
+
       - name: Install dependencies
-        run: npm ci --ignore-scripts --no-audit --fund=false --legacy-peer-deps
+        run: npm install --ignore-scripts --no-audit --fund=false --legacy-peer-deps
 
       - name: Build CLI bundle
         run: npx esbuild apps/cli/bin/ultra-dex.js --bundle --platform=node --outfile=dist/ultra-dex.js --external:chokidar --external:fsevents || echo "esbuild not available"
