@@ -53,13 +53,23 @@ const SEED_TASKS: TaskRecord[] = [
 ];
 
 function asCsv(rows: TaskRecord[]): string {
-  const headers = ['id', 'status', 'agent', 'provider', 'cost', 'durationMs', 'startedAt', 'prompt', 'output'];
+  const headers: Array<keyof TaskRecord> = [
+    'id',
+    'status',
+    'agent',
+    'provider',
+    'cost',
+    'durationMs',
+    'startedAt',
+    'prompt',
+    'output',
+  ];
   const lines = [
     headers.join(','),
     ...rows.map((row) =>
       headers
         .map((key) => {
-          const value = String((row as Record<string, unknown>)[key] ?? '');
+          const value = String(row[key] ?? '');
           return `"${value.replaceAll('"', '""')}"`;
         })
         .join(',')
@@ -234,4 +244,3 @@ export default function TasksPage() {
     </main>
   );
 }
-

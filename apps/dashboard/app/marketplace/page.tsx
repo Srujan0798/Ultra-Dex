@@ -1,6 +1,6 @@
 import React from 'react';
 import { ShoppingBag, Search, Filter, Download, Star, Shield, Code, TestTube, Globe } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 

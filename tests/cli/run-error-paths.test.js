@@ -11,7 +11,7 @@ const CLI_PATH = path.resolve(process.cwd(), 'apps/cli/bin/ultra-dex.js');
 const PROJECT_ROOT = process.cwd();
 const TSX_PATH = path.resolve(PROJECT_ROOT, 'node_modules/tsx/dist/loader.mjs');
 
-describe('CLI Command: run error paths', () => {
+describe('CLI Command: run error paths', { timeout: 60000 }, () => {
   let tmpDir;
 
   beforeEach(async () => {

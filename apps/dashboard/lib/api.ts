@@ -1,6 +1,24 @@
 // apps/dashboard/lib/api.ts
 import { ultraDex } from '../../../src/core/index.js';
 
+type UltraDexStatus = {
+  infrastructure?: {
+    circuitBreakers?: Record<string, unknown>;
+  };
+};
+
+type UltraDexMemory = {
+  search: (query: string) => Promise<unknown[]>;
+};
+
+type UltraDexLike = {
+  getStatus: () => Promise<UltraDexStatus>;
+  process: (prompt: string, options?: Record<string, unknown>) => Promise<unknown>;
+  memory: UltraDexMemory;
+};
+
+const ultraDexClient = ultraDex as UltraDexLike;
+
 export interface TaskFilters {
   status?: string;
   agent?: string;
@@ -20,7 +38,7 @@ export class UltraDexClient {
   }
 
   async getStatus() {
-    return ultraDex.getStatus();
+    return ultraDexClient.getStatus();
   }
 
   async getTasks(filters: TaskFilters = {}) {
@@ -62,19 +80,19 @@ export class UltraDexClient {
 
   async getProviderStats() {
     const status = await this.getStatus();
-    return status.infrastructure.circuitBreakers || {};
+    return status.infrastructure?.circuitBreakers || {};
   }
 
   async getMemoryEntries(query: string) {
     // This uses the core's PPM manager for semantic search
-    const results = await ultraDex.memory.search(query);
+    const results = await ultraDexClient.memory.search(query);
     return results;
   }
 
-  async *runTask(prompt: string, options: any = {}) {
+  async *runTask(prompt: string, options: Record<string, unknown> = {}) {
     // This executes a task and yields chunks for streaming
     // We use the core's process method
-    const result = await ultraDex.process(prompt, options);
+    const result = await ultraDexClient.process(prompt, options);
     yield { type: 'complete', result };
   }
 }

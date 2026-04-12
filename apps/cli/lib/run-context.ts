@@ -2,6 +2,18 @@
 
 const TOOL_PATTERN = />>\s*(READ_CODE|WRITE_CODE|RUN_SHELL|DELEGATE)\s*:/i;
 
+type StateProject = { name?: unknown };
+type StatePhase = { id?: unknown; name?: unknown; status?: unknown; steps?: unknown };
+type StateRuntimeStep = { agent?: unknown; action?: unknown; status?: unknown; decision?: unknown };
+type StateRuntime = { recentSteps?: unknown };
+type StateShape = {
+  project?: StateProject;
+  phases?: unknown;
+  runtime?: StateRuntime;
+};
+
+type GraphShape = { nodeCount?: unknown; edgeCount?: unknown };
+
 export function truncateText(value: unknown, maxChars = 600): string {
   if (value === undefined || value === null) return '';
   const text = String(value).replace(/\s+/g, ' ').trim();
@@ -27,32 +39,42 @@ export function summarizeState(
   { maxPhases = 6, maxRecentSteps = 5 }: { maxPhases?: number; maxRecentSteps?: number } = {}
 ): string {
   if (!state || typeof state !== 'object') return '';
+  const normalizedState = state as StateShape;
 
-  const lines = [];
+  const lines: string[] = [];
 
-  if (state.project?.name) {
-    lines.push(`Project: ${state.project.name}`);
+  if (typeof normalizedState.project?.name === 'string' && normalizedState.project.name.length > 0) {
+    lines.push(`Project: ${normalizedState.project.name}`);
   }
 
-  if (Array.isArray(state.phases) && state.phases.length > 0) {
-    const phases = state.phases.slice(0, maxPhases);
+  if (Array.isArray(normalizedState.phases) && normalizedState.phases.length > 0) {
+    const phases = normalizedState.phases.slice(0, maxPhases) as StatePhase[];
     lines.push('Phases:');
     for (const phase of phases) {
-      const label = phase.name || phase.id || 'Unnamed phase';
-      const status = phase.status || 'unknown';
+      const label =
+        typeof phase.name === 'string' && phase.name.length > 0
+          ? phase.name
+          : typeof phase.id === 'string' && phase.id.length > 0
+            ? phase.id
+            : 'Unnamed phase';
+      const status = typeof phase.status === 'string' && phase.status.length > 0 ? phase.status : 'unknown';
       const steps = Array.isArray(phase.steps) ? phase.steps.length : 0;
       lines.push(`- ${truncateText(label, 80)} [${status}] (${steps} steps)`);
     }
   }
 
-  const recentSteps = Array.isArray(state.runtime?.recentSteps)
-    ? state.runtime.recentSteps.slice(-maxRecentSteps)
+  const recentSteps = Array.isArray(normalizedState.runtime?.recentSteps)
+    ? (normalizedState.runtime.recentSteps.slice(-maxRecentSteps) as StateRuntimeStep[])
     : [];
   if (recentSteps.length > 0) {
     lines.push('Recent Runtime Steps:');
     for (const step of recentSteps) {
+      const agent = typeof step.agent === 'string' && step.agent.length > 0 ? step.agent : 'unknown';
+      const action = typeof step.action === 'string' && step.action.length > 0 ? step.action : 'UNKNOWN';
+      const status = typeof step.status === 'string' && step.status.length > 0 ? step.status : 'unknown';
+      const decision = typeof step.decision === 'string' ? step.decision : '';
       lines.push(
-        `- ${step.agent || 'unknown'} -> ${step.action || 'UNKNOWN'} [${step.status || 'unknown'}] ${truncateText(step.decision || '', 120)}`
+        `- ${agent} -> ${action} [${status}] ${truncateText(decision, 120)}`
       );
     }
   }
@@ -61,14 +83,15 @@ export function summarizeState(
 }
 
 export function summarizeGraph(graph: unknown): string {
-  if (!graph) return '';
+  if (!graph || typeof graph !== 'object') return '';
+  const normalizedGraph = graph as GraphShape;
 
-  const parts = [];
-  if (typeof graph.nodeCount === 'number') {
-    parts.push(`Files: ${graph.nodeCount}`);
+  const parts: string[] = [];
+  if (typeof normalizedGraph.nodeCount === 'number') {
+    parts.push(`Files: ${normalizedGraph.nodeCount}`);
   }
-  if (typeof graph.edgeCount === 'number') {
-    parts.push(`Dependencies: ${graph.edgeCount}`);
+  if (typeof normalizedGraph.edgeCount === 'number') {
+    parts.push(`Dependencies: ${normalizedGraph.edgeCount}`);
   }
 
   return parts.join('\n');
@@ -131,7 +154,7 @@ export function buildPromptContextSection({
     sections.push(`## Context\n${truncateText(contextMarkdown, 3000)}`);
   }
 
-  const planSummary = summarizePlan(planMarkdown);
+  const planSummary = summarizePlan(planMarkdown ?? '');
   if (planSummary) {
     sections.push(`## Implementation Plan\n${planSummary}`);
   }
@@ -147,14 +170,14 @@ export function buildPromptContextSection({
   }
 
   const historySummary =
-    typeof history === 'string' && history.trim().length > 0
+      typeof history === 'string' && history.trim().length > 0
       ? truncateText(history, 1800)
-      : summarizeInteractionHistory(interactionHistory);
+      : summarizeInteractionHistory(interactionHistory ?? []);
   if (historySummary) {
     sections.push(`## Execution History\n${historySummary}`);
   }
 
-  const memorySummary = summarizeMemories(memories);
+  const memorySummary = summarizeMemories(memories ?? []);
   if (memorySummary) {
     sections.push(`## Relevant Memory\n${memorySummary}`);
   }

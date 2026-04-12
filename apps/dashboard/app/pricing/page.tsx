@@ -1,7 +1,7 @@
 import React from 'react';
 import { Check, Zap, Shield, Crown, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../components/ui/card';
 
 export default function PricingPage() {
   const tiers = [
