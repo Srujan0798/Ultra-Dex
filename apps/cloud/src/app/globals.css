@@ -1,0 +1,191 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Ultra-Dex Cloud Design System */
+
+  /* Base Colors */
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+
+  /* Card/Panel */
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+
+  /* Brand Colors */
+  --primary: 217 91% 60%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 240 3.7% 15.9%;
+  --secondary-foreground: 0 0% 98%;
+
+  /* Muted/Subtle */
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+
+  /* Accent */
+  --accent: 240 3.7% 15.9%;
+  --accent-foreground: 0 0% 98%;
+
+  /* Destructive/Error */
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+
+  /* Success */
+  --success: 142 71% 45%;
+  --success-foreground: 0 0% 98%;
+
+  /* Warning */
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 10%;
+
+  /* Border/Input */
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --ring: 240 4.9% 83.9%;
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  code,
+  pre,
+  .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+@layer components {
+  /* Button Base */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium transition-all duration-200;
+    @apply rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+    @apply disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-primary {
+    @apply btn bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800;
+    @apply focus-visible:ring-blue-500;
+  }
+
+  .btn-secondary {
+    @apply btn bg-slate-800 text-white hover:bg-slate-700 active:bg-slate-600;
+    @apply border border-slate-700 focus-visible:ring-slate-500;
+  }
+
+  .btn-ghost {
+    @apply btn text-slate-300 hover:text-white hover:bg-slate-800/50;
+  }
+
+  .btn-danger {
+    @apply btn bg-red-600 text-white hover:bg-red-700;
+    @apply focus-visible:ring-red-500;
+  }
+
+  /* Input Base */
+  .input {
+    @apply flex w-full rounded-md border border-slate-800 bg-slate-900/50 px-3 py-2 text-sm;
+    @apply text-white placeholder:text-slate-500;
+    @apply focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Card */
+  .card {
+    @apply rounded-lg border border-slate-800 bg-slate-900/50 p-6;
+    @apply hover:border-slate-700 transition-colors;
+  }
+
+  .card-hover {
+    @apply card hover:bg-slate-800/50;
+  }
+
+  /* Status Badges */
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
+  }
+
+  .badge-success {
+    @apply badge bg-emerald-500/10 text-emerald-400 border border-emerald-500/20;
+  }
+
+  .badge-warning {
+    @apply badge bg-amber-500/10 text-amber-400 border border-amber-500/20;
+  }
+
+  .badge-error {
+    @apply badge bg-red-500/10 text-red-400 border border-red-500/20;
+  }
+
+  .badge-info {
+    @apply badge bg-blue-500/10 text-blue-400 border border-blue-500/20;
+  }
+
+  .badge-neutral {
+    @apply badge bg-slate-800 text-slate-400 border border-slate-700;
+  }
+
+  /* Code Block */
+  .code-block {
+    @apply relative rounded-lg bg-slate-950 border border-slate-800 p-4 overflow-x-auto;
+    @apply font-mono text-sm text-slate-300;
+  }
+
+  /* Terminal Output */
+  .terminal {
+    @apply rounded-lg bg-slate-950 border border-slate-800 p-4;
+    @apply font-mono text-sm;
+  }
+
+  .terminal-line {
+    @apply text-slate-300;
+  }
+
+  .terminal-prompt {
+    @apply text-emerald-500 font-medium;
+  }
+
+  .terminal-output {
+    @apply text-slate-400;
+  }
+
+  .terminal-error {
+    @apply text-red-400;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-slate-900;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-700 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-600;
+}
+
+/* Selection */
+::selection {
+  @apply bg-blue-500/30 text-white;
+}
