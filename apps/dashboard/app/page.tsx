@@ -1,84 +1,294 @@
-import React from 'react';
-import { 
-  Activity, 
-  BarChart3, 
-  Clock, 
-  DollarSign, 
-  TrendingUp, 
-  AlertCircle 
+import type { LucideIcon } from 'lucide-react';
+import {
+  Activity,
+  AlertTriangle,
+  ArrowDownRight,
+  ArrowUpRight,
+  Bot,
+  Clock3,
+  DollarSign,
+  ShieldCheck,
+  Signal,
+  Sparkles,
+  Workflow,
 } from 'lucide-react';
+import { Bebas_Neue, IBM_Plex_Mono } from 'next/font/google';
+import styles from './dashboard-home.module.css';
+
+const displayFont = Bebas_Neue({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-dashboard-display',
+});
+
+const bodyFont = IBM_Plex_Mono({
+  weight: ['400', '500', '600'],
+  subsets: ['latin'],
+  variable: '--font-dashboard-body',
+});
+
+interface StatCard {
+  label: string;
+  value: string;
+  trend: string;
+  trendDirection: 'up' | 'down';
+  note: string;
+  icon: LucideIcon;
+}
+
+const KPI_STATS: StatCard[] = [
+  {
+    label: 'Active agents',
+    value: '24',
+    trend: '+3',
+    trendDirection: 'up',
+    note: 'vs previous shift',
+    icon: Bot,
+  },
+  {
+    label: 'Latency p95',
+    value: '42ms',
+    trend: '-6ms',
+    trendDirection: 'up',
+    note: 'routing optimization',
+    icon: Clock3,
+  },
+  {
+    label: 'Task success',
+    value: '98.4%',
+    trend: '+0.7%',
+    trendDirection: 'up',
+    note: 'stability window',
+    icon: ShieldCheck,
+  },
+  {
+    label: 'Burn rate',
+    value: '$124.5',
+    trend: '+4.1%',
+    trendDirection: 'down',
+    note: 'daily provider spend',
+    icon: DollarSign,
+  },
+];
+
+const THROUGHPUT = [
+  { hour: '00', ingress: 42, completion: 40 },
+  { hour: '03', ingress: 56, completion: 52 },
+  { hour: '06', ingress: 64, completion: 62 },
+  { hour: '09', ingress: 83, completion: 79 },
+  { hour: '12', ingress: 88, completion: 82 },
+  { hour: '15', ingress: 73, completion: 71 },
+  { hour: '18', ingress: 61, completion: 58 },
+  { hour: '21', ingress: 49, completion: 45 },
+];
+
+const PROVIDER_LOAD = [
+  { name: 'Anthropic Sonnet', load: 78, quality: 'high', route: 'architecture + critique' },
+  { name: 'GPT-5.3 Codex', load: 69, quality: 'high', route: 'implementation + refactor' },
+  { name: 'Gemini 2.5 Pro', load: 41, quality: 'balanced', route: 'parallel analysis' },
+  { name: 'Groq Llama', load: 33, quality: 'latency', route: 'quick transforms' },
+];
+
+const INCIDENT_TAPE = [
+  {
+    time: '09:42:17',
+    title: 'Provider fallback engaged',
+    detail: 'OpenAI latency spike detected; switched to Anthropic chain in 120ms.',
+    severity: 'warning',
+  },
+  {
+    time: '09:38:02',
+    title: 'Memory write checkpoint',
+    detail: 'Session graph persisted with 100% consistency.',
+    severity: 'info',
+  },
+  {
+    time: '09:31:44',
+    title: 'CI gate passed',
+    detail: 'Governance and unit tests completed for deployment candidate.',
+    severity: 'success',
+  },
+];
 
 export default function DashboardPage() {
-  const stats = [
-    { name: 'Total Tasks', value: '1,284', icon: Activity, trend: '+12%', color: 'text-blue-500' },
-    { name: 'Success Rate', value: '98.2%', icon: TrendingUp, trend: '+0.4%', color: 'text-green-500' },
-    { name: 'Avg. Latency', value: '42ms', icon: Clock, trend: '-5ms', color: 'text-orange-500' },
-    { name: 'Total Cost', value: '$124.50', icon: DollarSign, trend: '+8%', color: 'text-purple-500' },
-  ];
-
   return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Infrastructure Overview</h2>
-        <p className="text-muted-foreground">Real-time health and performance metrics for the Ultra-Dex cluster.</p>
-      </div>
+    <section className={`${styles.dashboardShell} ${displayFont.variable} ${bodyFont.variable}`}>
+      <div className={styles.atmosphere} aria-hidden="true" />
 
-      {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <div key={stat.name} className="p-6 bg-card border border-border rounded-xl shadow-sm space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-muted-foreground">{stat.name}</span>
-              <stat.icon className={`h-4 w-4 ${stat.color}`} />
-            </div>
-            <div className="flex items-end justify-between">
-              <span className="text-2xl font-bold">{stat.value}</span>
-              <span className="text-xs font-medium text-green-500">{stat.trend}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Main Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-        {/* Usage Chart Placeholder */}
-        <div className="col-span-4 p-6 bg-card border border-border rounded-xl shadow-sm space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold flex items-center gap-2">
-              <BarChart3 size={18} className="text-primary" />
-              Task Volume (24h)
-            </h3>
-            <select className="bg-background border border-border rounded text-xs px-2 py-1">
-              <option>Last 24 Hours</option>
-              <option>Last 7 Days</option>
-            </select>
-          </div>
-          <div className="h-[300px] w-full bg-primary/5 rounded-lg border border-dashed border-primary/20 flex items-center justify-center">
-            <span className="text-xs text-muted-foreground font-mono italic">
-              [ Recharts Visualization: Task Ingress vs. Completion ]
-            </span>
-          </div>
+      <header className={styles.hero}>
+        <div>
+          <p className={styles.heroEyebrow}>NODE MAIN · LIVE ORCHESTRATION GRID</p>
+          <h1 className={styles.heroTitle}>MISSION CONTROL</h1>
+          <p className={styles.heroLead}>
+            Ultra-Dex is routing multi-agent execution across providers in real time with deterministic
+            governance and memory-backed recovery paths.
+          </p>
         </div>
 
-        {/* System Logs Placeholder */}
-        <div className="col-span-3 p-6 bg-card border border-border rounded-xl shadow-sm space-y-4">
-          <h3 className="font-semibold flex items-center gap-2">
-            <AlertCircle size={18} className="text-primary" />
-            System Events
-          </h3>
-          <div className="space-y-4">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="flex gap-3 text-sm border-b border-border/50 pb-3 last:border-0 last:pb-0">
-                <span className="text-muted-foreground font-mono text-[10px] mt-0.5">09:42:1{i}</span>
-                <div>
-                  <p className="font-medium text-xs">Provider node-nvidia-0{i} healthy</p>
-                  <p className="text-muted-foreground text-[11px]">Automatic health check passed. Latency stable at 12ms.</p>
+        <aside className={styles.heroMeta} aria-label="System snapshot">
+          <div className={styles.signalPill}>
+            <Signal size={14} />
+            <span>Core Link Stable</span>
+          </div>
+          <dl className={styles.metaGrid}>
+            <div>
+              <dt>Region</dt>
+              <dd>us-east-1</dd>
+            </div>
+            <div>
+              <dt>Mode</dt>
+              <dd>Autonomous</dd>
+            </div>
+            <div>
+              <dt>Queue</dt>
+              <dd>187 tasks</dd>
+            </div>
+            <div>
+              <dt>Uptime</dt>
+              <dd>14d 09h</dd>
+            </div>
+          </dl>
+        </aside>
+      </header>
+
+      <section className={styles.statGrid} aria-label="Key performance indicators">
+        {KPI_STATS.map((stat) => (
+          <article key={stat.label} className={styles.statCard}>
+            <div className={styles.statTop}>
+              <p>{stat.label}</p>
+              <stat.icon size={16} />
+            </div>
+            <p className={styles.statValue}>{stat.value}</p>
+            <p className={styles.statBottom}>
+              <span
+                className={
+                  stat.trendDirection === 'up' ? styles.trendUp : styles.trendDown
+                }
+              >
+                {stat.trendDirection === 'up' ? (
+                  <ArrowUpRight size={14} />
+                ) : (
+                  <ArrowDownRight size={14} />
+                )}
+                {stat.trend}
+              </span>
+              {stat.note}
+            </p>
+          </article>
+        ))}
+      </section>
+
+      <section className={styles.deck}>
+        <article className={styles.flowPanel}>
+          <header className={styles.panelHeader}>
+            <div>
+              <h2 className={styles.panelTitle}>
+                <Activity size={16} />
+                Throughput Spectrum
+              </h2>
+              <p className={styles.panelSubtle}>Ingress vs completion · 24 hour scan</p>
+            </div>
+            <span className={styles.panelBadge}>Window: rolling 24h</span>
+          </header>
+
+          <div className={styles.legend}>
+            <span>
+              <i className={styles.legendIngress} aria-hidden="true" />
+              ingress
+            </span>
+            <span>
+              <i className={styles.legendCompletion} aria-hidden="true" />
+              completion
+            </span>
+          </div>
+
+          <div className={styles.bars} role="img" aria-label="Ingress and completion volume by hour">
+            {THROUGHPUT.map((point, index) => (
+              <div className={styles.barGroup} key={point.hour}>
+                <div className={styles.barTrack}>
+                  <span
+                    className={styles.barIngress}
+                    style={{ height: `${point.ingress}%`, animationDelay: `${index * 70}ms` }}
+                  />
+                  <span
+                    className={styles.barCompletion}
+                    style={{ height: `${point.completion}%`, animationDelay: `${index * 90}ms` }}
+                  />
                 </div>
+                <span className={styles.barLabel}>{point.hour}</span>
               </div>
             ))}
           </div>
-        </div>
-      </div>
-    </div>
+        </article>
+
+        <article className={styles.providerPanel}>
+          <header className={styles.panelHeader}>
+            <div>
+              <h2 className={styles.panelTitle}>
+                <Workflow size={16} />
+                Provider Load Routing
+              </h2>
+              <p className={styles.panelSubtle}>Cost-quality balancing in live traffic</p>
+            </div>
+          </header>
+
+          <ul className={styles.providerList}>
+            {PROVIDER_LOAD.map((provider) => (
+              <li className={styles.providerItem} key={provider.name}>
+                <div className={styles.providerTop}>
+                  <p>{provider.name}</p>
+                  <span>{provider.load}%</span>
+                </div>
+                <div className={styles.providerMeter} aria-hidden="true">
+                  <span style={{ width: `${provider.load}%` }} />
+                </div>
+                <p className={styles.providerMeta}>
+                  {provider.quality} priority · {provider.route}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </article>
+
+        <article className={styles.eventsPanel}>
+          <header className={styles.panelHeader}>
+            <div>
+              <h2 className={styles.panelTitle}>
+                <AlertTriangle size={16} />
+                Event Tape
+              </h2>
+              <p className={styles.panelSubtle}>Critical runtime updates and automated decisions</p>
+            </div>
+            <span className={styles.panelBadge}>
+              <Sparkles size={12} />
+              auto triage on
+            </span>
+          </header>
+
+          <ul className={styles.eventList}>
+            {INCIDENT_TAPE.map((event) => (
+              <li className={styles.eventRow} key={`${event.time}-${event.title}`}>
+                <time className={styles.eventTime}>{event.time}</time>
+                <div>
+                  <p className={styles.eventTitle}>{event.title}</p>
+                  <p className={styles.eventDetail}>{event.detail}</p>
+                </div>
+                <span
+                  className={`${styles.eventState} ${
+                    event.severity === 'success'
+                      ? styles.success
+                      : event.severity === 'warning'
+                        ? styles.warning
+                        : styles.info
+                  }`}
+                >
+                  {event.severity}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </article>
+      </section>
+    </section>
   );
 }

@@ -1,7 +1,7 @@
 # 🔄 Ultra-Dex Skills Bootstrap System
 
 > **Self-improving lifecycle for Claude plugin skills**
-> **Version:** 1.0.0 | **Created:** 2026-04-11
+> **Version:** 1.1.0 | **Created:** 2026-04-11
 
 ---
 
@@ -17,7 +17,7 @@ This system enables:
 
 ---
 
-## 📋 Current State (v1.0.0)
+## 📋 Current State (v1.1.0)
 
 ### Plugins Implemented
 
@@ -30,9 +30,9 @@ This system enables:
 | Operations         | 9/9    | 1.0.0   | ✅ Complete |
 | Customer Support   | 5/5    | 1.0.0   | ✅ Complete |
 | Productivity       | 4/4    | 1.0.0   | ✅ Complete |
-| Design             | 7/7    | 1.0.0   | ✅ Complete |
+| Design             | 8/8    | 1.1.0   | ✅ Complete |
 
-**Total:** 54 skills, 84+ files created
+**Total:** 55 skills, 84+ files created
 
 ---
 
@@ -121,6 +121,7 @@ Before marking complete:
 
 | Version | Date       | Changes                       |
 | ------- | ---------- | ----------------------------- |
+| 1.1.0   | 2026-04-12 | Added `/frontend-design` skill |
 | 1.0.0   | 2026-04-11 | Initial: 8 plugins, 54 skills |
 
 ---

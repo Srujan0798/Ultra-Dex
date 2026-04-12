@@ -52,20 +52,45 @@ export function defineSkill(definition: SkillDefinition): SkillDefinition {
 /**
  * Simple template engine for prompt rendering
  */
+function stringifyTemplateValue(value: unknown): string {
+  if (value === undefined || value === null) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return String(value);
+  }
+}
+
 export function renderTemplate(template: string, data: Record<string, unknown>): string {
   let result = template;
 
-  // Replace {{variable}} with value
-  result = result.replace(/\{\{(\w+)\}\}/g, (match, key) => {
+  // Replace {{#each variable}}...{{/each}} loops
+  result = result.replace(/\{\{#each\s+(\w+)\}\}([\s\S]*?)\{\{\/each\}\}/g, (match, key, body) => {
     const value = data[key];
-    if (value === undefined || value === null) return '';
-    return String(value);
+    if (!Array.isArray(value) || value.length === 0) return '';
+
+    return value
+      .map((item, index) =>
+        body
+          .replace(/\{\{this\}\}/g, stringifyTemplateValue(item))
+          .replace(/\{\{@index\}\}/g, String(index))
+      )
+      .join('\n');
   });
 
   // Replace {{#if variable}}...{{/if}} conditionals
   result = result.replace(/\{\{#if\s+(\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g, (match, key, content) => {
     const value = data[key];
     return value ? content : '';
+  });
+
+  // Replace {{variable}} with value
+  result = result.replace(/\{\{(\w+)\}\}/g, (match, key) => {
+    const value = data[key];
+    return stringifyTemplateValue(value);
   });
 
   return result.trim();

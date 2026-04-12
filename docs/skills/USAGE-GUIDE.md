@@ -91,6 +91,7 @@ Example: `/engineering:tech-debt` → "Scan Ultra-Dex for technical debt"
 | `/design-critique`       | `/design:design-critique`      | "Review CLI interface"     |
 | `/design-handsoff`       | `/design:design-handsoff`      | "Generate component specs" |
 | `/ux-copy`               | `/design:ux-copy`              | "Write error messages"     |
+| `/frontend-design`       | `/design:frontend-design`      | "Create a bold landing page for developers" |
 
 ---
 

@@ -143,7 +143,7 @@ ultra-dex skills execute /code-review \
 - `/tone-adjustment` - Tone adjustment
 - `/brand-guidelines` - Brand guidelines
 
-### Design (7 skills)
+### Design (8 skills)
 
 - `/accessibility-review` - Accessibility review
 - `/design-critique` - Design critique
@@ -152,6 +152,7 @@ ultra-dex skills execute /code-review \
 - `/research-synthesis` - Research synthesis
 - `/user-research` - User research
 - `/ux-copy` - UX copywriting
+- `/frontend-design` - Distinctive production-grade frontend interface creation
 
 ### Legal (5 skills)
 

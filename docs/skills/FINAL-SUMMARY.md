@@ -19,10 +19,10 @@
 | 5   | Operations         | 9/9    | 11+   | HIGH        |
 | 6   | Customer Support   | 5/5    | 7+    | HIGH        |
 | 7   | Productivity       | 4/4    | 5+    | HIGH        |
-| 8   | Design             | 7/7    | 9+    | HIGH        |
+| 8   | Design             | 8/8    | 10+   | HIGH        |
 | 9   | Marketing          | 8/8    | 16+   | HIGH        |
 
-**Total:** 62 skills | 100+ files | Production-ready documentation
+**Total:** 63 skills | 100+ files | Production-ready documentation
 
 ---
 

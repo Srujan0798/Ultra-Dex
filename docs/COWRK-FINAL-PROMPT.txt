@@ -80,7 +80,7 @@ Use ALL 9 Claude plugins to analyze Ultra-Dex and create detailed .protocol exec
 
 **Reference:** docs/skills/productivity/ (5 files, 454 lines)
 
-### Design Plugin (7/7 skills) ✅
+### Design Plugin (8/8 skills) ✅
 - /accessibility-review - 8 issues identified
 - /design-critique - 4.3/5 rating
 - /design-handsoff - Component specs done
@@ -88,8 +88,9 @@ Use ALL 9 Claude plugins to analyze Ultra-Dex and create detailed .protocol exec
 - /research-synthesis - 45 data points synthesized
 - /user-research - Research plan created
 - /ux-copy - Interface copy guidelines
+- /frontend-design - Distinctive production-grade UI generation
 
-**Reference:** docs/skills/design/ (9 files, 1,065 lines)
+**Reference:** docs/skills/design/ (10 files, 1,100+ lines)
 
 ### Marketing Plugin (8/8 skills) ✅
 - /brand-review - Brand voice audit (87/100 score)

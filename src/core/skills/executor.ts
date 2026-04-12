@@ -157,7 +157,15 @@ export class SkillExecutor extends EventEmitter {
    * Build the prompt from template
    */
   private buildPrompt(skill: SkillDefinition, input: SkillInput): string {
-    return renderTemplate(skill.promptTemplate, input);
+    const templateData: Record<string, unknown> = {
+      ...input,
+      skillName: skill.name,
+      skillId: skill.id,
+      skillDescription: skill.description,
+      input: JSON.stringify(input, null, 2),
+    };
+
+    return renderTemplate(skill.promptTemplate, templateData);
   }
 
   /**

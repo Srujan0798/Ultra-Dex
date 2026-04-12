@@ -6,7 +6,7 @@
 
 ## Overview
 
-This directory contains all outputs from applying the **7 Claude Design skills** to Ultra-Dex:
+This directory contains all outputs from applying the **8 Claude Design skills** to Ultra-Dex:
 
 | Skill                   | Purpose                  | Output                        |
 | ----------------------- | ------------------------ | ----------------------------- |
@@ -17,6 +17,7 @@ This directory contains all outputs from applying the **7 Claude Design skills**
 | `/research-synthesis`   | Research insights        | User research synthesis       |
 | `/user-research`        | Research planning        | Research plan                 |
 | `/ux-copy`              | UX copywriting           | Interface copy guidelines     |
+| `/frontend-design`      | Frontend design creation | Frontend design blueprint     |
 
 ---
 
@@ -37,8 +38,10 @@ docs/skills/design/
 │   └── user-research.md
 ├── user-research/ # Research planning
 │   └── research-plan.md
-└── ux-copy/ # Copywriting
+├── ux-copy/ # Copywriting
     └── interface-copy.md
+└── frontend-design/ # Frontend design blueprint
+    └── frontend-design.md
 ```
 
 ---
@@ -246,8 +249,8 @@ docs/skills/design/
 
 | Metric                   | Value          |
 | ------------------------ | -------------- |
-| **Skills Applied**       | 7/7            |
-| **Documents Created**    | 7              |
+| **Skills Applied**       | 8/8            |
+| **Documents Created**    | 8              |
 | **Lines Written**        | 750+           |
 | **Accessibility Issues** | 8 identified   |
 | **Design Rating**        | 4.3/5          |
@@ -257,4 +260,4 @@ docs/skills/design/
 
 ---
 
-**Last Updated:** 2026-04-11
+**Last Updated:** 2026-04-12

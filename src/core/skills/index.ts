@@ -268,6 +268,23 @@ export class SkillsAPI {
   }): Promise<SkillExecutionResult> {
     return this.execute('/build-dashboard', input);
   }
+
+  /**
+   * Convenience: Frontend Design
+   */
+  async frontendDesign(input: {
+    request: string;
+    purpose?: string;
+    audience?: string;
+    aestheticDirection?: string;
+    technicalConstraints?: string;
+    differentiation?: string;
+    framework?: 'html-css-js' | 'react' | 'vue' | 'svelte' | 'nextjs' | 'any';
+    theme?: 'light' | 'dark' | 'both' | 'auto';
+    accessibilityTarget?: 'wcag-aa' | 'wcag-aaa';
+  }): Promise<SkillExecutionResult> {
+    return this.execute('/frontend-design', input);
+  }
 }
 
 // Export singleton instance

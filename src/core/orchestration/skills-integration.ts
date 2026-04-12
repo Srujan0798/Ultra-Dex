@@ -79,6 +79,7 @@ export function createSkillHelpers(skillsAPI: SkillsAPI) {
     sqlQuery: (input: any) => skillsAPI.sqlQuery(input),
     analyze: (input: any) => skillsAPI.analyze(input),
     buildDashboard: (input: any) => skillsAPI.buildDashboard(input),
+    frontendDesign: (input: any) => skillsAPI.frontendDesign(input),
 
     // Generic
     execute: (skillId: string, input: any, options?: any) =>

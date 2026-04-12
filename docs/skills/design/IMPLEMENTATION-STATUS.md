@@ -15,10 +15,11 @@
 | 5   | `/research-synthesis`   | `research-synthesis/user-research.md`     |
 | 6   | `/user-research`        | `user-research/research-plan.md`          |
 | 7   | `/ux-copy`              | `ux-copy/interface-copy.md`               |
+| 8   | `/frontend-design`      | `frontend-design/frontend-design.md`      |
 
 ---
 
-**All 7 design skills complete!**
+**All 8 design skills complete!**
 
 ---
 
@@ -33,8 +34,8 @@
 | Operations         | 9/9     | ✅     |
 | Customer Support   | 5/5     | ✅     |
 | Productivity       | 4/4     | ✅     |
-| **Design**         | **7/7** | ✅     |
+| **Design**         | **8/8** | ✅     |
 
-**Total: 54/54 skills implemented (100%)**
+**Total: 55/55 skills implemented (100%)**
 
 **Project ready for COWRK-FINAL-PROMPT.txt!** 🚀
