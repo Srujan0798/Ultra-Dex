@@ -1,0 +1,1 @@
+{"id":"dependency-updater","name":"Dependency Updater","role":"maintenance","description":"Checks and updates npm/Python dependencies with breaking change analysis","capabilities":["version-check","breaking-change-analysis","changelog-summary","compatibility-test"],"version":"1.0.0","provider":"claude","model":"claude-sonnet-4"}

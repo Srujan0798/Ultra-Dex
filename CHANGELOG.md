@@ -5,6 +5,33 @@ All notable changes to Ultra-Dex will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [6.0.0] - 2026-04-11
+
+### Added
+
+- Web dashboard with task management, agent monitoring, memory browsing, and cost analytics views
+- Community plugin marketplace with search, install, publish, ratings, and update workflows
+- Certification program foundation (Practitioner, Architect, Expert path support)
+- Enterprise initialization with SSO providers (Okta, Azure AD, Auth0, Generic OIDC)
+- Enterprise audit trail utilities with SOC2 export path and retention controls
+- SLA management and compliance monitoring for Free, Pro, and Enterprise tiers
+- Tier-aware enterprise bootstrap flow and status reporting
+- Expanded release and ecosystem documentation for Phase 4 rollout
+
+### Changed
+
+- Dashboard direction aligned to App Router-style page structure for Phase 4 growth
+- Marketplace command path replaces manual plugin-only installation workflows
+- Enterprise command registration moved to a safe lightweight loader to avoid startup dependency traps
+
+### Fixed
+
+- Team command registration failure due to invalid runtime import/export wiring
+- Missing `perf` CLI command and missing `test:perf` script in release gate flow
+- Lint gate regressions (unused imports and explicit-any warnings in critical paths)
+- VSCode extension compile gaps caused by missing sidebar/commands modules
+- Phase 3/4 integration stability issues in health monitor and plugin lifecycle tests
+
 ## [5.0.0] - 2026-04-12
 
 ### Added

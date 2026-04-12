@@ -1,0 +1,1 @@
+{"id":"test-generator","name":"Test Generator","role":"qa","description":"Generates unit, integration, and E2E tests from source code analysis","capabilities":["unit-test-gen","integration-test-gen","e2e-test-gen","edge-case-discovery"],"version":"1.0.0","provider":"claude","model":"claude-sonnet-4"}

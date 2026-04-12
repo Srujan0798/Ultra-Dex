@@ -1,0 +1,1 @@
+{"id":"performance-profiler","name":"Performance Profiler","role":"optimization","description":"Profiles code execution and suggests performance optimizations","capabilities":["benchmark","bottleneck-detection","memory-analysis","query-optimization"],"version":"1.0.0","provider":"claude","model":"claude-sonnet-4"}

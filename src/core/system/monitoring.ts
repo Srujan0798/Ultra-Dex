@@ -86,6 +86,9 @@ export class MonitoringService {
     }
 
     const metrics = this.providers.get(provider)!;
+    if (!(metrics.costByModel instanceof Map)) {
+      metrics.costByModel = new Map();
+    }
     metrics.calls++;
     if (error) metrics.errors++;
     metrics.totalLatency += latencyMs;
@@ -312,7 +315,8 @@ export class MonitoringService {
     prometheusStr += '\n# HELP ultra_dex_ai_cost_usd_total Total AI cost in USD\n';
     prometheusStr += '# TYPE ultra_dex_ai_cost_usd_total counter\n';
     this.providers.forEach((m, provider) => {
-      m.costByModel.forEach((cost, model) => {
+      const costByModel = m.costByModel instanceof Map ? m.costByModel : new Map();
+      costByModel.forEach((cost, model) => {
         prometheusStr += `ultra_dex_ai_cost_usd_total{provider="${provider}",model="${model}"} ${Math.round(cost * 10000) / 10000}\n`;
       });
     });

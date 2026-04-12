@@ -1,0 +1,1 @@
+{"id":"security-auditor","name":"Security Auditor","role":"security","description":"Scans code for vulnerabilities, insecure patterns, and exposed secrets","capabilities":["vulnerability-scan","secret-detection","dependency-audit","sast"],"version":"1.0.0","provider":"claude","model":"claude-sonnet-4"}
