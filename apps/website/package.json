@@ -18,7 +18,8 @@
     "framer-motion": "^10.16.4",
     "react-icons": "^4.11.0",
     "rehype-highlight": "^6.0.0",
-    "remark-gfm": "^3.0.1"
+    "remark-gfm": "^3.0.1",
+    "lucide-react": "^0.454.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
