@@ -101,11 +101,22 @@ async function resolvePostgresClientFactory() {
 
   postgresClientFactoryResolved = true;
   try {
-    const mod = await import('../../../../src/core/database/postgres-client.ts');
-    if (typeof mod.getPostgresClient === 'function') {
-      getPostgresClientFactory = mod.getPostgresClient;
+    const modJs = await import('../../../../src/core/database/postgres-client.js');
+    if (typeof modJs.getPostgresClient === 'function') {
+      getPostgresClientFactory = modJs.getPostgresClient;
+      return getPostgresClientFactory;
     }
-  } catch (_error) {
+  } catch {
+    // fall through to TS import
+  }
+
+  try {
+    const modTs = await import('../../../../src/core/database/postgres-client.ts');
+    if (typeof modTs.getPostgresClient === 'function') {
+      getPostgresClientFactory = modTs.getPostgresClient;
+      return getPostgresClientFactory;
+    }
+  } catch {
     getPostgresClientFactory = null;
   }
 

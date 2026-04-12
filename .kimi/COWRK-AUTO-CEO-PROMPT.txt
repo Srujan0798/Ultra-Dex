@@ -1,0 +1,797 @@
+═══════════════════════════════════════════════════════════════════════════════
+KIMI → COWRK: AUTO-CEO SYSTEM SETUP
+═══════════════════════════════════════════════════════════════════════════════
+
+> From: KIMI Execution Agent
+> To: COWRK Execution Agent  
+> Task: Set up complete AUTO-CEO system for Ultra-Dex v6.0.0
+> Priority: CRITICAL
+> Timeline: 1 week to full automation
+
+═══════════════════════════════════════════════════════════════════════════════
+PROTOCOL COMPLIANCE & SKILL USAGE
+═══════════════════════════════════════════════════════════════════════════════
+
+This prompt follows .protocol/ format and uses .protocol/skills system.
+
+COWRK MUST:
+1. Read .protocol/orchestration.md for dispatch format
+2. Use skills from docs/skills/ for all planning
+3. Create .protocol/state/v20-AUTO-CEO-dispatches.md in proper format
+4. Reference specific skill outputs in each window
+
+═══════════════════════════════════════════════════════════════════════════════
+ACTIVE PLUGINS & SKILLS (Use These)
+═══════════════════════════════════════════════════════════════════════════════
+
+### Engineering Plugin (10 skills) ✅
+Use: /architecture + /system-design + /deploy-checklist + /testing-strategy
+Reference: docs/skills/engineering/ADR-*.md, tech-debt-catalogue.md
+
+### Marketing Plugin (8 skills) ✅
+Use: /campaign-plan + /content-creation + /competitive-brief + /seo-audit
+Reference: docs/skills/marketing/campaign-plan.md, competitive-brief.md
+
+### Operations Plugin (9 skills) ✅
+Use: /runbook + /capacity-plan + /process-optimization + /risk-assessment
+Reference: docs/skills/operations/runbook-*.md, capacity-plan.md
+
+### Product Management Plugin (9 skills) ✅
+Use: /brainstorm + /roadmap-update + /write-spec + /synthesize-research
+Reference: docs/skills/product-management/roadmap-update.md, write-spec.md
+
+### Data Plugin (10 skills) ✅
+Use: /analysis + /dashboards + /queries + /visualization
+Reference: docs/skills/data/dashboards.md, analysis-reports/
+
+### Productivity Plugin (4 skills) ✅
+Use: /task-management + /memory-management
+Reference: docs/skills/productivity/task-management.md
+
+### Design Plugin (7 skills) ✅
+Use: /design-system + /ux-copy + /accessibility-review
+Reference: docs/skills/design/design-system.md, ux-copy.md
+
+### Enterprise Search (5 skills) ✅
+Use: /search + /knowledge-synthesis
+Reference: docs/skills/enterprise-search/
+
+### Customer Support (5 skills) ✅
+Use: /customer-research + /ticket-triage
+Reference: docs/skills/customer-support/
+
+═══════════════════════════════════════════════════════════════════════════════
+CONTEXT
+═══════════════════════════════════════════════════════════════════════════════
+
+Ultra-Dex is a fully-built AI orchestration platform at v6.0.0:
+- 534 tests passing
+- 4 phases COMPLETE (16+16+16+16 = 64 windows)
+- Security hardened, production-ready
+- Marketing validation system created
+- AUTO-CEO concept designed
+
+NOW: Need execution plan to AUTOMATE everything.
+
+REFERENCE: .kimi/CONSCIOUSNESS.md - System lifecycle understanding
+REFERENCE: docs/skills/SYSTEM.md - Skills framework
+REFERENCE: AUTO-CEO.md - Automation architecture (just created)
+
+═══════════════════════════════════════════════════════════════════════════════
+CURRENT STATE (DO NOT DELETE)
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ PHASE 1: FOUNDATION (COMPLETE)
+   - Redis, Postgres, Docker, npm packages, CI/CD
+   - Location: src/core/memory/, docker-compose.yml, .github/
+
+✅ PHASE 2: INTELLIGENCE (COMPLETE)  
+   - Bandit router, health monitoring, cost optimization
+   - Location: src/core/routing/, src/core/memory/rag-pipeline.ts
+
+✅ PHASE 3: SCALE (COMPLETE)
+   - VSCode extension, plugin system, enterprise/audit
+   - Location: packages/vscode-extension/, src/core/plugins/
+
+✅ PHASE 4: ECOSYSTEM (COMPLETE)
+   - Dashboard, marketplace, certification
+   - Location: apps/dashboard/, src/core/marketplace/
+
+✅ SECURITY HARDENING (COMPLETE)
+   - RCE fixed, CORS fixed, JWT secured, auth hardened
+   - Location: apps/core-api/config.js, apps/cli/lib/ide/web-ide.js
+
+✅ MARKETING SYSTEM (CREATED)
+   - Reddit posts ready, interview scripts, response tracker
+   - Location: marketing/validation/
+
+✅ AUTO-CEO ARCHITECTURE (DESIGNED)
+   - System concept, workflows, automation plan
+   - Location: AUTO-CEO.md
+
+⚠️ PENDING: Automation implementation
+   - Auto-post to Reddit
+   - Auto-track responses
+   - Auto-conduct interviews
+   - Auto-decide continue/pivot/stop
+   - Auto-scale growth
+
+═══════════════════════════════════════════════════════════════════════════════
+GOAL
+═══════════════════════════════════════════════════════════════════════════════
+
+Create execution plan for AUTO-CEO that:
+1. Automates marketing/validation (no manual Reddit posting)
+2. Automates user research (no manual interview scheduling)
+3. Automates decision making (system decides based on data)
+4. Automates growth (system scales without human input)
+5. Self-improves daily (system learns from results)
+6. Integrates with existing Ultra-Dex codebase (doesn't break anything)
+
+═══════════════════════════════════════════════════════════════════════════════
+REQUIREMENTS
+═══════════════════════════════════════════════════════════════════════════════
+
+[MUST HAVE]
+- Auto-post to Reddit (r/LocalLLaMA, r/SaaS, r/Entrepreneur)
+- Auto-scrape responses every 30 minutes
+- Auto-analyze sentiment (positive/negative/neutral)
+- Auto-DM interested users
+- Auto-schedule Calendly interviews
+- Auto-conduct interviews via AI voice
+- Auto-transcribe and analyze
+- Auto-decide based on evidence (continue/pivot/stop)
+- Auto-generate content for Twitter/LinkedIn
+- Auto-post to social media
+- Auto-track metrics (MRR, users, engagement)
+- Auto-scale winning campaigns
+- Auto-kill losing campaigns
+- Self-healing (auto-fix when things break)
+
+[SHOULD HAVE]
+- Dashboard showing real-time metrics
+- Conflict resolution (when data contradicts)
+- A/B testing automation
+- Email sequence automation
+- Community engagement automation
+
+[NICE TO HAVE]
+- Predictive analytics
+- Competitor monitoring
+- Trend forecasting
+
+[MUST NOT]
+- Delete existing Ultra-Dex code
+- Break existing functionality
+- Require manual merging of agent outputs
+- Need human intervention for routine tasks
+
+═══════════════════════════════════════════════════════════════════════════════
+PROTOCOL ORCHESTRATION FORMAT
+═══════════════════════════════════════════════════════════════════════════════
+
+COWRK MUST follow .protocol/orchestration.md format:
+
+Each window MUST have:
+1. Task ID: V20-W[X]-[NAME]
+2. Objective: Clear statement
+3. Target Files: Specific file paths
+4. Why this lane: Reasoning
+5. Power Tier: HIGH/BALANCED/LOW
+6. Command: Bash command format
+7. Expected Output: What success looks like
+8. Validation: How to verify
+9. Fallback #1, #2, #3: Alternative approaches
+10. Cost Class: SUBSCRIPTION-INCLUDED/FREE
+
+Parallel execution notes where applicable.
+Week gates defined.
+
+═══════════════════════════════════════════════════════════════════════════════
+DELIVERABLES
+═══════════════════════════════════════════════════════════════════════════════
+
+Create .protocol/state/v20-AUTO-CEO-dispatches.md in PROTOCOL FORMAT with:
+
+## WEEK: AUTOMATION SETUP
+### Gate: System runs 24/7 without human intervention
+
+---
+
+### [WINDOW 1] CLAUDE — claude-opus-4
+Task ID: V20-W1-REDDIT-AUTO-POSTER
+Objective: Build automated Reddit posting system with rate limiting and content rotation
+Target Files: src/automation/reddit-bot.ts, config/reddit.json, src/automation/content-rotator.ts
+Why this lane: Core automation requires structural correctness. Opus for API integration and rate limiting logic.
+Power Tier: HIGH
+Command:
+```bash
+claude --model opus --effort max -p \
+"Create Reddit automation bot for Ultra-Dex validation.
+
+CREATE src/automation/reddit-bot.ts:
+1) RedditBot class:
+   - authenticate(credentials): OAuth2 flow with Reddit API
+   - post(subreddit, title, content): Submit post
+   - schedulePost(subreddit, title, content, datetime): Queue for later
+   - monitorResponses(postId): Poll for new comments every 30 min
+   - replyToComment(commentId, response): Automated responses
+   - rotateContent(posts[]): Pick best performing content
+
+2) Rate limiting:
+   - Respect Reddit API: 60 requests/minute
+   - Backoff on 429 errors
+   - Queue posts if rate limited
+
+3) Content templates:
+   - Validation request template
+   - A/B test variations
+   - Personalization based on subreddit
+
+4) Safety:
+   - Human approval before posting (configurable)
+   - Kill switch to stop all posts
+   - Compliance with Reddit ToS
+
+CREATE config/reddit.json:
+- API credentials (env vars)
+- Subreddit whitelist
+- Posting schedule
+- Rate limits
+
+USE /content-creation + /seo-audit from docs/skills/marketing/
+
+VALIDATE:
+- Can authenticate with Reddit API
+- Can post to test subreddit
+- Rate limiting works under 60 req/min
+- Queues work when rate limited
+
+Expected Output: Working Reddit bot with rate limiting and content rotation
+Validation: Post to r/test subreddit successfully
+Fallback #1: Use browser automation (Playwright) if API fails
+Fallback #2: Manual posting with reminder system
+Fallback #3: Skip Reddit, focus on Twitter/LinkedIn
+Cost Class: SUBSCRIPTION-INCLUDED"
+```
+Expected Output: Reddit automation bot with rate limiting and content rotation
+Validation: Post to r/test subreddit successfully
+
+---
+
+### [WINDOW 2] CODEX — o1
+Task ID: V20-W2-RESPONSE-TRACKER
+Objective: Build automated response scraper and sentiment analyzer
+Target Files: src/automation/response-tracker.ts, src/automation/sentiment-analyzer.ts, marketing/validation/auto-tracker.md
+Why this lane: Data processing requires high performance. o1 for efficient scraping and analysis.
+Power Tier: HIGH
+Command:
+```bash
+codex --full-auto -m o1 exec \
+"Create response tracking automation.
+
+CREATE src/automation/response-tracker.ts:
+1) ResponseTracker class:
+   - pollReddit(postIds[]): Check for new comments every 30 min
+   - extractData(comment): Username, content, timestamp, sentiment
+   - storeResponse(data): Save to JSON/markdown
+   - generateReport(): Daily summary of responses
+   
+2) Sentiment analysis:
+   - Use simple keyword matching (positive/negative/neutral)
+   - Track sentiment trends over time
+   - Flag high-priority responses
+
+3) Integration:
+   - Read from marketing/validation/reddit-posts.md (post URLs)
+   - Write to marketing/validation/response-tracker.md
+   - Update metrics automatically
+
+USE /analysis + /queries from docs/skills/data/
+
+VALIDATE:
+- Can scrape 100 comments without rate limiting
+- Sentiment accuracy > 70%
+- Report generates automatically
+- Data syncs to response-tracker.md
+
+Expected Output: Auto-tracking system updating response-tracker.md
+Validation: 10+ responses tracked automatically
+Fallback #1: Use Reddit RSS feeds instead of API
+Fallback #2: Manual tracking with reminder system
+Fallback #3: Skip auto-tracking, use manual interviews only
+Cost Class: SUBSCRIPTION-INCLUDED"
+```
+Expected Output: Response tracking automation updating markdown files
+Validation: 10+ responses tracked with sentiment analysis
+
+---
+
+### [WINDOW 3] GEMINI — gemini-2.5-pro
+Task ID: V20-W3-AUTO-OUTREACH
+Objective: Build automated DM system for interested users
+Target Files: src/automation/dm-sender.ts, src/automation/calendly-integrator.ts
+Why this lane: High-volume outreach. Gemini free tier for DM volume.
+Power Tier: BALANCED
+Command:
+```bash
+gemini -y -p \
+"Create automated user outreach system.
+
+CREATE src/automation/dm-sender.ts:
+1) DMSender class:
+   - scanForInterest(responses[]): Find users who want to talk
+   - sendDM(username, message): Reddit chat API
+   - scheduleFollowUp(user, days): Reminder system
+   - trackResponses(): Who replied, who didn't
+
+2) Message templates:
+   - Initial outreach: 'Thanks for feedback! Want a 10-min call?'
+   - Follow-up: 'Still interested in Ultra-Dex?'
+   - Calendly link: Automated booking
+
+3) Safety features:
+   - Max 5 DMs per hour (anti-spam)
+   - Human approval for first 10 DMs
+   - Block list for users who decline
+
+4) Calendly integration:
+   - Generate booking links
+   - Track scheduled interviews
+   - Send reminders
+
+USE /customer-research + /ticket-triage from docs/skills/customer-support/
+
+VALIDATE:
+- Can send DMs without getting blocked
+- 20%+ response rate
+- Calendly bookings work
+
+Expected Output: Auto-DM system with Calendly integration
+Validation: 3+ users agree to interview via auto-DM
+Fallback #1: Manual DM sending with reminder system
+Fallback #2: Email outreach instead of Reddit
+Fallback #3: Skip DMs, use public replies only
+Cost Class: FREE"
+```
+Expected Output: DM automation sending 5-10 messages/hour
+Validation: 3+ users scheduled via auto-outreach
+
+---
+
+### [WINDOW 4] QWEN — qwen-max
+Task ID: V20-W4-AUTO-INTERVIEW
+Objective: Create AI-powered interview system with transcription
+Target Files: src/automation/interview-bot.ts, src/automation/transcription-service.ts
+Why this lane: Volume at free tier. Qwen for interview scripting and transcription.
+Power Tier: LOW
+Command:
+```bash
+qwen --auth-type qwen-oauth --approval-mode yolo \
+"Create automated interview system.
+
+CREATE src/automation/interview-bot.ts:
+1) InterviewBot class:
+   - conductInterview(userId): Text-based interview via Reddit chat
+   - askQuestion(question): From marketing/validation/user-interview-script.md
+   - recordAnswer(answer): Store transcript
+   - analyzeResponses(): Extract patterns
+   - generateSummary(): Key insights per interview
+
+2) Question flow:
+   - 15 questions from user-interview-script.md
+   - Adaptive follow-ups based on answers
+   - Skip irrelevant questions
+
+3) Transcription:
+   - If voice call: Whisper API integration
+   - Text chat: Native logging
+   - Key quotes extraction
+
+4) Analysis:
+   - Pain points mentioned
+   - Willingness to pay ($50/month?)
+   - Feature requests
+   - Objections
+
+USE /synthesize-research + /customer-research from docs/skills/product-management/
+
+VALIDATE:
+- Can conduct 5 interviews automatically
+- Transcripts are accurate
+- Analysis identifies patterns
+- Data exports to response-tracker.md
+
+Expected Output: Interview bot conducting and transcribing user calls
+Validation: 5 interviews completed with analysis
+Fallback #1: Manual interviews with notes template
+Fallback #2: Google Forms survey instead of interviews
+Fallback #3: Skip interviews, use Reddit responses only
+Cost Class: FREE"
+```
+Expected Output: Interview automation conducting 5 user interviews
+Validation: 5 completed interviews with transcripts and analysis
+
+---
+
+### [WINDOW 5] CLAUDE — claude-opus-4
+Task ID: V20-W5-DECISION-ENGINE
+Objective: Build automated decision engine based on user feedback data
+Target Files: src/automation/decision-engine.ts, config/decision-thresholds.json, marketing/validation/DECISION.md
+Why this lane: Decision logic is critical. Opus for correct threshold analysis.
+Power Tier: HIGH
+Command:
+```bash
+claude --model opus --effort max -p \
+"Create automated decision engine for Ultra-Dex.
+
+CREATE src/automation/decision-engine.ts:
+1) DecisionEngine class:
+   - analyzeData(data): Process interview + Reddit data
+   - calculateConfidence(): 0.0-1.0 score
+   - makeDecision(): CONTINUE / PIVOT / STOP
+   - generateRationale(): Why this decision
+   - recommendAction(): Next steps
+
+2) Decision matrix:
+   CONTINUE: confidence > 0.7 AND 5+ interested AND 3+ willing to pay
+   PIVOT: confidence 0.3-0.7 AND clear alternative direction
+   STOP: confidence < 0.3 OR no clear demand
+
+3) Data inputs:
+   - Reddit sentiment (positive %)
+   - Interview responses
+   - Willingness to pay ($50/month)
+   - Feature requests alignment
+   - Competition mentions
+
+4) Output:
+   - Auto-generate DECISION.md
+   - Confidence score with evidence
+   - Recommended path with timeline
+
+USE /brainstorm + /metrics-review from docs/skills/product-management/
+
+VALIDATE:
+- Decision matches human judgment 80%+ of time
+- Rationale is data-driven
+- Confidence score is accurate
+- Outputs to marketing/validation/DECISION.md
+
+Expected Output: Decision engine auto-generating continue/pivot/stop
+Validation: Decision with 85%+ confidence and clear rationale
+Fallback #1: Decision tree questionnaire (manual)
+Fallback #2: Human makes decision with data summary
+Fallback #3: Default to CONTINUE and pivot later if needed
+Cost Class: SUBSCRIPTION-INCLUDED"
+```
+Expected Output: Decision engine outputting continue/pivot/stop with rationale
+Validation: Decision with 85%+ confidence
+
+---
+
+### [WINDOW 6] CODEX — gpt-4o
+Task ID: V20-W6-CONTENT-GENERATOR
+Objective: Build automated content generation for social media
+Target Files: src/automation/content-generator.ts, src/automation/social-poster.ts, content/queue.json
+Why this lane: Creative content generation. GPT-4o for quality.
+Power Tier: BALANCED
+Command:
+```bash
+codex --full-auto -m gpt-4o exec \
+"Create automated content generation system.
+
+CREATE src/automation/content-generator.ts:
+1) ContentGenerator class:
+   - generateTweet(insight): 280 character tweet
+   - generateLinkedInPost(topic): Professional post
+   - generateBlogPost(topic): Long-form content
+   - rotateTopics(): Ultra-Dex features, user wins, industry trends
+   - scheduleContent(): Queue for posting
+
+2) Content templates:
+   - 'Day X building Ultra-Dex: [insight]'
+   - 'User feedback: [quote]'
+   - 'Tech deep dive: [feature]'
+   - 'Comparison: Ultra-Dex vs [competitor]'
+
+3) Sources:
+   - Ultra-Dex codebase (extract features)
+   - User interviews (extract quotes)
+   - Industry trends (Hacker News, Twitter)
+   - Development progress (git commits)
+
+4) Scheduling:
+   - Twitter: 1x daily
+   - LinkedIn: 3x weekly
+   - Blog: 1x weekly
+   - Best times: 8am, 12pm, 6pm EST
+
+USE /content-creation + /brand-review from docs/skills/marketing/
+
+VALIDATE:
+- Generates 7 tweets + 3 LinkedIn posts + 1 blog post/week
+- Content is relevant and engaging
+- Human can approve before posting
+
+Expected Output: Content generator creating 1 week of social posts
+Validation: 7 days of scheduled content
+Fallback #1: Content template system (manual fill)
+Fallback #2: Curate third-party content instead of create
+Fallback #3: Skip content, focus on direct outreach only
+Cost Class: SUBSCRIPTION-INCLUDED"
+```
+Expected Output: Content generator creating 1 week of social posts
+Validation: 7 days of scheduled content ready
+
+---
+
+### [WINDOW 7] GEMINI — gemini-2.5-pro
+Task ID: V20-W7-GROWTH-SCALER
+Objective: Build automated growth scaling based on metrics
+Target Files: src/automation/growth-scaler.ts, config/scaling-rules.json, analytics/dashboard.json
+Why this lane: High-volume scaling decisions. Gemini free tier.
+Power Tier: BALANCED
+Command:
+```bash
+gemini -y -p \
+"Create automated growth scaling system.
+
+CREATE src/automation/growth-scaler.ts:
+1) GrowthScaler class:
+   - trackMetrics(): MRR, users, engagement
+   - identifyWinners(): What's working
+   - scaleWinners(): Increase budget/effort
+   - killLosers(): Stop what's not working
+   - predictGrowth(): Forecast next month
+
+2) Scaling rules:
+   - If conversion > 5%: Scale budget 2x
+   - If cost per user < $10: Scale channel
+   - If engagement > 20%: Create more content
+   - If MRR growth > 20%: Hire/partner
+
+3) Channels:
+   - Reddit posts (monitor which subreddits work)
+   - Twitter threads (track engagement)
+   - LinkedIn posts (B2B focus)
+   - Email campaigns (nurture sequences)
+
+4) Auto-optimization:
+   - A/B test headlines
+   - Rotate content formats
+   - Adjust posting times
+   - Track competitor mentions
+
+USE /capacity-plan + /process-optimization from docs/skills/operations/
+
+VALIDATE:
+- Auto-scales winning Reddit posts
+- Kills campaigns with <1% engagement
+- Predicts next month's MRR within 20%
+- Dashboard shows all metrics
+
+Expected Output: Growth system auto-scaling based on performance
+Validation: System scaled 1 channel, killed 1 channel automatically
+Fallback #1: Manual weekly review with metrics
+Fallback #2: Static content calendar (no optimization)
+Fallback #3: Skip automation, manual growth only
+Cost Class: FREE"
+```
+Expected Output: Growth scaler auto-adjusting based on performance
+Validation: System scaled winners and killed losers
+
+---
+
+### [WINDOW 8] CLAUDE — claude-sonnet-4
+Task ID: V20-W8-SELF-IMPROVEMENT
+Objective: Build self-improving system that learns from performance
+Target Files: src/automation/self-improvement.ts, config/learning-rules.json, improvement-log.md
+Why this lane: Learning system architecture. Sonnet for balanced design.
+Power Tier: BALANCED
+Command:
+```bash
+claude --model sonnet --effort high -p \
+"Create self-improving automation system.
+
+CREATE src/automation/self-improvement.ts:
+1) SelfImprovement class:
+   - analyzePerformance(): What worked, what didn't
+   - learnFromMistakes(): Update strategies
+   - optimizeParameters(): Tune thresholds
+   - archiveFailures(): Document what not to do
+   - recommendImprovements(): Suggest changes
+
+2) Learning areas:
+   - Content: Which topics get engagement
+   - Timing: Best posting times
+   - Messaging: Which CTAs convert
+   - Channels: Where to focus
+   - Pricing: What users pay
+
+3) Auto-adjustments:
+   - Update decision thresholds based on accuracy
+   - Rotate content topics based on engagement
+   - Adjust DM frequency based on response rate
+   - Optimize posting times
+
+4) Review cycle:
+   - Daily: Quick metrics check
+   - Weekly: Performance review
+   - Monthly: Strategy update
+   - Quarterly: Major pivot decision
+
+USE /process-optimization + /risk-assessment from docs/skills/operations/
+
+VALIDATE:
+- System identifies underperforming areas
+- Updates its own parameters
+- Documents learnings
+- Shows improvement over time
+
+Expected Output: Self-improving system optimizing itself daily
+Validation: System made 3+ improvements based on data
+Fallback #1: Manual weekly review with notes
+Fallback #2: Static system (no self-improvement)
+Fallback #3: Human reviews and updates manually
+Cost Class: SUBSCRIPTION-INCLUDED"
+```
+Expected Output: Self-improving system optimizing daily
+Validation: 3+ auto-improvements based on performance data
+
+---
+
+Additional deliverables:
+
+1. SYSTEM ARCHITECTURE (Reference /architecture + /system-design)
+   - Component diagram
+   - Data flow
+   - Agent interactions
+
+2. AUTOMATION WINDOWS (8 windows in PROTOCOL FORMAT)
+   - W1: Reddit Auto-Poster (use /content-creation)
+   - W2: Response Auto-Tracker (use /analysis)
+   - W3: User Auto-Outreach (use /customer-research)
+   - W4: Interview Auto-Conductor (use /synthesize-research)
+   - W5: Decision Auto-Engine (use /brainstorm + /metrics-review)
+   - W6: Content Auto-Generator (use /content-creation)
+   - W7: Growth Auto-Scaler (use /capacity-plan)
+   - W8: Self-Improvement Auto-Loop (use /process-optimization)
+
+3. INTEGRATION PLAN (Reference /deploy-checklist + /runbook)
+   - How it connects to existing Ultra-Dex
+   - What files to modify
+   - What new files to create
+
+4. AUTOMATION SCRIPTS (Reference /testing-strategy)
+   - Reddit bot script
+   - Response scraper
+   - DM sender
+   - Interview scheduler
+   - Decision engine
+   - Content generator
+
+5. CONFIGURATION (Reference docs/skills/productivity/memory-management)
+   - triggers.json (what triggers what)
+   - thresholds.json (decision thresholds)
+   - schedule.json (when things run)
+
+6. DASHBOARD (Reference /dashboards + /visualization from data plugin)
+   - Real-time metrics display
+   - Status of all systems
+   - Human override controls
+
+7. FALLBACKS (Reference /incident-response + /risk-assessment)
+   - If Reddit API fails
+   - If auto-DM gets blocked
+   - If sentiment analysis is wrong
+   - If auto-decision confidence < 0.7
+
+═══════════════════════════════════════════════════════════════════════════════
+EXECUTION STRATEGY
+═══════════════════════════════════════════════════════════════════════════════
+
+Parallel execution where safe:
+- W1, W2, W3 can run in parallel (setup phase)
+- W4, W5, W6 can run in parallel (automation phase)
+- W7, W8 depend on earlier completion
+
+Target: 1 week to full automation
+- Day 1-2: Setup (W1-W3)
+- Day 3-5: Automation (W4-W6)
+- Day 6-7: Integration & Testing (W7-W8)
+
+═══════════════════════════════════════════════════════════════════════════════
+SUCCESS METRICS
+═══════════════════════════════════════════════════════════════════════════════
+
+| Metric | Target | Measurement |
+|--------|--------|-------------|
+| Reddit posts auto | 3/3 | System posts without human |
+| Response tracking | 100% | All responses tracked |
+| Auto-DM sent | 10+ | Interested users contacted |
+| Interviews scheduled | 5+ | Calls booked automatically |
+| Auto-decision | 1 | System decides continue/pivot/stop |
+| Content generated | 7/week | 1 post/day auto-generated |
+| Human intervention | <1hr/week | System runs itself |
+| Self-healing events | 3+ | System fixed itself |
+
+═══════════════════════════════════════════════════════════════════════════════
+CONSTRAINTS
+═══════════════════════════════════════════════════════════════════════════════
+
+- Budget: Use free/low-cost APIs where possible
+- Rate limits: Respect Reddit API limits (60 requests/minute)
+- Ethics: Auto-DMs must be helpful, not spam
+- Compliance: Follow Reddit ToS, no vote manipulation
+- Security: Store credentials securely, rotate keys
+
+═══════════════════════════════════════════════════════════════════════════════
+COMPARISON TO EXISTING DISPATCHES
+═══════════════════════════════════════════════════════════════════════════════
+
+Existing dispatches (v20-phase1-4.md):
+- Focus: Building features
+- Timeline: Months
+- Manual: Heavy human involvement
+
+This dispatch (v20-AUTO-CEO-dispatch.md):
+- Focus: Automating everything
+- Timeline: 1 week
+- Manual: Minimal, system runs itself
+
+Integration:
+- AUTO-CEO uses features built in phase1-4
+- AUTO-CEO runs marketing for phase1-4 outputs
+- AUTO-CEO scales what works from phase1-4
+
+═══════════════════════════════════════════════════════════════════════════════
+ACCEPTANCE CRITERIA
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ Can turn on system and walk away for 24 hours
+✅ System posts to Reddit, tracks responses, DMs users
+✅ System schedules and conducts interviews
+✅ System makes decision with confidence score
+✅ Dashboard shows all metrics in real-time
+✅ Human can override any decision
+✅ System self-heals when errors occur
+✅ System improves based on past performance
+✅ No manual merging of outputs
+✅ No manual intervention needed for routine tasks
+
+═══════════════════════════════════════════════════════════════════════════════
+NEXT STEPS
+═══════════════════════════════════════════════════════════════════════════════
+
+1. COWRK creates v20-AUTO-CEO-dispatches.md
+2. User reviews and approves
+3. Codex implements automation scripts
+4. Qwen/Gemini test and refine
+5. System goes live
+6. Monitor dashboard for 1 week
+7. System achieves full automation
+
+═══════════════════════════════════════════════════════════════════════════════
+QUESTIONS FOR COWRK
+═══════════════════════════════════════════════════════════════════════════════
+
+Answer in your dispatch:
+
+Q1: What's the cheapest way to auto-post to Reddit? (Praw API vs browser automation)
+
+Q2: How do we avoid Reddit banning auto-DMs? (Rate limits, content quality)
+
+Q3: Which AI voice tool for auto-interviews? (Play.ht, ElevenLabs, or text-only)
+
+Q4: How does system decide "continue" vs "pivot" vs "stop"? (Exact thresholds)
+
+Q5: What if Reddit API changes? (Fallback strategy)
+
+Q6: How do we store credentials securely? (Env vars, vault, etc)
+
+Q7: What's the minimum viable automation? (Core 3 features)
+
+═══════════════════════════════════════════════════════════════════════════════
+END OF PROMPT
+═══════════════════════════════════════════════════════════════════════════════

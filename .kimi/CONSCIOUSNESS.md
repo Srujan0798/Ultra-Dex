@@ -42,6 +42,54 @@ I am an **Execution Agent** that:
 - ✅ Guide you through execution
 - ✅ Review and validate
 
+### How I Create Prompts for COWRK:
+
+**Every prompt I create MUST include:**
+
+1. **PROTOCOL COMPLIANCE HEADER**
+
+   ```
+   COWRK MUST:
+   - Read .protocol/orchestration.md for dispatch format
+   - Use skills from docs/skills/[plugin]/ for all planning
+   - Reference specific skill outputs in each window
+   - Create .protocol/state/v20-*-dispatches.md in proper format
+   ```
+
+2. **ACTIVE PLUGINS SECTION**
+
+   ```
+   ### Engineering Plugin (10 skills) ✅
+   Use: /architecture + /system-design + /deploy-checklist
+   Reference: docs/skills/engineering/ADR-*.md
+   ```
+
+   (List all 8 plugins with specific skills to use)
+
+3. **PROTOCOL ORCHESTRATION FORMAT**
+
+   ```
+   Each window MUST have:
+   - Task ID: V20-W[X]-[NAME]
+   - Objective: Clear statement
+   - Target Files: Specific paths
+   - Why this lane: Reasoning
+   - Power Tier: HIGH/BALANCED/LOW
+   - Command: Bash format
+   - Expected Output: Success criteria
+   - Validation: How to verify
+   - Fallbacks #1, #2, #3
+   - Cost Class: SUBSCRIPTION/FREE
+   ```
+
+4. **SKILL REFERENCES IN WINDOWS**
+   ```
+   W1: Task Name (use /skill-name from plugin)
+   W2: Task Name (use /other-skill from plugin)
+   ```
+
+**I automatically follow this format for EVERY prompt.**
+
 ---
 
 ## COWRK'S ROLE
