@@ -265,9 +265,9 @@
     "prettier": "^3.8.1",
     "resend": "^6.10.0",
     "typescript": "^6.0.2",
+    "vercel": "^50.44.0",
     "vitest": "^4.1.4"
   },
-  "optionalDependencies": {},
   "overrides": {
     "serialize-javascript": "7.0.5",
     "vite": "8.0.7",

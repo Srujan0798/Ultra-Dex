@@ -126,3 +126,4 @@ docker-compose.override.yml
 /debug-*/
 /simple-test/
 /test-symlink-*/
+.vercel
