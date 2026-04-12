@@ -120,3 +120,9 @@ docker-compose.override.yml
 .claude/
 .cursor/
 .qwen/
+
+# Debug/test directories (root level artifacts)
+/check-symlink/
+/debug-*/
+/simple-test/
+/test-symlink-*/
