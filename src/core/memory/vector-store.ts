@@ -1,5 +1,6 @@
 import { singleton } from 'tsyringe';
 import { randomUUID } from 'crypto';
+import { EmbeddingService } from './embedding-service.js';
 
 interface VectorStoreOptions {
   dimension?: number;
@@ -17,11 +18,13 @@ class VectorStore {
   private metadata: Map<string, VectorMetadata>;
   private dimension: number;
   private indexBuilt: boolean;
+  private embeddingService: EmbeddingService;
 
   constructor(options: VectorStoreOptions = {}) {
     this.vectors = /* @__PURE__ */ new Map();
     this.metadata = /* @__PURE__ */ new Map();
-    this.dimension = options.dimension || 384;
+    this.embeddingService = new EmbeddingService();
+    this.dimension = options.dimension || this.embeddingService.getDimension();
     this.indexBuilt = false;
   }
   // Simple cosine similarity
@@ -59,7 +62,7 @@ class VectorStore {
   }
   async index(text: string, metadata: Record<string, unknown> = {}) {
     const id = `vec_${randomUUID()}`;
-    const embedding = this.generateEmbedding(text);
+    const embedding = await this.generateEmbeddingFromService(text);
     this.vectors.set(id, embedding);
     this.metadata.set(id, {
       text,
@@ -70,7 +73,7 @@ class VectorStore {
     return { id, embedding, metadata };
   }
   async search(query: string, limit = 10, minSimilarity = 0) {
-    const queryEmbedding = this.generateEmbedding(query);
+    const queryEmbedding = await this.generateEmbeddingFromService(query);
     const results = [];
     for (const [id, vector] of this.vectors.entries()) {
       const similarity = this.cosineSimilarity(queryEmbedding, vector);
@@ -122,6 +125,13 @@ class VectorStore {
       memoryUsage: (this.vectors.size * this.dimension * 8) / 1024 / 1024,
       // MB
     };
+  }
+
+  private async generateEmbeddingFromService(text: string): Promise<number[]> {
+    const embedding = await this.embeddingService.embed(text);
+    if (embedding.length === this.dimension) return embedding;
+    if (embedding.length > this.dimension) return embedding.slice(0, this.dimension);
+    return [...embedding, ...new Array(this.dimension - embedding.length).fill(0)];
   }
 }
 

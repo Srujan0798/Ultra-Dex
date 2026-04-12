@@ -20,14 +20,18 @@ export interface BanditProviderConfig {
   name: string;
   costPerToken?: number; // USD per token (for cost-aware routing)
   maxLatencyMs?: number; // SLA target
+  qualityScore?: number; // Relative quality score (higher is better)
   weight?: number; // Manual override weight (0-1)
 }
 
 export interface BanditConstraints {
   provider?: string;
+  providers?: string[];
   maxCostUsd?: number;
   estimatedTokens?: number;
   maxLatencyMs?: number;
+  optimize?: 'cost' | 'quality' | 'latency';
+  healthMonitor?: { isHealthy(providerId: string): boolean };
   [key: string]: unknown;
 }
 
@@ -111,9 +115,31 @@ export class ThompsonSamplingRouter {
       };
     }
 
+    // Resolve eligible providers based on optional allow-list and health filter
+    const eligibleProviders = Array.from(this.providers.keys()).filter((name) => {
+      if (
+        Array.isArray(constraints.providers) &&
+        constraints.providers.length > 0 &&
+        !constraints.providers.includes(name)
+      ) {
+        return false;
+      }
+      if (constraints.healthMonitor && !constraints.healthMonitor.isHealthy(name)) {
+        return false;
+      }
+      return true;
+    });
+
+    if (Array.isArray(constraints.providers) && constraints.providers.length === 0) {
+      throw new Error('No providers available: constraints.providers is empty');
+    }
+    if (eligibleProviders.length === 0) {
+      throw new Error('No providers available after applying constraints');
+    }
+
     // If only one provider available, use it
-    if (this.providers.size === 1) {
-      const [onlyProvider] = this.providers.keys();
+    if (eligibleProviders.length === 1) {
+      const onlyProvider = eligibleProviders[0];
       return {
         provider: onlyProvider,
         strategy: 'exploitation',
@@ -123,17 +149,18 @@ export class ThompsonSamplingRouter {
 
     // Thompson Sampling: sample from each provider's Beta distribution
     const samples: Record<string, number> = {};
-    for (const [name] of this.providers) {
+    for (const name of eligibleProviders) {
       samples[name] = this._sampleBeta(name);
     }
 
     // Cost-aware adjustment: if costs are configured, adjust scores
     const costAdjusted = this._applyCostAdjustment(samples, constraints);
+    const optimized = this._applyOptimization(costAdjusted, constraints);
 
     // Pick the provider with the highest (adjusted) sample
     let bestProvider = '';
     let bestScore = -1;
-    for (const [name, score] of Object.entries(costAdjusted)) {
+    for (const [name, score] of Object.entries(optimized)) {
       if (score > bestScore) {
         bestScore = score;
         bestProvider = name;
@@ -247,6 +274,33 @@ export class ThompsonSamplingRouter {
     }
   }
 
+  async persistStats(storage: {
+    set(key: string, value: string): Promise<unknown>;
+  }): Promise<void> {
+    const snapshot = {
+      alpha: Object.fromEntries(this.alpha),
+      beta: Object.fromEntries(this.beta),
+      totalSelections: this.totalSelections,
+    };
+    await storage.set('bandit:stats', JSON.stringify(snapshot));
+  }
+
+  async loadStats(storage: {
+    get(key: string): Promise<string | null>;
+  }): Promise<boolean> {
+    const raw = await storage.get('bandit:stats');
+    if (!raw) return false;
+    const parsed = JSON.parse(raw);
+    for (const [name, value] of Object.entries(parsed.alpha || {})) {
+      if (this.providers.has(name)) this.alpha.set(name, Number(value));
+    }
+    for (const [name, value] of Object.entries(parsed.beta || {})) {
+      if (this.providers.has(name)) this.beta.set(name, Number(value));
+    }
+    this.totalSelections = Number(parsed.totalSelections || 0);
+    return true;
+  }
+
   // -----------------------------------------------------------------------
   // Private Methods
   // -----------------------------------------------------------------------
@@ -354,6 +408,45 @@ export class ThompsonSamplingRouter {
     }
 
     return adjusted;
+  }
+
+  private _applyOptimization(
+    scores: Record<string, number>,
+    constraints: BanditConstraints
+  ): Record<string, number> {
+    const optimized = { ...scores };
+    if (!constraints.optimize) return optimized;
+
+    if (constraints.optimize === 'cost') {
+      const costs = Object.keys(optimized).map(
+        (name) => this.providerConfigs.get(name)?.costPerToken ?? 0
+      );
+      const maxCost = Math.max(...costs, 1);
+      for (const name of Object.keys(optimized)) {
+        const cost = this.providerConfigs.get(name)?.costPerToken ?? 0;
+        optimized[name] *= 1 - 0.35 * (cost / maxCost);
+      }
+      return optimized;
+    }
+
+    if (constraints.optimize === 'quality') {
+      for (const name of Object.keys(optimized)) {
+        const quality = this.providerConfigs.get(name)?.qualityScore ?? this._defaultQuality(name);
+        optimized[name] = quality + optimized[name] * 0.1;
+      }
+      return optimized;
+    }
+
+    return optimized;
+  }
+
+  private _defaultQuality(provider: string): number {
+    const normalized = provider.toLowerCase();
+    if (normalized.includes('claude')) return 1.0;
+    if (normalized.includes('openai')) return 0.95;
+    if (normalized.includes('nvidia')) return 0.85;
+    if (normalized.includes('gemini')) return 0.8;
+    return 0.75;
   }
 
   /**

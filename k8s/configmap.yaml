@@ -1,0 +1,89 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ultra-dex-config
+  namespace: ultra-dex
+data:
+  NODE_ENV: 'production'
+  PORT: '4000'
+  HOST: '0.0.0.0'
+  LOG_LEVEL: 'info'
+  LOG_FORMAT: 'json'
+  RATE_LIMIT_WINDOW_MS: '900000'
+  RATE_LIMIT_MAX: '100'
+  JWT_EXPIRY: '24h'
+  REDIS_ENABLED: 'true'
+  METRICS_ENABLED: 'true'
+  HEALTH_CHECK_INTERVAL: '30000'
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: ultra-dex
+data:
+  nginx.conf: |
+    events {
+      worker_connections 1024;
+    }
+
+    http {
+      upstream api {
+        server ultra-dex-api:4000;
+      }
+      
+      upstream dashboard {
+        server ultra-dex-dashboard:3000;
+      }
+      
+      server {
+        listen 80;
+        server_name _;
+        return 301 https://$host$request_uri;
+      }
+      
+      server {
+        listen 443 ssl http2;
+        server_name app.ultra-dex.dev;
+        
+        ssl_certificate /etc/nginx/ssl/tls.crt;
+        ssl_certificate_key /etc/nginx/ssl/tls.key;
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers HIGH:!aNULL:!MD5;
+        
+        # Security headers
+        add_header X-Frame-Options "SAMEORIGIN" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header X-XSS-Protection "1; mode=block" always;
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+        add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https:;" always;
+        
+        # Rate limiting
+        limit_req_zone $binary_remote_addr zone=api:10m rate=100r/m;
+        limit_req zone=api burst=20 nodelay;
+        
+        location / {
+          proxy_pass http://dashboard;
+          proxy_http_version 1.1;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection 'upgrade';
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_cache_bypass $http_upgrade;
+        }
+        
+        location /api {
+          proxy_pass http://api;
+          proxy_http_version 1.1;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection 'upgrade';
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_cache_bypass $http_upgrade;
+        }
+      }
+    }

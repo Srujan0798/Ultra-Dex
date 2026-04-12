@@ -57,6 +57,7 @@ let tracePersistenceClient = null;
 let tracePersistenceClientReady = false;
 let getPostgresClientFactory = null;
 let postgresClientFactoryResolved = false;
+let ragPipelineInstancePromise = null;
 
 function getActiveRunId(trace = null) {
   return trace?.runId || process.env.ULTRA_DEX_RUN_ID || null;
@@ -552,6 +553,15 @@ async function loadRelevantMemories(task, agentId) {
   }
 }
 
+async function getRagPipeline() {
+  if (!ragPipelineInstancePromise) {
+    ragPipelineInstancePromise = import('../../../../src/core/memory/rag-pipeline.js').then(
+      ({ RAGPipeline }) => new RAGPipeline(ultraMemory)
+    );
+  }
+  return ragPipelineInstancePromise;
+}
+
 async function persistRunContext(projectContext, trace, payload) {
   const { agentId, task, decision, action, input, output, status, depth, step } = payload;
   const serializedInput = truncateText(serializeRuntimeValue(input), 200);
@@ -674,7 +684,8 @@ export async function runAgentLoop(
   provider,
   projectContext,
   depth = 0,
-  maxSteps = DEFAULT_MAX_STEPS
+  maxSteps = DEFAULT_MAX_STEPS,
+  options = {}
 ) {
   projectContext = projectContext && typeof projectContext === 'object' ? projectContext : {};
 
@@ -714,6 +725,8 @@ export async function runAgentLoop(
   const agentContext = buildAgentContext(agentId, agent);
   const providerInstance = typeof provider === 'function' ? await provider(agentId) : provider;
   let currentTask = task;
+  const memoryEnabled = options.memoryEnabled !== false;
+  const ragPipeline = memoryEnabled ? await getRagPipeline() : null;
 
   for (let stepIndex = 1; stepIndex <= boundedMaxSteps; stepIndex += 1) {
     const startedAt = Date.now();
@@ -722,7 +735,14 @@ export async function runAgentLoop(
 
     await dashboardNotifier.sendAgentStatus(agentName, 'working', truncateText(currentTask, 50));
 
-    const relevantMemories = await loadRelevantMemories(currentTask, agentId);
+    const relevantMemories = memoryEnabled ? await loadRelevantMemories(currentTask, agentId) : [];
+    const ragContextEntries = ragPipeline
+      ? await ragPipeline.retrieveContext(currentTask, agentId, MAX_MEMORY_RESULTS)
+      : [];
+    const ragContextSection =
+      ragContextEntries.length > 0
+        ? `\n\n## Relevant Past Context\n${ragContextEntries.map((ctx, idx) => `${idx + 1}. ${ctx}`).join('\n')}\n`
+        : '';
     const contextSection = buildPromptContextSection({
       contextMarkdown: projectContext.context,
       planMarkdown: projectContext.plan,
@@ -731,7 +751,7 @@ export async function runAgentLoop(
       memories: relevantMemories,
       interactionHistory: getInteractionHistory(projectContext),
       history: projectContext.history,
-    });
+    }) + ragContextSection;
     await trace.record({
       agent: agentId,
       action: 'PROMPT_CONTEXT',
@@ -832,6 +852,13 @@ export async function runAgentLoop(
         durationMs: Date.now() - startedAt,
       });
       content = stripDecisionLine(content) || content;
+      if (ragPipeline) {
+        await ragPipeline.storeResult(currentTask, agentId, {
+          decision,
+          output: content,
+          provider: providerInstance?.getName?.() || 'provider',
+        });
+      }
 
       try {
         const durationMs = Date.now() - startedAt;
@@ -1349,7 +1376,8 @@ export async function runAgentLoop(
           provider,
           projectContext,
           depth + 1,
-          boundedMaxSteps
+          boundedMaxSteps,
+          options
         );
         await recordActionOutcome(
           trace,
@@ -1551,6 +1579,7 @@ export function registerRunCommand(program) {
     )
     .option('-k, --key <apiKey>', 'API key for the provider (overrides environment variables)')
     .option('-o, --output <file>', 'Save result to specified file')
+    .option('--no-memory', 'Disable memory retrieval + RAG context augmentation')
     .option('--max-steps <steps>', 'Maximum bounded execution steps per agent loop (default: 10)')
     .action(async (agentName, options) => {
       let task = options.task;
@@ -1694,7 +1723,9 @@ export function registerRunCommand(program) {
           });
         } else {
           // OFF path: existing behavior unchanged
-          finalOutput = await runAgentLoop(agentName, task, providerFactory, context, 0, maxSteps);
+          finalOutput = await runAgentLoop(agentName, task, providerFactory, context, 0, maxSteps, {
+            memoryEnabled: options.memory,
+          });
         }
 
         await persistAndPrintRunArtifacts({
@@ -1760,7 +1791,9 @@ export function registerSwarmCommand(program) {
         });
 
         printInfo(chalk.bold('Step 1: 📋 @Planner breaking down feature...'));
-        const plan = await runAgentLoop('planner', feature, providerFactory, context, 0, maxSteps);
+        const plan = await runAgentLoop('planner', feature, providerFactory, context, 0, maxSteps, {
+          memoryEnabled: options.memory,
+        });
 
         printInfo(chalk.bold('\nStep 2: 🏗️  @CTO reviewing architecture...'));
         const architectureReview = await runAgentLoop(
@@ -1769,7 +1802,8 @@ export function registerSwarmCommand(program) {
           providerFactory,
           context,
           0,
-          maxSteps
+          maxSteps,
+          { memoryEnabled: options.memory }
         );
         swarmResult = `## Planner\n${plan}\n\n## CTO\n${architectureReview}`;
 

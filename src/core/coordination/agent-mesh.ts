@@ -156,11 +156,15 @@ let MessageBus = class {
     this.messages.push(message);
     if (this.messages.length > 5e3) this.messages.shift();
     const subs = this.subscribers.get(topic) || [];
-    for (const sub of subs) {
-      try {
-        await sub.handler(payload, { from: fromAgentId, topic, messageId: message.id });
-        message.deliveredTo.push(sub.agentId);
-      } catch {}
+      for (const sub of subs) {
+        try {
+          await sub.handler(payload, { from: fromAgentId, topic, messageId: message.id });
+          message.deliveredTo.push(sub.agentId);
+        } catch (error) {
+          // Handler failed - continue to next subscriber
+          console.warn(`[AgentMesh] Handler failed for ${sub.agentId}:`, error);
+        }
+      }
     }
     this.deliveryLog.push({
       messageId: message.id,

@@ -177,7 +177,9 @@ function loadRouterConfigSync() {
       const raw = fs.readFileSync(configPath, 'utf8');
       const data = JSON.parse(raw);
       return mergeConfig(data);
-    } catch {}
+    } catch (error) {
+      // Config file doesn't exist or is invalid - try next location
+    }
   }
   return mergeConfig({});
 }

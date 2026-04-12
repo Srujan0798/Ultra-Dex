@@ -17,6 +17,21 @@ import { memex } from '../memory/memex.js';
 import { orchestrator } from '../resilience/self-healing.js';
 import { logger } from '../utils/logger.js';
 
+const noopHealthMonitor = {
+  recordLatency() {},
+  recordError() {},
+};
+let healthMonitorPromise = null;
+
+async function getProviderHealthMonitor() {
+  if (!healthMonitorPromise) {
+    healthMonitorPromise = import('../../../../src/core/routing/health-monitor.ts')
+      .then((module) => module.providerHealthMonitor || noopHealthMonitor)
+      .catch(() => noopHealthMonitor);
+  }
+  return healthMonitorPromise;
+}
+
 const NO_KEY_PROVIDERS = new Set(['ollama', 'litellm']);
 const LOCAL_ONLY_PROVIDERS = new Set(['ollama']);
 
@@ -213,18 +228,40 @@ function wrapProviderWithCircuitBreaker(provider, providerId) {
 
   if (baseGenerate) {
     provider.generate = async (systemPrompt, userPrompt, opts = {}) => {
+      const startedAt = Date.now();
+      const healthMonitor = await getProviderHealthMonitor();
       return orchestrator.execute({
         circuitBreakerName: cbName,
-        operation: () => baseGenerate(systemPrompt, userPrompt, opts),
+        operation: async () => {
+          try {
+            const result = await baseGenerate(systemPrompt, userPrompt, opts);
+            healthMonitor.recordLatency(providerId, Date.now() - startedAt);
+            return result;
+          } catch (_err) {
+            healthMonitor.recordError(providerId, _err);
+            throw _err;
+          }
+        },
       });
     };
   }
 
   if (baseStream) {
     provider.generateStream = async (systemPrompt, userPrompt, onChunk, opts = {}) => {
+      const startedAt = Date.now();
+      const healthMonitor = await getProviderHealthMonitor();
       return orchestrator.execute({
         circuitBreakerName: cbName,
-        operation: () => baseStream(systemPrompt, userPrompt, onChunk, opts),
+        operation: async () => {
+          try {
+            const result = await baseStream(systemPrompt, userPrompt, onChunk, opts);
+            healthMonitor.recordLatency(providerId, Date.now() - startedAt);
+            return result;
+          } catch (_err) {
+            healthMonitor.recordError(providerId, _err);
+            throw _err;
+          }
+        },
       });
     };
   }

@@ -22,7 +22,8 @@ export class BetterStackLogger {
     this.sourceToken = sourceToken || BETTER_STACK_SOURCE_TOKEN || '';
 
     // Flush batch every 5 seconds
-    setInterval(() => this.flush(), 5000);
+    const timer = setInterval(() => this.flush(), 5000);
+    timer.unref?.();
   }
 
   private createEntry(

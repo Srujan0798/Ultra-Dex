@@ -15,6 +15,19 @@ describe('ThompsonSamplingRouter', () => {
     assert.ok(['exploration', 'exploitation', 'manual'].includes(result.strategy));
   });
 
+  it('should prefer highest quality with optimize=quality', () => {
+    const qualityRouter = new ThompsonSamplingRouter([
+      { name: 'claude', qualityScore: 1.0 },
+      { name: 'gemini', qualityScore: 0.7 },
+    ]);
+    let claudeCount = 0;
+    for (let i = 0; i < 40; i++) {
+      const result = qualityRouter.selectProvider({ task: 'deep review' }, { optimize: 'quality' });
+      if (result.provider === 'claude') claudeCount++;
+    }
+    assert.ok(claudeCount > 20, `Expected quality routing preference, got claude=${claudeCount}/40`);
+  });
+
   it('should update stats after execution', () => {
     router.updateStats('nvidia', {
       success: true,
@@ -25,6 +38,20 @@ describe('ThompsonSamplingRouter', () => {
     const stats = router.getProviderStats();
     assert.ok(stats.has('nvidia'));
     assert.strictEqual(stats.get('nvidia').getTotalCalls(), 1);
+  });
+
+  it('should updateStats influence future selections (exploitation)', () => {
+    const trained = new ThompsonSamplingRouter([{ name: 'winner' }, { name: 'loser' }]);
+    for (let i = 0; i < 60; i++) {
+      trained.updateStats('winner', { success: true, costUsd: 0.01, latencyMs: 100, tokensUsed: 200 });
+      trained.updateStats('loser', { success: false, costUsd: 0.01, latencyMs: 100, tokensUsed: 200 });
+    }
+    let winnerCount = 0;
+    for (let i = 0; i < 30; i++) {
+      const result = trained.selectProvider({ task: 'test' });
+      if (result.provider === 'winner') winnerCount++;
+    }
+    assert.ok(winnerCount > 20, `Expected exploitation after training, got winner=${winnerCount}/30`);
   });
 
   it('should prefer cheaper providers with cost constraint', () => {
@@ -52,6 +79,30 @@ describe('ThompsonSamplingRouter', () => {
     const result = router.selectProvider({ task: 'test' }, { maxCostUsd: 0.001 });
     assert.ok(result.provider);
     assert.ok(result.strategy);
+  });
+
+  it('should throw meaningful error for empty provider constraints', () => {
+    assert.throws(
+      () => router.selectProvider({ task: 'x' }, { providers: [] }),
+      /No providers available/
+    );
+  });
+
+  it('should persist and reload stats using storage adapter', async () => {
+    const redisMock = new Map();
+    const storage = {
+      set: async (k, v) => redisMock.set(k, v),
+      get: async (k) => redisMock.get(k) ?? null,
+    };
+    const trained = new ThompsonSamplingRouter([{ name: 'claude' }, { name: 'gemini' }]);
+    trained.updateStats('claude', { success: true, costUsd: 0.02, latencyMs: 120, tokensUsed: 150 });
+    await trained.persistStats(storage);
+
+    const loaded = new ThompsonSamplingRouter([{ name: 'claude' }, { name: 'gemini' }]);
+    const ok = await loaded.loadStats(storage);
+    assert.strictEqual(ok, true);
+    const rates = loaded.getEstimatedSuccessRates();
+    assert.ok(rates.claude > rates.gemini);
   });
 
   it('should return estimated success rates', () => {

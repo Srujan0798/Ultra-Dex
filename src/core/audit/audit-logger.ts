@@ -141,7 +141,9 @@ let AuditLogger = class {
         try {
           const entry = JSON.parse(line);
           events[entry.event] = (events[entry.event] || 0) + 1;
-        } catch {}
+        } catch (error) {
+          // Corrupted log line - skip silently
+        }
       });
       const stats = await fs.stat(this.logPath).catch(() => null);
       return {

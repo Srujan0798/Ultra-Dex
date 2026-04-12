@@ -38,4 +38,31 @@ describe('ProviderHealthMonitor', () => {
 
     assert.strictEqual(monitor.checkHealth('claude'), false);
   });
+
+  it('should recover after 3 successful probes', async () => {
+    for (let i = 0; i < 6; i++) monitor.recordError('claude');
+    for (let i = 0; i < 4; i++) monitor.recordLatency('claude', 100);
+    const statusBefore = monitor.getStatus().get('claude');
+    assert.strictEqual(statusBefore?.status, 'UNHEALTHY');
+
+    monitor.probeProvider = async () => true;
+    await monitor.probeUnhealthyProviders();
+    await monitor.probeUnhealthyProviders();
+    await monitor.probeUnhealthyProviders();
+    const statusAfterProbe = monitor.getStatus().get('claude');
+    assert.strictEqual(statusAfterProbe?.status, 'DEGRADED');
+
+    await monitor.probeUnhealthyProviders();
+    await monitor.probeUnhealthyProviders();
+    await monitor.probeUnhealthyProviders();
+    const statusRecovered = monitor.getStatus().get('claude');
+    assert.strictEqual(statusRecovered?.status, 'HEALTHY');
+  });
+
+  it('should mark SLOW when latency exceeds 3x baseline', () => {
+    for (let i = 0; i < 10; i++) monitor.recordLatency('claude', 100);
+    for (let i = 0; i < 10; i++) monitor.recordLatency('claude', 550);
+    const status = monitor.getStatus().get('claude');
+    assert.strictEqual(status?.status, 'SLOW');
+  });
 });

@@ -314,32 +314,44 @@ export class MonitoringService {
     // AI Cost by Provider and Model
     prometheusStr += '\n# HELP ultra_dex_ai_cost_usd_total Total AI cost in USD\n';
     prometheusStr += '# TYPE ultra_dex_ai_cost_usd_total counter\n';
+    prometheusStr += '# HELP ai_cost_usd_total Total AI cost in USD\n';
+    prometheusStr += '# TYPE ai_cost_usd_total counter\n';
     this.providers.forEach((m, provider) => {
       const costByModel = m.costByModel instanceof Map ? m.costByModel : new Map();
       costByModel.forEach((cost, model) => {
         prometheusStr += `ultra_dex_ai_cost_usd_total{provider="${provider}",model="${model}"} ${Math.round(cost * 10000) / 10000}\n`;
+        prometheusStr += `ai_cost_usd_total{provider="${provider}",model="${model}"} ${Math.round(cost * 10000) / 10000}\n`;
       });
     });
 
     // Average Cost Per Request by Provider
     prometheusStr += '\n# HELP ultra_dex_ai_cost_per_request_avg Average cost per request in USD\n';
     prometheusStr += '# TYPE ultra_dex_ai_cost_per_request_avg gauge\n';
+    prometheusStr += '# HELP ai_cost_per_request_avg Average cost per request in USD\n';
+    prometheusStr += '# TYPE ai_cost_per_request_avg gauge\n';
     this.providers.forEach((m, provider) => {
       const avg = m.calls > 0 ? m.totalCost / m.calls : 0;
       prometheusStr += `ultra_dex_ai_cost_per_request_avg{provider="${provider}"} ${Math.round(avg * 1000000) / 1000000}\n`;
+      prometheusStr += `ai_cost_per_request_avg{provider="${provider}"} ${Math.round(avg * 1000000) / 1000000}\n`;
     });
 
     // Cost Savings from Smart Routing
     prometheusStr += '\n# HELP ultra_dex_ai_cost_savings_usd Total savings from smart routing in USD\n';
     prometheusStr += '# TYPE ultra_dex_ai_cost_savings_usd counter\n';
     prometheusStr += `ultra_dex_ai_cost_savings_usd ${Math.round(this.costSavingsUsd * 10000) / 10000}\n`;
+    prometheusStr += '# HELP ai_cost_savings_usd Total savings from smart routing in USD\n';
+    prometheusStr += '# TYPE ai_cost_savings_usd counter\n';
+    prometheusStr += `ai_cost_savings_usd ${Math.round(this.costSavingsUsd * 10000) / 10000}\n`;
 
     // Routing Decisions
     prometheusStr += '\n# HELP ultra_dex_routing_decisions_total Total routing decisions\n';
     prometheusStr += '# TYPE ultra_dex_routing_decisions_total counter\n';
+    prometheusStr += '# HELP routing_decisions_total Total routing decisions\n';
+    prometheusStr += '# TYPE routing_decisions_total counter\n';
     this.routingDecisions.forEach((count, key) => {
       const [strategy, provider] = key.split(':');
       prometheusStr += `ultra_dex_routing_decisions_total{strategy="${strategy}",provider="${provider}"} ${count}\n`;
+      prometheusStr += `routing_decisions_total{strategy="${strategy}",selected_provider="${provider}"} ${count}\n`;
     });
 
     return prometheusStr;

@@ -28,8 +28,12 @@
     "experimentalDecorators": true
   },
   "include": [
-    "apps/dashboard/src/**/*.ts",
-    "apps/dashboard/src/**/*.tsx",
+    "apps/dashboard/app/**/*.ts",
+    "apps/dashboard/app/**/*.tsx",
+    "apps/dashboard/components/**/*.ts",
+    "apps/dashboard/components/**/*.tsx",
+    "apps/dashboard/lib/**/*.ts",
+    "apps/dashboard/lib/**/*.tsx",
     "apps/cloud/ide/src/**/*.ts",
     "apps/cloud/ide/src/**/*.tsx",
     "src/core/interfaces/**/*.ts",
@@ -48,6 +52,7 @@
     "apps/mobile/**",
     "examples/**",
     "src/types/enterprise.ts",
+    "apps/dashboard/src/**",
     "node_modules",
     "dist",
     "build",

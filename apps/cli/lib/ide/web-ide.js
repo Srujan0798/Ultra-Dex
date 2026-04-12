@@ -179,7 +179,7 @@ export class WebIDE {
       }
 
       // Additional safety: block dangerous characters
-      const dangerousChars = /[;&|`$(){}\[\]\\]/;
+      const dangerousChars = /[;&|`$(){}[]]/;
       if (dangerousChars.test(data.command)) {
         ws.send(JSON.stringify({ type: 'error', message: 'Invalid characters in command' }));
         return;
@@ -228,7 +228,7 @@ export class WebIDE {
         }
         const content = await fs.readFile(filePath, 'utf-8');
         res.json({ content });
-      } catch (error) {
+      } catch (_err) {
         res.status(404).json({ error: 'File not found' });
       }
     });

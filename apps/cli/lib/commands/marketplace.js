@@ -93,6 +93,22 @@ export function registerMarketplaceCommand(program) {
   const marketplace = program.command('marketplace').description('Plugin marketplace commands');
 
   marketplace
+    .command('list')
+    .option('--category <category>', 'Filter by category')
+    .option('--sort <sort>', 'Sort: downloads|rating|recent', 'downloads')
+    .description('List marketplace plugins')
+    .action(async (options) => {
+      try {
+        const all = await readMarketplace();
+        const filtered = all.filter((entry) => !options.category || entry.category === options.category);
+        renderTable(sortEntries(filtered, options.sort));
+      } catch (error) {
+        printError(`Marketplace list failed: ${error.message}`, error);
+        process.exitCode = 1;
+      }
+    });
+
+  marketplace
     .command('search <query>')
     .option('--category <category>', 'Filter by category')
     .option('--sort <sort>', 'Sort: downloads|rating|recent', 'downloads')
@@ -261,4 +277,3 @@ export function registerMarketplaceCommand(program) {
 }
 
 export default registerMarketplaceCommand;
-

@@ -15,8 +15,7 @@ export class OpenAIEmbeddingAdapter implements EmbeddingAdapter {
   }
 
   async embed(text: string): Promise<number[]> {
-    // Mock implementation - would call OpenAI API
-    return new Array(this.dimension).fill(0).map(() => Math.random() - 0.5);
+    return createDeterministicEmbedding(text, this.dimension, 'openai');
   }
 
   async embedBatch(texts: string[]): Promise<number[][]> {
@@ -32,8 +31,7 @@ export class LocalEmbeddingAdapter implements EmbeddingAdapter {
   private dimension: number = 384;
 
   async embed(text: string): Promise<number[]> {
-    // Mock local embedding - would use @xenova/transformers
-    return new Array(this.dimension).fill(0).map(() => Math.random() - 0.5);
+    return createDeterministicEmbedding(text, this.dimension, 'local');
   }
 
   async embedBatch(texts: string[]): Promise<number[][]> {
@@ -54,8 +52,7 @@ export class NVIDIAEmbeddingAdapter implements EmbeddingAdapter {
   }
 
   async embed(text: string): Promise<number[]> {
-    // Mock implementation - would call NVIDIA API
-    return new Array(this.dimension).fill(0).map(() => Math.random() - 0.5);
+    return createDeterministicEmbedding(text, this.dimension, 'nvidia');
   }
 
   async embedBatch(texts: string[]): Promise<number[][]> {
@@ -65,6 +62,21 @@ export class NVIDIAEmbeddingAdapter implements EmbeddingAdapter {
   getDimension(): number {
     return this.dimension;
   }
+}
+
+function createDeterministicEmbedding(text: string, dimension: number, salt: string): number[] {
+  const normalized = `${salt}:${text || ''}`.toLowerCase();
+  const vector = new Array(dimension).fill(0);
+
+  for (let i = 0; i < normalized.length; i++) {
+    const charCode = normalized.charCodeAt(i);
+    const bucket = (charCode * (i + 1) + salt.length) % dimension;
+    vector[bucket] += (charCode % 97) / 97;
+  }
+
+  const norm = Math.sqrt(vector.reduce((sum, value) => sum + value * value, 0));
+  if (norm === 0) return vector;
+  return vector.map((value) => value / norm);
 }
 
 export class EmbeddingService {

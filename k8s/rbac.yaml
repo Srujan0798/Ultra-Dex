@@ -1,0 +1,84 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ultra-dex
+  namespace: ultra-dex
+  labels:
+    app.kubernetes.io/name: ultra-dex
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: ultra-dex
+  namespace: ultra-dex
+rules:
+  - apiGroups: ['']
+    resources: ['configmaps', 'secrets']
+    verbs: ['get', 'list', 'watch']
+  - apiGroups: ['']
+    resources: ['pods']
+    verbs: ['get', 'list', 'watch']
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ultra-dex
+  namespace: ultra-dex
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: ultra-dex
+subjects:
+  - kind: ServiceAccount
+    name: ultra-dex
+    namespace: ultra-dex
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ultra-dex-api
+  namespace: ultra-dex
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: ultra-dex-api
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ultra-dex-api
+  namespace: ultra-dex
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ultra-dex-api
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
