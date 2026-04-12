@@ -33,9 +33,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
 
-    - name: Clear platform-specific lock
+      - name: Clear platform-specific lock
       run: rm -f package-lock.json apps/*/package-lock.json packages/*/package-lock.json || true
 
     - name: Install dependencies (cross-platform)

@@ -24,7 +24,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
 
       - name: Clear platform-specific lock
         run: rm -f package-lock.json apps/*/package-lock.json packages/*/package-lock.json || true
