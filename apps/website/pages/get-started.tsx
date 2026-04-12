@@ -1,58 +1,141 @@
 import Head from 'next/head';
 import Link from 'next/link';
+import { Terminal, ArrowRight, Copy, Check } from 'lucide-react';
+import { useState } from 'react';
 
 const STEPS = [
-  'Install Ultra-Dex CLI and verify environment.',
-  'Connect one AI provider key (OpenAI, Anthropic, or Gemini).',
-  'Run the interactive tutorial to create your first agent.',
-  'Open dashboard and verify memory + orchestration pipeline.',
-  'Enable GitHub workflow integration for PR automation.',
+  {
+    number: '01',
+    title: 'Install CLI',
+    description: 'Install Ultra-Dex globally via npm',
+    code: 'npm install -g ultra-dex',
+  },
+  {
+    number: '02',
+    title: 'Configure Keys',
+    description: 'Set up your AI provider API keys',
+    code: 'ultradex config set-provider openai',
+  },
+  {
+    number: '03',
+    title: 'Initialize Project',
+    description: 'Create your first Ultra-Dex project',
+    code: 'ultradex init my-project',
+  },
+  {
+    number: '04',
+    title: 'Define Workflow',
+    description: 'Create your first workflow file',
+    code: 'ultradex workflow create',
+  },
+  {
+    number: '05',
+    title: 'Run & Monitor',
+    description: 'Execute and monitor your workflow',
+    code: 'ultradex run workflow.dex',
+  },
 ];
 
-export default function GetStartedPage() {
+function CodeBlock({ code }: { code: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const copy = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-gray-900 to-slate-900 text-white">
+    <div className="relative bg-[#0a0a0c] border border-[#2a2a35] p-4 font-mono text-sm">
+      <div className="flex items-center gap-2 text-[#6b7280] mb-2">
+        <Terminal className="w-4 h-4" />
+        <span className="text-xs">terminal</span>
+      </div>
+      <code className="text-[#00d4ff]">{code}</code>
+      <button
+        onClick={copy}
+        className="absolute top-4 right-4 p-2 text-[#6b7280] hover:text-white transition-colors"
+      >
+        {copied ? <Check className="w-4 h-4 text-[#10b981]" /> : <Copy className="w-4 h-4" />}
+      </button>
+    </div>
+  );
+}
+
+export default function GetStarted() {
+  return (
+    <>
       <Head>
-        <title>Get Started with Ultra-Dex</title>
-        <meta
-          name="description"
-          content="Launch Ultra-Dex in minutes: install, configure providers, create your first agent, and deploy workflows."
-        />
-        <link rel="canonical" href="https://ultra-dex.dev/get-started" />
+        <title>Get Started — Ultra-Dex</title>
+        <meta name="description" content="Get started with Ultra-Dex in 5 minutes" />
       </Head>
 
-      <section className="container mx-auto px-4 py-16">
-        <div className="mx-auto max-w-3xl">
-          <h1 className="text-4xl font-bold">Get Started in 5 Steps</h1>
-          <p className="mt-3 text-gray-300">
-            This sequence gets a team from zero setup to production-safe workflows quickly.
-          </p>
-
-          <ol className="mt-8 space-y-4">
-            {STEPS.map((step, index) => (
-              <li key={step} className="rounded-xl border border-gray-700 bg-gray-900/60 p-4">
-                <p className="text-sm font-semibold text-blue-300">Step {index + 1}</p>
-                <p className="mt-1 text-sm text-gray-200">{step}</p>
-              </li>
-            ))}
-          </ol>
-
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link
-              href="/demo"
-              className="rounded-lg border border-gray-700 px-5 py-2 font-medium text-gray-200 hover:border-blue-500"
-            >
-              Try Interactive Demo
-            </Link>
-            <Link
-              href="/pricing"
-              className="rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-5 py-2 font-semibold text-white hover:from-blue-500 hover:to-purple-500"
-            >
-              Choose a Plan
-            </Link>
+      {/* Hero */}
+      <section className="py-24 border-b border-[#2a2a35]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
+            <div className="text-xs font-mono text-[#00d4ff] uppercase tracking-widest mb-4">
+              Get Started
+            </div>
+            <h1 className="text-4xl sm:text-5xl font-semibold text-white mb-6">
+              Deploy in 5 minutes
+            </h1>
+            <p className="text-lg text-[#6b7280] leading-relaxed">
+              Get from zero to production-ready AI orchestration in five simple steps.
+            </p>
           </div>
         </div>
       </section>
-    </div>
+
+      {/* Steps */}
+      <section className="py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {STEPS.map((step, index) => (
+              <div
+                key={step.number}
+                className="group bg-[#141418] border border-[#2a2a35] hover:border-[#00d4ff]/30 transition-all"
+              >
+                <div className="p-8">
+                  {/* Header */}
+                  <div className="flex items-start gap-6 mb-6">
+                    <div className="text-4xl font-mono font-semibold text-[#2a2a35] group-hover:text-[#00d4ff]/30 transition-colors">
+                      {step.number}
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-white mb-2">{step.title}</h3>
+                      <p className="text-[#6b7280]">{step.description}</p>
+                    </div>
+                  </div>
+
+                  {/* Code */}
+                  <CodeBlock code={step.code} />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Next Steps */}
+          <div className="mt-16 text-center">
+            <h2 className="text-2xl font-semibold text-white mb-6">What's next?</h2>
+            <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Link
+                href="/docs"
+                className="inline-flex items-center gap-2 px-8 py-4 text-sm font-medium border border-[#00d4ff] text-[#00d4ff] hover:bg-[#00d4ff]/10 transition-all"
+              >
+                Read Documentation
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                href="/demo"
+                className="inline-flex items-center gap-2 px-8 py-4 text-sm font-medium border border-[#2a2a35] text-[#a0a0a8] hover:border-[#00d4ff]/50 hover:text-white transition-all"
+              >
+                Try Demo
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

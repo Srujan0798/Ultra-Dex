@@ -1,166 +1,94 @@
 import Head from 'next/head';
+import { Mail, MessageSquare, GitBranch, Terminal, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+
+const CHANNELS = [
+  {
+    icon: <Mail className="w-5 h-5" />,
+    title: 'Email',
+    value: 'hello@ultra-dex.dev',
+    description: 'General inquiries',
+  },
+  {
+    icon: <MessageSquare className="w-5 h-5" />,
+    title: 'Discord',
+    value: 'Join Community',
+    description: 'Real-time support',
+  },
+  {
+    icon: <GitBranch className="w-5 h-5" />,
+    title: 'GitHub',
+    value: 'github.com/Srujan0798',
+    description: 'Issues & PRs',
+  },
+];
 
 export default function Contact() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white">
+    <>
       <Head>
-        <title>Contact Ultra-Dex | Get in Touch</title>
-        <meta name="description" content="Get in touch with the Ultra-Dex team for support, sales, or partnership inquiries" />
-        <meta name="keywords" content="contact Ultra-Dex, Ultra-Dex support, sales inquiry, partnership" />
-        <link rel="canonical" href="https://ultra-dex.dev/contact" />
+        <title>Contact — Ultra-Dex</title>
+        <meta name="description" content="Get in touch with the Ultra-Dex team" />
       </Head>
 
-      <section className="py-20">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <div className="text-center mb-16">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              Get in <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">Touch</span>
+      {/* Hero */}
+      <section className="py-24 border-b border-[#2a2a35]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-3xl">
+            <div className="text-xs font-mono text-[#00d4ff] uppercase tracking-widest mb-4">
+              Contact
+            </div>
+            <h1 className="text-4xl sm:text-5xl font-semibold text-white mb-6">
+              Get in touch
             </h1>
-            <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-              Have questions about Ultra-Dex? We'd love to hear from you.
+            <p className="text-lg text-[#6b7280]">
+              Questions, feedback, or enterprise inquiries? We're here to help.
             </p>
           </div>
+        </div>
+      </section>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <div>
-              <h2 className="text-2xl font-bold mb-6">Send us a message</h2>
-              <form className="space-y-6">
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
-                    Name
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
-                    placeholder="Your name"
-                  />
+      {/* Channels */}
+      <section className="py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {CHANNELS.map((channel) => (
+              <div
+                key={channel.title}
+                className="group bg-[#141418] border border-[#2a2a35] hover:border-[#00d4ff]/30 transition-all p-8"
+              >
+                <div className="w-10 h-10 flex items-center justify-center border border-[#2a2a35] text-[#00d4ff] mb-6 group-hover:border-[#00d4ff]/50 transition-all">
+                  {channel.icon}
                 </div>
-                
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
-                    placeholder="your.email@example.com"
-                  />
-                </div>
-                
-                <div>
-                  <label htmlFor="subject" className="block text-sm font-medium text-gray-300 mb-2">
-                    Subject
-                  </label>
-                  <select
-                    id="subject"
-                    className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
-                  >
-                    <option value="">Select a subject</option>
-                    <option value="support">Technical Support</option>
-                    <option value="sales">Sales Inquiry</option>
-                    <option value="partnership">Partnership</option>
-                    <option value="general">General Question</option>
-                    <option value="feedback">Feedback</option>
-                  </select>
-                </div>
-                
-                <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-300 mb-2">
-                    Message
-                  </label>
-                  <textarea
-                    id="message"
-                    rows={5}
-                    className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
-                    placeholder="Tell us more about your project..."
-                  ></textarea>
-                </div>
-                
-                <button
-                  type="submit"
-                  className="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-semibold transition-all"
-                >
-                  Send Message
-                </button>
-              </form>
-            </div>
-
-            <div>
-              <h2 className="text-2xl font-bold mb-6">Contact Information</h2>
-              
-              <div className="space-y-6 mb-12">
-                <div className="flex items-start">
-                  <div className="text-blue-400 text-2xl mr-4">📧</div>
-                  <div>
-                    <h3 className="font-semibold">Email</h3>
-                    <p className="text-gray-400">hello@ultra-dex.dev</p>
-                    <p className="text-gray-500 text-sm">For general inquiries</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start">
-                  <div className="text-blue-400 text-2xl mr-4">💼</div>
-                  <div>
-                    <h3 className="font-semibold">Sales</h3>
-                    <p className="text-gray-400">sales@ultra-dex.dev</p>
-                    <p className="text-gray-500 text-sm">For enterprise and pricing questions</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start">
-                  <div className="text-blue-400 text-2xl mr-4">🛡️</div>
-                  <div>
-                    <h3 className="font-semibold">Security</h3>
-                    <p className="text-gray-400">security@ultra-dex.dev</p>
-                    <p className="text-gray-500 text-sm">For security-related issues</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start">
-                  <div className="text-blue-400 text-2xl mr-4">🏢</div>
-                  <div>
-                    <h3 className="font-semibold">Office</h3>
-                    <p className="text-gray-400">
-                      San Francisco, CA<br />
-                      United States
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start">
-                  <div className="text-blue-400 text-2xl mr-4">💬</div>
-                  <div>
-                    <h3 className="font-semibold">Community</h3>
-                    <p className="text-gray-400">
-                      Join our Discord community for real-time support and discussions
-                    </p>
-                    <a href="https://discord.gg/ultra-dex" className="text-blue-400 hover:underline mt-2 inline-block">
-                      Join Discord
-                    </a>
-                  </div>
-                </div>
+                <h3 className="text-lg font-semibold text-white mb-1">{channel.title}</h3>
+                <p className="text-[#00d4ff] font-mono text-sm mb-2">{channel.value}</p>
+                <p className="text-sm text-[#6b7280]">{channel.description}</p>
               </div>
+            ))}
+          </div>
 
-              <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 border border-gray-700">
-                <h3 className="text-xl font-bold mb-4">Support Hours</h3>
-                <p className="text-gray-300 mb-2">Monday - Friday: 9am - 6pm PST</p>
-                <p className="text-gray-300">Weekends: Limited support</p>
-                
-                <div className="mt-6 pt-6 border-t border-gray-700">
-                  <h4 className="font-semibold mb-2">For urgent issues:</h4>
-                  <p className="text-gray-400 text-sm">
-                    Enterprise customers have 24/7 support access. 
-                    Contact your account manager for emergency support.
-                  </p>
+          {/* Enterprise CTA */}
+          <div className="mt-16 bg-[#141418] border border-[#2a2a35] p-8">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <Terminal className="w-4 h-4 text-[#00d4ff]" />
+                  <span className="text-xs font-mono text-[#00d4ff] uppercase">Enterprise</span>
                 </div>
+                <h2 className="text-2xl font-semibold text-white mb-2">Need dedicated support?</h2>
+                <p className="text-[#6b7280]">Get priority support, custom integrations, and SLA guarantees.</p>
               </div>
+              <Link
+                href="/enterprise"
+                className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium border border-[#00d4ff] text-[#00d4ff] hover:bg-[#00d4ff]/10 transition-all shrink-0"
+              >
+                Contact Sales
+                <ArrowRight className="w-4 h-4" />
+              </Link>
             </div>
           </div>
         </div>
       </section>
-    </div>
+    </>
   );
 }
