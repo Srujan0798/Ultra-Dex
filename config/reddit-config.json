@@ -1,0 +1,7 @@
+{
+  "monitoredPosts": [],
+  "subreddits": ["LocalLLaMA", "SaaS", "Entrepreneur"],
+  "scrapeInterval": "*/30 * * * *",
+  "maxCommentsPerPost": 500,
+  "searchTerms": ["ultra-dex", "ai orchestration", "llm routing"]
+}

@@ -1,0 +1,15 @@
+{
+  "continue_threshold": 0.7,
+  "stop_threshold": 0.3,
+  "min_signals_required": 5,
+  "min_diversity": 3,
+  "weights": {
+    "sentiment": 0.3,
+    "buying_signal": 0.3,
+    "willingness_to_pay": 0.2,
+    "interest_signal": 0.2
+  },
+  "upvote_multiplier": 3,
+  "interview_multiplier": 10,
+  "recalibrate_weekly": true
+}

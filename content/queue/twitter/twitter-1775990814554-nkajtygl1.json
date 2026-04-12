@@ -1,0 +1,15 @@
+{
+  "id": "twitter-1775990814554-nkajtygl1",
+  "platform": "twitter",
+  "content": "🚀 Ultra-Dex v6.0.0 shipped!\n\nNow with 14 AI providers\n\nBuilt by a solo dev in 2 months.\n\nAMA about the tech decisions 👇",
+  "tags": [
+    "milestone",
+    "launch",
+    "buildinpublic"
+  ],
+  "status": "draft",
+  "sourceData": {
+    "type": "milestone",
+    "reference": "{\"version\":\"6.0.0\",\"highlight\":\"Now with 14 AI providers\",\"duration\":\"2 months\"}"
+  }
+}

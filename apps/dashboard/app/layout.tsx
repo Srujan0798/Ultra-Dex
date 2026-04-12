@@ -1,15 +1,16 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import './globals.css';
-import { 
-  LayoutDashboard, 
-  ListTodo, 
-  Users, 
-  Database, 
-  Settings, 
+import {
+  LayoutDashboard,
+  ListTodo,
+  Users,
+  Database,
+  Settings,
   ShoppingBag,
   ShieldCheck,
-  Zap
+  Zap,
+  Cpu,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -28,6 +29,7 @@ export default function RootLayout({
     { name: 'Tasks', href: '/tasks', icon: ListTodo },
     { name: 'Agents', href: '/agents', icon: Users },
     { name: 'Memory', href: '/memory', icon: Database },
+    { name: 'AUTO-CEO', href: '/auto-ceo', icon: Cpu },
     { name: 'Marketplace', href: '/marketplace', icon: ShoppingBag },
     { name: 'Certification', href: '/certify', icon: ShieldCheck },
     { name: 'Enterprise', href: '/enterprise', icon: Zap },

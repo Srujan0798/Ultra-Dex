@@ -1,0 +1,125 @@
+{
+  "jobs": [
+    {
+      "id": "reddit-scraper",
+      "cronExpression": "*/30 * * * *",
+      "handler": "scrapeReddit",
+      "enabled": true,
+      "timeoutMs": 300000,
+      "maxRetries": 3,
+      "requiresApproval": false
+    },
+    {
+      "id": "sentiment-analyzer",
+      "cronExpression": "*/30 * * * *",
+      "handler": "analyzeSentiment",
+      "enabled": true,
+      "timeoutMs": 300000,
+      "maxRetries": 3,
+      "requiresApproval": false
+    },
+    {
+      "id": "decision-engine",
+      "cronExpression": "0 9 * * *",
+      "handler": "runDecisionEngine",
+      "enabled": true,
+      "timeoutMs": 300000,
+      "maxRetries": 3,
+      "requiresApproval": false
+    },
+    {
+      "id": "content-drafter",
+      "cronExpression": "0 7 * * *",
+      "handler": "draftContent",
+      "enabled": true,
+      "timeoutMs": 300000,
+      "maxRetries": 3,
+      "requiresApproval": true
+    },
+    {
+      "id": "content-submitter",
+      "cronExpression": "0 8 * * *",
+      "handler": "submitApprovedContent",
+      "enabled": true,
+      "timeoutMs": 300000,
+      "maxRetries": 2,
+      "requiresApproval": true
+    },
+    {
+      "id": "outreach-drafter",
+      "cronExpression": "0 10 * * *",
+      "handler": "draftOutreach",
+      "enabled": true,
+      "timeoutMs": 300000,
+      "maxRetries": 3,
+      "requiresApproval": true
+    },
+    {
+      "id": "metrics-updater",
+      "cronExpression": "0 * * * *",
+      "handler": "updateMetrics",
+      "enabled": true,
+      "timeoutMs": 300000,
+      "maxRetries": 3,
+      "requiresApproval": false
+    },
+    {
+      "id": "self-improvement",
+      "cronExpression": "0 6 * * 0",
+      "handler": "runSelfImprovement",
+      "enabled": true,
+      "timeoutMs": 600000,
+      "maxRetries": 2,
+      "requiresApproval": false
+    }
+  ],
+  "featureFlags": {
+    "redditScraper": true,
+    "sentimentAnalyzer": true,
+    "decisionEngine": true,
+    "contentDrafter": true,
+    "contentSubmitter": true,
+    "outreachDrafter": true,
+    "metricsUpdater": true,
+    "selfImprovement": true
+  },
+  "rateLimits": {
+    "reddit-scraper": {
+      "requestsPerHour": 60,
+      "burstLimit": 10
+    },
+    "sentiment-analyzer": {
+      "requestsPerHour": 120,
+      "burstLimit": 20
+    },
+    "decision-engine": {
+      "requestsPerHour": 10,
+      "burstLimit": 5
+    },
+    "content-drafter": {
+      "requestsPerHour": 30,
+      "burstLimit": 5
+    },
+    "content-submitter": {
+      "requestsPerHour": 10,
+      "burstLimit": 3
+    },
+    "outreach-drafter": {
+      "requestsPerHour": 20,
+      "burstLimit": 5
+    },
+    "metrics-updater": {
+      "requestsPerHour": 60,
+      "burstLimit": 10
+    },
+    "self-improvement": {
+      "requestsPerHour": 5,
+      "burstLimit": 2
+    }
+  },
+  "approvalGates": {
+    "posting": true,
+    "dming": true,
+    "interviews": false
+  }
+}
