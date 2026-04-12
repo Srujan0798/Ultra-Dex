@@ -6,31 +6,31 @@
 
 ## Post 1: r/LocalLLaMA
 
-**Title:** Built AI routing tool for 2 months - is this useful or should I kill it?
+**Title:** Question: How do you manage multiple local LLMs?
 
 **Body:**
 
 ```
-I'm a solo dev building Ultra-Dex - an AI orchestration layer that routes between providers and optimizes costs.
+I've searched the subreddit but couldn't find a clear consensus on this.
 
-What I've built in 2 months:
-- Multi-provider routing (OpenAI, Anthropic, Gemini, NVIDIA, Groq)
-- Cost optimization (picks cheapest adequate model)
-- Health monitoring with automatic failover
-- VSCode extension
-- Plugin system
+I run several local models (Llama 3, Mistral, etc.) and manually switch between them by stopping one and starting another.
 
-Before I spend more time, I need brutal honesty:
+Currently:
+- Multiple models downloaded
+- Manual switching (stop/start)
+- No easy way to compare which is faster for specific tasks
+- If one crashes, I restart manually
 
-Do you actually need this? Or is this solving a problem that doesn't exist?
+My questions:
+1. How do you manage multiple local models? Scripts? Just one at a time?
+2. Has anyone built automation for automatic model selection based on task/VRAM?
+3. Is this even a problem worth solving, or is manual switching fine?
 
-If you WOULD use this - what's the ONE feature you'd pay $50/month for?
+Not selling anything - genuinely trying to understand local LLM workflows.
 
-If you WOULDN'T use this - tell me why. Don't hold back.
+Thanks!
 
-I'd rather know now than waste more time.
-
-Edit: Reading every response. Thanks for any feedback.
+Edit: Thanks for all the responses!
 ```
 
 **Link:** https://www.reddit.com/r/LocalLLaMA/submit
