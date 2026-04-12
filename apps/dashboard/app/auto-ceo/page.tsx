@@ -17,12 +17,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import {
-  readState,
-  readSentimentReport,
-  readScraperResults,
-  readSchedulerJobs,
-  readDraftPost,
-  readDraftDM,
+  fetchDashboardData,
   approvePost,
   approveDM,
   overrideDecision,
@@ -33,7 +28,8 @@ import {
   type SchedulerJob,
   type DraftPost,
   type DraftDM,
-} from '@/lib/auto-ceo-api';
+  type DashboardData,
+} from '@/lib/auto-ceo-api-client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
@@ -203,20 +199,17 @@ export default function AutoCEOPage() {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    const [s, sent, scr, j, dp, ddm] = await Promise.all([
-      readState(),
-      readSentimentReport(),
-      readScraperResults(),
-      readSchedulerJobs(),
-      readDraftPost(),
-      readDraftDM(),
-    ]);
-    setState(s);
-    setSentiment(sent);
-    setScraper(scr);
-    setJobs(j);
-    setDraftPost(dp);
-    setDraftDM(ddm);
+    try {
+      const data = await fetchDashboardData();
+      setState(data.state);
+      setSentiment(data.sentiment);
+      setScraper(data.scraper);
+      setJobs(data.scheduler);
+      setDraftPost(data.draftPost);
+      setDraftDM(data.draftDM);
+    } catch (error) {
+      console.error('Failed to fetch data:', error);
+    }
     setLoading(false);
   }, []);
 

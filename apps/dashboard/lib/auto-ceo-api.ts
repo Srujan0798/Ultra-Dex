@@ -1,4 +1,7 @@
 // AUTO-CEO API Client — reads from local JSON state files
+// NOTE: This is a server-only module
+'use server';
+
 import fs from 'fs';
 import path from 'path';
 
