@@ -1,114 +1,176 @@
 import Head from 'next/head';
-import { useRouter } from 'next/router';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
+import { Terminal, ArrowRight, Check } from 'lucide-react';
+import Link from 'next/link';
 
-type Plan = 'free' | 'pro' | 'team' | 'enterprise';
+type Plan = 'free' | 'pro' | 'team';
 type Billing = 'monthly' | 'yearly';
 
-const PLAN_LABEL: Record<Plan, string> = {
-  free: 'Free',
-  pro: 'Pro',
-  team: 'Team',
-  enterprise: 'Enterprise',
+const PLANS: Record<Plan, { name: string; price: number; features: string[] }> = {
+  free: {
+    name: 'Free',
+    price: 0,
+    features: ['1 agent', '100 requests/month', 'Community support'],
+  },
+  pro: {
+    name: 'Pro',
+    price: 49,
+    features: ['10 agents', 'Unlimited requests', 'Priority support', 'API access'],
+  },
+  team: {
+    name: 'Team',
+    price: 199,
+    features: ['50 agents', 'Team workspaces', 'SLA guarantees', 'SSO'],
+  },
 };
 
-export default function SignupPage() {
-  const router = useRouter();
+export default function Signup() {
+  const [plan, setPlan] = useState<Plan>('pro');
+  const [billing, setBilling] = useState<Billing>('monthly');
+  const [email, setEmail] = useState('');
+  const [step, setStep] = useState<'plan' | 'account'>('plan');
 
-  const initialPlan = (router.query.plan as Plan) || 'pro';
-  const initialBilling = (router.query.billing as Billing) || 'monthly';
-
-  const [plan, setPlan] = useState<Plan>(initialPlan);
-  const [billing, setBilling] = useState<Billing>(initialBilling);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  const subtitle = useMemo(() => `${PLAN_LABEL[plan]} · ${billing}`, [plan, billing]);
-
-  const beginCheckout = async (): Promise<void> => {
-    setLoading(true);
-    setError('');
-
-    try {
-      const response = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan, billing }),
-      });
-
-      const data = (await response.json()) as { url?: string; error?: string };
-      if (!response.ok || !data.url) {
-        throw new Error(data.error || 'Checkout initialization failed');
-      }
-
-      window.location.href = data.url;
-    } catch (checkoutError) {
-      setError(checkoutError instanceof Error ? checkoutError.message : 'Checkout failed');
-      setLoading(false);
-    }
-  };
+  const price = billing === 'yearly' ? Math.round(PLANS[plan].price * 12 * 0.8) : PLANS[plan].price;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-slate-950 text-white">
+    <>
       <Head>
-        <title>Sign Up - Ultra-Dex</title>
-        <meta name="description" content="Create your Ultra-Dex workspace and start orchestration workflows." />
-        <link rel="canonical" href="https://ultra-dex.dev/signup" />
+        <title>Sign Up — Ultra-Dex</title>
+        <meta name="description" content="Create your Ultra-Dex account" />
       </Head>
 
-      <section className="container mx-auto px-4 py-16">
-        <div className="mx-auto max-w-xl rounded-2xl border border-gray-700 bg-gray-900/60 p-6 shadow-xl">
-          <h1 className="text-2xl font-bold">Create Your Workspace</h1>
-          <p className="mt-1 text-sm text-gray-400">{subtitle}</p>
+      <div className="min-h-screen flex items-center justify-center py-24">
+        <div className="max-w-xl w-full mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-[#141418] border border-[#2a2a35] p-8">
+            {/* Header */}
+            <div className="flex items-center gap-2 mb-6">
+              <Terminal className="w-5 h-5 text-[#00d4ff]" />
+              <span className="text-sm font-mono text-[#00d4ff] uppercase">Create Account</span>
+            </div>
 
-          <div className="mt-6 space-y-4">
-            <label className="block">
-              <span className="text-sm text-gray-300">Plan</span>
-              <select
-                value={plan}
-                onChange={(event) => setPlan(event.target.value as Plan)}
-                className="mt-1 w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm"
-              >
-                <option value="free">Free</option>
-                <option value="pro">Pro</option>
-                <option value="team">Team</option>
-                <option value="enterprise">Enterprise</option>
-              </select>
-            </label>
+            {step === 'plan' ? (
+              <>
+                {/* Plan Selection */}
+                <h1 className="text-2xl font-semibold text-white mb-2">Choose your plan</h1>
+                <p className="text-[#6b7280] mb-6">Start free or upgrade for more power.</p>
 
-            <label className="block">
-              <span className="text-sm text-gray-300">Billing</span>
-              <select
-                value={billing}
-                onChange={(event) => setBilling(event.target.value as Billing)}
-                className="mt-1 w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm"
-              >
-                <option value="monthly">Monthly</option>
-                <option value="yearly">Yearly (20% off)</option>
-              </select>
-            </label>
+                {/* Billing Toggle */}
+                <div className="flex gap-1 p-1 bg-[#0a0a0c] border border-[#2a2a35] mb-6">
+                  <button
+                    onClick={() => setBilling('monthly')}
+                    className={`flex-1 py-2 text-sm font-medium transition-all ${
+                      billing === 'monthly'
+                        ? 'bg-[#2a2a35] text-white'
+                        : 'text-[#6b7280] hover:text-white'
+                    }`}
+                  >
+                    Monthly
+                  </button>
+                  <button
+                    onClick={() => setBilling('yearly')}
+                    className={`flex-1 py-2 text-sm font-medium transition-all ${
+                      billing === 'yearly'
+                        ? 'bg-[#2a2a35] text-white'
+                        : 'text-[#6b7280] hover:text-white'
+                    }`}
+                  >
+                    Yearly <span className="text-[#10b981]">-20%</span>
+                  </button>
+                </div>
+
+                {/* Plans */}
+                <div className="space-y-3 mb-6">
+                  {(Object.keys(PLANS) as Plan[]).map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => setPlan(p)}
+                      className={`w-full flex items-center justify-between p-4 border transition-all ${
+                        plan === p
+                          ? 'border-[#00d4ff] bg-[#00d4ff]/5'
+                          : 'border-[#2a2a35] hover:border-[#00d4ff]/30'
+                      }`}
+                    >
+                      <div className="text-left">
+                        <div className="font-medium text-white">{PLANS[p].name}</div>
+                        <div className="text-sm text-[#6b7280]">
+                          {p === 'free' ? 'Free forever' : `$${PLANS[p].price}/mo`}
+                        </div>
+                      </div>
+                      {plan === p && (
+                        <div className="w-5 h-5 border border-[#00d4ff] flex items-center justify-center">
+                          <div className="w-2.5 h-2.5 bg-[#00d4ff]" />
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Features */}
+                <div className="bg-[#0a0a0c] border border-[#2a2a35] p-4 mb-6">
+                  <div className="text-sm text-[#6b7280] mb-2">Included:</div>
+                  <ul className="space-y-2">
+                    {PLANS[plan].features.map((feature) => (
+                      <li key={feature} className="flex items-center gap-2 text-sm text-[#a0a0a8]">
+                        <Check className="w-4 h-4 text-[#00d4ff]" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <button
+                  onClick={() => setStep('account')}
+                  className="w-full flex items-center justify-center gap-2 py-4 border border-[#00d4ff] text-[#00d4ff] hover:bg-[#00d4ff]/10 transition-all"
+                >
+                  Continue
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </>
+            ) : (
+              <>
+                {/* Account Creation */}
+                <h1 className="text-2xl font-semibold text-white mb-2">Create your account</h1>
+                <p className="text-[#6b7280] mb-6">
+                  {PLANS[plan].name} plan • {billing === 'yearly' ? 'Yearly' : 'Monthly'}
+                </p>
+
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label className="block text-sm text-[#6b7280] mb-2">Email</label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full px-4 py-3 bg-[#0a0a0c] border border-[#2a2a35] text-white placeholder:text-[#6b7280] focus:border-[#00d4ff] outline-none transition-colors"
+                      placeholder="you@company.com"
+                    />
+                  </div>
+                </div>
+
+                <button className="w-full flex items-center justify-center gap-2 py-4 border border-[#00d4ff] text-[#00d4ff] hover:bg-[#00d4ff]/10 transition-all mb-4">
+                  Create Account
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+
+                <button
+                  onClick={() => setStep('plan')}
+                  className="w-full py-2 text-sm text-[#6b7280] hover:text-white transition-colors"
+                >
+                  Back to plans
+                </button>
+              </>
+            )}
+
+            {/* Sign In Link */}
+            <div className="mt-6 pt-6 border-t border-[#2a2a35] text-center">
+              <span className="text-sm text-[#6b7280]">Already have an account? </span>
+              <Link href="/login" className="text-sm text-[#00d4ff] hover:underline">
+                Sign in
+              </Link>
+            </div>
           </div>
-
-          {error && (
-            <p className="mt-4 rounded-lg border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-sm text-rose-300">
-              {error}
-            </p>
-          )}
-
-          <button
-            type="button"
-            onClick={beginCheckout}
-            disabled={loading}
-            className="mt-6 w-full rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 font-semibold transition hover:from-blue-500 hover:to-purple-500 disabled:opacity-60"
-          >
-            {loading ? 'Preparing checkout…' : 'Continue'}
-          </button>
-
-          <p className="mt-3 text-xs text-gray-500">
-            Enterprise plans route to sales automatically when self-serve checkout is not configured.
-          </p>
         </div>
-      </section>
-    </div>
+      </div>
+    </>
   );
 }
