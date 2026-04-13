@@ -1,0 +1,41 @@
+# DexGraph Workflow Template
+version: dexgraph/v1
+name: my-workflow
+description: Describe what this workflow does
+
+context:
+  environment: development
+
+on_failure:
+  retry: 2
+  rollback: true
+
+tasks:
+  - id: plan
+    role: architect
+    instruction: |
+      Plan the implementation. Define data models and component boundaries.
+    output: architecture-plan
+
+  - id: implement
+    role: engineer
+    instruction: |
+      Implement the plan from {{plan.output}}.
+      Write clean, tested TypeScript code.
+    depends_on:
+      - plan
+    output: implementation
+    verify:
+      type: unit_test
+      command: npm test
+
+  - id: review
+    role: reviewer
+    instruction: |
+      Review the implementation at {{implement.output}}.
+      Check for security issues, best practices, completeness.
+    depends_on:
+      - implement
+    verify:
+      type: llm_check
+      policy: Code must be secure, well-tested, and production-ready
