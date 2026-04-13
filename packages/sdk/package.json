@@ -14,8 +14,12 @@
   "publishConfig": {
     "access": "public"
   },
+  "bin": {
+    "ultra-dex-demo": "./bin/demo.js"
+  },
   "files": [
     "dist/",
+    "bin/",
     "README.md"
   ],
   "scripts": {
