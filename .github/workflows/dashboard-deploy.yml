@@ -73,7 +73,7 @@ jobs:
         run: |
           npm i -g vercel@latest
           vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
-          vercel deploy --prod --token="$VERCEL_TOKEN"
+          vercel deploy --prod --token="$VERCEL_TOKEN" --archive=tgz
 
       - name: Skip Vercel deploy (missing secrets)
         if: ${{ env.VERCEL_TOKEN == '' || env.VERCEL_ORG_ID == '' || env.VERCEL_PROJECT_ID == '' }}
