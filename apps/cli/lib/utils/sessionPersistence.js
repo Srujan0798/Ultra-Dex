@@ -111,12 +111,13 @@ class SessionPersistence {
 
       // Index keywords for search
       const keywords = this.extractKeywords(decision + ' ' + task);
-      for (const keyword of keywords) {
-        await this.db.run('INSERT INTO memory_index (id, decision_id, keyword) VALUES (?, ?, ?)', [
-          this.generateId(),
-          id,
-          keyword,
-        ]);
+      if (keywords.length > 0) {
+        const placeholders = keywords.map(() => '(?, ?, ?)').join(', ');
+        const values = [];
+        for (const keyword of keywords) {
+          values.push(this.generateId(), id, keyword);
+        }
+        await this.db.run(`INSERT INTO memory_index (id, decision_id, keyword) VALUES ${placeholders}`, values);
       }
 
       await this.db.exec('COMMIT');
