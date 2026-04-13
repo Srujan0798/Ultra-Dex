@@ -1,0 +1,46 @@
+version: dexgraph/v1
+name: data-pipeline
+description: ETL data pipeline from CSV to Database
+
+context:
+  source: csv
+  destination: postgres
+  schedule: daily
+
+tasks:
+  - id: extract
+    role: engineer
+    instruction: |
+      Create CSV reader with:
+      - Streaming for large files
+      - Error handling for malformed rows
+      - Progress logging
+    output: extractor
+
+  - id: transform
+    role: engineer
+    instruction: |
+      Transform raw data:
+      - Validate schema
+      - Clean/normalize fields
+      - Handle duplicates
+    depends_on: [extract]
+    output: transformer
+
+  - id: load
+    role: engineer
+    instruction: |
+      Load to PostgreSQL:
+      - Batch inserts
+      - Transaction handling
+      - Idempotency
+    depends_on: [transform]
+    output: loader
+
+  - id: schedule
+    role: architect
+    instruction: |
+      Set up daily cron job
+      Add monitoring and alerts
+    depends_on: [load]
+    output: scheduler

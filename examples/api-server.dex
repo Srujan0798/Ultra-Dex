@@ -1,0 +1,56 @@
+version: dexgraph/v1
+name: api-server
+description: Build a complete REST API server
+
+context:
+  tech_stack: [nodejs, express]
+  port: 3000
+
+tasks:
+  - id: design
+    role: architect
+    instruction: |
+      Design REST API endpoints:
+      - GET /users - list users
+      - POST /users - create user
+      - GET /users/:id - get user
+      - PUT /users/:id - update user
+      - DELETE /users/:id - delete user
+    output: api-design.md
+
+  - id: setup
+    role: engineer
+    instruction: |
+      Initialize Node.js project with:
+      - package.json
+      - express dependency
+      - basic folder structure
+    depends_on: [design]
+    output: project-structure
+
+  - id: implement
+    role: engineer
+    instruction: |
+      Implement all API endpoints from {{design.output}}
+      Include error handling and validation
+    depends_on: [setup]
+    output: api-implementation
+
+  - id: test
+    role: tester
+    instruction: |
+      Create unit tests for all endpoints
+      Test happy paths and error cases
+    depends_on: [implement]
+    output: test-suite
+    verify:
+      type: unit_test
+      command: npm test
+
+  - id: review
+    role: reviewer
+    instruction: |
+      Review the API implementation
+      Check for security issues, best practices
+    depends_on: [test]
+    output: review-report

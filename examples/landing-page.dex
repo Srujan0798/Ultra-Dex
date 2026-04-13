@@ -1,0 +1,48 @@
+version: dexgraph/v1
+name: landing-page
+description: Marketing landing page with React
+
+context:
+  tech: [react, tailwind, vite]
+  goal: convert visitors
+
+tasks:
+  - id: content
+    role: architect
+    instruction: |
+      Write landing page copy:
+      - Headline
+      - Value proposition
+      - Feature list
+      - CTA sections
+    output: content.md
+
+  - id: design
+    role: architect
+    instruction: |
+      Create design system:
+      - Color palette
+      - Typography
+      - Component specifications
+    output: design-system
+
+  - id: develop
+    role: engineer
+    instruction: |
+      Build landing page with React:
+      - Hero section
+      - Features grid
+      - Pricing section
+      - Footer
+    depends_on: [content, design]
+    output: landing-page
+
+  - id: optimize
+    role: tester
+    instruction: |
+      Performance optimization:
+      - Lazy load images
+      - Optimize bundle
+      - SEO meta tags
+    depends_on: [develop]
+    output: optimized-site
