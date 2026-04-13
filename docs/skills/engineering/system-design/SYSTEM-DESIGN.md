@@ -1,542 +1,479 @@
-# 🏗️ Ultra-Dex System Design
+# Ultra-Dex System Design
 
-> **Scalable architecture for AI orchestration platform**
-
----
-
-## 1. Requirements
-
-### Functional
-
-- Route AI tasks to 17+ providers
-- Coordinate multi-agent swarms
-- Persist memory with semantic search
-- Enforce governance policies
-- Support 10K+ concurrent users
-
-### Non-Functional
-
-- **Availability:** 99.9% uptime
-- **Latency:** P95 < 200ms (routing), < 2s (execution)
-- **Throughput:** 10K requests/minute
-- **Scalability:** Horizontal scaling
-- **Security:** SOC 2 compliant
+> Deterministic scheduler design for AI workflows
 
 ---
 
-## 2. High-Level Architecture
+## 1. Goal
 
+Design a scalable, deterministic scheduling architecture for DexGraph-based AI workflows with clear boundaries across:
+
+- graph construction
+- lifecycle/state management
+- scheduling and concurrency
+- dispatch and execution adapters
+- governance checks
+- workflow persistence and context propagation
+
+This document is grounded in the current code under `dexgraph/`, `memory/`, and `governance/`.
+
+---
+
+## 2. Problem Statement
+
+Ultra-Dex orchestrates non-deterministic AI execution providers, but the orchestration layer itself must remain deterministic.
+
+The scheduler must:
+
+- execute only dependency-satisfied nodes
+- preserve legal node state transitions
+- enforce concurrency limits
+- apply governance before execution
+- support retries, rollback, and halt policies
+- persist enough workflow state for recovery and downstream context
+
+The design must keep execution-provider behavior outside the orchestration core.
+
+---
+
+## 3. Design Principles
+
+1. **Deterministic orchestration, non-deterministic execution**
+   Provider output may vary; scheduling decisions must not.
+
+2. **Graph is source of truth**
+   Dependency resolution comes from DexGraph, not from runtime heuristics.
+
+3. **State transitions are explicit**
+   The state machine is the only authority on legal lifecycle changes.
+
+4. **Execution is adapter-driven**
+   Scheduler does not embed provider logic.
+
+5. **Governance is a hard gate**
+   Policy evaluation happens before dispatch.
+
+6. **Context propagation is infrastructure**
+   Dependency outputs are injected through dedicated workflow memory and context layers.
+
+---
+
+## 4. Scope
+
+### In scope
+
+- `dexgraph/graph.ts`
+- `dexgraph/stateMachine.ts`
+- `dexgraph/scheduler.ts`
+- `dexgraph/dispatcher.ts`
+- `dexgraph/contextInjector.ts`
+- `memory/workflowStore.ts`
+- governance integration points
+- execution adapter interface boundary
+
+### Out of scope
+
+- frontend/API gateway design
+- vendor-specific model routing
+- long-term memory product strategy
+- multi-region infra topology
+
+---
+
+## 5. High-Level Architecture
+
+```text
+Workflow DSL
+    ↓
+Parser / Types
+    ↓
+DexGraph
+    ↓
+Scheduler
+    ↓
+Governance Evaluation
+    ↓
+Dispatcher
+    ↓
+Execution Adapter
+    ↓
+Verification
+    ↓
+Workflow Store
+    ↓
+Context Injector
+    ↓
+Next Runnable Nodes
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                         CLIENTS                              │
-├─────────────────────────────────────────────────────────────┤
-│ CLI │ Dashboard │ API │ VSCode │ MCP │ WebSocket │ Mobile  │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                     API GATEWAY (Kong/AWS)                   │
-│  Rate Limiting │ Auth │ SSL │ Routing │ Caching            │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   ORCHESTRATION LAYER                       │
-├─────────────────────────────────────────────────────────────┤
-│ AgentOrchestrator │ Task Graph │ Ralph Loop │ Swarm Coord   │
-└─────────────────────────────────────────────────────────────┘
-                              │
-        ┌─────────────────────┼─────────────────────┐
-        ▼                     ▼                     ▼
-┌───────────────┐   ┌───────────────┐   ┌───────────────┐
-│   AI META     │   │    MEMORY     │   │  GOVERNANCE   │
-│    LAYER      │   │    SYSTEM     │   │    LAYER      │
-├───────────────┤   ├───────────────┤   ├───────────────┤
-│ 17+ Providers │   │ 3-Tier Store  │   │ Policy Engine │
-│ Smart Router  │   │ Vector Search │   │ Audit Trail   │
-│ Fallback Chain│   │ Knowledge Graph│  │ RBAC          │
-└───────────────┘   └───────────────┘   └───────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                      DATA LAYER                              │
-├─────────────────────────────────────────────────────────────┤
-│ Redis │ PostgreSQL │ ChromaDB │ S3 │ Kafka │ Elasticsearch │
-└─────────────────────────────────────────────────────────────┘
-```
+
+### Responsibility split
+
+| Component | Responsibility |
+| --- | --- |
+| Parser + Types | Build typed workflow definition |
+| DexGraph | Store nodes/edges, validate DAG, answer dependency queries |
+| StateMachine | Enforce legal lifecycle transitions |
+| Scheduler | Select runnable work, apply concurrency and failure policy |
+| Dispatcher | Build execution context and call adapter |
+| Execution Adapter | Run work against external execution system |
+| WorkflowStore | Persist node state, outputs, execution history, metrics |
+| ContextInjector | Resolve dependency outputs for downstream execution |
+| GovernanceManager | Block or pause unsafe/invalid work |
 
 ---
 
-## 3. Service Boundaries
+## 6. Current Module Design
 
-### 3.1 API Gateway
+### 6.1 DexGraph
 
-**Responsibilities:**
+Current implementation in `dexgraph/graph.ts` provides:
 
-- Authentication/Authorization
-- Rate limiting
-- SSL termination
-- Request routing
-- Caching
+- node registry
+- edge registry
+- dependency and dependent lookup
+- DAG validation
+- topological sort
+- executable node discovery from dependency state
 
-**Tech:** Kong/AWS API Gateway
+This is the deterministic topology layer. It must remain free of:
 
-```yaml
-# Kong configuration
-services:
-  - name: ultra-dex-api
-    url: http://api:3000
-    routes:
-      - paths: ['/api']
-    plugins:
-      - name: rate-limiting
-        config:
-          minute: 1000
-          policy: redis
-      - name: jwt
-        config:
-          uri_param_names: []
-          cookie_names: []
-```
+- provider-specific code
+- persistence logic
+- governance policy
+
+### 6.2 State Machine
+
+Current implementation in `dexgraph/stateMachine.ts` models:
+
+- `CREATED`
+- `READY`
+- `RUNNING`
+- `VERIFYING`
+- `SUCCESS`
+- `FAILED`
+- `RETRY`
+- `BLOCKED`
+- `ROLLBACK`
+
+It owns:
+
+- legal transitions
+- transition history
+- retry counting
+- retry backoff
+- rollback propagation
+
+This is correct and should remain the only owner of node lifecycle rules.
+
+### 6.3 Scheduler
+
+Current implementation in `dexgraph/scheduler.ts` owns:
+
+- root-node activation
+- main scheduling loop
+- active task tracking
+- dependency satisfaction checks
+- concurrency enforcement
+- timeout wrapping
+- governance pre-checks
+- retry / halt / rollback handling
+- downstream unlock on success
+
+This is the core orchestration loop.
+
+### 6.4 Dispatcher
+
+Current implementation in `dexgraph/dispatcher.ts` already exposes the correct architectural direction:
+
+- `dispatch(node)`
+- `dispatchWithContext(node, verifier?)`
+- `dispatchWithVerification(node, verifier)`
+- `waitForResult(nodeId)`
+- adapter-driven execution via `ExecutionAdapter`
+
+It also integrates with:
+
+- `ContextInjector`
+- result validation
+- optional verification
+
+This means the scheduler should coordinate dispatch, but detailed execution context construction belongs in the dispatcher layer.
+
+### 6.5 Workflow Store
+
+Current implementation in `memory/workflowStore.ts` provides:
+
+- workflow creation
+- node-state persistence
+- execution history persistence
+- downstream output retrieval
+- metrics aggregation
+- save/load to disk
+
+This is the persistence seam for workflow recovery and context propagation.
 
 ---
 
-### 3.2 Orchestration Service
+## 7. Target Scheduler Design
 
-**Responsibilities:**
+### 7.1 Scheduler Inputs
 
-- Task coordination
-- Agent selection
-- Workflow management
-- State tracking
+The scheduler should operate on:
 
-**Scaling:** Horizontal (stateless)
+- a validated `DexGraph`
+- a `Dispatcher`
+- a `StateMachine`
+- an optional `GovernanceManager`
+- a workflow persistence interface
+- runtime config
 
-```javascript
-// Task routing
-class TaskRouter {
-  async route(task) {
-    // 1. Check governance
-    await this.governance.check(task);
+### 7.2 Scheduler Outputs
 
-    // 2. Select agent
-    const agent = await this.selector.select(task);
+The scheduler returns:
 
-    // 3. Execute
-    const result = await agent.execute(task);
+- overall workflow success/failure
+- completed nodes
+- failed nodes
+- rolled back nodes
+- duration
+- status snapshots for external observers
 
-    // 4. Store result
-    await this.memory.store(task.id, result);
+### 7.3 Deterministic Scheduling Rule
 
-    return result;
-  }
+At any scheduling tick, runnable work is the set of nodes that satisfy all of:
+
+- state is `READY`
+- all dependencies are `SUCCESS`
+- not already active
+- governance did not block or pause execution
+- concurrency capacity exists
+
+The order should be stable and deterministic. If multiple nodes are runnable simultaneously, selection should be based on a stable order such as:
+
+1. topological order
+2. insertion order from graph creation
+3. lexical node ID as tie-breaker
+
+The current scheduler slices the executable set directly. The design should make the ordering guarantee explicit.
+
+---
+
+## 8. Detailed Runtime Flow
+
+### 8.1 Workflow bootstrap
+
+1. Parse DSL into `DexGraphResult`
+2. Build graph with `DexGraph.fromParseResult`
+3. Validate DAG
+4. Create workflow record in `WorkflowStore`
+5. Transition root nodes from `CREATED` to `READY`
+6. Start scheduler loop
+
+### 8.2 Main scheduling loop
+
+For each iteration:
+
+1. Collect runnable nodes from graph + state
+2. Filter out active tasks
+3. Apply stable ordering
+4. Limit dispatch by `maxConcurrent`
+5. Dispatch selected nodes
+6. Await active progress or scheduling event
+7. Repeat until terminal
+
+### 8.3 Per-node execution
+
+For each selected node:
+
+1. Evaluate governance with runtime context
+2. If blocked, fail or rollback per failure policy
+3. If paused, transition to `BLOCKED`
+4. Transition node `READY -> RUNNING`
+5. Build execution context
+6. Dispatch through adapter
+7. Apply timeout protection
+8. Transition `RUNNING -> VERIFYING`
+9. Run verification
+10. On success, transition to `SUCCESS`
+11. Persist output and execution history
+12. Unlock eligible dependents
+
+### 8.4 Failure handling
+
+On execution failure:
+
+1. Transition to `FAILED`
+2. Check retry budget
+3. If retryable, back off and transition `FAILED -> RETRY -> RUNNING`
+4. If not retryable:
+   `halt` stops workflow
+   `rollback` propagates rollback
+   `continue` marks current branch rolled back and continues others
+
+---
+
+## 9. API Interfaces
+
+### 9.1 Scheduler interface
+
+```ts
+interface SchedulerConfig {
+  maxRetries: number;
+  maxConcurrent: number;
+  timeoutMs: number;
+  onFailure: 'halt' | 'continue' | 'rollback';
+}
+
+interface SchedulerResult {
+  success: boolean;
+  completedNodes: string[];
+  failedNodes: string[];
+  rolledBackNodes: string[];
+  duration: number;
 }
 ```
 
----
+### 9.2 Dispatcher boundary
 
-### 3.3 AI Provider Service
+Current code exposes two related concepts:
 
-**Responsibilities:**
+- lightweight scheduler-facing dispatcher interface in `scheduler.ts`
+- richer dispatcher implementation in `dispatcher.ts`
 
-- Provider abstraction
-- Intelligent routing
-- Fallback handling
-- Cost tracking
+Target boundary:
 
-**Scaling:** Horizontal with circuit breaker
+```ts
+interface SchedulerDispatcher {
+  dispatch(node: GraphNode): Promise<ExecutionResult>;
+}
 
-```javascript
-// Provider pool
-class ProviderPool {
-  constructor() {
-    this.providers = new Map();
-    this.circuitBreakers = new Map();
-  }
-
-  async call(task) {
-    const provider = this.selectProvider(task);
-
-    if (!this.isHealthy(provider)) {
-      return this.fallback(task);
-    }
-
-    try {
-      const result = await provider.generate(task);
-      this.recordSuccess(provider);
-      return result;
-    } catch (err) {
-      this.recordFailure(provider);
-      return this.fallback(task);
-    }
-  }
+interface ExecutionAdapter {
+  run(context: ExecutionContext): Promise<ExecutionResult>;
+  name(): string;
 }
 ```
 
----
+Recommendation: keep the scheduler coupled only to `SchedulerDispatcher`, while the concrete dispatcher handles context injection, verification, and adapter invocation.
 
-### 3.4 Memory Service
+### 9.3 Workflow store interface
 
-**Responsibilities:**
+Recommended extraction:
 
-- Multi-tier storage
-- Vector search
-- Knowledge graph
-- Semantic retrieval
-
-**Scaling:**
-
-- Redis: Cluster mode
-- PostgreSQL: Read replicas
-- ChromaDB: Distributed
-
-```javascript
-// Memory hierarchy
-class MemoryService {
-  constructor() {
-    this.instant = new Map(); // In-process
-    this.session = new Redis(); // Redis
-    this.persistent = new Postgres(); // PostgreSQL
-  }
-
-  async get(key) {
-    // L1: Instant
-    let value = this.instant.get(key);
-    if (value) return value;
-
-    // L2: Session
-    value = await this.session.get(key);
-    if (value) {
-      this.instant.set(key, value);
-      return value;
-    }
-
-    // L3: Persistent
-    value = await this.persistent.get(key);
-    if (value) {
-      this.session.set(key, value);
-      this.instant.set(key, value);
-    }
-
-    return value;
-  }
-
-  async search(query, options) {
-    // Vector search
-    const embedding = await this.embed(query);
-    return this.vectorStore.query(embedding, options);
-  }
+```ts
+interface WorkflowStateStore {
+  createWorkflow(workflowId: string): void;
+  updateNode(workflowId: string, nodeState: NodeState): void;
+  addHistory(workflowId: string, nodeId: string, entry: ExecutionHistory): void;
+  setNodeOutput(workflowId: string, nodeId: string, output: unknown): void;
+  getDependencyOutputs(workflowId: string, nodeId: string, dependencyIds: string[]): Record<string, unknown>;
 }
 ```
 
+This decouples scheduler/context layers from file-backed storage details.
+
 ---
 
-### 3.5 Governance Service
+## 10. Sequence Diagram
 
-**Responsibilities:**
-
-- Policy enforcement
-- Audit logging
-- Compliance checks
-- RBAC
-
-**Scaling:** Centralized (stateful)
-
-```javascript
-class GovernanceService {
-  async evaluate(action, context) {
-    // 1. Check policies
-    const policies = await this.getPolicies(context.user);
-
-    // 2. Evaluate
-    const decision = policies.every((p) => p.evaluate(action, context));
-
-    // 3. Audit
-    await this.audit.log({
-      action,
-      context,
-      decision,
-      timestamp: new Date(),
-    });
-
-    return decision;
-  }
-}
+```text
+Scheduler -> DexGraph: get runnable nodes
+Scheduler -> GovernanceManager: evaluate(node, context)
+GovernanceManager -> Scheduler: allow | pause | block
+Scheduler -> StateMachine: READY -> RUNNING
+Scheduler -> Dispatcher: dispatch(node)
+Dispatcher -> ContextInjector: inject/build context
+Dispatcher -> ExecutionAdapter: run(context)
+ExecutionAdapter -> Dispatcher: ExecutionResult
+Dispatcher -> Verifier: verify(result)
+Verifier -> Dispatcher: valid/invalid
+Dispatcher -> WorkflowStore: persist output/history
+Scheduler -> StateMachine: RUNNING -> VERIFYING -> SUCCESS | FAILED
+Scheduler -> DexGraph: unlock dependents
 ```
 
 ---
 
-## 4. Data Model
+## 11. Scalability Design
 
-### 4.1 Task Entity
+### 11.1 Concurrency model
 
-```typescript
-interface Task {
-  id: UUID;
-  type: string;
-  input: string;
-  context: Context;
-  agent: string;
-  status: 'pending' | 'running' | 'completed' | 'failed';
-  priority: number;
-  createdAt: DateTime;
-  startedAt?: DateTime;
-  completedAt?: DateTime;
-  result?: Result;
-  metadata: Record<string, any>;
-}
-```
+Current scheduler uses an in-memory `activeTasks` set and a polling loop. This is acceptable for a single-process runtime but should be treated as Phase 1 architecture.
 
-### 4.2 Memory Entity
+For scale, split the design into:
 
-```typescript
-interface MemoryEntry {
-  id: UUID;
-  key: string;
-  value: any;
-  tier: 'instant' | 'session' | 'persistent';
-  embedding?: Vector;
-  tags: string[];
-  relations: Relation[];
-  ttl?: number;
-  createdAt: DateTime;
-  accessedAt: DateTime;
-}
-```
+- **Control-plane scheduler**
+  owns deterministic ordering and state transitions
+- **Execution workers**
+  run adapter calls and report results back
 
-### 4.3 Agent Entity
+### 11.2 Horizontal scaling path
 
-```typescript
-interface Agent {
-  id: string;
-  name: string;
-  capabilities: Capability[];
-  config: AgentConfig;
-  state: AgentState;
-  metrics: AgentMetrics;
-}
-```
+Phase 1:
+
+- single scheduler process
+- in-memory active task tracking
+- local workflow store persistence
+
+Phase 2:
+
+- external workflow state store
+- distributed work queue
+- scheduler leader election
+- idempotent dispatch contracts
+
+Phase 3:
+
+- resumable workflows across workers
+- event-driven scheduling instead of polling
+- sharded workflow ownership
 
 ---
 
-## 5. API Design
+## 12. Failure Modes and Mitigations
 
-### 5.1 REST Endpoints
-
-```yaml
-# Task execution
-POST /api/v1/tasks
-Request:
-  type: generate
-  input: string
-  options: object
-
-Response:
-  id: uuid
-  status: pending
-  estimatedTime: number
-
-# Task status
-GET /api/v1/tasks/{id}
-Response:
-  id: uuid
-  status: completed
-  result: object
-
-# Memory search
-POST /api/v1/memory/search
-Request:
-  query: string
-  limit: number
-
-Response:
-  results: MemoryEntry[]
-```
-
-### 5.2 WebSocket
-
-```javascript
-// Real-time updates
-ws://api.ultra-dex.dev/ws
-
-// Subscribe to task
-{ type: 'subscribe', taskId: 'uuid' }
-
-// Receive updates
-{ type: 'progress', taskId: 'uuid', status: 'running' }
-{ type: 'complete', taskId: 'uuid', result: {} }
-```
+| Failure mode | Impact | Mitigation |
+| --- | --- | --- |
+| Illegal state transition | corrupt workflow lifecycle | state machine remains single authority |
+| Scheduler crash | workflow stalls | persist node states and history to workflow store |
+| Adapter timeout | hanging execution | scheduler timeout wrapper and failure escalation |
+| Governance pause/block | partial execution stall | explicit `BLOCKED` state and operator-visible reason |
+| Duplicate dispatch | duplicate side effects | stable active-task tracking and future idempotency keys |
+| Lost node output | downstream context failure | persist outputs before unlocking dependents |
+| Polling deadlock | scheduler ends with non-terminal work | deadlock detection plus persisted diagnostics |
 
 ---
 
-## 6. Scaling Strategy
+## 13. Observed Gaps in Current Code
 
-### 6.1 Horizontal Scaling
+1. The scheduler currently transitions `VERIFYING -> SUCCESS` immediately and does not yet integrate the richer verifier flow from `dispatcher.ts`.
+2. `scheduler.ts` uses a minimal dispatcher interface while `dispatcher.ts` has broader responsibilities; these contracts should be aligned.
+3. Workflow persistence is not yet wired directly into scheduler state transitions.
+4. Stable deterministic ordering for simultaneously runnable nodes is implied, not explicitly guaranteed.
+5. The polling loop is simple but will not scale cleanly to a distributed scheduler without an event model.
 
-```
-                    ┌─────────────┐
-                    │   LB        │
-                    └──────┬──────┘
-                           │
-        ┌──────────────────┼──────────────────┐
-        ▼                  ▼                  ▼
-┌──────────────┐  ┌──────────────┐  ┌──────────────┐
-│   API Pod    │  │   API Pod    │  │   API Pod    │
-│   (replica)  │  │   (replica)  │  │   (replica)  │
-└──────────────┘  └──────────────┘  └──────────────┘
-```
-
-### 6.2 Database Sharding
-
-```javascript
-// Shard by user_id
-const shard = getShard(userId);
-const db = connections[shard];
-```
-
-### 6.3 Caching Strategy
-
-```
-Request → CDN → Redis → DB
-         (1)   (2)    (3)
-
-TTL:
-- CDN: 1 hour
-- Redis: 5 minutes
-- Application: 30 seconds
-```
+These are design gaps, not reasons to change the architecture direction.
 
 ---
 
-## 7. Security Design
+## 14. Recommended Next Steps
 
-### 7.1 Authentication
-
-- JWT tokens
-- Refresh token rotation
-- OAuth 2.0 for providers
-
-### 7.2 Authorization
-
-- RBAC with roles
-- Policy engine
-- Audit logging
-
-### 7.3 Data Protection
-
-- Encryption at rest (AES-256)
-- TLS in transit
-- Secrets management (Vault)
+1. Wire `WorkflowStore` updates into every scheduler state transition.
+2. Make verification a first-class step instead of immediate `VERIFYING -> SUCCESS`.
+3. Formalize a stable runnable-node ordering contract.
+4. Introduce a typed scheduler-facing dispatcher interface shared across modules.
+5. Move from polling to event-driven wakeups once workflow persistence and distributed ownership are in place.
 
 ---
 
-## 8. Deployment Architecture
+## 15. Summary
 
-### 8.1 Kubernetes Setup
+The right system design for DexGraph is a boundary-driven orchestration core:
 
-```yaml
-# deployment.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: ultra-dex-api
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: ultra-dex
-  template:
-    spec:
-      containers:
-        - name: api
-          image: ultra-dex:v3.1.0
-          resources:
-            requests:
-              memory: '512Mi'
-              cpu: '500m'
-            limits:
-              memory: '1Gi'
-              cpu: '1000m'
-```
+- `DexGraph` owns topology
+- `StateMachine` owns lifecycle legality
+- `Scheduler` owns deterministic execution order and failure policy
+- `Dispatcher` owns context assembly and adapter invocation
+- `GovernanceManager` owns execution policy gates
+- `WorkflowStore` owns persistence and recovery
 
-### 8.2 Multi-Region
-
-```
-┌──────────────────┐     ┌──────────────────┐
-│   us-east-1      │     │   us-west-2      │
-│  ┌──────────┐   │     │  ┌──────────┐     │
-│  │ Primary  │   │◄───►│  │ Replica  │     │
-│  └──────────┘   │     │  └──────────┘     │
-└──────────────────┘     └──────────────────┘
-         │                        │
-         └────────┬───────────────┘
-                  ▼
-         ┌──────────────────┐
-         │   Global LB      │
-         └──────────────────┘
-```
-
----
-
-## 9. Monitoring
-
-### 9.1 Metrics
-
-```yaml
-# Key metrics
-- request_latency_seconds
-- request_rate
-- error_rate
-- provider_health
-- memory_usage
-- queue_depth
-- cache_hit_rate
-```
-
-### 9.2 Alerting
-
-```yaml
-# Critical alerts
-- ErrorRate > 1%
-- Latency P95 > 2s
-- ProviderDown > 2
-- MemoryUsage > 90%
-```
-
----
-
-## 10. Cost Optimization
-
-### 10.1 Resource Allocation
-
-| Service | Min | Max | Strategy    |
-| ------- | --- | --- | ----------- |
-| API     | 3   | 10  | CPU-based   |
-| Workers | 5   | 50  | Queue-based |
-| Memory  | 2   | 20  | Usage-based |
-
-### 10.2 Reserved Instances
-
-- Database: 1 year reserved
-- Cache: On-demand
-- Compute: Spot instances
-
----
-
-## 11. Disaster Recovery
-
-### 11.1 RPO/RTO
-
-- **RPO:** 5 minutes
-- **RTO:** 1 hour
-
-### 11.2 Backup Strategy
-
-- Database: Continuous replication
-- Files: Daily snapshots
-- Config: Version controlled
-
----
-
-**System design version:** 1.0  
-**Last updated:** 2026-04-10
+This keeps Ultra-Dex aligned with its core principle: the platform supervises execution deterministically while external adapters perform the non-deterministic work.

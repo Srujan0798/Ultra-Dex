@@ -10,7 +10,7 @@ This directory contains all outputs from applying the **10 Claude Engineering sk
 
 | Skill                | Purpose                 | Output                          |
 | -------------------- | ----------------------- | ------------------------------- |
-| `/architecture`      | ADR creation            | 6 Architecture Decision Records |
+| `/architecture`      | ADR creation            | 7 Architecture Decision Records |
 | `/code-review`       | Code analysis           | Security/performance review     |
 | `/debug`             | Root cause analysis     | Debug findings & fixes          |
 | `/deploy-checklist`  | Deployment verification | 49-point checklist              |
@@ -35,6 +35,7 @@ docs/skills/engineering/
 │   ├── ADR-004-three-tier-memory.md
 │   ├── ADR-005-native-test-runner.md
 │   ├── ADR-006-architectural-improvements.md
+│   ├── ADR-007-dexgraph-component-boundaries-v2.md
 │   └── ARCHITECTURAL-IMPROVEMENTS-SUMMARY.md
 ├── code-review/                        # Code review findings
 │   └── CODE-REVIEW-REPORT.md
@@ -68,13 +69,14 @@ docs/skills/engineering/
 
 **Outputs:**
 
-- **6 ADRs** covering:
+- **7 ADRs** covering:
   - TypeScript over JavaScript
   - ES Modules over CommonJS
   - Multi-Provider AI Routing
   - 3-Tier Memory Architecture
   - Native Node.js Test Runner
   - Critical Architectural Improvements
+  - DexGraph component boundaries for V2.0
 
 **Location:** `docs/skills/engineering/architecture/`
 

@@ -53,8 +53,8 @@ export type {
 } from '../dexgraph/verifier.js';
 
 // ── Adapters ──────────────────────────────────────────────────────────────────
-export { MockAdapter } from '../adapters/mockAdapter.js';
-export { ResultValidator } from '../adapters/resultValidator.js';
+export { MockAdapter, OpenAIAdapter, AnthropicAdapter, ResultValidator } from '../adapters/index.js';
+export type { OpenAIAdapterConfig, AnthropicAdapterConfig } from '../adapters/index.js';
 
 // ── Memory ────────────────────────────────────────────────────────────────────
 export { WorkflowStore } from '../memory/workflowStore.js';
@@ -97,6 +97,39 @@ export { Worker, createWorkerPool } from '../runtime/worker/index.js';
 // ── Tools ─────────────────────────────────────────────────────────────────────
 export { ToolRegistry, getGlobalToolRegistry } from '../tools/registry/index.js';
 export type { ToolSchema, ToolResult } from '../tools/registry/index.js';
+
+// ── Security ──────────────────────────────────────────────────────────────────
+export {
+  RBAC,
+  PolicyEngine,
+  AuthorizationError,
+  EncryptionService,
+  TokenService,
+  SecretManager,
+  createUser,
+  createResource,
+  sanitizeInput,
+  generateId,
+} from '../security/index.js';
+
+export type {
+  Role,
+  Permission,
+  User,
+  Resource,
+  AccessRequest,
+} from '../security/index.js';
+
+// ── Cache ─────────────────────────────────────────────────────────────────────
+export {
+  LRUCache,
+  NamespacedCache,
+  MultiLevelCache,
+} from '../cache/index.js';
+
+export type {
+  LRUCacheOptions,
+} from '../cache/index.js';
 
 // ── Errors ────────────────────────────────────────────────────────────────────
 export {

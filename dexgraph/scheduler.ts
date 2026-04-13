@@ -122,7 +122,7 @@ export class Scheduler {
       duration,
     };
 
-    this.emit('scheduler.complete', { success, duration, ...result });
+    this.emit('scheduler.complete', { ...result });
     return result;
   }
 

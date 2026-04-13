@@ -375,9 +375,9 @@ async function cmdResume(workflowId: string): Promise<void> {
   }
 
   const failedNodes = Array.from(wf.nodes.values()).filter(
-    n => n.state === 'FAILED' || n.state === 'BLOCKED',
+    n => n.state === 'FAILED',
   );
-  const blockedNodes = Array.from(wf.nodes.values()).filter(n => n.state === 'ROLLBACK');
+  const blockedNodes = Array.from(wf.nodes.values()).filter(n => n.state === 'BLOCKED' || n.state === 'ROLLBACK');
 
   if (failedNodes.length === 0 && blockedNodes.length === 0) {
     console.log(c.green(`  Workflow ${workflowId} has no failed or blocked nodes.`));

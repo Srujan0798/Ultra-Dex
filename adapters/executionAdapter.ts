@@ -7,16 +7,18 @@ export interface ExecutionContext {
   retryCount?: number;
 }
 
+export interface Cost {
+  tokens: number;
+  estimatedUSD: number;
+  provider: string;
+}
+
 export interface ExecutionResult {
   status: 'SUCCESS' | 'FAILED' | 'TIMEOUT' | 'CANCELLED';
   output?: unknown;
   logs: string[];
   error?: string;
-  cost: {
-    tokens: number;
-    estimatedUSD: number;
-    provider: string;
-  };
+  cost: Cost;
   confidence: number;  // 0-1
   duration: number;  // ms
   timestamp: string;  // ISO

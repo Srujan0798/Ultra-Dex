@@ -128,7 +128,7 @@ export function resolveTemplates(
     if (resolved.context) {
       const ctx: Record<string, string> = {};
       for (const [key, value] of Object.entries(resolved.context)) {
-        ctx[key] = value.replace(
+        ctx[key] = String(value as string | number | boolean).replace(
           /\{\{(\w+)\.output\}\}/g,
           (_match: string, taskId: string) => `__output:${taskId}__`
         );

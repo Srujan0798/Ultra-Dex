@@ -4,7 +4,7 @@ import * as path from 'path';
 export interface NodeState {
   nodeId: string;
   taskType: string;
-  state: 'CREATED' | 'READY' | 'RUNNING' | 'VERIFYING' | 'SUCCESS' | 'FAILED' | 'CANCELLED' | 'ROLLBACK';
+  state: 'CREATED' | 'READY' | 'RUNNING' | 'VERIFYING' | 'SUCCESS' | 'FAILED' | 'CANCELLED' | 'ROLLBACK' | 'BLOCKED' | 'RETRY';
   input: Record<string, unknown>;
   output?: unknown;
   error?: string;
