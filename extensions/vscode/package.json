@@ -1,0 +1,188 @@
+{
+  "name": "ultra-dex",
+  "displayName": "Ultra-Dex Workflow Studio",
+  "description": "Visual workflow editing, debugging, and monitoring for Ultra-Dex",
+  "version": "2.1.0",
+  "publisher": "ultra-dex",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Debuggers",
+    "Visualization",
+    "Machine Learning"
+  ],
+  "keywords": [
+    "workflow",
+    "ai",
+    "agents",
+    "dex",
+    "visualization"
+  ],
+  "activationEvents": [
+    "onLanguage:yaml",
+    "onCommand:ultraDex.openWorkflow",
+    "workspaceContains:**/*.dex"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "ultra-dex",
+        "aliases": ["Ultra-Dex Workflow", "ultra-dex"],
+        "extensions": [".dex"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "ultra-dex",
+        "scopeName": "source.ultra-dex",
+        "path": "./syntaxes/ultra-dex.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "ultraDex.openWorkflow",
+        "title": "Open Workflow Visualizer",
+        "category": "Ultra-Dex",
+        "icon": "$(open-preview)"
+      },
+      {
+        "command": "ultraDex.runWorkflow",
+        "title": "Run Workflow",
+        "category": "Ultra-Dex",
+        "icon": "$(play)"
+      },
+      {
+        "command": "ultraDex.debugWorkflow",
+        "title": "Debug Workflow",
+        "category": "Ultra-Dex",
+        "icon": "$(debug-alt)"
+      },
+      {
+        "command": "ultraDex.showDashboard",
+        "title": "Show Live Dashboard",
+        "category": "Ultra-Dex",
+        "icon": "$(dashboard)"
+      },
+      {
+        "command": "ultraDex.validateWorkflow",
+        "title": "Validate Workflow",
+        "category": "Ultra-Dex",
+        "icon": "$(check)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "ultraDex.openWorkflow",
+          "group": "navigation",
+          "when": "resourceExtname == .dex"
+        },
+        {
+          "command": "ultraDex.runWorkflow",
+          "group": "navigation",
+          "when": "resourceExtname == .dex"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "ultraDex.openWorkflow",
+          "group": "2_workspace@1",
+          "when": "resourceExtname == .dex"
+        },
+        {
+          "command": "ultraDex.runWorkflow",
+          "group": "2_workspace@2",
+          "when": "resourceExtname == .dex"
+        }
+      ]
+    },
+    "views": {
+      "explorer": [
+        {
+          "id": "ultraDex.workflows",
+          "name": "Workflows",
+          "when": "ultraDex.enabled"
+        }
+      ],
+      "debug": [
+        {
+          "id": "ultraDex.execution",
+          "name": "Execution",
+          "when": "ultraDex.debugging"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ultraDex",
+          "title": "Ultra-Dex",
+          "icon": "$(server-environment)"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Ultra-Dex",
+      "properties": {
+        "ultraDex.server.host": {
+          "type": "string",
+          "default": "localhost",
+          "description": "Ultra-Dex server host"
+        },
+        "ultraDex.server.port": {
+          "type": "number",
+          "default": 8080,
+          "description": "Ultra-Dex server port"
+        },
+        "ultraDex.debug.breakOnError": {
+          "type": "boolean",
+          "default": true,
+          "description": "Break on workflow errors"
+        },
+        "ultraDex.dashboard.autoRefresh": {
+          "type": "boolean",
+          "default": true,
+          "description": "Auto-refresh dashboard data"
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "ultraDex.runWorkflow",
+        "key": "ctrl+shift+r",
+        "mac": "cmd+shift+r",
+        "when": "editorTextFocus && resourceExtname == .dex"
+      },
+      {
+        "command": "ultraDex.openWorkflow",
+        "key": "ctrl+shift+v",
+        "mac": "cmd+shift+v",
+        "when": "editorTextFocus && resourceExtname == .dex"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.50.0",
+    "typescript": "^5.3.0",
+    "vsce": "^2.15.0"
+  },
+  "dependencies": {
+    "ws": "^8.16.0",
+    "yaml": "^2.3.0"
+  }
+}

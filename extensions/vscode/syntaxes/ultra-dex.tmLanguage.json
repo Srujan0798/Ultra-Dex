@@ -1,0 +1,29 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Ultra-Dex Workflow",
+  "scopeName": "source.ultra-dex",
+  "fileTypes": [".dex"],
+  "patterns": [
+    { "include": "source.yaml" },
+    {
+      "match": "\\b(name|version|description|nodes|edges|config|agents|models)\\b",
+      "name": "keyword.control.ultra-dex"
+    },
+    {
+      "match": "\\b(agent|decision|action|trigger|output)\\b",
+      "name": "entity.name.type.ultra-dex"
+    },
+    {
+      "match": "\\b(id|type|agent|model|prompt|temperature|max_tokens|tools|dependencies|condition|retry)\\b",
+      "name": "support.property.ultra-dex"
+    },
+    {
+      "match": "\\b(gpt-4|gpt-4-turbo|gpt-3.5-turbo|claude|gemini)\\b",
+      "name": "constant.language.model.ultra-dex"
+    },
+    {
+      "match": "\\$\\{[^}]*\\}",
+      "name": "variable.interpolation.ultra-dex"
+    }
+  ]
+}
