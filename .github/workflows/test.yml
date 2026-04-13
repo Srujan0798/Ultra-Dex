@@ -23,7 +23,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Clear platform-specific lock
         run: rm -f package-lock.json apps/*/package-lock.json packages/*/package-lock.json || true
