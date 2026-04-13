@@ -1,6 +1,6 @@
 {
   "name": "@ultra-dex/cli",
-  "version": "6.0.0",
+  "version": "2.0.0-alpha.0",
   "private": true,
   "publishConfig": {
     "access": "public",
@@ -217,7 +217,7 @@
     "inquirer": "^13.4.1",
     "ioredis": "^5.10.1",
     "isolated-vm": "^6.1.2",
-    "js-yaml": "^4.1.1",
+    "js-yaml": "^4.1.0",
     "jsonwebtoken": "^9.0.3",
     "langchain": "^1.3.1",
     "langsmith": "^0.5.18",

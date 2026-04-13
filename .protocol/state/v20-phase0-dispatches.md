@@ -1,274 +1,257 @@
-# Phase 0: HARD RESET (Day 0-2)
+# Phase 0: HARD RESET — Foundation Architecture (Day 0-2)
 
 ### OBJECTIVE
-Restructure Ultra-Dex from feature-aggregation codebase to DexGraph control plane. Create canonical folder structure per NOTION/v2.0.MD. Delete scattered experimental logic. Consolidate Ultra-Dex + MUNI + An'tB into single platform. Validate clean slate.
 
-### SKILLS REFERENCED
-- /engineering:architecture → ADR for new structure
-- /engineering:system-design → DexGraph component boundaries
-- /engineering:tech-debt → Identify what to delete vs archive
+Establish the canonical DexGraph platform structure. Transform from experimental feature aggregation to production-grade control plane architecture. Create the foundation upon which all subsequent phases build.
 
-### GROUND TRUTH
+### SUCCESS CRITERIA (Define "Done")
+
+- [ ] 10 top-level directories exist with correct substructure
+- [ ] All legacy code classified and archived (no accidental deletion)
+- [ ] Memory system consolidated and operational in new structure
+- [ ] TypeScript compiles with zero errors across all new modules
+- [ ] Version reflects hard reset: 2.0.0-alpha.0
+- [ ] Migration guide documents all breaking changes
+
+### INVARIANTS (Non-Negotiable Constraints)
+
+1. **History Preserved**: All code moves use `git mv` - no history loss
+2. **Zero Deletion**: Nothing is deleted, only archived - recovery must always be possible
+3. **No Cross-Contamination**: New directories must never import from old `src/`
+4. **Standalone Memory**: Memory module must function independently without legacy dependencies
+5. **Documented Decisions**: Every architectural decision captured in ADR format
+
+### INTEGRATION CONTRACT
+
+**Input** (from Current State):
+
+- `src/` with 80+ experimental subdirectories
+- Existing memory system (MUNI)
+- An'tB architecture references
+- Version 6.0.0 in package.json
+- 49% passing test rate
+
+**Output** (to Phase 1 - Parser):
+
 ```
-Current: src/ has 80+ subdirs (agents, ai, analytics, auth, billing, cache, certification,
-         chaos, cicd, connectors, coordination, database, enterprise, finance, governance,
-         marketing, marketplace, mcp, memory, mesh, monitoring, multimodal, optimization,
-         orchestration, performance, plugins, queue, reliability, routing, sandbox, security,
-         server, skills, streaming, system, team, telemetry, templates, tenant, testing, etc.)
-Target:  7 top-level dirs (core/, runtime/, memory/, dexgraph/, adapters/, governance/, tools/)
-         + 3 interface dirs (observability/, cli/, sdk/)
-Tests:   134 pass / 80 fail / 58 cancelled (49% pass rate)
-Version: package.json says 6.0.0 but stability doesn't match
+core/           # Task planning and graph compilation
+├── planner/    # Goal → task graph compiler
+├── scheduler/  # Task ordering engine
+└── task_graph/ # DAG engine interface
+
+runtime/        # Execution environment
+├── worker/     # Stateless agent workers
+├── executor/   # Execution dispatch
+└── execution_engine/ # Core execution logic
+
+memory/         # Persistent memory (MUNI consolidation)
+├── episodic/   # Session/event memory
+├── semantic/   # Vector search and knowledge
+└── state/      # State management store
+
+dexgraph/       # Workflow DSL system
+├── parser.ts   # YAML → Graph
+├── graph.ts    # DAG builder
+├── stateMachine.ts # State transitions
+├── scheduler.ts # Execution ordering
+├── dispatcher.ts # Adapter bridge
+└── verifier.ts # Output validation
+
+adapters/       # Execution adapters
+├── executionAdapter.ts # Interface contract
+governance/     # Policy engine
+tools/          # Tool registry
+observability/  # Event and logging
+cli/            # Command line interface
+sdk/            # Developer API surface
 ```
 
-### WINDOWS
+**Archive Output**:
 
-#### W1: Create Target Folder Structure
-- Task ID: V20-P0-W1-FOLDER-STRUCTURE
-- Objective: Create the canonical DexGraph folder structure per NOTION/v2.0.MD
-- Target Files: core/, runtime/, memory/, dexgraph/, adapters/, governance/, tools/, observability/, cli/, sdk/ (all NEW top-level dirs)
-- Why this lane: Structural scaffolding — needs to be exactly right. Opus for precision.
-- Power Tier: HIGH
-- Command:
-```bash
-claude --model opus --effort max -p \
-  "Create Ultra-Dex v2.0 DexGraph folder structure.
+- `archive/v1/` with complete legacy codebase
+- `archive/v1/AUDIT.md` classifying every directory
+- `docs/architecture/antb.md` with An'tB documentation
 
-   DO NOT delete anything yet. Create NEW directories alongside existing src/.
+### SCOPE BOUNDARIES
 
-   CREATE (all relative to repo root):
-   core/
-   ├── planner/          # goal → task graph compiler
-   │   └── index.ts      # placeholder: export {}
-   ├── scheduler/        # task ordering + dependency resolution
-   │   └── index.ts
-   └── task_graph/       # DAG engine interface
-       └── index.ts
+**IN Scope:**
 
-   runtime/
-   ├── worker/           # agent workers (stateless)
-   │   └── index.ts
-   ├── executor/         # execution dispatch
-   │   └── index.ts
-   └── execution_engine/ # heart of the system
-       └── index.ts
+- Directory structure creation (10 top-level dirs)
+- Code audit and classification
+- Memory system migration
+- TypeScript configuration
+- Version reset and migration docs
 
-   memory/               # MUNI lives here
-   ├── episodic/
-   │   └── index.ts
-   ├── semantic/
-   │   └── index.ts
-   └── state/
-       └── index.ts
+**OUT of Scope:**
 
-   dexgraph/
-   ├── parser.ts         # YAML workflow DSL → GraphNode[]
-   ├── graph.ts          # DAG builder, cycle detection, topo sort
-   ├── stateMachine.ts   # CREATED→READY→RUNNING→VERIFYING→SUCCESS
-   ├── scheduler.ts      # while !complete: find READY, dispatch, wait, update
-   ├── dispatcher.ts     # node → adapter bridge
-   └── verifier.ts       # output validation
+- Implementation of DexGraph modules (Phase 1+)
+- Test migration (Phase 4)
+- Performance optimization (Phase 6)
+- Multi-region deployment (Phase 9)
 
-   adapters/
-   └── executionAdapter.ts  # interface ExecutionAdapter { run(task, context): Result }
+### WINDOWS (High-Level Work Units)
 
-   governance/
-   └── rules.ts          # policy engine: block, pause, require review
+#### W1: Canonical Structure
 
-   tools/
-   └── registry/
-       └── index.ts      # tool protocol registry
+**Task ID:** V20-P0-W1-STRUCTURE  
+**Objective:** Create the DexGraph directory hierarchy that will house all v2.0 modules.  
+**Agent Power Tier:** HIGH (Claude Opus for precision)  
+**Success Signal:** All 10 directories exist with placeholder index.ts files.
 
-   observability/
-   └── index.ts          # event emitter, logging hooks
+**Requirements:**
 
-   cli/
-   └── index.ts          # ultradex init|run|status|resume|inspect
+- Create 7 core directories: `core/`, `runtime/`, `memory/`, `dexgraph/`, `adapters/`, `governance/`, `tools/`
+- Create 3 interface directories: `observability/`, `cli/`, `sdk/`
+- Each directory gets appropriate substructure per architecture spec
+- Placeholder files export empty objects (no implementation)
+- Root tsconfig.json includes all new directories
 
-   sdk/
-   └── index.ts          # developer API surface
+**Constraints:**
 
-   Each index.ts: just 'export {}' placeholder.
-   Each .ts file in dexgraph/: interface stubs only (no implementation).
-   Create a root tsconfig.json that includes all new dirs."
-```
-- Expected Output: 10 top-level directories with placeholder files
-- Validation:
-```bash
-ls -d core/ runtime/ memory/ dexgraph/ adapters/ governance/ tools/ observability/ cli/ sdk/
-find dexgraph/ -name '*.ts' | wc -l  # should be 6
-```
-- Fallback #1: `claude --model claude-sonnet-4-20250514 --effort high -p "Create folder structure..."`
-- Fallback #2: `gemini -y -p "Create DexGraph folder structure with placeholder files..."`
-- Fallback #3: `opencode run -m opencode/qwen3-coder-480b-a35b-instruct -p "Scaffold folder structure..."`
-- Cost Class: SUBSCRIPTION-INCLUDED
-- Dependencies: None
-
-#### W2: Audit & Archive Existing Code
-- Task ID: V20-P0-W2-AUDIT-ARCHIVE
-- Objective: Audit existing src/ for anything salvageable, archive the rest. Do NOT delete — move to archive/v1/
-- Target Files: archive/v1/ (NEW), src/ (audit only)
-- Why this lane: Audit requires reading every module and deciding keep/archive. Opus for judgment.
-- Power Tier: HIGH
-- Command:
-```bash
-claude --model opus --effort max -p \
-  "Audit Ultra-Dex src/ and classify every subdirectory.
-
-   For each dir in src/core/, decide:
-   KEEP: Code that maps to DexGraph architecture (governance, memory, orchestration logic)
-   ARCHIVE: Code that doesn't fit DexGraph model (marketing, billing, certification, chaos, etc.)
-   MIGRATE: Code that has useful logic but needs restructuring (routing → adapters, agents → workers)
-
-   OUTPUT a file: archive/v1/AUDIT.md with:
-   | Directory | Decision | Reason | New Location |
-   For every single subdirectory in src/core/
-
-   Then:
-   mkdir -p archive/v1/
-   Move all ARCHIVE dirs to archive/v1/src/core/{dir}
-   Leave KEEP and MIGRATE dirs in src/ for now
-
-   CRITICAL: Use git mv (not mv) so history is preserved.
-   DO NOT delete any code. Archive only."
-```
-- Expected Output: AUDIT.md classifying every src/ subdir, archived dirs moved
-- Validation:
-```bash
-cat archive/v1/AUDIT.md | wc -l  # should list all 80+ dirs
-ls archive/v1/src/core/ | wc -l   # archived dirs
-ls src/core/ | wc -l               # remaining dirs (should be < 20)
-```
-- Fallback #1: `claude --model claude-sonnet-4-20250514 --effort high -p "Audit src/ and archive non-DexGraph code..."`
-- Fallback #2: `codex --full-auto -m o1 exec "Classify src/ subdirectories for DexGraph migration..."`
-- Fallback #3: `opencode run -m opencode/deepseek-r1-0528 -p "Audit codebase and archive non-essential modules..."`
-- Cost Class: SUBSCRIPTION-INCLUDED
-- Dependencies: None (parallel with W1)
-
-#### W3: Consolidate Ultra-Dex + MUNI + An'tB
-- Task ID: V20-P0-W3-CONSOLIDATE
-- Objective: Ensure MUNI memory system maps to memory/, An'tB becomes docs-only, no separate project references
-- Target Files: memory/ (populate from existing memory code), docs/architecture/antb.md (NEW)
-- Why this lane: Consolidation requires understanding three codebases. Sonnet for balanced speed.
-- Power Tier: BALANCED
-- Command:
-```bash
-claude --model claude-sonnet-4-20250514 --effort high -p \
-  "Consolidate Ultra-Dex platform modules.
-
-   1) MUNI → memory/:
-      - Find all memory-related code in src/core/memory/
-      - Map to new structure:
-        src/core/memory/unified-api.js → memory/state/store.ts (state management)
-        src/core/memory/ vector search → memory/semantic/search.ts (semantic search)
-        src/core/memory/ session management → memory/episodic/session.ts (episodic memory)
-      - Copy salvageable logic, rewrite interfaces to match DexGraph types
-      - memory/ should NOT import from src/ — it's standalone
-
-   2) An'tB → docs only:
-      - If any An'tB code exists, move to docs/architecture/antb.md
-      - An'tB = future architecture documentation, not active build
-      - Reference in docs but don't build
-
-   3) Remove cross-references:
-      - Grep for 'MUNI', 'An'tB', 'antb' across codebase
-      - Update references to point to new locations
-      - README references: 'MUNI memory system' → 'memory module'"
-```
-- Expected Output: memory/ populated with migrated code, An'tB archived to docs
-- Validation:
-```bash
-ls memory/episodic/ memory/semantic/ memory/state/
-grep -r "MUNI" core/ runtime/ dexgraph/ | wc -l  # should be 0
-```
-- Fallback #1: `gemini -y -p "Migrate memory system to new folder structure..."`
-- Fallback #2: `codex --full-auto -m gpt-4o exec "Consolidate memory modules..."`
-- Fallback #3: `opencode run -m opencode/devstral-2-123b-instruct-2512 -p "Migrate memory code to new structure..."`
-- Cost Class: SUBSCRIPTION-INCLUDED
-- Dependencies: W1 (folder structure must exist)
-
-#### W4: Validate Clean Slate
-- Task ID: V20-P0-W4-VALIDATE-CLEAN
-- Objective: Verify new structure is correct, no old logic leaks, all placeholders compile, version reset
-- Target Files: package.json (MODIFY), tsconfig.json (MODIFY)
-- Why this lane: Validation requires comprehensive scanning. Codex o1 for thorough checking.
-- Power Tier: HIGH
-- Command:
-```bash
-codex --full-auto -m o1 exec \
-  "Validate Ultra-Dex v2.0 clean slate.
-
-   1) Verify folder structure matches NOTION/v2.0.MD exactly:
-      core/planner/, core/scheduler/, core/task_graph/
-      runtime/worker/, runtime/executor/, runtime/execution_engine/
-      memory/episodic/, memory/semantic/, memory/state/
-      dexgraph/ (6 .ts files)
-      adapters/executionAdapter.ts
-      governance/rules.ts
-      tools/registry/
-      observability/, cli/, sdk/
-
-   2) Verify no old logic in new dirs:
-      - New dirs should only have placeholder or migrated code
-      - No imports from src/core/ in new dirs
-      - No references to old agent system (Planner, Backend, Frontend, CTO, Reviewer roles)
-
-   3) TypeScript compilation:
-      - Create/update root tsconfig.json with paths to new dirs
-      - npx tsc --noEmit on new dirs only
-      - Fix any type errors
-
-   4) Reset version:
-      - Update package.json version to 2.0.0-alpha.0
-      - This is a HARD RESET — version must reflect that
-
-   5) Create MIGRATION.md:
-      - Document what was archived
-      - Map old locations → new locations
-      - Breaking changes list
-      - How to run old code (point to archive/v1/)"
-```
-- Expected Output: Clean, compiling v2.0 structure with migration docs
-- Validation:
-```bash
-npx tsc --noEmit --project tsconfig.json  # should compile
-node -e "console.log(require('./package.json').version)"  # 2.0.0-alpha.0
-cat MIGRATION.md | head -20
-```
-- Fallback #1: `codex --full-auto -m gpt-4o exec "Validate clean slate..."`
-- Fallback #2: `claude --model opus --effort max -p "Verify DexGraph structure and fix type errors..."`
-- Fallback #3: `opencode run -m opencode/qwen3-coder-480b-a35b-instruct -p "Validate folder structure and fix compilation..."`
-- Cost Class: SUBSCRIPTION-INCLUDED
-- Dependencies: W1, W2, W3 (all must complete)
-
-### SEQUENCE
-W1 ║ W2 → W3 → W4
-(W1 and W2 parallel, W3 needs W1, W4 needs all)
-
-### VALIDATION CRITERIA
-- [ ] 10 new top-level dirs exist with correct subdirs
-- [ ] archive/v1/AUDIT.md classifies all src/ subdirs
-- [ ] memory/ has migrated episodic/semantic/state modules
-- [ ] No MUNI/An'tB references in new dirs
-- [ ] TypeScript compiles with zero errors
-- [ ] package.json version = 2.0.0-alpha.0
-- [ ] MIGRATION.md documents all changes
-
-### COST TRACKING
-| Window | Tier | Agent | Est. Tokens |
-|--------|------|-------|-------------|
-| W1 | HIGH | Claude Opus | ~8K |
-| W2 | HIGH | Claude Opus | ~15K |
-| W3 | BALANCED | Claude Sonnet | ~10K |
-| W4 | HIGH | Codex o1 | ~12K |
-
-### RISKS
-| Risk | Mitigation |
-|------|------------|
-| Archive breaks existing tests | Tests already 49% failing; archive is net improvement |
-| Memory migration loses functionality | Copy, don't move — original stays in src/ until verified |
-| tsconfig conflicts | Separate tsconfig for new dirs, don't touch existing |
+- Existing `src/` must remain untouched
+- No dependencies between new directories yet
+- All paths must be relative for portability
+- Directory names are canonical - no variation allowed
 
 ---
 
-*Phase 0 dispatches generated 2026-04-12 | Hard Reset | 4 windows | Day 0-2*
+#### W2: Legacy Audit & Archive
+
+**Task ID:** V20-P0-W2-AUDIT  
+**Objective:** Classify every existing module and archive non-essential code.  
+**Agent Power Tier:** HIGH (Claude Opus for judgment)  
+**Success Signal:** AUDIT.md lists every directory with decision and rationale.
+
+**Requirements:**
+
+- Review all 80+ subdirectories in `src/core/`
+- Classify each as: KEEP (maps to DexGraph), ARCHIVE (doesn't fit), MIGRATE (needs restructuring)
+- Document rationale for each decision
+- Map MIGRATE items to new locations
+- Move ARCHIVE directories to `archive/v1/` using `git mv`
+- Leave KEEP and MIGRATE in place for now
+
+**Constraints:**
+
+- Use `git mv` for all moves - preserve history
+- Nothing deleted, only moved to archive
+- Audit must be comprehensive - no directories missed
+- Decisions must be defensible in ADR format
+
+---
+
+#### W3: Memory Consolidation
+
+**Task ID:** V20-P0-W3-MEMORY  
+**Objective:** Migrate MUNI memory system to new `memory/` structure, eliminate cross-references.  
+**Agent Power Tier:** BALANCED (Claude Sonnet for speed)  
+**Success Signal:** Memory module compiles standalone, zero MUNI references in new dirs.
+
+**Requirements:**
+
+- Map existing memory code to new structure:
+  - Session/event tracking → `memory/episodic/`
+  - Vector search/knowledge → `memory/semantic/`
+  - State management → `memory/state/`
+- Rewrite interfaces to match DexGraph types (Phase 1)
+- Remove all imports from `src/`
+- Consolidate An'tB references into documentation only
+- Update all README references
+
+**Constraints:**
+
+- Memory module must be importable without legacy dependencies
+- Original code stays in `src/` until migration verified
+- All MUNI/An'tB references must be removed from new dirs
+- Copy useful logic, rewrite interfaces
+
+---
+
+#### W4: Foundation Validation
+
+**Task ID:** V20-P0-W4-VALIDATION  
+**Objective:** Verify clean slate, compilation, version alignment, documentation.  
+**Agent Power Tier:** HIGH (Codex o1 for thoroughness)  
+**Success Signal:** TypeScript compiles, version is 2.0.0-alpha.0, migration guide exists.
+
+**Requirements:**
+
+- Verify all 10 directories match NOTION/v2.0.MD spec
+- Confirm no imports from `src/core/` in new directories
+- Confirm no old agent system references
+- TypeScript compilation passes with zero errors
+- Update package.json version to 2.0.0-alpha.0
+- Create MIGRATION.md documenting:
+  - What was archived and why
+  - Old location → new location mappings
+  - Breaking changes list
+  - How to access archived code
+
+**Constraints:**
+
+- Compilation must be clean - no type errors
+- Version must reflect hard reset
+- Documentation must be complete for handoff
+- No references to legacy systems in new code
+
+---
+
+### SEQUENCE
+
+```
+        ┌→ W1 (Structure)
+        │       ↓
+        │      W2 (Audit) ═══════╗
+        │       ↓               ║
+W1/W2 parallel          W3 (Memory)
+                                ↓
+                               W4 (Validation)
+```
+
+- W1 and W2 can proceed in parallel (no dependencies)
+- W3 needs W1 for target structure
+- W4 needs W2 (audit complete) and W3 (memory migrated)
+
+### OUTPUT ARTIFACTS
+
+| Artifact            | Location                  | Purpose                        |
+| ------------------- | ------------------------- | ------------------------------ |
+| Directory Structure | `core/`, `runtime/`, etc. | Foundation for all v2.0 work   |
+| Audit Report        | `archive/v1/AUDIT.md`     | Decisions on legacy code       |
+| Memory Module       | `memory/episodic/`, etc.  | Consolidated memory system     |
+| Migration Guide     | `MIGRATION.md`            | Breaking changes documentation |
+| TypeScript Config   | `tsconfig.json`           | Compilation settings           |
+| Version Marker      | `package.json`            | 2.0.0-alpha.0                  |
+
+### VALIDATION GATES
+
+- [ ] All 10 directories exist with correct subdirs
+- [ ] AUDIT.md classifies all 80+ src/ subdirectories
+- [ ] Memory module has episodic/, semantic/, state/
+- [ ] Zero MUNI/An'tB references in new directories
+- [ ] `npx tsc --noEmit` passes
+- [ ] package.json version === "2.0.0-alpha.0"
+- [ ] MIGRATION.md documents all breaking changes
+
+### RISK MITIGATION
+
+| Risk                                  | Impact | Mitigation                                    |
+| ------------------------------------- | ------ | --------------------------------------------- |
+| Archive loses working code            | High   | `git mv` preserves history; nothing deleted   |
+| Memory migration breaks functionality | Medium | Copy, don't move; verify before removing src/ |
+| tsconfig conflicts with existing      | Low    | Separate tsconfig for new dirs initially      |
+| Incomplete audit misses directories   | Medium | Automated directory listing; manual review    |
+| Cross-contamination with old code     | Medium | Lint rule: no imports from src/               |
+
+### COST TRACKING
+
+| Window | Tier     | Agent         | Est. Tokens |
+| ------ | -------- | ------------- | ----------- |
+| W1     | HIGH     | Claude Opus   | ~8K         |
+| W2     | HIGH     | Claude Opus   | ~15K        |
+| W3     | BALANCED | Claude Sonnet | ~10K        |
+| W4     | HIGH     | Codex o1      | ~12K        |
+
+---
+
+_Phase 0 dispatches | High-Level Orchestrator | v2.1_

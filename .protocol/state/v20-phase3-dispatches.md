@@ -1,208 +1,274 @@
-# Phase 3: Task State Machine (Week 1-2)
+# Phase 3: DexGraph Core — Task State Machine (Week 1-2)
 
 ### OBJECTIVE
-Implement dexgraph/stateMachine.ts — deterministic state transitions for every node. States: CREATED → READY → RUNNING → VERIFYING → SUCCESS, with FAILED → RETRY → RUNNING, BLOCKED, and ROLLBACK paths. Every state change is auditable.
 
-### SKILLS REFERENCED
-- /engineering:system-design → State machine patterns
-- /engineering:architecture → State transition ADR
+Build the deterministic state transition system that governs every node's lifecycle. Ensure all state changes are valid, auditable, and recoverable. This is the control core of workflow execution.
 
-### WINDOWS
+### SUCCESS CRITERIA (Define "Done")
 
-#### W1: State Enum + Types
-- Task ID: V20-P3-W1-STATE-TYPES
-- Objective: Define state enum, transition rules matrix, and state machine interface
-- Target Files: dexgraph/stateMachine.ts (START)
-- Why this lane: State machine contract must be airtight. Opus for precision.
-- Power Tier: HIGH
-- Command:
-```bash
-claude --model opus --effort max -p \
-  "Define DexGraph state machine types.
+- [ ] All valid state transitions execute correctly (CREATED → READY → RUNNING → VERIFYING → SUCCESS)
+- [ ] Invalid transitions are rejected with clear error context
+- [ ] Failed tasks support configurable retry with exponential backoff
+- [ ] Rollback propagates to all affected dependent tasks
+- [ ] Complete audit trail of every state change
+- [ ] 95%+ test coverage on state machine logic
+- [ ] Supports 10,000+ concurrent node state tracking
 
-   CREATE dexgraph/stateMachine.ts:
-   import { NodeState, GraphNode } from './types';
-   import { StateError } from './errors';
+### INVARIANTS (Non-Negotiable Constraints)
 
-   // Valid transitions matrix
-   const TRANSITIONS: Record<NodeState, NodeState[]> = {
-     CREATED:   ['READY'],
-     READY:     ['RUNNING', 'BLOCKED'],
-     RUNNING:   ['VERIFYING', 'FAILED'],
-     VERIFYING: ['SUCCESS', 'FAILED'],
-     SUCCESS:   [],  // terminal
-     FAILED:    ['RETRY', 'ROLLBACK'],
-     RETRY:     ['RUNNING'],
-     BLOCKED:   ['READY'],  // unblocked by governance
-     ROLLBACK:  [],  // terminal
-   };
+1. **Deterministic transitions**: Same state + same input always produces same result
+2. **Invalid transitions rejected**: No silent failures, all illegal transitions throw
+3. **Complete audit trail**: Every state change is recorded with timestamp and reason
+4. **Terminal states are final**: SUCCESS and ROLLBACK cannot transition further
+5. **Retry limits enforced**: Maximum retry count prevents infinite loops
+6. **Thread-safe operations**: Concurrent state queries must be consistent
 
-   interface StateTransition {
-     nodeId: string;
-     from: NodeState;
-     to: NodeState;
-     timestamp: number;
-     reason?: string;
-   }
+### INTEGRATION CONTRACT
 
-   export class StateMachine {
-     private history: StateTransition[];
-     constructor()
-     canTransition(from: NodeState, to: NodeState): boolean
-     // Throws StateError if invalid transition
-   }"
+**Input** (from Phase 2 - Graph Builder):
+
+```typescript
+// Validated DAG with nodes in initial CREATED state
+// - Node IDs with initial states
+// - Graph structure for dependency lookups
+// - Configuration: max retries, backoff policy
 ```
-- Expected Output: State enum, transition matrix, StateMachine class shell
-- Validation: `npx tsc --noEmit dexgraph/stateMachine.ts`
-- Fallback #1: `claude --model claude-sonnet-4-20250514 --effort high -p "Define state machine types..."`
-- Fallback #2: `gemini -y -p "Create state machine type definitions..."`
-- Fallback #3: `opencode run -m opencode/qwen3-coder-480b-a35b-instruct -p "Define state machine types..."`
-- Cost Class: SUBSCRIPTION-INCLUDED
-- Dependencies: Phase 1 W1 (types)
 
-#### W2: Transition Logic
-- Task ID: V20-P3-W2-TRANSITIONS
-- Objective: Implement transition(), getState(), getHistory() — the core state mutation API
-- Target Files: dexgraph/stateMachine.ts (CONTINUE)
-- Why this lane: State mutation logic. Sonnet for balanced implementation.
-- Power Tier: BALANCED
-- Command:
-```bash
-claude --model claude-sonnet-4-20250514 --effort high -p \
-  "Implement state machine transitions.
+**Input** (from Scheduler during execution):
 
-   ADD to StateMachine class:
-   transition(node: GraphNode, to: NodeState, reason?: string): void
-   - Validate transition is legal (check TRANSITIONS matrix)
-   - If illegal: throw StateError('Invalid transition: {from} → {to} for node {id}')
-   - Update node.state
-   - Record StateTransition in history
-   - Return void (mutation)
-
-   getState(node: GraphNode): NodeState
-   - Return current state
-
-   getHistory(nodeId?: string): StateTransition[]
-   - If nodeId: return transitions for that node
-   - If no nodeId: return all transitions
-
-   getRetryCount(nodeId: string): number
-   - Count FAILED→RETRY transitions for this node
-
-   isTerminal(state: NodeState): boolean
-   - SUCCESS or ROLLBACK = terminal"
+```typescript
+// State transition requests:
+// - Node ID
+// - Target state
+// - Reason/context for transition
+// - Retry configuration
 ```
-- Expected Output: Complete transition API with history tracking
-- Validation: `npx tsc --noEmit dexgraph/stateMachine.ts`
-- Fallback #1: `gemini -y -p "Implement state transitions..."`
-- Fallback #2: `codex --full-auto -m gpt-4o exec "Build state machine transitions..."`
-- Fallback #3: `opencode run -m opencode/deepseek-v3.2 -p "Implement state transition logic..."`
-- Cost Class: SUBSCRIPTION-INCLUDED
-- Dependencies: W1
 
-#### W3: Failure + Retry Handling
-- Task ID: V20-P3-W3-RETRY
-- Objective: Implement retry logic — max retries, backoff, escalation to ROLLBACK after max
-- Target Files: dexgraph/stateMachine.ts (ADD)
-- Why this lane: Retry logic has edge cases. Codex o1 for reasoning.
-- Power Tier: HIGH
-- Command:
-```bash
-codex --full-auto -m o1 exec \
-  "Implement retry and failure handling in DexGraph state machine.
+**Output** (to Scheduler):
 
-   ADD to StateMachine:
-   handleFailure(node: GraphNode, maxRetries: number): NodeState
-   - Get retry count for this node
-   - If retryCount < maxRetries: transition FAILED → RETRY → RUNNING, return 'RUNNING'
-   - If retryCount >= maxRetries: transition FAILED → ROLLBACK, return 'ROLLBACK'
-
-   shouldRetry(node: GraphNode, maxRetries: number): boolean
-   - Return getRetryCount(nodeId) < maxRetries
-
-   getBackoffMs(retryCount: number): number
-   - Exponential: 1000 * 2^retryCount (1s, 2s, 4s, 8s...)
-   - Cap at 30000ms (30s max)"
+```typescript
+// State transition result:
+// - New state (if successful)
+// - Error (if transition invalid)
+// - Retry recommendation (if FAILED)
+// - Rollback scope (if entering ROLLBACK)
 ```
-- Expected Output: Retry logic with exponential backoff and max retry cap
-- Validation: `npx tsc --noEmit dexgraph/stateMachine.ts`
-- Fallback #1: `codex --full-auto -m gpt-4o exec "Implement retry logic..."`
-- Fallback #2: `claude --model claude-sonnet-4-20250514 --effort high -p "Build retry handling..."`
-- Fallback #3: `opencode run -m opencode/devstral-2-123b-instruct-2512 -p "Implement retry with backoff..."`
-- Cost Class: SUBSCRIPTION-INCLUDED
-- Dependencies: W2
 
-#### W4: Rollback Mechanism + Tests
-- Task ID: V20-P3-W4-ROLLBACK-TESTS
-- Objective: Implement rollback propagation (when node rolls back, dependents also roll back) + tests
-- Target Files: dexgraph/stateMachine.ts (COMPLETE), tests/dexgraph/stateMachine.test.ts (NEW)
-- Why this lane: Rollback + comprehensive tests. Gemini for test volume.
-- Power Tier: BALANCED
-- Command:
-```bash
-gemini -y -p \
-  "Complete DexGraph state machine with rollback and tests.
+**Output** (Audit/Logging):
 
-   ADD to StateMachine:
-   rollback(node: GraphNode, graph: DexGraph): string[]
-   - Transition node to ROLLBACK
-   - Find all dependents of this node (via graph.getDependents)
-   - Transition all non-terminal dependents to ROLLBACK
-   - Return array of rolled-back node IDs
-
-   CREATE tests/dexgraph/stateMachine.test.ts:
-   - Test: CREATED → READY is valid
-   - Test: CREATED → RUNNING is invalid (must go through READY)
-   - Test: RUNNING → VERIFYING → SUCCESS is valid
-   - Test: FAILED → RETRY → RUNNING is valid
-   - Test: RETRY respects max retries
-   - Test: exceeding max retries → ROLLBACK
-   - Test: rollback propagates to dependents
-   - Test: terminal states (SUCCESS, ROLLBACK) reject all transitions
-   - Test: history tracks all transitions
-   - Test: getRetryCount is accurate
-   - Test: backoff is exponential with 30s cap
-   - Test: BLOCKED → READY unblock works
-
-   Use Node's built-in test runner."
+```typescript
+// Complete history:
+// - Timestamped transition log
+// - Per-node state timelines
+// - Retry counts per node
+// - Rollback propagation chains
 ```
-- Expected Output: Rollback propagation + 12 state machine tests
-- Validation:
-```bash
-node --test tests/dexgraph/stateMachine.test.ts
-```
-- Fallback #1: `gemini -y --model gemini-2.5-flash -p "Complete state machine with tests..."`
-- Fallback #2: `codex --full-auto -m o1 exec "Write state machine tests..."`
-- Fallback #3: `opencode run -m opencode/llama-3.1-70b-instruct -p "Complete state machine and write tests..."`
-- Cost Class: FREE
-- Dependencies: W1, W2, W3
 
-### SEQUENCE
-W1 → W2 → W3 → W4
+### State Model
 
-### VALIDATION CRITERIA
-- [ ] All 9 state transitions work correctly
-- [ ] Invalid transitions throw StateError
-- [ ] Retry count tracks per node
-- [ ] Rollback propagates to dependents
-- [ ] 12+ state machine tests pass
-- [ ] History captures every transition with timestamp
+**Core States:**
 
-### COST TRACKING
-| Window | Tier | Agent | Est. Tokens |
-|--------|------|-------|-------------|
-| W1 | HIGH | Claude Opus | ~6K |
-| W2 | BALANCED | Claude Sonnet | ~6K |
-| W3 | HIGH | Codex o1 | ~6K |
-| W4 | BALANCED | Gemini Pro | ~10K |
+- `CREATED` - Initial state for all nodes
+- `READY` - Dependencies satisfied, awaiting execution
+- `RUNNING` - Currently executing
+- `VERIFYING` - Execution complete, verifying output
+- `SUCCESS` - Terminal: completed successfully
+- `FAILED` - Execution or verification failed
+- `RETRY` - Preparing to retry after failure
+- `BLOCKED` - Paused by governance/policy
+- `ROLLBACK` - Terminal: failed and unable to recover
 
-### RISKS
-| Risk | Mitigation |
-|------|------------|
-| Concurrent state mutations | State machine is sync, scheduler serializes calls |
-| Rollback cascade infinite loop | Terminal check prevents re-rollback |
-| Retry storm | Exponential backoff + max cap |
+**Key Transition Paths:**
+
+- **Happy Path**: CREATED → READY → RUNNING → VERIFYING → SUCCESS
+- **Retry Path**: FAILED → RETRY → RUNNING → ...
+- **Rollback Path**: FAILED → ROLLBACK (after max retries exceeded)
+- **Block Path**: READY → BLOCKED → READY (governance pause/resume)
+
+### SCOPE BOUNDARIES
+
+**IN Scope:**
+
+- State transition validation
+- Transition execution with audit logging
+- Retry logic with exponential backoff
+- Rollback propagation to dependents
+- State history tracking
+- Terminal state detection
+- Retry count tracking per node
+
+**OUT of Scope (handled by other phases):**
+
+- Scheduler orchestration (Phase 4)
+- Task actual execution (Phase 4)
+- Governance policy enforcement (Phase 5)
+- Persistence of state history (Phase 7)
+- Distributed state coordination (Phase 9)
+
+### WINDOWS (High-Level Work Units)
+
+#### W1: State Model Definition
+
+**Task ID:** V20-P3-W1-MODEL  
+**Objective:** Define the state types, transition rules, and state machine interface.  
+**Agent Power Tier:** HIGH (Claude Opus for precision)  
+**Success Signal:** State types compile, transition rules are comprehensive and correct.
+
+**Requirements:**
+
+- Define state enumeration for all 9 states
+- Define transition rules matrix (valid from → to mappings)
+- Define state transition record structure (timestamp, reason, metadata)
+- Define state machine interface with core methods
+- Support state querying by node ID
+- Support transition validation (canTransition checks)
+
+**Constraints:**
+
+- Must support all valid workflow state transitions
+- Must reject invalid transitions at compile and runtime
+- Must integrate with Phase 1 types
+- Must support history tracking
+- Must distinguish terminal states (SUCCESS, ROLLBACK)
 
 ---
 
-*Phase 3 dispatches generated 2026-04-12 | DexGraph State Machine | 4 windows | Week 1-2*
+#### W2: Transition Engine
+
+**Task ID:** V20-P3-W2-ENGINE  
+**Objective:** Implement state mutation API with validation and audit logging.  
+**Agent Power Tier:** BALANCED (Claude Sonnet for balanced implementation)  
+**Success Signal:** All transitions execute correctly, invalid ones throw, history is complete.
+
+**Requirements:**
+
+- Execute state transitions with validation
+- Throw descriptive errors for invalid transitions
+- Update node state atomically
+- Record every transition in history
+- Support querying current state by node
+- Support querying transition history (all or per-node)
+- Support retry count tracking per node
+- Detect terminal states
+
+**Constraints:**
+
+- Transitions must be atomic (no partial updates)
+- History must be append-only (immutable log)
+- Error messages must include context (node ID, from, to states)
+- Must support concurrent state queries
+
+---
+
+#### W3: Retry & Failure Handling
+
+**Task ID:** V20-P3-W3-RETRY  
+**Objective:** Build retry logic with exponential backoff and max retry enforcement.  
+**Agent Power Tier:** HIGH (Codex o1 for edge case reasoning)  
+**Success Signal:** Failed tasks retry correctly, max retries enforced, backoff follows policy.
+
+**Requirements:**
+
+- Calculate retry eligibility (current count vs max)
+- Compute backoff delay (exponential with configurable cap)
+- Transition FAILED → RETRY → RUNNING when retrying
+- Transition FAILED → ROLLBACK when max retries exceeded
+- Track retry count per node accurately
+- Support configurable max retry count per workflow
+- Support configurable backoff policy
+
+**Constraints:**
+
+- Backoff must have maximum cap (prevent infinite wait)
+- Retry counts must survive across state machine instances
+- Must handle retry storms (backoff prevents thundering herd)
+- Must support zero retries (fail immediately to ROLLBACK)
+
+---
+
+#### W4: Rollback & Test Coverage
+
+**Task ID:** V20-P3-W4-ROLLBACK  
+**Objective:** Implement rollback propagation and comprehensive state machine tests.  
+**Agent Power Tier:** BALANCED (Gemini for comprehensive test generation)  
+**Success Signal:** Rollback propagates correctly, 95%+ coverage, all edge cases tested.
+
+**Requirements:**
+
+- Execute ROLLBACK transition
+- Query graph dependents for rollback scope
+- Propagate rollback to all non-terminal dependents
+- Return list of affected nodes
+- Prevent re-rollback (terminal check)
+- Comprehensive test coverage:
+  - Valid transitions for all paths
+  - Invalid transition rejection
+  - Happy path execution
+  - Retry path with multiple retries
+  - Max retry enforcement
+  - Rollback propagation
+  - Terminal state enforcement
+  - History accuracy
+  - Retry count accuracy
+  - Backoff calculation
+  - Block/unblock flow
+
+**Constraints:**
+
+- Rollback must be deterministic (same graph = same scope)
+- Must not rollback already-terminal nodes
+- Tests must cover all transition combinations
+- Tests must verify error messages are actionable
+
+---
+
+### SEQUENCE
+
+```
+W1 (Model) → W2 (Engine) → W3 (Retry) → W4 (Rollback + Tests)
+```
+
+- Strictly sequential - each window builds on previous
+- W4 integrates all components and validates
+
+### OUTPUT ARTIFACTS
+
+| Artifact      | Location                              | Purpose                      |
+| ------------- | ------------------------------------- | ---------------------------- |
+| State Machine | `dexgraph/stateMachine.ts`            | Core state management        |
+| State Types   | `dexgraph/types.ts`                   | State enumerations           |
+| State Errors  | `dexgraph/errors.ts`                  | State-specific error classes |
+| State Tests   | `tests/dexgraph/stateMachine.test.ts` | Comprehensive coverage       |
+
+### VALIDATION GATES
+
+- [ ] All valid state paths execute correctly
+- [ ] Invalid transitions throw with context
+- [ ] Retry logic respects max retry count
+- [ ] Rollback propagates to dependents
+- [ ] History captures complete audit trail
+- [ ] 95%+ test coverage
+- [ ] Handles 10,000+ node state tracking
+
+### RISK MITIGATION
+
+| Risk                           | Impact | Mitigation                                        |
+| ------------------------------ | ------ | ------------------------------------------------- |
+| Concurrent state mutations     | High   | Synchronous state machine, external serialization |
+| Rollback cascade infinite loop | Medium | Terminal state check prevents re-rollback         |
+| Retry storm                    | Medium | Exponential backoff with configurable cap         |
+| History memory explosion       | Medium | Configurable retention, external persistence      |
+| State machine inconsistency    | High   | Immutable history, atomic transitions             |
+
+### COST TRACKING
+
+| Window | Tier     | Agent         | Est. Tokens |
+| ------ | -------- | ------------- | ----------- |
+| W1     | HIGH     | Claude Opus   | ~6K         |
+| W2     | BALANCED | Claude Sonnet | ~6K         |
+| W3     | HIGH     | Codex o1      | ~6K         |
+| W4     | BALANCED | Gemini Pro    | ~10K        |
+
+---
+
+_Phase 3 dispatches | High-Level Orchestrator | v2.1_

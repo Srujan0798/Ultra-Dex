@@ -1,0 +1,68 @@
+# Build a SaaS Backend — DexGraph Workflow Example
+version: dexgraph/v1
+name: build-saas-backend
+description: Generate a production-ready SaaS backend with auth, API, and database
+
+context:
+  framework: nodejs
+  database: postgres
+  auth: jwt
+
+on_failure:
+  retry: 2
+  rollback: true
+
+tasks:
+  - id: design-schema
+    role: architect
+    instruction: |
+      Design the database schema for a SaaS product with users, subscriptions, and organizations.
+      Output the SQL migration files.
+    output: schema-migrations
+    verify:
+      type: llm_check
+      policy: Schema must include users, organizations, and subscriptions tables
+
+  - id: setup-project
+    role: engineer
+    instruction: |
+      Initialize a Node.js project with TypeScript, Express, and PostgreSQL.
+    depends_on: []
+    parallel: true
+    output: project-scaffold
+
+  - id: implement-auth
+    role: engineer
+    instruction: |
+      Implement JWT authentication with login, register, and refresh token endpoints.
+      Use the schema from {{design-schema.output}}.
+    depends_on:
+      - design-schema
+      - setup-project
+    output: auth-module
+    verify:
+      type: unit_test
+      command: npm test -- auth
+
+  - id: write-tests
+    role: tester
+    instruction: |
+      Write integration tests for the auth module.
+      Test against the code in {{implement-auth.output}}.
+    depends_on:
+      - implement-auth
+    verify:
+      type: unit_test
+      command: npm test
+
+  - id: code-review
+    role: reviewer
+    instruction: |
+      Review all generated code for security issues, best practices, and completeness.
+      Check auth implementation at {{implement-auth.output}} and tests at {{write-tests.output}}.
+    depends_on:
+      - implement-auth
+      - write-tests
+    verify:
+      type: llm_check
+      policy: No hardcoded secrets, proper error handling, input validation

@@ -1,214 +1,222 @@
 # Phase 1: DexGraph Core — Workflow DSL Parser (Week 1)
 
 ### OBJECTIVE
-Implement dexgraph/parser.ts — parse YAML workflow definitions into GraphNode[] internal representation. This is the entry point of DexGraph: human-readable workflow → machine-executable graph.
 
-### SKILLS REFERENCED
-- /engineering:architecture → Parser interface ADR
-- /engineering:system-design → DSL schema design
-- /product-management:write-spec → Parser requirements spec
+Establish the DSL-to-Graph translation layer: human-readable workflow definitions become machine-executable task graphs. This is the entry point of DexGraph.
 
-### WINDOWS
+### SUCCESS CRITERIA (Define "Done")
 
-#### W1: YAML Loader + Schema Types
-- Task ID: V20-P1-W1-YAML-TYPES
-- Objective: Define DexGraph workflow DSL types and YAML loader
-- Target Files: dexgraph/types.ts (NEW), dexgraph/parser.ts (START)
-- Why this lane: Type definitions are the contract for everything downstream. Opus for precision.
-- Power Tier: HIGH
-- Command:
-```bash
-claude --model opus --effort max -p \
-  "Define DexGraph workflow DSL types and YAML loader.
+- [ ] A valid `.dex` workflow file parses without errors
+- [ ] Parser output is a structured graph representation consumable by Phase 2 (Graph Builder)
+- [ ] Invalid workflows produce meaningful errors with file location context
+- [ ] 90%+ test coverage on parser logic
+- [ ] Parser handles workflows up to 1000 tasks without performance degradation
 
-   CREATE dexgraph/types.ts:
-   interface WorkflowDefinition {
-     version: 'dexgraph/v1';
-     name: string;
-     description: string;
-     context: Record<string, string>;
-     tasks: TaskDefinition[];
-     on_failure: { retry: number; rollback: boolean };
-   }
+### INVARIANTS (Non-Negotiable Constraints)
 
-   interface TaskDefinition {
-     id: string;
-     role: 'architect' | 'engineer' | 'tester' | 'reviewer';
-     instruction: string;
-     depends_on?: string[];
-     context?: Record<string, string>;
-     output?: string;
-     verify?: VerificationRule;
-     parallel?: boolean;
-   }
+1. **Parser must be pure**: No side effects, no network calls, no file writes
+2. **Output must be immutable**: Once parsed, the graph representation cannot be modified in-place
+3. **Errors must be actionable**: Every parse error includes line number, column, and human-readable message
+4. **Schema must be versioned**: All workflows declare their schema version; parser rejects unknown versions
 
-   interface VerificationRule {
-     type: 'unit_test' | 'llm_check' | 'file_exists' | 'custom';
-     command?: string;
-     policy?: string;
-   }
+### INTEGRATION CONTRACT
 
-   interface GraphNode {
-     id: string;
-     role: TaskDefinition['role'];
-     instruction: string;
-     dependencies: string[];
-     context: Record<string, string>;
-     output?: string;
-     verification?: VerificationRule;
-     parallel: boolean;
-     state: NodeState;
-   }
+**Input** (from human or version control):
 
-   type NodeState = 'CREATED' | 'READY' | 'RUNNING' | 'VERIFYING' | 'SUCCESS' | 'FAILED' | 'RETRY' | 'BLOCKED' | 'ROLLBACK';
-
-   interface GraphEdge { from: string; to: string; }
-
-   interface DexGraphResult {
-     nodes: GraphNode[];
-     edges: GraphEdge[];
-     metadata: { name: string; description: string; context: Record<string, string> };
-   }
-
-   START dexgraph/parser.ts:
-   import yaml from 'yaml';
-   export function loadYAML(filepath: string): WorkflowDefinition"
+```yaml
+# Any .dex workflow file
+version: dexgraph/v1
+name: example-workflow
+tasks: [...]
 ```
-- Expected Output: Complete type definitions + YAML loader function
-- Validation:
-```bash
-npx tsc --noEmit dexgraph/types.ts dexgraph/parser.ts
+
+**Output** (to Phase 2 - Graph Builder):
+
+```typescript
+// Graph representation with:
+// - Node collection (task definitions with metadata)
+// - Edge collection (dependency relationships)
+// - Metadata (workflow name, context, configuration)
+// - Validation state (ok / error with details)
 ```
-- Fallback #1: `claude --model claude-sonnet-4-20250514 --effort high -p "Define DexGraph types..."`
-- Fallback #2: `gemini -y -p "Create TypeScript types for workflow DSL..."`
-- Fallback #3: `opencode run -m opencode/qwen3-coder-480b-a35b-instruct -p "Define workflow DSL types..."`
-- Cost Class: SUBSCRIPTION-INCLUDED
-- Dependencies: Phase 0 W1
 
-#### W2: Dependency Extraction Logic
-- Task ID: V20-P1-W2-DEPENDENCY-EXTRACT
-- Objective: Parse depends_on fields, resolve {{task.output}} template refs, build edge list
-- Target Files: dexgraph/parser.ts (CONTINUE), dexgraph/errors.ts (NEW)
-- Why this lane: Dependency resolution has subtle edge cases. Codex o1 for reasoning.
-- Power Tier: HIGH
-- Command:
-```bash
-codex --full-auto -m o1 exec \
-  "Implement dependency extraction in dexgraph/parser.ts.
+**Error Output** (to CLI / User):
 
-   ADD: extractDependencies(tasks: TaskDefinition[]): GraphEdge[]
-   - For each task with depends_on: create edge from dependency → task
-   - For context containing {{taskId.output}}: create implicit edge
-   - Throw ParseError on: unknown dependency, self-dependency, missing template ref
-
-   ADD: resolveTemplates(tasks: TaskDefinition[]): TaskDefinition[]
-   - Replace {{taskId.output}} with placeholder markers
-   - Actual values injected at runtime (Phase 8)
-
-   CREATE dexgraph/errors.ts:
-   export class ParseError extends Error {}
-   export class GraphError extends Error {}
-   export class StateError extends Error {}"
+```typescript
+// Structured error with:
+// - File path
+// - Line/column position
+// - Error category: SYNTAX | SCHEMA | DEPENDENCY | CIRCULAR
+// - Human message
+// - Suggested fix (where possible)
 ```
-- Expected Output: Dependency extraction + template resolution + error types
-- Validation:
-```bash
-npx tsc --noEmit dexgraph/parser.ts dexgraph/errors.ts
-```
-- Fallback #1: `codex --full-auto -m gpt-4o exec "Implement dependency extraction..."`
-- Fallback #2: `claude --model claude-sonnet-4-20250514 --effort high -p "Build dependency resolver..."`
-- Fallback #3: `opencode run -m opencode/deepseek-r1-0528 -p "Implement dependency extraction for DAG..."`
-- Cost Class: SUBSCRIPTION-INCLUDED
-- Dependencies: W1
 
-#### W3: Schema Validation Rules
-- Task ID: V20-P1-W3-VALIDATION
-- Objective: Validate YAML against DexGraph schema — required fields, valid roles, valid verify types
-- Target Files: dexgraph/schema.ts (NEW)
-- Why this lane: Validation logic. Gemini for structured rule generation at free tier.
-- Power Tier: BALANCED
-- Command:
-```bash
-gemini -y -p \
-  "Implement DexGraph YAML schema validation.
+### SCOPE BOUNDARIES
 
-   CREATE dexgraph/schema.ts:
-   export function validateWorkflow(def: WorkflowDefinition): ValidationResult
-   - Check version === 'dexgraph/v1'
-   - Check name, tasks exist
-   - Validate each task: id, role (architect|engineer|tester|reviewer), instruction
-   - Validate verify types: unit_test|llm_check|file_exists|custom
-   - Check duplicate task IDs
-   - Return { valid: boolean, errors: string[] }"
-```
-- Expected Output: Schema validator catching all invalid workflow definitions
-- Validation:
-```bash
-npx tsc --noEmit dexgraph/schema.ts
-```
-- Fallback #1: `gemini -y --model gemini-2.5-flash -p "Create YAML schema validator..."`
-- Fallback #2: `claude --model claude-sonnet-4-20250514 --effort high -p "Build workflow validator..."`
-- Fallback #3: `opencode run -m opencode/devstral-2-123b-instruct-2512 -p "Implement schema validation..."`
-- Cost Class: FREE
-- Dependencies: W1
+**IN Scope:**
 
-#### W4: Parser Tests + Integration
-- Task ID: V20-P1-W4-PARSER-TESTS
-- Objective: Complete parse() function, write comprehensive tests, verify with sample .dex file
-- Target Files: dexgraph/parser.ts (COMPLETE), tests/dexgraph/parser.test.ts (NEW), examples/simple.dex (NEW)
-- Why this lane: Test correctness for the foundation module. Codex o1.
-- Power Tier: HIGH
-- Command:
-```bash
-codex --full-auto -m o1 exec \
-  "Complete DexGraph parser and write tests.
+- YAML parsing and validation
+- Schema version recognition and dispatch
+- Dependency extraction (explicit `depends_on` and implicit template references)
+- Cycle detection (report circular dependencies before execution)
+- Structured error reporting
 
-   COMPLETE dexgraph/parser.ts — parse(filepath): DexGraphResult
-   CREATE examples/simple.dex (build-saas-backend from NOTION/v2.0.MD)
-   CREATE tests/dexgraph/parser.test.ts:
-   - valid workflow parses, missing name throws, invalid role throws,
-     duplicate IDs throws, unknown dep throws, self-dep throws,
-     template creates edge, empty tasks throws, parallel defaults false
+**OUT of Scope (handled by other phases):**
 
-   Use Node's built-in test runner."
-```
-- Expected Output: Working parser with 9+ tests
-- Validation:
-```bash
-node --test tests/dexgraph/parser.test.ts
-```
-- Fallback #1: `codex --full-auto -m gpt-4o exec "Complete parser and tests..."`
-- Fallback #2: `claude --model opus --effort max -p "Finish parser with tests..."`
-- Fallback #3: `opencode run -m opencode/qwen3-coder-480b-a35b-instruct -p "Complete parser and tests..."`
-- Cost Class: SUBSCRIPTION-INCLUDED
-- Dependencies: W1, W2, W3
+- Task execution (Phase 3+)
+- State machine transitions (Phase 2)
+- Template value resolution at runtime (Phase 8)
+- Parallel execution decisions (Phase 4)
 
-### SEQUENCE
-W1 → W2 ║ W3 → W4
+### WINDOWS (High-Level Work Units)
 
-### VALIDATION CRITERIA
-- [ ] dexgraph/types.ts compiles with all interfaces
-- [ ] parse() returns DexGraphResult from YAML
-- [ ] Schema validates all required fields
-- [ ] examples/simple.dex parses successfully
-- [ ] 9+ parser tests pass
-- [ ] Invalid YAML throws ParseError with clear message
+#### W1: Type Foundation
 
-### COST TRACKING
-| Window | Tier | Agent | Est. Tokens |
-|--------|------|-------|-------------|
-| W1 | HIGH | Claude Opus | ~10K |
-| W2 | HIGH | Codex o1 | ~8K |
-| W3 | BALANCED | Gemini Pro | ~6K |
-| W4 | HIGH | Codex o1 | ~12K |
+**Task ID:** V20-P1-W1-TYPES  
+**Objective:** Define the domain model - the types that represent workflows, tasks, and graph structures.  
+**Agent Power Tier:** HIGH (Claude Opus for precision)  
+**Success Signal:** `npx tsc --noEmit` passes on type definitions.
 
-### RISKS
-| Risk | Mitigation |
-|------|------------|
-| YAML lib version | Pin yaml@2.x, test on Node 18+ |
-| Template syntax conflicts | {{ }} is safe in YAML strings |
-| Parser too strict | Version field allows schema evolution |
+**Requirements (WHAT, not HOW):**
+
+- Define TypeScript types for: Workflow, Task, Graph, Dependencies, Errors
+- Support these task roles: architect, engineer, tester, reviewer
+- Support these verification types: unit_test, llm_check, file_exists, custom
+- Support these node states: CREATED → READY → RUNNING → VERIFYING → SUCCESS | FAILED | RETRY | BLOCKED | ROLLBACK
+- Design error types: ParseError, SchemaError, DependencyError, CycleError
+
+**Constraints:**
+
+- Types must enable immutable graph construction
+- Types must support cycle detection algorithms
+- Types must be serializable for debugging
 
 ---
 
-*Phase 1 dispatches generated 2026-04-12 | DexGraph Parser | 4 windows | Week 1*
+#### W2: Dependency Resolution Engine
+
+**Task ID:** V20-P1-W2-DEPENDENCIES  
+**Objective:** Build the system that understands task relationships and detects cycles.  
+**Agent Power Tier:** HIGH (Codex o1 for graph algorithms)  
+**Success Signal:** Can detect cycles in complex dependency graphs; produces edges list.
+
+**Requirements:**
+
+- Extract explicit dependencies from `depends_on` fields
+- Extract implicit dependencies from template syntax (e.g., `{{taskId.output}}`)
+- Build adjacency representations for efficient traversal
+- Implement cycle detection (DFS or Kahn's algorithm)
+- Report exact cycle path when found
+
+**Constraints:**
+
+- Algorithm must handle 1000+ nodes efficiently
+- Self-dependencies must be caught as errors
+- Unknown dependency references must be caught as errors
+
+---
+
+#### W3: Schema Validation Layer
+
+**Task ID:** V20-P1-W3-VALIDATION  
+**Objective:** Ensure workflow files conform to DexGraph schema rules.  
+**Agent Power Tier:** BALANCED (Gemini for structured rules)  
+**Success Signal:** Invalid workflows are rejected with clear error messages.
+
+**Requirements:**
+
+- Validate required fields presence (name, tasks, version)
+- Validate field types and formats
+- Validate task ID uniqueness
+- Validate role values are from allowed set
+- Validate verification types are from allowed set
+- Return structured validation result (ok / errors[])
+
+**Constraints:**
+
+- Must support schema versioning for future evolution
+- Must produce actionable error messages with line numbers
+- Validation should be streamable for large files
+
+---
+
+#### W4: Integration & Test Coverage
+
+**Task ID:** V20-P1-W4-INTEGRATION  
+**Objective:** Complete the parser module with comprehensive tests and documentation.  
+**Agent Power Tier:** HIGH (Codex o1 for test completeness)  
+**Success Signal:** 90%+ coverage, all edge cases tested, example workflows provided.
+
+**Requirements:**
+
+- Assemble complete `parse()` function from W1-W3 components
+- Create example workflow files demonstrating features
+- Write unit tests covering:
+  - Valid workflows (happy path)
+  - Missing required fields
+  - Invalid field types
+  - Duplicate task IDs
+  - Unknown dependencies
+  - Circular dependencies
+  - Self-dependencies
+  - Template-based implicit dependencies
+- Ensure Node.js built-in test runner compatibility
+
+**Constraints:**
+
+- Tests must run in isolation (no external dependencies)
+- Tests must complete in < 5 seconds total
+- Example files serve as documentation
+
+---
+
+### SEQUENCE
+
+```
+W1 (Types) → W2 (Dependencies) ║ W3 (Validation) → W4 (Integration)
+```
+
+- W1 is foundation for W2 and W3
+- W2 and W3 can proceed in parallel after W1
+- W4 integrates all previous work
+
+### OUTPUT ARTIFACTS
+
+| Artifact          | Location                        | Purpose                                 |
+| ----------------- | ------------------------------- | --------------------------------------- |
+| Type Definitions  | `dexgraph/types.ts`             | Domain model for entire DexGraph system |
+| Parser Module     | `dexgraph/parser.ts`            | Entry point: file → graph               |
+| Schema Validator  | `dexgraph/validator.ts`         | YAML schema enforcement                 |
+| Error Types       | `dexgraph/errors.ts`            | Structured error handling               |
+| Parser Tests      | `tests/dexgraph/parser.test.ts` | Coverage and regression prevention      |
+| Example Workflows | `examples/*.dex`                | Documentation and manual testing        |
+
+### VALIDATION GATES (Before marking Phase 1 complete)
+
+- [ ] All TypeScript compiles without errors
+- [ ] All tests pass (`node --test tests/dexgraph/parser.test.ts`)
+- [ ] Example workflows parse successfully
+- [ ] Invalid inputs produce helpful error messages
+- [ ] No dependencies on other phases (standalone module)
+
+### RISK MITIGATION
+
+| Risk                           | Impact | Mitigation                                     |
+| ------------------------------ | ------ | ---------------------------------------------- |
+| YAML library changes           | Medium | Pin `yaml@2.x`, lock in package-lock           |
+| Template syntax conflicts      | Low    | `{{ }}` is safe in YAML strings per spec       |
+| Schema evolution               | Low    | Version field allows future breaking changes   |
+| Performance on large workflows | Medium | Design for O(N) parsing, test with 1000+ tasks |
+
+### COST TRACKING
+
+| Window | Tier     | Agent       | Est. Tokens |
+| ------ | -------- | ----------- | ----------- |
+| W1     | HIGH     | Claude Opus | ~8K         |
+| W2     | HIGH     | Codex o1    | ~8K         |
+| W3     | BALANCED | Gemini Pro  | ~6K         |
+| W4     | HIGH     | Codex o1    | ~10K        |
+
+---
+
+_Phase 1 dispatches | High-Level Orchestrator | v2.1_

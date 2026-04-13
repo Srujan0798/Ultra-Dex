@@ -1,188 +1,234 @@
 # Phase 2: DexGraph Core — Graph Builder (Week 1)
 
 ### OBJECTIVE
-Implement dexgraph/graph.ts — build a validated DAG from parser output. Node registry, edge creation, cycle detection, topological sort. The graph is the single source of truth for workflow execution.
 
-### SKILLS REFERENCED
-- /engineering:system-design → DAG structure design
-- /engineering:architecture → Graph pattern ADR
+Construct the validated DAG execution graph from parsed workflow definitions. This is the single source of truth for workflow execution — the bridge between declarative workflows and actual task ordering.
 
-### WINDOWS
+### SUCCESS CRITERIA (Define "Done")
 
-#### W1: Node Registry + Types
-- Task ID: V20-P2-W1-NODE-REGISTRY
-- Objective: Build node registry — stores nodes by ID, enforces uniqueness, supports lookup
-- Target Files: dexgraph/graph.ts (START)
-- Why this lane: Core data structure. Opus for correctness.
-- Power Tier: HIGH
-- Command:
-```bash
-claude --model opus --effort max -p \
-  "Build DexGraph node registry.
+- [ ] Graph correctly stores nodes and edges from parser output
+- [ ] Cycle detection finds and reports all circular dependencies
+- [ ] Topological sort produces valid execution order respecting dependencies
+- [ ] Graph supports querying executable nodes based on state
+- [ ] 95%+ test coverage on graph operations
+- [ ] Graph handles 10,000+ nodes without performance degradation
 
-   CREATE dexgraph/graph.ts:
-   export class DexGraph {
-     private nodes: Map<string, GraphNode>;
-     private edges: GraphEdge[];
-     private adjacency: Map<string, string[]>;  // node → dependents
+### INVARIANTS (Non-Negotiable Constraints)
 
-     addNode(node: GraphNode): void  // throws if duplicate ID
-     getNode(id: string): GraphNode  // throws if not found
-     getAllNodes(): GraphNode[]
-     getNodesByState(state: NodeState): GraphNode[]
-     hasNode(id: string): boolean
-     get size(): number
-   }
+1. **Graph is immutable**: Once built, graph structure cannot be modified
+2. **No cycles allowed**: Any cycle detection invalidates the entire graph
+3. **Deterministic ordering**: Same graph always produces same topological sort
+4. **Thread-safe queries**: Concurrent reads must be safe (graph is read-only after build)
+5. **Fail fast on invalid input**: Invalid nodes/edges throw immediately, not silently
 
-   Import types from dexgraph/types.ts."
+### INTEGRATION CONTRACT
+
+**Input** (from Phase 1 - Parser):
+
+```typescript
+// Parsed workflow representation:
+// - Node collection with metadata
+// - Edge collection with dependency relationships
+// - Validation status (ok / error)
 ```
-- Expected Output: DexGraph class with node registry CRUD
-- Validation: `npx tsc --noEmit dexgraph/graph.ts`
-- Fallback #1: `claude --model claude-sonnet-4-20250514 --effort high -p "Build node registry..."`
-- Fallback #2: `codex --full-auto -m o1 exec "Create DexGraph node registry..."`
-- Fallback #3: `opencode run -m opencode/qwen3-coder-480b-a35b-instruct -p "Build graph node registry..."`
-- Cost Class: SUBSCRIPTION-INCLUDED
-- Dependencies: Phase 1 W1 (types)
 
-#### W2: Edge Creation + Graph Structure
-- Task ID: V20-P2-W2-EDGES
-- Objective: Build edge management — add edges, build adjacency list, reverse adjacency (for dependency lookup)
-- Target Files: dexgraph/graph.ts (CONTINUE)
-- Why this lane: Graph wiring. Sonnet for balanced speed.
-- Power Tier: BALANCED
-- Command:
-```bash
-claude --model claude-sonnet-4-20250514 --effort high -p \
-  "Add edge management to DexGraph.
+**Output** (to Phase 3 - Scheduler):
 
-   ADD to dexgraph/graph.ts DexGraph class:
-   addEdge(edge: GraphEdge): void
-   - Validate both nodes exist
-   - Add to edges array
-   - Update adjacency: from → [...dependents, to]
-   - Update reverse adjacency: to → [...dependencies, from]
-
-   getEdges(): GraphEdge[]
-   getDependencies(nodeId: string): string[]     // what this node depends on
-   getDependents(nodeId: string): string[]        // what depends on this node
-   getRootNodes(): GraphNode[]                     // nodes with 0 dependencies
-   getLeafNodes(): GraphNode[]                     // nodes with 0 dependents
-
-   static fromParseResult(result: DexGraphResult): DexGraph
-   - Convenience: build graph from parser output in one call"
+```typescript
+// Validated execution graph:
+// - Nodes indexed by ID for O(1) lookup
+// - Adjacency lists for dependency traversal
+// - Topological ordering for execution sequence
+// - Query methods: getExecutableNodes(), getDependencies(), etc.
+// - Immutable - no structural changes after construction
 ```
-- Expected Output: Edge management + adjacency lists + fromParseResult factory
-- Validation: `npx tsc --noEmit dexgraph/graph.ts`
-- Fallback #1: `gemini -y -p "Add edge management to DexGraph class..."`
-- Fallback #2: `codex --full-auto -m gpt-4o exec "Build graph edge system..."`
-- Fallback #3: `opencode run -m opencode/deepseek-v3.2 -p "Implement graph edges and adjacency..."`
-- Cost Class: SUBSCRIPTION-INCLUDED
-- Dependencies: W1
 
-#### W3: Cycle Detection Algorithm
-- Task ID: V20-P2-W3-CYCLE-DETECT
-- Objective: Implement DFS-based cycle detection. A workflow with circular deps is invalid and must be rejected.
-- Target Files: dexgraph/graph.ts (ADD)
-- Why this lane: Algorithm correctness is critical. Codex o1 for reasoning about graph traversal.
-- Power Tier: HIGH
-- Command:
-```bash
-codex --full-auto -m o1 exec \
-  "Implement cycle detection for DexGraph.
+**Error Output** (to CLI / User):
 
-   ADD to DexGraph class:
-   detectCycles(): string[][] | null
-   - DFS-based cycle detection
-   - Returns null if no cycles (DAG is valid)
-   - Returns array of cycles if found: [[nodeA, nodeB, nodeC, nodeA], ...]
-   - Uses 3-color marking: white (unvisited), gray (in progress), black (done)
-   - When gray node encountered from gray → cycle found
-   - Track path to report exact cycle
-
-   validateDAG(): void
-   - Calls detectCycles()
-   - If cycles found: throw GraphError('Circular dependency: ' + cycle.join(' → '))"
+```typescript
+// Graph construction errors:
+// - Duplicate node IDs
+// - Edges referencing non-existent nodes
+// - Circular dependency detected (with cycle path)
+// - Invalid state transitions attempted
 ```
-- Expected Output: Cycle detection with exact cycle path reporting
-- Validation: `npx tsc --noEmit dexgraph/graph.ts`
-- Fallback #1: `codex --full-auto -m gpt-4o exec "Implement cycle detection..."`
-- Fallback #2: `claude --model opus --effort max -p "Write DFS cycle detection for DAG..."`
-- Fallback #3: `opencode run -m opencode/deepseek-r1-0528 -p "Implement cycle detection in directed graph..."`
-- Cost Class: SUBSCRIPTION-INCLUDED
-- Dependencies: W2
 
-#### W4: Topological Sort + Validation + Tests
-- Task ID: V20-P2-W4-TOPO-SORT
-- Objective: Implement topological sort for execution ordering, complete graph validation, write tests
-- Target Files: dexgraph/graph.ts (COMPLETE), tests/dexgraph/graph.test.ts (NEW)
-- Why this lane: Algorithm + test coverage. Gemini for comprehensive test generation.
-- Power Tier: BALANCED
-- Command:
-```bash
-gemini -y -p \
-  "Complete DexGraph with topological sort and tests.
+### SCOPE BOUNDARIES
 
-   ADD to DexGraph:
-   topologicalSort(): string[]
-   - Kahn's algorithm (BFS-based)
-   - Returns node IDs in valid execution order
-   - Respects dependency ordering
-   - Throws GraphError if graph has cycles (defensive, should already be validated)
+**IN Scope:**
 
-   getExecutableNodes(): GraphNode[]
-   - Return nodes in READY state whose ALL dependencies are in SUCCESS state
-   - This is the key function the scheduler calls
+- Node registry (store, lookup, query by state)
+- Edge management (add, validate, build adjacency)
+- Graph construction from parser output
+- Cycle detection (DFS-based or similar)
+- Topological sorting (Kahn's or DFS-based)
+- Executable node queries (ready + deps satisfied)
+- Graph validation and error reporting
 
-   CREATE tests/dexgraph/graph.test.ts:
-   - Test: linear chain A→B→C sorts correctly
-   - Test: diamond A→B,A→C,B→D,C→D sorts correctly
-   - Test: cycle A→B→A detected
-   - Test: self-cycle A→A detected
-   - Test: getExecutableNodes returns only ready+deps-satisfied
-   - Test: getRootNodes returns nodes with 0 deps
-   - Test: fromParseResult builds graph correctly
-   - Test: duplicate node ID throws
-   - Test: edge to nonexistent node throws
+**OUT of Scope (handled by other phases):**
 
-   Use Node's built-in test runner."
-```
-- Expected Output: Topological sort + getExecutableNodes + 9 tests
-- Validation:
-```bash
-node --test tests/dexgraph/graph.test.ts
-```
-- Fallback #1: `gemini -y --model gemini-2.5-flash -p "Complete DexGraph with tests..."`
-- Fallback #2: `codex --full-auto -m o1 exec "Implement topo sort and graph tests..."`
-- Fallback #3: `opencode run -m opencode/devstral-2-123b-instruct-2512 -p "Complete graph with sort and tests..."`
-- Cost Class: FREE
-- Dependencies: W1, W2, W3
+- State machine transitions (Phase 3)
+- Task execution (Phase 4)
+- Parallel execution decisions (Phase 4)
+- Persistence/saving graphs (Phase 7)
+- Distributed graph partitioning (Phase 9)
 
-### SEQUENCE
-W1 → W2 → W3 → W4
+### WINDOWS (High-Level Work Units)
 
-### VALIDATION CRITERIA
-- [ ] DexGraph class stores nodes and edges
-- [ ] Cycle detection finds circular dependencies
-- [ ] Topological sort produces valid execution order
-- [ ] getExecutableNodes respects dependency states
-- [ ] 9+ graph tests pass
-- [ ] fromParseResult builds graph from parser output
+#### W1: Node Registry
 
-### COST TRACKING
-| Window | Tier | Agent | Est. Tokens |
-|--------|------|-------|-------------|
-| W1 | HIGH | Claude Opus | ~8K |
-| W2 | BALANCED | Claude Sonnet | ~6K |
-| W3 | HIGH | Codex o1 | ~8K |
-| W4 | BALANCED | Gemini Pro | ~10K |
+**Task ID:** V20-P2-W1-NODES  
+**Objective:** Build the node storage and indexing system for efficient lookup and queries.  
+**Agent Power Tier:** HIGH (Claude Opus for data structure correctness)  
+**Success Signal:** O(1) node lookup, supports querying by state, enforces ID uniqueness.
 
-### RISKS
-| Risk | Mitigation |
-|------|------------|
-| Large graphs slow topo sort | Kahn's is O(V+E), fine for 100s of nodes |
-| Partial cycles missed | 3-color DFS catches all cycles |
-| State + dependency race | getExecutableNodes is point-in-time snapshot |
+**Requirements:**
+
+- Store nodes by ID with fast lookup
+- Enforce uniqueness - duplicate IDs throw
+- Support retrieval: by ID, all nodes, by state
+- Support existence checks
+- Support node count queries
+- Thread-safe for concurrent reads
+
+**Constraints:**
+
+- Must handle 10,000+ nodes efficiently
+- Must integrate with Phase 1 types
+- Must be immutable after construction
+- Must support state-based filtering
 
 ---
 
-*Phase 2 dispatches generated 2026-04-12 | DexGraph Graph Builder | 4 windows | Week 1*
+#### W2: Edge Management
+
+**Task ID:** V20-P2-W2-EDGES  
+**Objective:** Build edge storage and adjacency structures for dependency traversal.  
+**Agent Power Tier:** BALANCED (Claude Sonnet for speed)  
+**Success Signal:** Forward and reverse adjacency built, dependency queries work.
+
+**Requirements:**
+
+- Store edges with validation (both nodes must exist)
+- Build adjacency list: node → dependents
+- Build reverse adjacency: node → dependencies
+- Support edge retrieval
+- Support dependency queries: what does this node depend on
+- Support dependent queries: what depends on this node
+- Support root/leaf node identification
+
+**Constraints:**
+
+- Must handle dense graphs efficiently
+- Must validate edge endpoints exist
+- Must support cycle detection algorithms
+- Must be immutable after construction
+
+---
+
+#### W3: Cycle Detection
+
+**Task ID:** V20-P2-W3-CYCLES  
+**Objective:** Implement algorithm to detect and report circular dependencies.  
+**Agent Power Tier:** HIGH (Codex o1 for algorithm correctness)  
+**Success Signal:** All cycles detected with exact path reported.
+
+**Requirements:**
+
+- Detect any cycles in the graph
+- Report exact cycle path (node A → B → C → A)
+- Support multiple independent cycle detection
+- Use efficient algorithm (DFS 3-color or similar)
+- Throw descriptive error with cycle path
+- Handle self-cycles (node depends on itself)
+
+**Constraints:**
+
+- Must handle large graphs (10,000+ nodes)
+- Must complete in O(V+E) time
+- Must report all cycles, not just first found
+- Must handle disconnected graph components
+
+---
+
+#### W4: Execution Ordering & Tests
+
+**Task ID:** V20-P2-W4-ORDERING  
+**Objective:** Build topological sort and executable node queries, with comprehensive tests.  
+**Agent Power Tier:** BALANCED (Gemini for comprehensive test generation)  
+**Success Signal:** Correct execution order, proper executable node detection, 95%+ coverage.
+
+**Requirements:**
+
+- Implement topological sort producing valid execution order
+- Respect all dependency constraints
+- Detect cycles defensively (should be pre-validated)
+- Query executable nodes: READY state + all deps SUCCESS
+- Factory method to build graph from Phase 1 output
+- Comprehensive test suite covering:
+  - Linear chains
+  - Diamond patterns
+  - Complex branching
+  - Cycle detection
+  - Self-cycles
+  - Executable node queries
+  - Error conditions
+
+**Constraints:**
+
+- Must use efficient algorithm (Kahn's BFS or DFS)
+- Must handle disconnected graphs
+- Must be deterministic (same output for same input)
+- Tests must cover edge cases and error paths
+
+---
+
+### SEQUENCE
+
+```
+W1 (Nodes) → W2 (Edges) → W3 (Cycles) → W4 (Ordering + Tests)
+```
+
+- Strictly sequential - each window builds on previous
+- W4 integrates all components
+
+### OUTPUT ARTIFACTS
+
+| Artifact     | Location                       | Purpose                        |
+| ------------ | ------------------------------ | ------------------------------ |
+| Graph Class  | `dexgraph/graph.ts`            | Core DAG implementation        |
+| Graph Types  | `dexgraph/types.ts`            | Graph-specific type extensions |
+| Graph Errors | `dexgraph/errors.ts`           | Graph-specific error classes   |
+| Graph Tests  | `tests/dexgraph/graph.test.ts` | Comprehensive test coverage    |
+
+### VALIDATION GATES
+
+- [ ] Graph stores nodes and edges correctly
+- [ ] Cycle detection finds all circular dependencies
+- [ ] Topological sort produces valid execution order
+- [ ] getExecutableNodes respects dependency states
+- [ ] 95%+ graph tests pass
+- [ ] Factory builds graph from Phase 1 output
+- [ ] No memory leaks with 10,000+ nodes
+
+### RISK MITIGATION
+
+| Risk                                  | Impact | Mitigation                                        |
+| ------------------------------------- | ------ | ------------------------------------------------- |
+| Cycle detection misses partial cycles | High   | Multiple algorithm verification, thorough tests   |
+| Topological sort non-deterministic    | Medium | Fixed tie-breaking rules, seeded random if needed |
+| Large graph performance degradation   | Medium | O(V+E) algorithms, benchmark with 10K+ nodes      |
+| State + dependency race conditions    | Medium | Immutable graph, snapshot-based queries           |
+
+### COST TRACKING
+
+| Window | Tier     | Agent         | Est. Tokens |
+| ------ | -------- | ------------- | ----------- |
+| W1     | HIGH     | Claude Opus   | ~8K         |
+| W2     | BALANCED | Claude Sonnet | ~6K         |
+| W3     | HIGH     | Codex o1      | ~8K         |
+| W4     | BALANCED | Gemini Pro    | ~10K        |
+
+---
+
+_Phase 2 dispatches | High-Level Orchestrator | v2.1_

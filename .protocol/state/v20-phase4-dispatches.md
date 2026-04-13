@@ -1,255 +1,267 @@
-# Phase 4: Scheduler Engine (Week 2)
+# Phase 4: DexGraph Core — Scheduler Engine (Week 2)
 
 ### OBJECTIVE
-Implement dexgraph/scheduler.ts — the execution loop that drives workflows. Finds READY nodes, dispatches execution, waits for results, updates state. This is where the graph actually runs.
 
-### SKILLS REFERENCED
-- /engineering:architecture → Scheduler design ADR
-- /engineering:deploy-checklist → Validation criteria
-- /engineering:system-design → Event loop patterns
+Build the execution orchestration layer that drives workflow completion. The scheduler coordinates task dispatch, monitors execution, handles failures with configurable policies, and manages the flow from READY to terminal states.
 
-### WINDOWS
+### SUCCESS CRITERIA (Define "Done")
 
-#### W1: Scheduler Loop Structure
-- Task ID: V20-P4-W1-SCHEDULER-LOOP
-- Objective: Build the core scheduler loop — while !complete: find ready → dispatch → wait → update
-- Target Files: dexgraph/scheduler.ts (START)
-- Why this lane: Scheduler is the heart of execution. Opus for correctness of the loop invariants.
-- Power Tier: HIGH
-- Command:
-```bash
-claude --model opus --effort max -p \
-  "Build DexGraph scheduler engine.
+- [ ] Scheduler correctly executes linear, parallel, and diamond workflow patterns
+- [ ] Dependency unlock triggers READY transitions when dependencies are satisfied
+- [ ] Retry logic respects maxRetries with exponential backoff
+- [ ] Failure policies (halt/continue/rollback) execute correctly
+- [ ] Deadlock detection identifies impossible workflow states
+- [ ] Timeout handling prevents stuck tasks
+- [ ] 95%+ test coverage with integration tests
+- [ ] Handles 100+ concurrent tasks without performance degradation
 
-   CREATE dexgraph/scheduler.ts:
-   import { DexGraph } from './graph';
-   import { StateMachine } from './stateMachine';
-   import { Dispatcher } from './dispatcher';  // Phase 6, use interface for now
+### INVARIANTS (Non-Negotiable Constraints)
 
-   interface SchedulerConfig {
-     maxRetries: number;        // default: 2
-     maxConcurrent: number;     // default: 4
-     timeoutMs: number;         // default: 300000 (5 min per task)
-     onFailure: 'halt' | 'continue' | 'rollback';
-   }
+1. **Scheduler is the sole state mutator**: Only scheduler initiates state transitions
+2. **Concurrency limits enforced**: Never exceed maxConcurrent configured tasks
+3. **Deterministic ordering**: Same workflow always produces same execution sequence
+4. **Graceful degradation**: Partial failures don't crash entire workflow
+5. **Resource cleanup**: Stop() must cleanly terminate all in-progress tasks
+6. **Observable execution**: Status queries reflect current execution state accurately
 
-   export class Scheduler {
-     private graph: DexGraph;
-     private stateMachine: StateMachine;
-     private config: SchedulerConfig;
-     private running: boolean;
+### INTEGRATION CONTRACT
 
-     constructor(graph: DexGraph, config?: Partial<SchedulerConfig>)
+**Input** (from Phase 2 - Graph Builder):
 
-     async run(): Promise<SchedulerResult> {
-       this.running = true;
-       // 1. Transition all root nodes CREATED → READY
-       // 2. LOOP:
-       //    a. getExecutableNodes() — READY + all deps SUCCESS
-       //    b. If none and !allComplete → deadlock or waiting
-       //    c. Dispatch up to maxConcurrent
-       //    d. Await results
-       //    e. Update state: SUCCESS or FAILED
-       //    f. If FAILED: handleFailure (retry or rollback)
-       //    g. Unlock dependents: if all deps SUCCESS → READY
-       //    h. Check termination: all nodes terminal?
-       // 3. Return result
-     }
-
-     stop(): void { this.running = false; }
-
-     getStatus(): SchedulerStatus {
-       // { running, completed, failed, pending, total }
-     }
-   }
-
-   interface SchedulerResult {
-     success: boolean;
-     completedNodes: string[];
-     failedNodes: string[];
-     rolledBackNodes: string[];
-     duration: number;
-   }
-
-   IMPORTANT: dispatcher is passed as interface, not concrete class.
-   Use a stub dispatcher that resolves immediately for now."
+```typescript
+// Validated DAG with:
+// - Nodes in CREATED state
+// - Complete dependency graph
+// - Root nodes identified
 ```
-- Expected Output: Scheduler class with core loop, config, status
-- Validation: `npx tsc --noEmit dexgraph/scheduler.ts`
-- Fallback #1: `claude --model claude-sonnet-4-20250514 --effort high -p "Build scheduler loop..."`
-- Fallback #2: `codex --full-auto -m o1 exec "Create DexGraph scheduler engine..."`
-- Fallback #3: `opencode run -m opencode/qwen3-coder-480b-a35b-instruct -p "Build DAG scheduler loop..."`
-- Cost Class: SUBSCRIPTION-INCLUDED
-- Dependencies: Phase 2 (graph), Phase 3 (state machine)
 
-#### W2: Dependency Unlock Logic
-- Task ID: V20-P4-W2-DEPENDENCY-UNLOCK
-- Objective: When a node succeeds, check if its dependents can now transition to READY
-- Target Files: dexgraph/scheduler.ts (ADD)
-- Why this lane: Dependency unlocking has subtle correctness requirements. Sonnet for balanced speed.
-- Power Tier: BALANCED
-- Command:
-```bash
-claude --model claude-sonnet-4-20250514 --effort high -p \
-  "Implement dependency unlock logic in DexGraph scheduler.
+**Input** (Configuration):
 
-   ADD to Scheduler:
-   private unlockDependents(completedNodeId: string): string[] {
-     const dependents = this.graph.getDependents(completedNodeId);
-     const unlocked: string[] = [];
-     for (const depId of dependents) {
-       const dep = this.graph.getNode(depId);
-       if (dep.state !== 'CREATED') continue;  // already processed
-       const allDepsSatisfied = this.graph.getDependencies(depId)
-         .every(d => this.graph.getNode(d).state === 'SUCCESS');
-       if (allDepsSatisfied) {
-         this.stateMachine.transition(dep, 'READY', 'Dependencies satisfied');
-         unlocked.push(depId);
-       }
-     }
-     return unlocked;
-   }
-
-   private isComplete(): boolean {
-     return this.graph.getAllNodes().every(n =>
-       this.stateMachine.isTerminal(n.state)
-     );
-   }
-
-   private isDeadlocked(): boolean {
-     // No terminal, no RUNNING, no READY = deadlock
-     const nodes = this.graph.getAllNodes();
-     const hasRunning = nodes.some(n => n.state === 'RUNNING' || n.state === 'VERIFYING');
-     const hasReady = nodes.some(n => n.state === 'READY');
-     const allTerminal = nodes.every(n => this.stateMachine.isTerminal(n.state));
-     return !allTerminal && !hasRunning && !hasReady;
-   }"
+```typescript
+// SchedulerConfig:
+// - maxRetries: number (default: 2)
+// - maxConcurrent: number (default: 4)
+// - timeoutMs: number (default: 300000)
+// - onFailure: 'halt' | 'continue' | 'rollback'
 ```
-- Expected Output: Dependency unlock + completion check + deadlock detection
-- Validation: `npx tsc --noEmit dexgraph/scheduler.ts`
-- Fallback #1: `gemini -y -p "Implement dependency unlock for DAG scheduler..."`
-- Fallback #2: `codex --full-auto -m gpt-4o exec "Build dependency unlock logic..."`
-- Fallback #3: `opencode run -m opencode/deepseek-v3.2 -p "Implement dependency resolution..."`
-- Cost Class: SUBSCRIPTION-INCLUDED
-- Dependencies: W1
 
-#### W3: Retry + Failure Handling
-- Task ID: V20-P4-W3-SCHEDULER-RETRY
-- Objective: Integrate retry logic into scheduler loop — respect maxRetries, backoff, halt/continue/rollback policy
-- Target Files: dexgraph/scheduler.ts (ADD)
-- Why this lane: Failure handling policy. Codex o1 for reasoning about all failure paths.
-- Power Tier: HIGH
-- Command:
-```bash
-codex --full-auto -m o1 exec \
-  "Implement failure handling in DexGraph scheduler.
+**Output** (to Caller):
 
-   ADD to Scheduler:
-   private async handleNodeFailure(node: GraphNode, error: Error): Promise<void> {
-     this.stateMachine.transition(node, 'FAILED', error.message);
-
-     if (this.stateMachine.shouldRetry(node, this.config.maxRetries)) {
-       const backoff = this.stateMachine.getBackoffMs(
-         this.stateMachine.getRetryCount(node.id)
-       );
-       await sleep(backoff);
-       const newState = this.stateMachine.handleFailure(node, this.config.maxRetries);
-       // newState is 'RUNNING' (retry) — re-dispatch
-     } else {
-       // Max retries exceeded
-       switch (this.config.onFailure) {
-         case 'halt':
-           this.stop();
-           break;
-         case 'rollback':
-           this.stateMachine.rollback(node, this.graph);
-           break;
-         case 'continue':
-           // Mark as ROLLBACK, but continue other branches
-           this.stateMachine.transition(node, 'ROLLBACK', 'Max retries exceeded');
-           break;
-       }
-     }
-   }
-
-   private sleep(ms: number): Promise<void> {
-     return new Promise(r => setTimeout(r, ms));
-   }"
+```typescript
+// SchedulerResult:
+// - success: boolean (all nodes SUCCESS)
+// - completedNodes: string[]
+// - failedNodes: string[]
+// - rolledBackNodes: string[]
+// - duration: number (ms)
 ```
-- Expected Output: Failure handling with halt/continue/rollback policies
-- Validation: `npx tsc --noEmit dexgraph/scheduler.ts`
-- Fallback #1: `codex --full-auto -m gpt-4o exec "Implement scheduler failure handling..."`
-- Fallback #2: `claude --model claude-sonnet-4-20250514 --effort high -p "Build failure handling..."`
-- Fallback #3: `opencode run -m opencode/deepseek-r1-0528 -p "Implement retry and failure handling..."`
-- Cost Class: SUBSCRIPTION-INCLUDED
-- Dependencies: W1, W2
 
-#### W4: Full Scheduler Integration Tests
-- Task ID: V20-P4-W4-SCHEDULER-TESTS
-- Objective: End-to-end tests — parse workflow, build graph, run scheduler with mock dispatcher
-- Target Files: tests/dexgraph/scheduler.test.ts (NEW)
-- Why this lane: Integration test coverage. Gemini for test volume at free tier.
-- Power Tier: BALANCED
-- Command:
-```bash
-gemini -y -p \
-  "Write integration tests for DexGraph scheduler.
+**Output** (Status Queries):
 
-   CREATE tests/dexgraph/scheduler.test.ts:
-   - Test: linear A→B→C runs in order, all SUCCESS
-   - Test: parallel A,B (no deps) run concurrently
-   - Test: diamond A→B,A→C,B→D,C→D — D only after B+C
-   - Test: failure with retry — node fails, retries, succeeds
-   - Test: failure with max retries exceeded — ROLLBACK
-   - Test: halt policy stops all execution
-   - Test: continue policy skips failed branch
-   - Test: rollback propagates to dependents
-   - Test: deadlock detection (impossible graph state)
-   - Test: timeout (mock slow task, verify timeout error)
-   - Test: stop() halts in-progress execution
-   - Test: getStatus() returns correct counts
-
-   Use mock dispatcher: resolve with SUCCESS after 10ms.
-   Use mock failing dispatcher: reject on first call, succeed on retry.
-   Use Node's built-in test runner."
+```typescript
+// SchedulerStatus:
+// - running: boolean
+// - completed: number
+// - failed: number
+// - pending: number
+// - total: number
 ```
-- Expected Output: 12 scheduler integration tests
-- Validation:
-```bash
-node --test tests/dexgraph/scheduler.test.ts
+
+**Integration with Phase 3 (State Machine)**:
+
+```typescript
+// Scheduler calls StateMachine for all transitions
+// - transition(node, 'READY', reason)
+// - transition(node, 'RUNNING')
+// - transition(node, 'VERIFYING')
+// - transition(node, 'SUCCESS')
+// - transition(node, 'FAILED', error)
+// - handleFailure(node, maxRetries)
+// - rollback(node, graph)
 ```
-- Fallback #1: `gemini -y --model gemini-2.5-flash -p "Write scheduler tests..."`
-- Fallback #2: `codex --full-auto -m o1 exec "Write DexGraph scheduler tests..."`
-- Fallback #3: `opencode run -m opencode/devstral-2-123b-instruct-2512 -p "Write scheduler integration tests..."`
-- Cost Class: FREE
-- Dependencies: W1, W2, W3
 
-### SEQUENCE
-W1 → W2 → W3 → W4
+### SCOPE BOUNDARIES
 
-### VALIDATION CRITERIA
-- [ ] Scheduler runs linear, parallel, and diamond workflows
-- [ ] Dependency unlock works correctly
-- [ ] Retry respects maxRetries and backoff
-- [ ] Failure policies (halt/continue/rollback) work
-- [ ] Deadlock detection catches impossible states
-- [ ] 12+ scheduler tests pass
+**IN Scope:**
 
-### COST TRACKING
-| Window | Tier | Agent | Est. Tokens |
-|--------|------|-------|-------------|
-| W1 | HIGH | Claude Opus | ~12K |
-| W2 | BALANCED | Claude Sonnet | ~6K |
-| W3 | HIGH | Codex o1 | ~8K |
-| W4 | BALANCED | Gemini Pro | ~10K |
+- Main scheduler loop: while !complete → dispatch → wait → update
+- Root node initialization (CREATED → READY)
+- Executable node discovery (READY + deps satisfied)
+- Concurrent task dispatch up to maxConcurrent
+- Task timeout handling
+- Dependency unlock on task success
+- Failure handling with policy selection
+- Deadlock detection
+- Status reporting
+- Graceful stop()
 
-### RISKS
-| Risk | Mitigation |
-|------|------------|
-| Race condition in concurrent dispatch | maxConcurrent limit + serialized state updates |
-| Deadlock false positive | Triple-check: no running + no ready + not all terminal |
-| Timeout kills mid-execution | Graceful: mark FAILED, let retry handle it |
+**OUT of Scope (handled by other phases):**
+
+- Actual task execution (Phase 6 - Dispatcher)
+- State persistence (Phase 7)
+- Distributed scheduling (Phase 9)
+- Governance pausing (Phase 5)
+- Verification logic (Phase 6)
+
+### WINDOWS (High-Level Work Units)
+
+#### W1: Core Scheduler Loop
+
+**Task ID:** V20-P4-W1-LOOP  
+**Objective:** Build the main execution loop that drives workflow completion.  
+**Agent Power Tier:** HIGH (Claude Opus for correctness of loop invariants)  
+**Success Signal:** Scheduler runs from root nodes to completion without errors.
+
+**Requirements:**
+
+- Initialize root nodes: transition CREATED → READY
+- Main loop: continue while running and not complete
+- Find executable nodes: READY state + all dependencies SUCCESS
+- Handle capacity constraints: respect maxConcurrent limit
+- Dispatch tasks to execution adapter
+- Wait for task completion
+- Update state based on results
+- Check termination: all nodes terminal?
+
+**Constraints:**
+
+- Must use StateMachine for all transitions
+- Must integrate with Phase 2 Graph for dependency queries
+- Must support configurable concurrency limits
+- Must be async for non-blocking execution
 
 ---
 
-*Phase 4 dispatches generated 2026-04-12 | DexGraph Scheduler | 4 windows | Week 2*
+#### W2: Dependency Unlock System
+
+**Task ID:** V20-P4-W2-UNLOCK  
+**Objective:** Build the system that transitions dependents to READY when dependencies complete.  
+**Agent Power Tier:** BALANCED (Claude Sonnet for balanced speed)  
+**Success Signal:** Dependents transition to READY only when ALL dependencies succeed.
+
+**Requirements:**
+
+- On task SUCCESS, query graph for dependents
+- For each dependent, check if all dependencies are SUCCESS
+- Transition eligible dependents from CREATED → READY
+- Track unlocked nodes for logging/debugging
+- Prevent premature unlock (partial dependencies)
+- Support completion detection
+- Support deadlock detection
+
+**Constraints:**
+
+- Must handle complex dependency patterns (diamonds, etc.)
+- Must not unlock if any dependency failed
+- Must be efficient for large graphs (O(edges) per completion)
+- Must work with StateMachine transitions
+
+---
+
+#### W3: Failure Handling & Policies
+
+**Task ID:** V20-P4-W3-FAILURE  
+**Objective:** Implement failure handling with configurable policies and retry logic.  
+**Agent Power Tier:** HIGH (Codex o1 for reasoning about failure paths)  
+**Success Signal:** Failed tasks retry correctly, policies execute as configured.
+
+**Requirements:**
+
+- Handle task failure: transition to FAILED
+- Calculate retry eligibility (current count vs maxRetries)
+- Compute backoff delay with exponential algorithm
+- Implement halt policy: stop scheduler on failure
+- Implement rollback policy: trigger rollback propagation
+- Implement continue policy: mark ROLLBACK, continue other branches
+- Support configurable timeout with Promise.race
+
+**Constraints:**
+
+- Must respect maxRetries limit strictly
+- Backoff must have configurable cap (default 30s)
+- Must handle both sync and async failures
+- Must clean up resources on halt
+
+---
+
+#### W4: Integration Tests & Validation
+
+**Task ID:** V20-P4-W4-TESTS  
+**Objective:** Build comprehensive integration tests covering all workflow patterns and edge cases.  
+**Agent Power Tier:** BALANCED (Gemini for comprehensive test generation)  
+**Success Signal:** 95%+ coverage, all patterns tested, edge cases covered.
+
+**Requirements:**
+
+- Create mock dispatcher for testing
+- Test linear execution (A → B → C)
+- Test parallel execution (A, B concurrent)
+- Test diamond pattern (A → B, C → D)
+- Test failure with retry
+- Test max retries exceeded → ROLLBACK
+- Test halt policy
+- Test rollback propagation
+- Test timeout handling
+- Test status reporting
+- Test continue policy
+- Test stop() halts execution
+- Test deadlock detection
+
+**Constraints:**
+
+- Tests must use Node.js built-in test runner
+- Tests must be deterministic (no flakiness)
+- Mock dispatcher must support success/failure scenarios
+- Tests must complete in < 5 seconds total
+
+---
+
+### SEQUENCE
+
+```
+W1 (Loop) → W2 (Unlock) → W3 (Failure) → W4 (Tests)
+```
+
+- Strictly sequential - each builds on previous
+- W4 integrates and validates all components
+
+### OUTPUT ARTIFACTS
+
+| Artifact        | Location                           | Purpose                      |
+| --------------- | ---------------------------------- | ---------------------------- |
+| Scheduler       | `dexgraph/scheduler.ts`            | Core execution orchestration |
+| Scheduler Tests | `tests/dexgraph/scheduler.test.ts` | Integration test coverage    |
+
+### VALIDATION GATES
+
+- [ ] Scheduler runs linear, parallel, and diamond workflows
+- [ ] Dependency unlock works correctly (all deps satisfied)
+- [ ] Retry respects maxRetries and exponential backoff
+- [ ] Failure policies (halt/continue/rollback) execute correctly
+- [ ] Deadlock detection identifies impossible states
+- [ ] Timeout terminates stuck tasks
+- [ ] 95%+ test coverage
+- [ ] Handles 100+ concurrent tasks
+
+### RISK MITIGATION
+
+| Risk                                  | Impact | Mitigation                                             |
+| ------------------------------------- | ------ | ------------------------------------------------------ |
+| Race condition in concurrent dispatch | High   | maxConcurrent limit + serialized state updates         |
+| Deadlock false positive               | Medium | Triple-check: no running + no ready + not all terminal |
+| Timeout kills mid-execution           | Medium | Mark FAILED, let retry/retry logic handle              |
+| Stop() leaves zombie tasks            | Medium | Wait for active task cleanup                           |
+| Memory leak with large graphs         | Medium | Limit concurrent, stream results                       |
+
+### COST TRACKING
+
+| Window | Tier     | Agent         | Est. Tokens |
+| ------ | -------- | ------------- | ----------- |
+| W1     | HIGH     | Claude Opus   | ~12K        |
+| W2     | BALANCED | Claude Sonnet | ~6K         |
+| W3     | HIGH     | Codex o1      | ~8K         |
+| W4     | BALANCED | Gemini Pro    | ~10K        |
+
+---
+
+_Phase 4 dispatches | High-Level Orchestrator | v2.1_
