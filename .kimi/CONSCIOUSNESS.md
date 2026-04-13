@@ -199,7 +199,27 @@ Before Phase 1 starts, must have:
 
 ---
 
-_System: V2.0 DexGraph Hard Reset_
-_Phase: 0 (Ready to Start)_
-_Dispatches: 13 files created by COWRK_
-_Status: Awaiting your command to begin execution_
+## 🚨 REVENUE MISSION — ACTIVE (April 14, 2026)
+
+The V2.0 Hard Reset is **COMPLETE** (7,653 LOC, 0 TS errors, 34 tests). V2.1 is in progress.
+
+**New active prompt:** `COWRK-FINAL-REVENUE-PROMPT.txt`
+
+### What Changed:
+- We are no longer in pure architecture/build mode
+- We are in **go-to-market + revenue extraction** mode
+- Target: YC S26 with $1K+ MRR
+- Strategy: Extract `ultra-router` as the skateboard, ship to npm, deploy live, get paying customers
+
+### When User Asks "What's Next" Now:
+1. Check `COWRK-FINAL-REVENUE-PROMPT.txt`
+2. Check if Cowrk has generated `revenue-phase*-dispatches.md`
+3. If not: tell user to feed the prompt to Cowrk
+4. If yes: identify the next pending revenue window and guide execution
+
+---
+
+_System: V2.0 DexGraph Hard Reset — ✅ COMPLETE | Revenue Mission — 🚀 ACTIVE_
+_Phase: Revenue Phase 0 (Awaiting Cowrk dispatches)_
+_Prompt: COWRK-FINAL-REVENUE-PROMPT.txt_
+_Status: Ready to convert code to cash_
