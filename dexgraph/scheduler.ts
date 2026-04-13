@@ -2,6 +2,7 @@ import { DexGraph } from './graph.js';
 import { StateMachine } from './stateMachine.js';
 import { GraphNode, NodeState } from './types.js';
 import { GovernanceManager, ExecutionBlockedError } from '../governance/governance-manager.js';
+import { EventEmitter, createEvent } from '../observability/index.js';
 
 export interface Dispatcher {
   dispatch(node: GraphNode): Promise<any>;
@@ -38,12 +39,23 @@ export class Scheduler {
   private dispatcher: Dispatcher;
   private activeTasks: Set<string> = new Set();
   private governanceManager?: GovernanceManager;
+  private eventEmitter?: EventEmitter;
+  private workflowId?: string;
 
-  constructor(graph: DexGraph, dispatcher: Dispatcher, config?: Partial<SchedulerConfig>, governanceManager?: GovernanceManager) {
+  constructor(
+    graph: DexGraph,
+    dispatcher: Dispatcher,
+    config?: Partial<SchedulerConfig>,
+    governanceManager?: GovernanceManager,
+    eventEmitter?: EventEmitter,
+    workflowId?: string,
+  ) {
     this.graph = graph;
     this.stateMachine = new StateMachine();
     this.dispatcher = dispatcher;
     this.governanceManager = governanceManager;
+    this.eventEmitter = eventEmitter;
+    this.workflowId = workflowId;
     this.config = {
       maxRetries: config?.maxRetries ?? 2,
       maxConcurrent: config?.maxConcurrent ?? 4,
@@ -56,6 +68,8 @@ export class Scheduler {
     const startTime = Date.now();
     this.running = true;
     this.activeTasks.clear();
+
+    this.emit('scheduler.start', { totalNodes: this.graph.getAllNodes().length });
 
     // 1. Root nodes: CREATED → READY
     for (const node of this.graph.getRootNodes()) {
@@ -100,13 +114,16 @@ export class Scheduler {
     const allNodes = this.graph.getAllNodes();
     const success = allNodes.every(n => n.state === 'SUCCESS');
 
-    return {
+    const result: SchedulerResult = {
       success,
       completedNodes: allNodes.filter(n => n.state === 'SUCCESS').map(n => n.id),
       failedNodes: allNodes.filter(n => n.state === 'FAILED').map(n => n.id),
       rolledBackNodes: allNodes.filter(n => n.state === 'ROLLBACK').map(n => n.id),
-      duration
+      duration,
     };
+
+    this.emit('scheduler.complete', { success, duration, ...result });
+    return result;
   }
 
   private getExecutableNodes(): GraphNode[] {
@@ -138,31 +155,46 @@ export class Scheduler {
         }
 
         this.stateMachine.transition(node, 'RUNNING');
-        
-        await Promise.race([
+        this.emit('node.dispatch', { nodeId: node.id, role: node.role });
+
+        const dispatchResult = await Promise.race([
           this.dispatcher.dispatch(node),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error(`Task timeout after ${this.config.timeoutMs}ms`)), this.config.timeoutMs)
-          )
-        ]);
+          new Promise((_, reject) =>
+            setTimeout(
+              () => reject(new Error(`Task timeout after ${this.config.timeoutMs}ms`)),
+              this.config.timeoutMs,
+            ),
+          ),
+        ]) as { status?: string; error?: string } | undefined;
+
+        // Adapters return ExecutionResult instead of throwing — surface failures
+        if (dispatchResult && typeof dispatchResult === 'object' && 'status' in dispatchResult) {
+          if (dispatchResult.status === 'FAILED' || dispatchResult.status === 'TIMEOUT' || dispatchResult.status === 'CANCELLED') {
+            throw new Error(dispatchResult.error ?? `Task ${dispatchResult.status}`);
+          }
+        }
 
         this.stateMachine.transition(node, 'VERIFYING');
         this.stateMachine.transition(node, 'SUCCESS');
+        this.emit('node.complete', { nodeId: node.id, role: node.role });
         this.unlockDependents(node.id);
         break; // Success, exit retry loop
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : String(error);
         if (error instanceof ExecutionBlockedError) {
-           this.stateMachine.transition(node, 'FAILED', error.message);
-           // Blocked errors should halt or rollback immediately, bypassing retries
-           switch (this.config.onFailure) {
-             case 'halt': this.stop(); break;
-             case 'rollback': this.stateMachine.rollback(node, this.graph); break;
-             case 'continue': this.stateMachine.transition(node, 'ROLLBACK', 'Execution blocked, continuing other branches'); break;
-           }
-           break;
+          this.stateMachine.transition(node, 'FAILED', msg);
+          this.emit('node.failed', { nodeId: node.id, error: msg, blocked: true });
+          // Blocked errors halt or rollback immediately, bypassing retries
+          switch (this.config.onFailure) {
+            case 'halt': this.stop(); break;
+            case 'rollback': this.stateMachine.rollback(node, this.graph); break;
+            case 'continue': this.stateMachine.transition(node, 'ROLLBACK', 'Execution blocked, continuing other branches'); break;
+          }
+          break;
         }
 
-        this.stateMachine.transition(node, 'FAILED', error.message);
+        this.stateMachine.transition(node, 'FAILED', msg);
+        this.emit('node.failed', { nodeId: node.id, error: msg });
 
         if (this.stateMachine.shouldRetry(node, this.config.maxRetries)) {
           const retryCount = this.stateMachine.getRetryCount(node.id);
@@ -217,6 +249,11 @@ export class Scheduler {
 
   stop(): void {
     this.running = false;
+  }
+
+  private emit(type: Parameters<typeof createEvent>[0], data: Record<string, unknown>): void {
+    if (!this.eventEmitter) return;
+    this.eventEmitter.emit(createEvent(type, data, undefined, this.workflowId));
   }
 
   getStatus(): SchedulerStatus {

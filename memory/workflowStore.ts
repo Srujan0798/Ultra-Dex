@@ -63,14 +63,19 @@ export class WorkflowStore {
       basePath: '.ultra-dex/workflows',
       autoSave: true,
       saveInterval: 5000,
-      ...config
+      ...config,
     };
-    this.initializeStore();
   }
 
-  private async initializeStore(): Promise<void> {
-    await this.ensureDir(this.config.basePath);
+  /**
+   * Async factory — ensures the store directory exists before first use.
+   */
+  static async create(config?: Partial<WorkflowStoreConfig>): Promise<WorkflowStore> {
+    const store = new WorkflowStore(config);
+    await store.ensureDir(store.config.basePath);
+    return store;
   }
+
 
   private async ensureDir(dir: string): Promise<void> {
     try {
@@ -317,5 +322,17 @@ export class WorkflowStore {
   async forceSave(workflowId: string): Promise<void> {
     await this.saveWorkflow(workflowId);
     this.saveQueue.delete(workflowId);
+  }
+
+  /**
+   * Flush pending saves and stop the auto-save timer.
+   * Call this when the process is shutting down.
+   */
+  async close(): Promise<void> {
+    if (this.saveTimer) {
+      clearTimeout(this.saveTimer);
+      this.saveTimer = undefined;
+    }
+    await this.flush();
   }
 }

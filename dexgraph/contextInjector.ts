@@ -13,8 +13,7 @@ export class ContextInjector {
    * Collect outputs from all dependencies of a node
    */
   collectDependencyOutputs(nodeId: string): Record<string, unknown> {
-    const node = this.graph.getNode(nodeId);
-    if (!node) throw new Error(`Node not found: ${nodeId}`);
+    this.graph.getNode(nodeId); // throws GraphError if missing
 
     const dependencyIds = this.graph.getDependencies(nodeId);
     const outputs = this.store.getDependencyOutputs(
@@ -30,8 +29,7 @@ export class ContextInjector {
    * Check if all dependencies are completed (SUCCESS state)
    */
   areDependenciesSatisfied(nodeId: string): boolean {
-    const node = this.graph.getNode(nodeId);
-    if (!node) throw new Error(`Node not found: ${nodeId}`);
+    this.graph.getNode(nodeId); // throws GraphError if missing
 
     const dependencyIds = this.graph.getDependencies(nodeId);
     const workflow = this.store.getWorkflow(this.workflowId);
@@ -69,8 +67,7 @@ export class ContextInjector {
    * Get node's static input
    */
   getNodeInput(nodeId: string): Record<string, unknown> {
-    const node = this.graph.getNode(nodeId);
-    return node?.context || {};
+    return this.graph.getNode(nodeId).context;
   }
 
   /**
@@ -95,11 +92,10 @@ export class ContextInjector {
 
   /**
    * Inject context into node for execution
-   * Modifies node.metadata with injection info
+   * Modifies node.context with injection metadata
    */
   injectContext(nodeId: string): void {
-    const node = this.graph.getNode(nodeId);
-    if (!node) throw new Error(`Node not found: ${nodeId}`);
+    const node = this.graph.getNode(nodeId); // throws if missing
 
     const { dependencyOutputs, injectedContext, staticInput } =
       this.buildInjectionMetadata(nodeId);
@@ -120,8 +116,7 @@ export class ContextInjector {
    * Called by dispatcher before passing to adapter
    */
   buildExecutionContext(nodeId: string): Record<string, unknown> {
-    const node = this.graph.getNode(nodeId);
-    if (!node) throw new Error(`Node not found: ${nodeId}`);
+    const node = this.graph.getNode(nodeId); // throws if missing
 
     // If context not yet injected, inject now
     const contextInjection = node.context?.contextInjection;
@@ -138,8 +133,8 @@ export class ContextInjector {
    * Verify context is ready for execution
    */
   isContextReady(nodeId: string): boolean {
-    const node = this.graph.getNode(nodeId);
-    if (!node) return false;
+    let node: ReturnType<typeof this.graph.getNode>;
+    try { node = this.graph.getNode(nodeId); } catch { return false; }
     
     // Context ready if: all deps satisfied AND (has injection OR no deps)
     const hasDeps = this.graph.getDependencies(nodeId).length > 0;
@@ -153,8 +148,9 @@ export class ContextInjector {
    * Propagate context from node to all dependents
    */
   propagateContext(nodeId: string): void {
-    const node = this.graph.getNode(nodeId);
-    if (!node || node.state !== 'SUCCESS') return;
+    let node: ReturnType<typeof this.graph.getNode>;
+    try { node = this.graph.getNode(nodeId); } catch { return; }
+    if (node.state !== 'SUCCESS') return;
 
     const dependents = this.graph.getDependents(nodeId);
     for (const depId of dependents) {

@@ -4,7 +4,7 @@ export interface WorkflowDefinition {
   version: 'dexgraph/v1';
   name: string;
   description: string;
-  context: Record<string, any>;
+  context: Record<string, unknown>;
   tasks: TaskDefinition[];
   on_failure: { retry: number; rollback: boolean };
 }
@@ -14,7 +14,7 @@ export interface TaskDefinition {
   role: 'architect' | 'engineer' | 'tester' | 'reviewer';
   instruction: string;
   depends_on?: string[];
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   output?: string;
   verify?: VerificationRule;
   parallel?: boolean;
@@ -31,7 +31,7 @@ export interface GraphNode {
   role: TaskDefinition['role'];
   instruction: string;
   dependencies: string[];
-  context: Record<string, any>;
+  context: Record<string, unknown>;
   output?: string;
   verification?: VerificationRule;
   parallel: boolean;
@@ -60,6 +60,6 @@ export interface DexGraphResult {
   metadata: {
     name: string;
     description: string;
-    context: Record<string, any>;
+    context: Record<string, unknown>;
   };
 }
