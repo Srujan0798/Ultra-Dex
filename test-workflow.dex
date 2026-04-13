@@ -1,0 +1,25 @@
+version: dexgraph/v1
+name: hello-world
+description: Test V2.0 end-to-end execution
+
+context:
+  environment: test
+  project: ultra-dex-v2
+
+tasks:
+  - id: setup
+    role: architect
+    instruction: Initialize project structure
+    output: setup-complete
+
+  - id: implement
+    role: engineer
+    instruction: Implement core feature
+    depends_on: [setup]
+    output: implementation
+
+  - id: verify
+    role: tester
+    instruction: Run verification tests
+    depends_on: [implement]
+    output: test-results
