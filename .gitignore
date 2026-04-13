@@ -127,3 +127,6 @@ docker-compose.override.yml
 /simple-test/
 /test-symlink-*/
 .vercel
+node_modules.nosync/
+**/*.node
+**/@next/swc-*
