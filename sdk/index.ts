@@ -53,8 +53,8 @@ export type {
 } from '../dexgraph/verifier.js';
 
 // ── Adapters ──────────────────────────────────────────────────────────────────
-export { MockAdapter, OpenAIAdapter, AnthropicAdapter, ResultValidator } from '../adapters/index.js';
-export type { OpenAIAdapterConfig, AnthropicAdapterConfig } from '../adapters/index.js';
+export { MockAdapter, OpenAIAdapter, AnthropicAdapter, GoogleAdapter, ResultValidator } from '../adapters/index.js';
+export type { OpenAIAdapterConfig, AnthropicAdapterConfig, GoogleAdapterConfig } from '../adapters/index.js';
 
 // ── Memory ────────────────────────────────────────────────────────────────────
 export { WorkflowStore } from '../memory/workflowStore.js';

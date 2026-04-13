@@ -1,0 +1,21 @@
+🚀 Just shipped Ultra-Dex V2.0 - "Kubernetes for AI workflows"
+
+📊 Stats:
+• 7,653 lines of TypeScript
+• 51 files, 34 tests  
+• 0 TypeScript errors
+• 24 GitHub Actions workflows ✅
+
+🎯 What it does:
+→ Define AI workflows as code
+→ Automatic dependency resolution
+→ Execute with OpenAI, Anthropic, etc.
+→ Production-grade: observability, security, caching
+
+⚡ Quick start:
+npx tsx cli/index.ts init my-project
+npx tsx cli/index.ts run workflow.dex
+
+🔗 https://github.com/Srujan0798/Ultra-Dex/releases/tag/v2.0.0-alpha.1
+
+#buildinpublic #typescript #ai #opensource
