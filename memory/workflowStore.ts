@@ -52,9 +52,46 @@ export interface WorkflowStoreConfig {
   saveInterval?: number;  // ms, default 5000
 }
 
+/** Simple LRU cache — avoids unbounded memory growth in long-running servers */
+class LRUCache<K, V> {
+  private readonly max: number;
+  private readonly map: Map<K, V>;
+
+  constructor(max = 256) {
+    this.max = max;
+    this.map = new Map();
+  }
+
+  get(key: K): V | undefined {
+    const val = this.map.get(key);
+    if (val !== undefined) {
+      // Re-insert to mark as recently used
+      this.map.delete(key);
+      this.map.set(key, val);
+    }
+    return val;
+  }
+
+  set(key: K, val: V): void {
+    if (this.map.has(key)) this.map.delete(key);
+    else if (this.map.size >= this.max) {
+      // Evict oldest entry (first key in insertion order)
+      this.map.delete(this.map.keys().next().value!);
+    }
+    this.map.set(key, val);
+  }
+
+  delete(key: K): void { this.map.delete(key); }
+  has(key: K): boolean { return this.map.has(key); }
+  keys(): IterableIterator<K> { return this.map.keys(); }
+  values(): IterableIterator<V> { return this.map.values(); }
+  get size(): number { return this.map.size; }
+}
+
 export class WorkflowStore {
   private config: Required<WorkflowStoreConfig>;
-  private workflows: Map<string, WorkflowMemory> = new Map();
+  /** LRU in-memory cache — capped at 256 workflows to prevent unbounded growth */
+  private workflows: LRUCache<string, WorkflowMemory> = new LRUCache(256);
   private saveQueue: Set<string> = new Set();
   private saveTimer?: NodeJS.Timeout;
 

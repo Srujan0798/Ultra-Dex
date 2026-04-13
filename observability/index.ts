@@ -50,3 +50,15 @@ export type {
   SpanContext,
   SpanAttributes,
 } from './tracer.js';
+
+// WebSocket Server (V2.1)
+export {
+  DashboardWebSocketServer,
+  getGlobalWebSocketServer,
+  startDashboardServer,
+} from './webSocketServer.js';
+export type {
+  WebSocketClient,
+  DashboardEvent,
+  WebSocketServerConfig,
+} from './webSocketServer.js';

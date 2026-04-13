@@ -3,6 +3,7 @@ import { StateMachine } from './stateMachine.js';
 import { GraphNode, NodeState } from './types.js';
 import { GovernanceManager, ExecutionBlockedError } from '../governance/governance-manager.js';
 import { EventEmitter, createEvent } from '../observability/index.js';
+import { createDexLogger, nullLogger, type DexLogger } from './logger.js';
 
 export interface Dispatcher {
   dispatch(node: GraphNode): Promise<any>;
@@ -41,6 +42,7 @@ export class Scheduler {
   private governanceManager?: GovernanceManager;
   private eventEmitter?: EventEmitter;
   private workflowId?: string;
+  private log: DexLogger;
 
   constructor(
     graph: DexGraph,
@@ -49,6 +51,7 @@ export class Scheduler {
     governanceManager?: GovernanceManager,
     eventEmitter?: EventEmitter,
     workflowId?: string,
+    logger?: DexLogger,
   ) {
     this.graph = graph;
     this.stateMachine = new StateMachine();
@@ -56,6 +59,9 @@ export class Scheduler {
     this.governanceManager = governanceManager;
     this.eventEmitter = eventEmitter;
     this.workflowId = workflowId;
+    this.log = logger ?? (workflowId
+      ? createDexLogger({ component: 'Scheduler', workflowId })
+      : nullLogger);
     this.config = {
       maxRetries: config?.maxRetries ?? 2,
       maxConcurrent: config?.maxConcurrent ?? 4,
@@ -69,7 +75,9 @@ export class Scheduler {
     this.running = true;
     this.activeTasks.clear();
 
-    this.emit('scheduler.start', { totalNodes: this.graph.getAllNodes().length });
+    const totalNodes = this.graph.getAllNodes().length;
+    this.log.info('scheduler.start', { totalNodes, onFailure: this.config.onFailure, maxConcurrent: this.config.maxConcurrent });
+    this.emit('scheduler.start', { totalNodes });
 
     // 1. Root nodes: CREATED → READY
     for (const node of this.graph.getRootNodes()) {
@@ -122,6 +130,13 @@ export class Scheduler {
       duration,
     };
 
+    this.log.info('scheduler.complete', {
+      success,
+      duration,
+      completed: result.completedNodes.length,
+      failed: result.failedNodes.length,
+      rolledBack: result.rolledBackNodes.length,
+    });
     this.emit('scheduler.complete', { ...result });
     return result;
   }
@@ -155,6 +170,7 @@ export class Scheduler {
         }
 
         this.stateMachine.transition(node, 'RUNNING');
+        this.log.info('node.dispatch', { nodeId: node.id, role: node.role, retryCount: this.stateMachine.getRetryCount(node.id) });
         this.emit('node.dispatch', { nodeId: node.id, role: node.role });
 
         const dispatchResult = await Promise.race([
@@ -176,6 +192,7 @@ export class Scheduler {
 
         this.stateMachine.transition(node, 'VERIFYING');
         this.stateMachine.transition(node, 'SUCCESS');
+        this.log.info('node.complete', { nodeId: node.id, role: node.role });
         this.emit('node.complete', { nodeId: node.id, role: node.role });
         this.unlockDependents(node.id);
         break; // Success, exit retry loop
@@ -183,6 +200,7 @@ export class Scheduler {
         const msg = error instanceof Error ? error.message : String(error);
         if (error instanceof ExecutionBlockedError) {
           this.stateMachine.transition(node, 'FAILED', msg);
+          this.log.warn('node.blocked', { nodeId: node.id, reason: msg });
           this.emit('node.failed', { nodeId: node.id, error: msg, blocked: true });
           // Blocked errors halt or rollback immediately, bypassing retries
           switch (this.config.onFailure) {
@@ -194,13 +212,15 @@ export class Scheduler {
         }
 
         this.stateMachine.transition(node, 'FAILED', msg);
+        this.log.error('node.failed', error, { nodeId: node.id, role: node.role });
         this.emit('node.failed', { nodeId: node.id, error: msg });
 
         if (this.stateMachine.shouldRetry(node, this.config.maxRetries)) {
           const retryCount = this.stateMachine.getRetryCount(node.id);
           const backoff = this.stateMachine.getBackoffMs(retryCount);
+          this.log.warn('node.retry', { nodeId: node.id, attempt: retryCount + 1, backoffMs: backoff });
           await this.sleep(backoff);
-          
+
           if (!this.running) break;
 
           this.stateMachine.transition(node, 'RETRY', `Retry count: ${retryCount + 1}`);
