@@ -1,250 +1,205 @@
-# Ultra-Dex Consciousness
+# Ultra-Dex Consciousness — V2.0 DexGraph Hard Reset
 
-> Last Updated: 2026-04-12
-> System: docs/skills/SYSTEM.md v1.0.0
-
----
-
-## SYSTEM UNDERSTANDING
-
-### Lifecycle Phase: EXECUTION ✅
-
-We are in **Phase 2: Execution** of the self-improving lifecycle.
-
-```
-Phase 1: Bootstrap ✅ COMPLETE (8 plugins, 54 skills documented)
-Phase 2: Execution ⏳ CURRENT (Using skills to create outputs)
-Phase 3: Review ⏳ NEXT (Check completeness, identify gaps)
-Phase 4: Update ⏳ FUTURE (Bump version, add skills)
-```
+> Last Updated: 2026-04-13
+> System: V2.0 DexGraph Hard Reset | NOTION/v2.0.MD
+> Status: COWRK dispatches ready → Awaiting Phase 0 execution
 
 ---
 
-## MY ROLE (KIMI)
+## LIFECYCLE PHASE: HARD RESET EXECUTION ⏳
 
-I am an **Execution Agent** that:
+We are executing the **DexGraph Hard Reset** per COWRK-V20-HARD-RESET-PROMPT.txt
 
-1. **Reads SYSTEM.md** → Understands the lifecycle
-2. **Uses Skills** → References docs/skills/[plugin]/ for context
-3. **Creates Prompts** → For COWRK (another execution agent)
-4. **Guides** → Technical guidance using skill outputs
+```
+Phase 0: Hard Reset        ⏳ READY TO START (Day 0-2)
+Phase 1: DSL Parser        ⏳ Planned (Week 1)
+Phase 2: Graph Builder     ⏳ Planned (Week 1)
+Phase 3: State Machine     ⏳ Planned (Week 1-2)
+Phase 4: Scheduler Engine  ⏳ Planned (Week 2)
+Phase 5: Execution Adapter ⏳ Planned (Week 3)
+Phase 6: Dispatcher        ⏳ Planned (Week 3)
+Phase 7: Memory Store      ⏳ Planned (Week 4)
+Phase 8: Context Injection ⏳ Planned (Week 4)
+Phase 9: Governance Engine ⏳ Planned (Week 5)
+Phase 10: Verification     ⏳ Planned (Week 6)
+Phase 11: CLI Control Plane⏳ Planned (Week 7)
+Phase 12: Event System     ⏳ Planned (Week 8)
+```
 
-### What I DON'T Do:
+---
 
-- ❌ Create skill documentation (that's Bootstrap phase - done)
-- ❌ Execute code directly
-- ❌ Modify production files
+## MY ROLE (KIMI) — PLANNER & ARCHITECT
+
+I am the **PLANNER & ARCHITECT** for the V2.0 Hard Reset:
 
 ### What I DO:
+- ✅ Strategic planning for DexGraph architecture
+- ✅ Design the new folder structure (core/, runtime/, memory/, dexgraph/, etc.)
+- ✅ Create prompts for COWRK (execution planner)
+- ✅ Guide through Phase 0→12 execution
+- ✅ Review and validate against constraints
 
-- ✅ Plan using skill outputs
-- ✅ Create prompts for COWRK
-- ✅ Guide you through execution
-- ✅ Review and validate
-
-### How I Create Prompts for COWRK:
-
-**Every prompt I create MUST include:**
-
-1. **PROTOCOL COMPLIANCE HEADER**
-
-   ```
-   COWRK MUST:
-   - Read .protocol/orchestration.md for dispatch format
-   - Use skills from docs/skills/[plugin]/ for all planning
-   - Reference specific skill outputs in each window
-   - Create .protocol/state/v20-*-dispatches.md in proper format
-   ```
-
-2. **ACTIVE PLUGINS SECTION**
-
-   ```
-   ### Engineering Plugin (10 skills) ✅
-   Use: /architecture + /system-design + /deploy-checklist
-   Reference: docs/skills/engineering/ADR-*.md
-   ```
-
-   (List all 8 plugins with specific skills to use)
-
-3. **PROTOCOL ORCHESTRATION FORMAT**
-
-   ```
-   Each window MUST have:
-   - Task ID: V20-W[X]-[NAME]
-   - Objective: Clear statement
-   - Target Files: Specific paths
-   - Why this lane: Reasoning
-   - Power Tier: HIGH/BALANCED/LOW
-   - Command: Bash format
-   - Expected Output: Success criteria
-   - Validation: How to verify
-   - Fallbacks #1, #2, #3
-   - Cost Class: SUBSCRIPTION/FREE
-   ```
-
-4. **SKILL REFERENCES IN WINDOWS**
-   ```
-   W1: Task Name (use /skill-name from plugin)
-   W2: Task Name (use /other-skill from plugin)
-   ```
-
-**I automatically follow this format for EVERY prompt.**
+### What I DON'T Do:
+- ❌ Execute code directly (your agents do this)
+- ❌ Modify production files (except planning files)
+- ❌ Create .protocol dispatch files (COWRK's job — already done)
 
 ---
 
-## COWRK'S ROLE
+## COWRK'S OUTPUT (COMPLETED ✅)
 
-COWRK (Opus 4.6) is also an **Execution Agent** that:
+COWRK (Opus 4.6) created 13 dispatch files from V20-HARD-RESET-PROMPT.txt:
 
-1. **Reads my prompts** → COWRK-FINAL-PROMPT.txt
-2. **Uses Skills** → References docs/skills/ for detailed data
-3. **Creates Execution Plans** → .protocol/state/v20\*.md files
-4. **Structures Windows** → Parallel execution plans
+| Dispatch File | Lines | Phase | Focus |
+|--------------|-------|-------|-------|
+| v20-phase0-dispatches.md | 274 | Day 0-2 | Folder structure, archive, consolidate |
+| v20-phase1-dispatches.md | ~250 | Week 1 | Parser (YAML → GraphNode[]) |
+| v20-phase2-dispatches.md | ~250 | Week 1 | Graph Builder (DAG) |
+| v20-phase3-dispatches.md | ~250 | Week 1-2 | State Machine |
+| v20-phase4-dispatches.md | ~250 | Week 2 | Scheduler Engine |
+| v20-phase5-dispatches.md | ~250 | Week 3 | Execution Adapter |
+| v20-phase6-dispatches.md | ~250 | Week 3 | Dispatcher |
+| v20-phase7-dispatches.md | ~250 | Week 4 | Memory Store |
+| v20-phase8-dispatches.md | ~250 | Week 4 | Context Injection |
+| v20-phase9-dispatches.md | ~250 | Week 5 | Governance Engine |
+| v20-phase10-dispatches.md | ~250 | Week 6 | Verification System |
+| v20-phase11-dispatches.md | ~250 | Week 7 | CLI Control Plane |
+| v20-phase12-dispatches.md | ~250 | Week 8 | Event System |
+| v20-master-timeline.md | 341 | All | Dependencies, gates, 52 windows |
 
-### Status: ✅ COMPLETE
-
-- Created 5 dispatch files (4,001 lines)
-- Phase 1-4 + Master Timeline complete
-- Ready for your agents to execute
+**Total: 52 windows across 13 phases | 8 weeks to MVO**
 
 ---
 
-## THE WORKFLOW
+## THE DEXGRAPH ARCHITECTURE (NEW)
 
 ```
-You (Decision Maker)
-    ↓
-KIMI (Me) - Planning & Guidance
-    ↓ (Create prompt)
-COWRK - Execution Planning
-    ↓ (Create dispatch files)
-Your Agents - Actual Execution
-    ↓
-Production Code
+ultra-dex/
+├── dexgraph/              ← THE CORE IP (6 TypeScript files)
+│   ├── parser.ts          # YAML workflow DSL → GraphNode[]
+│   ├── graph.ts           # DAG builder, cycle detection
+│   ├── stateMachine.ts    # CREATED→READY→RUNNING→VERIFYING→SUCCESS
+│   ├── scheduler.ts       # Execution loop
+│   ├── dispatcher.ts      # Node → adapter bridge
+│   └── verifier.ts        # Output validation
+│
+├── core/
+│   ├── planner/           # Goal → task graph compiler
+│   ├── scheduler/         # Task ordering
+│   └── task_graph/        # DAG engine interface
+│
+├── runtime/
+│   ├── worker/            # Stateless agent workers
+│   ├── executor/          # Execution dispatch
+│   └── execution_engine/  # System heart
+│
+├── memory/                # MUNI lives here
+│   ├── episodic/          # Session memory
+│   ├── semantic/          # Search memory
+│   └── state/             # State persistence
+│
+├── adapters/
+│   └── executionAdapter.ts # Interface: run(task, context) → Result
+│
+├── governance/
+│   └── rules.ts           # Policy engine
+│
+├── tools/registry/        # Tool protocol
+├── observability/         # Events, logging
+├── cli/                   # ultradex commands
+└── sdk/                   # Developer API
 ```
 
 ---
 
-## CURRENT STATE
+## KEY CONSTRAINTS (NON-NEGOTIABLE)
 
-### Bootstrap Phase ✅ COMPLETE
-
-| Plugin             | Skills | Location                        |
-| ------------------ | ------ | ------------------------------- |
-| Engineering        | 10/10  | docs/skills/engineering/        |
-| Data               | 10/10  | docs/skills/data/               |
-| Product Management | 9/9    | docs/skills/product-management/ |
-| Enterprise Search  | 5/5    | docs/skills/enterprise-search/  |
-| Operations         | 9/9    | docs/skills/operations/         |
-| Customer Support   | 5/5    | docs/skills/customer-support/   |
-| Productivity       | 4/4    | docs/skills/productivity/       |
-| Design             | 7/7    | docs/skills/design/             |
-
-**Total:** 8 plugins, 54 skills, 100+ files
-
-### Execution Phase ⏳ IN PROGRESS
-
-#### Completed:
-
-1. ✅ Created COWRK-FINAL-PROMPT.txt (265 lines)
-2. ✅ Gave to COWRK → Created 5 dispatch files (4,001 lines)
-
-#### Ready to Execute:
-
-| Dispatch File            | Lines | Phase       | Focus                              |
-| ------------------------ | ----- | ----------- | ---------------------------------- |
-| v20-phase1-dispatches.md | 902   | Months 1-2  | Redis, Postgres, npm, Docker       |
-| v20-phase2-dispatches.md | 809   | Months 3-4  | Cost routing, marketplace, LiteLLM |
-| v20-phase3-dispatches.md | 907   | Months 5-6  | VS Code, Slack, docs, launch       |
-| v20-phase4-dispatches.md | 1,095 | Months 7-12 | SSO, SOC 2, multi-tenant           |
-| v20-master-timeline.md   | 288   | All         | Dependencies, risks, metrics       |
+1. **Ultra-Dex NEVER executes — only supervises**
+2. **Execution adapter interface MUST be clean**
+3. **Mock adapter before real integrations**
+4. **No UI/dashboard until Phase 12 complete**
+5. **No agent personalities — stateless workers only**
+6. **Four agents only: planner, coder, tester, reviewer**
+7. **Graph is truth — DexGraph is source of reality**
+8. **Follow strict Phase 0→12 order — NO deviation**
 
 ---
 
-## SKILL USAGE
+## OLD vs NEW v2.0
 
-When you ask me to plan something, I use:
+| Aspect | OLD Plan (SUPERSEDED) | NEW Plan (ACTIVE) |
+|--------|----------------------|-------------------|
+| Approach | Feature aggregation | DexGraph control plane |
+| Identity | AI task router | Kubernetes for AI workflows |
+| Focus | Redis/Postgres/VS Code/Marketplace | Parser/Graph/Scheduler/Dispatcher |
+| Philosophy | Ultra-Dex executes | Ultra-Dex supervises |
+| Files | v20-phase1-4 (old) | v20-phase0-12 (new) |
+
+**The old v20-phase1-4 dispatches are SUPERSEDED. Use the new Phase 0-12 files.**
+
+---
+
+## CRITICAL PATH
 
 ```
-/plugin:skill "context from docs/skills/[plugin]/"
+Phase 0 (Reset) → Phase 1 (Parser) → Phase 2 (Graph) → Phase 4 (Scheduler) 
+→ Phase 6 (Dispatch) → Phase 8 (Context) → Phase 11 (CLI)
+
+Length: 7 phases = ~6 weeks minimum
 ```
 
-Example skills I reference:
-
-- `/engineering:architecture` → ADR-004 (3-tier memory)
-- `/engineering:tech-debt` → 156 issues catalogued
-- `/operations:capacity-plan` → Q2-Q4 forecast
-- `/operations:risk-assessment` → v3.2.0 risks
-
 ---
 
-## KEY FILES
+## GATE 0: CLEAN SLATE (Day 2)
 
-### System Files (Read First):
-
-1. `docs/skills/SYSTEM.md` ← Lifecycle (this defines everything)
-2. `docs/skills/README.md` ← Master index
-3. `docs/skills/USAGE-GUIDE.md` ← How to invoke skills
-
-### My Outputs:
-
-- `COWRK-FINAL-PROMPT.txt` ← Prompt for COWRK
-
-### COWRK's Outputs:
-
-- `.protocol/state/v20-phase*-dispatches.md` ← Execution plans
-
-### Skill Outputs (Reference):
-
-- `docs/skills/[plugin]/*` ← Detailed skill documentation
-
----
-
-## PROJECT HEALTH
-
-| Metric            | Value          | Status      |
-| ----------------- | -------------- | ----------- |
-| Tests             | 509/509        | ✅ 100%     |
-| TypeScript        | 0 errors       | ✅ Clean    |
-| Lint              | 1 minor        | ⚠️ Fixable  |
-| Git               | 19 uncommitted | ⏳ Pending  |
-| Dispatch Files    | 5 created      | ✅ Ready    |
-| Skills Documented | 54/54          | ✅ Complete |
-
----
-
-## NEXT STEPS
-
-You have 3 options:
-
-### Option 1: Review Dispatch
-
-Ask me to show/summarize specific phase
-→ I'll read `.protocol/state/v20-phaseX-dispatches.md`
-
-### Option 2: Start Executing
-
-Ask me to guide you through a window
-→ I'll reference skill outputs + dispatch files
-
-### Option 3: Plan Something New
-
-Ask me to plan a new feature/component
-→ I'll use `/plugin:skill` format with docs/skills/
+Before Phase 1 starts, must have:
+- [ ] 10 new top-level dirs exist
+- [ ] Existing code archived to archive/v1/ (NOT deleted)
+- [ ] TypeScript compiles on new dirs
+- [ ] Version: 2.0.0-alpha.0
+- [ ] MIGRATION.md documents all changes
 
 ---
 
 ## WHEN YOU ASK "WHAT'S NEXT"
 
-1. I check this CONSCIOUSNESS.md
-2. I see we're in EXECUTION phase
-3. I see 5 dispatch files are ready
-4. I ask: Which phase do you want to execute?
+1. I check CONSCIOUSNESS.md
+2. See we're at Phase 0 ready to start
+3. Read v20-phase0-dispatches.md
+4. Identify Window 1 as first task
+5. Guide you through Phase 0 execution
 
-**Current answer:** Execute Phase 2 (v20-phase2-dispatches.md) - Cost routing, marketplace, LiteLLM
+**Current answer:** Execute Phase 0 Window 1 (Create folder structure) or review what needs changing first.
 
 ---
 
-_System: docs/skills/SYSTEM.md v1.0.0_
-_Phase: Execution_
-_Status: Ready to execute with your agents_
+## PROJECT STATE
+
+| Metric | Value | Status |
+|--------|-------|--------|
+| Dispatches Created | 13 files | ✅ Complete |
+| Windows Planned | 52 | ✅ Complete |
+| Phases | 0-12 | ✅ Planned |
+| Timeline | 8 weeks | ✅ Defined |
+| Current Version | 6.0.0 | ⏳ Reset to 2.0.0-alpha.0 |
+| Tests | 49% passing | ⏳ Will archive |
+
+---
+
+## NEXT STEPS
+
+**Option 1: Review Phase 0**
+→ I'll read v20-phase0-dispatches.md and summarize the 4 windows
+
+**Option 2: Start Executing Phase 0**
+→ Window 1: Create folder structure (W1 ║ W2 parallel)
+
+**Option 3: Make Changes First**
+→ You mentioned needing changes before executing. Tell me what to adjust.
+
+---
+
+_System: V2.0 DexGraph Hard Reset_
+_Phase: 0 (Ready to Start)_
+_Dispatches: 13 files created by COWRK_
+_Status: Awaiting your command to begin execution_

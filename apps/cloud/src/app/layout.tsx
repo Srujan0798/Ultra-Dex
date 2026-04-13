@@ -3,13 +3,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/components/providers/AuthProvider';
-import { Sidebar } from '@/components/layout/Sidebar';
-import { TopNav } from '@/components/layout/TopNav';
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-});
+import { ToastProvider } from '@/hooks/useToast';
 
 export const metadata: Metadata = {
   title: 'Ultra-Dex Cloud',
@@ -18,16 +12,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${inter.variable} font-sans antialiased`}>
+    <html lang="en">
+      <body className="antialiased">
         <AuthProvider>
-          <div className="flex h-screen bg-slate-950">
-            <Sidebar />
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <TopNav />
-              <main className="flex-1 overflow-y-auto">{children}</main>
-            </div>
-          </div>
+          <ToastProvider>{children}</ToastProvider>
         </AuthProvider>
       </body>
     </html>
