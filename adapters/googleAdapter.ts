@@ -166,8 +166,9 @@ export class GoogleAdapter implements ExecutionAdapter {
     };
   }
 
-  private async makeRequest(contents: GeminiContent[], signal: AbortSignal): Promise<GeminiResponse> {
-    const url = `${this.config.baseURL}/models/${this.config.model}:generateContent?key=${this.config.apiKey}`;
+  private async makeRequest(contents: GeminiContent[], signal: AbortSignal, attempt = 1): Promise<GeminiResponse> {
+    // SECURITY: API key passed in header, not URL (prevents exposure in logs/proxies)
+    const url = `${this.config.baseURL}/models/${this.config.model}:generateContent`;
     
     const requestBody: GeminiRequest = {
       contents,
@@ -179,21 +180,39 @@ export class GoogleAdapter implements ExecutionAdapter {
       },
     };
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
-      signal,
-    });
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': this.config.apiKey,
+        },
+        body: JSON.stringify(requestBody),
+        signal,
+      });
 
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Google API error: ${response.status} ${error}`);
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`Google API error: ${response.status} ${error}`);
+      }
+
+      return response.json() as Promise<GeminiResponse>;
+    } catch (error) {
+      // Retry on network errors or 5xx status codes
+      const shouldRetry = attempt < this.config.maxRetries && 
+        ((error as Error).message?.includes('5') || 
+         (error as Error).message?.includes('network') ||
+         (error as Error).message?.includes('ECONNRESET') ||
+         (error as Error).message?.includes('ETIMEDOUT'));
+      
+      if (shouldRetry) {
+        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000); // Exponential backoff, max 10s
+        await new Promise(r => setTimeout(r, delay));
+        return this.makeRequest(contents, signal, attempt + 1);
+      }
+      
+      throw error;
     }
-
-    return response.json() as Promise<GeminiResponse>;
   }
 
   private calculateCost(inputTokens: number, outputTokens: number): Cost {
