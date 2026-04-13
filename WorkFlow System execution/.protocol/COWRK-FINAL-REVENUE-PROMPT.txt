@@ -8,7 +8,7 @@
 COWRK MUST:
 - Read `.protocol/orchestration.md` for dispatch format
 - Read `.protocol/execution.md` for execution rules
-- Read `REVENUE-MISSION.md` and `ULTRA-DEX-MONETIZATION-PLAN.md` for context
+- Read `../plans/REVENUE-MISSION.md` and `../plans/ULTRA-DEX-MONETIZATION-PLAN.md` for context
 - Read `.kimi/CONSCIOUSNESS.md` for system state
 - **Scan the ACTUAL codebase**: `package.json`, `README.md`, `dexgraph/`, `adapters/`, `cli/`, `sdk/`, `apps/`, `src/core/billing/`, `apps/website/`, `apps/dashboard/`, `apps/docs-site/`, `src/`, `packages/`, `marketing/`
 - Reference `.protocol/agent-capabilities/` for exact command syntax per tool
@@ -126,9 +126,9 @@ Stripe integration, pricing tiers, checkout sessions, usage metering.
 RBAC, audit trails, policy engine, multi-tenant architecture.
 
 ### Existing Documents
-- `REVENUE-MISSION.md` — 4-week sprint to first revenue
-- `ULTRA-DEX-MONETIZATION-PLAN.md` — 90-day monetization plan
-- `AUTO-CEO-README.md` — Automated validation system
+- `../plans/REVENUE-MISSION.md` — 4-week sprint to first revenue
+- `../plans/ULTRA-DEX-MONETIZATION-PLAN.md` — 90-day monetization plan
+- `../guides/AUTO-CEO-README.md` — Automated validation system
 - `marketing/validation/` — Reddit validation data (15 responses, 3 willing to pay, 72% confidence)
 
 ### Prior Attempts

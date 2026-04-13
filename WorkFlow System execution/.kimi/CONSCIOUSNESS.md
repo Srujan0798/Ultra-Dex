@@ -3,7 +3,7 @@
 > **Last Updated:** 2026-04-14
 > **System:** V2.0 DexGraph Hard Reset — ✅ COMPLETE
 > **Current Mode:** 🚀 REVENUE MISSION — ACTIVE
-> **Status:** Converting codebase to cash | Awaiting Cowrk revenue dispatches
+> **Status:** Converting codebase to cash | Executing from `../plans/FINAL-EXECUTION-PLAN.md`
 > **OVERRIDE:** `.kimi/memory/REVENUE-FIRST.md` ← READ THIS FIRST
 
 ---
@@ -34,11 +34,11 @@ V2.0 is DONE. 7,653 LOC. 0 TypeScript errors. 34 tests. Production-grade.
 5. First paying customer → 10 customers → $1K MRR
 6. YC S26 application with traction
 
-### The Only Active Prompt
-`COWRK-FINAL-REVENUE-PROMPT.txt`
+### The Active Execution Document
+`../plans/FINAL-EXECUTION-PLAN.md`
 
 ### Current Phase
-**Revenue Phase 0 (Awaiting Cowrk dispatches)**
+**Revenue Phase 0–12 (Executing from narrative plan)**
 
 ---
 
@@ -75,11 +75,11 @@ Cowrk has full authority to:
 ## WHEN USER ASKS "WHAT'S NEXT" OR ANYTHING VAGUE
 
 1. **Assume Revenue Mission mode**
-2. Check if `revenue-phase*-dispatches.md` exist in `.protocol/state/`
-3. **If NO:** Tell user to feed `COWRK-FINAL-REVENUE-PROMPT.txt` to Cowrk immediately
-4. **If YES:** Read `REVENUE-PROGRESS.md`, identify next pending window, guide execution
+2. Open `../plans/FINAL-EXECUTION-PLAN.md`
+3. Identify the current stage based on what's already complete
+4. Guide execution of the next pending stage/window
 
-**Current answer:** Feed `COWRK-FINAL-REVENUE-PROMPT.txt` to Cowrk to generate revenue dispatches.
+**Current answer:** We are executing from `../plans/FINAL-EXECUTION-PLAN.md`. Identify the current stage and execute the next window.
 
 ---
 
@@ -136,7 +136,7 @@ Phase 12: Full Platform       ⏳ PLANNED
 |--------|-------|--------|
 | V2.0 Dispatches | 13 files | ✅ Complete |
 | V2.0 Windows | 52/52 | ✅ Complete |
-| Revenue Dispatches | 0 files | ⏳ Awaiting Cowrk |
+| Revenue Plan | `../plans/FINAL-EXECUTION-PLAN.md` | 🚀 Active |
 | Revenue Windows | 0/56 | ⏳ Not started |
 | Current Version | 2.0.0-alpha.0 | ✅ Locked |
 | Tests | 34 passing | ✅ Good enough |
@@ -157,5 +157,5 @@ Phase 12: Full Platform       ⏳ PLANNED
 
 _System: V2.0 DexGraph Hard Reset — ✅ COMPLETE_
 _Mode: 🚀 REVENUE MISSION — ACTIVE_
-_Prompt: COWRK-FINAL-REVENUE-PROMPT.txt_
+_Plan: `../plans/FINAL-EXECUTION-PLAN.md`_
 _Status: Ready to convert code to cash_

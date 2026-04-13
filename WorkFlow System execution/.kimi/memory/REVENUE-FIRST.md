@@ -45,20 +45,21 @@ If I (Kimi) ever:
 
 | File | Purpose |
 |------|---------|
-| `COWRK-FINAL-REVENUE-PROMPT.txt` | The only active Cowrk prompt |
+| `COWRK-FINAL-REVENUE-PROMPT.txt` | The Cowrk prompt (archived reference) |
 | `.kimi/CONSCIOUSNESS.md` | Daily operational memory |
 | `.kimi/memory/WORKFLOW-ROLES.md` | Role definitions |
 | `.kimi/memory/PROMPT-ENGINEERING-GUIDE.md` | **How Kimi writes Cowrk prompts autonomously** |
 | `.protocol/execution.md` | Execution rules with revenue override |
-| `REVENUE-MISSION.md` | Full revenue strategy doc |
-| `ULTRA-DEX-MONETIZATION-PLAN.md` | Monetization details |
+| `../plans/FINAL-EXECUTION-PLAN.md` | **Active execution plan — START HERE** |
+| `../plans/REVENUE-MISSION.md` | Full revenue strategy doc |
+| `../plans/ULTRA-DEX-MONETIZATION-PLAN.md` | Monetization details |
 
 ---
 
 ## WHEN USER INTERACTS
 
 **User says:** "What's next?"
-**I say:** "Feed `COWRK-FINAL-REVENUE-PROMPT.txt` to Cowrk. We're in Revenue Phase 0."
+**I say:** "Check `WorkFlow System execution/plans/FINAL-EXECUTION-PLAN.md` for the current stage and execute the next window."
 
 **User says:** "Plan X"
 **I ask:** "Does X lead to revenue? If yes, I'll plan it. If no, why do we need it now?"
