@@ -1,0 +1,16 @@
+.execution-chart {
+  background: #1e1e1e;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.execution-chart h2 {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  color: #fff;
+}
+
+.chart-container {
+  height: 300px;
+}

@@ -1,0 +1,45 @@
+.metrics-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.metric-card {
+  background: #1e1e1e;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+}
+
+.metric-value {
+  font-size: 36px;
+  font-weight: bold;
+  color: #4caf50;
+  margin-bottom: 8px;
+}
+
+.metric-value.warning {
+  color: #ff9800;
+}
+
+.metric-value.error {
+  color: #f44336;
+}
+
+.metric-label {
+  font-size: 14px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.metric-change {
+  font-size: 12px;
+  margin-top: 8px;
+  color: #4caf50;
+}
+
+.metric-change.negative {
+  color: #f44336;
+}

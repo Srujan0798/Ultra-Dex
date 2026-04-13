@@ -7,7 +7,8 @@
  * Architecture: ADR-008-v21-cache-and-adapters
  */
 
-import { EventEmitter } from '../observability/eventEmitter.js';
+import { EventEmitter } from 'events';
+import { createEvent } from '../observability/eventEmitter.js';
 
 // ──────────────────────────────────────────────────────────────────────────────
 // Types

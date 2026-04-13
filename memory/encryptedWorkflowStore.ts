@@ -32,10 +32,10 @@ export class EncryptedWorkflowStore {
     }
 
     this.config = {
-      basePath: '.ultra-dex/workflows',
-      autoSave: true,
-      saveInterval: 5000,
       ...config,
+      basePath: config.basePath ?? '.ultra-dex/workflows',
+      autoSave: config.autoSave ?? true,
+      saveInterval: config.saveInterval ?? 5000,
     };
 
     this.encryption = new EncryptionService({
