@@ -24,6 +24,41 @@ import type { GraphNode } from '../dexgraph/types.js';
 import type { WorkflowMemory } from '../memory/workflowStore.js';
 
 // ──────────────────────────────────────────────────────────────────────────────
+// Security Utilities
+// ──────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Validate file path to prevent directory traversal attacks.
+ * Rejects paths containing '..' or absolute paths outside cwd.
+ */
+function validateSafePath(filePath: string): string {
+  // Normalize the path
+  const normalized = path.normalize(filePath);
+  
+  // Check for directory traversal attempts
+  if (normalized.includes('..')) {
+    throw new Error(`Invalid path: directory traversal detected in "${filePath}"`);
+  }
+  
+  // Resolve to absolute path
+  const resolved = path.resolve(normalized);
+  const cwd = process.cwd();
+  
+  // Ensure path is within current working directory (or is absolute system path)
+  // Allow paths that start with cwd or are relative to it
+  if (!resolved.startsWith(cwd) && !path.isAbsolute(normalized)) {
+    throw new Error(`Invalid path: "${filePath}" must be within working directory`);
+  }
+  
+  // Ensure file has .dex extension
+  if (!normalized.endsWith('.dex')) {
+    throw new Error(`Invalid file: "${filePath}" must have .dex extension`);
+  }
+  
+  return resolved;
+}
+
+// ──────────────────────────────────────────────────────────────────────────────
 // Constants
 // ──────────────────────────────────────────────────────────────────────────────
 
@@ -169,7 +204,14 @@ async function cmdRun(
   workflowFile: string,
   opts: { dryRun?: boolean; timeout?: number; id?: string },
 ): Promise<void> {
-  const resolved = path.resolve(workflowFile);
+  // SECURITY: Validate path to prevent directory traversal (H-001)
+  let resolved: string;
+  try {
+    resolved = validateSafePath(workflowFile);
+  } catch (err) {
+    console.error(c.red(`Security error: `) + (err as Error).message);
+    process.exit(1);
+  }
 
   // Parse + build graph
   let result;

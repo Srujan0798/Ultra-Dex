@@ -45,7 +45,8 @@ export function loadYAML(filepath: string): WorkflowDefinition {
   }
 
   const raw = fs.readFileSync(absolute, 'utf-8');
-  const doc = yaml.load(raw);
+  // SECURITY: Use SAFE_SCHEMA to prevent RCE via malicious YAML (H-002)
+  const doc = yaml.load(raw, { schema: yaml.JSON_SCHEMA });
 
   if (doc === null || typeof doc !== 'object' || Array.isArray(doc)) {
     throw new ParseError('YAML root must be a mapping');

@@ -150,12 +150,15 @@ export interface TokenPayload {
 
 export class TokenService {
   private secret: string;
+  private jwt: typeof import('jsonwebtoken');
 
   constructor(secret: string) {
     if (!secret || secret.length < 32) {
       throw new Error('Token secret must be at least 32 characters');
     }
     this.secret = secret;
+    // SECURITY: Use proper JWT library instead of custom implementation (H-003)
+    this.jwt = require('jsonwebtoken');
   }
 
   /**
@@ -166,38 +169,30 @@ export class TokenService {
   }
 
   /**
-   * Create a signed JWT-like token (simplified, use real JWT lib in prod)
+   * Create a signed JWT token using jsonwebtoken library
    */
   createToken(payload: Omit<TokenPayload, 'iat'>): string {
     const now = Math.floor(Date.now() / 1000);
     const fullPayload = {
       ...payload,
       iat: now,
-    } as TokenPayload;
+    };
 
-    const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
-    const body = Buffer.from(JSON.stringify(fullPayload)).toString('base64url');
-    const signature = this.sign(`${header}.${body}`);
-
-    return `${header}.${body}.${signature}`;
+    return this.jwt.sign(fullPayload, this.secret, {
+      algorithm: 'HS256',
+    });
   }
 
   /**
-   * Verify and decode a token
+   * Verify and decode a token using jsonwebtoken library
    */
   verifyToken(token: string): TokenPayload | null {
     try {
-      const [header, body, signature] = token.split('.');
-      if (!header || !body || !signature) return null;
+      const payload = this.jwt.verify(token, this.secret, {
+        algorithms: ['HS256'],
+      }) as TokenPayload;
 
-      const expectedSig = this.sign(`${header}.${body}`);
-      if (!timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSig))) {
-        return null;
-      }
-
-      const payload = JSON.parse(Buffer.from(body, 'base64url').toString()) as TokenPayload;
-      
-      // Check expiration
+      // Check expiration (redundant but explicit)
       const now = Math.floor(Date.now() / 1000);
       if (payload.exp && payload.exp < now) {
         return null;
@@ -207,12 +202,6 @@ export class TokenService {
     } catch {
       return null;
     }
-  }
-
-  private sign(data: string): string {
-    const hmac = require('crypto').createHmac('sha256', this.secret);
-    hmac.update(data);
-    return hmac.digest('base64url');
   }
 }
 
