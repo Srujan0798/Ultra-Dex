@@ -1,246 +1,182 @@
-'use client';
+"use client";
 
-import { useEffect, useMemo, useState } from 'react';
+import { useState } from "react";
+import { 
+  CheckCircle, 
+  Clock, 
+  Filter, 
+  MoreVertical, 
+  Pause, 
+  Play, 
+  Plus, 
+  RefreshCw, 
+  Search, 
+  Trash2,
+  XCircle 
+} from "lucide-react";
+import Sidebar from "@/components/Sidebar";
+import Header from "@/components/Header";
 
-type TaskStatus = 'running' | 'completed' | 'failed';
-
-interface TaskRecord {
-  id: string;
-  prompt: string;
-  output: string;
-  status: TaskStatus;
-  agent: string;
-  provider: string;
-  cost: number;
-  durationMs: number;
-  startedAt: string;
-}
-
-const SEED_TASKS: TaskRecord[] = [
-  {
-    id: 'run_101',
-    prompt: 'Create auth middleware for API routes',
-    output: 'Middleware created with token validation.',
-    status: 'completed',
-    agent: 'backend',
-    provider: 'openai',
-    cost: 0.24,
-    durationMs: 3120,
-    startedAt: new Date(Date.now() - 1000 * 60 * 90).toISOString(),
-  },
-  {
-    id: 'run_102',
-    prompt: 'Refactor billing usage meter to Postgres',
-    output: 'Migration in progress...',
-    status: 'running',
-    agent: 'database',
-    provider: 'anthropic',
-    cost: 0.18,
-    durationMs: 1200,
-    startedAt: new Date(Date.now() - 1000 * 60 * 8).toISOString(),
-  },
-  {
-    id: 'run_103',
-    prompt: 'Generate integration tests for team workspace',
-    output: 'Failed due to missing fixture.',
-    status: 'failed',
-    agent: 'reviewer',
-    provider: 'gemini',
-    cost: 0.11,
-    durationMs: 1980,
-    startedAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-  },
+const tasks = [
+  { id: "task-001", name: "Code Generation", workflow: "wf-001", status: "running", agent: "coder", duration: "2m 34s", priority: "high" },
+  { id: "task-002", name: "Unit Tests", workflow: "wf-001", status: "success", agent: "tester", duration: "45s", priority: "medium" },
+  { id: "task-003", name: "Security Scan", workflow: "wf-002", status: "failed", agent: "security", duration: "1m 12s", priority: "high" },
+  { id: "task-004", name: "Documentation", workflow: "wf-003", status: "pending", agent: "writer", duration: "-", priority: "low" },
+  { id: "task-005", name: "Integration Tests", workflow: "wf-004", status: "running", agent: "tester", duration: "5m 20s", priority: "high" },
+  { id: "task-006", name: "Performance Check", workflow: "wf-004", status: "success", agent: "perf", duration: "3m 45s", priority: "medium" },
 ];
 
-function asCsv(rows: TaskRecord[]): string {
-  const headers: Array<keyof TaskRecord> = [
-    'id',
-    'status',
-    'agent',
-    'provider',
-    'cost',
-    'durationMs',
-    'startedAt',
-    'prompt',
-    'output',
-  ];
-  const lines = [
-    headers.join(','),
-    ...rows.map((row) =>
-      headers
-        .map((key) => {
-          const value = String(row[key] ?? '');
-          return `"${value.replaceAll('"', '""')}"`;
-        })
-        .join(',')
-    ),
-  ];
-  return lines.join('\n');
-}
+const filters = ["All", "Running", "Success", "Failed", "Pending"];
 
 export default function TasksPage() {
-  const [tasks, setTasks] = useState<TaskRecord[]>(SEED_TASKS);
-  const [selectedTaskId, setSelectedTaskId] = useState<string>(SEED_TASKS[0].id);
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [agentFilter, setAgentFilter] = useState<string>('all');
-  const [providerFilter, setProviderFilter] = useState<string>('all');
-  const [startDate, setStartDate] = useState<string>('');
-  const [endDate, setEndDate] = useState<string>('');
+  const [activeFilter, setActiveFilter] = useState("All");
 
-  useEffect(() => {
-    const runningIds = tasks.filter((task) => task.status === 'running').map((task) => task.id);
-    if (runningIds.length === 0) return;
+  const filteredTasks = activeFilter === "All" 
+    ? tasks 
+    : tasks.filter(t => t.status.toLowerCase() === activeFilter.toLowerCase());
 
-    const timer = setInterval(() => {
-      setTasks((prev) =>
-        prev.map((task) =>
-          runningIds.includes(task.id) ? { ...task, durationMs: task.durationMs + 1000 } : task
-        )
-      );
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [tasks]);
-
-  useEffect(() => {
-    let socket: WebSocket | null = null;
-    try {
-      socket = new WebSocket('ws://localhost:3002');
-      socket.onmessage = () => {
-        setTasks((prev) => prev.map((task) => (task.status === 'running' ? { ...task } : task)));
-      };
-    } catch {
-      // Keep polling-only status updates when WebSocket is unavailable.
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "running":
+        return <RefreshCw className="w-4 h-4 text-cyan animate-spin" />;
+      case "success":
+        return <CheckCircle className="w-4 h-4 text-success" />;
+      case "failed":
+        return <XCircle className="w-4 h-4 text-failed" />;
+      case "pending":
+        return <Clock className="w-4 h-4 text-pending" />;
     }
-    return () => socket?.close();
-  }, []);
+  };
 
-  const filteredTasks = useMemo(() => {
-    return tasks.filter((task) => {
-      if (statusFilter !== 'all' && task.status !== statusFilter) return false;
-      if (agentFilter !== 'all' && task.agent !== agentFilter) return false;
-      if (providerFilter !== 'all' && task.provider !== providerFilter) return false;
-      if (startDate && new Date(task.startedAt) < new Date(startDate)) return false;
-      if (endDate && new Date(task.startedAt) > new Date(`${endDate}T23:59:59`)) return false;
-      return true;
-    });
-  }, [tasks, statusFilter, agentFilter, providerFilter, startDate, endDate]);
-
-  const selectedTask = filteredTasks.find((task) => task.id === selectedTaskId) ?? filteredTasks[0] ?? null;
-
-  function retryTask(taskId: string) {
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.id === taskId
-          ? {
-              ...task,
-              status: 'running',
-              output: 'Retry queued...',
-              durationMs: 0,
-              startedAt: new Date().toISOString(),
-            }
-          : task
-      )
+  const getPriorityBadge = (priority: string) => {
+    const colors = {
+      high: "border-failed text-failed",
+      medium: "border-amber text-amber",
+      low: "border-text-tertiary text-text-tertiary",
+    };
+    return (
+      <span className={`badge ${colors[priority as keyof typeof colors]}`}>
+        {priority}
+      </span>
     );
-  }
-
-  function exportCsv() {
-    const blob = new Blob([asCsv(filteredTasks)], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'task-history.csv';
-    link.click();
-    URL.revokeObjectURL(url);
-  }
+  };
 
   return (
-    <main className="p-6 space-y-4">
-      <h1 className="text-2xl font-semibold">Tasks</h1>
-
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
-        <select className="border rounded px-3 py-2" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-          <option value="all">All status</option>
-          <option value="running">Running</option>
-          <option value="completed">Completed</option>
-          <option value="failed">Failed</option>
-        </select>
-        <select className="border rounded px-3 py-2" value={agentFilter} onChange={(e) => setAgentFilter(e.target.value)}>
-          <option value="all">All agents</option>
-          {[...new Set(tasks.map((task) => task.agent))].map((agent) => (
-            <option key={agent} value={agent}>
-              {agent}
-            </option>
-          ))}
-        </select>
-        <select className="border rounded px-3 py-2" value={providerFilter} onChange={(e) => setProviderFilter(e.target.value)}>
-          <option value="all">All providers</option>
-          {[...new Set(tasks.map((task) => task.provider))].map((provider) => (
-            <option key={provider} value={provider}>
-              {provider}
-            </option>
-          ))}
-        </select>
-        <input className="border rounded px-3 py-2" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
-        <input className="border rounded px-3 py-2" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
-        <button className="border rounded px-3 py-2 bg-black text-white" onClick={exportCsv}>
-          Export CSV
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <section className="border rounded p-3">
-          <h2 className="font-medium mb-2">Task list ({filteredTasks.length})</h2>
-          <ul className="space-y-2">
-            {filteredTasks.map((task) => (
-              <li key={task.id}>
-                <button
-                  className={`w-full text-left border rounded p-2 ${selectedTaskId === task.id ? 'bg-gray-100' : ''}`}
-                  onClick={() => setSelectedTaskId(task.id)}
-                >
-                  <div className="flex justify-between">
-                    <span className="font-mono text-sm">{task.id}</span>
-                    <span className="text-xs uppercase">{task.status}</span>
-                  </div>
-                  <div className="text-sm truncate">{task.prompt}</div>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section className="border rounded p-3">
-          <h2 className="font-medium mb-2">Task detail</h2>
-          {!selectedTask ? (
-            <p className="text-sm text-gray-500">No task matches the current filters.</p>
-          ) : (
-            <div className="space-y-2 text-sm">
-              <p>
-                <strong>Prompt:</strong> {selectedTask.prompt}
+    <div className="flex min-h-screen bg-void">
+      <Sidebar />
+      <div className="flex-1 ml-64">
+        <Header />
+        <main className="pt-24 pb-8 px-6">
+          {/* Header */}
+          <div className="mb-8 flex items-center justify-between">
+            <div>
+              <h1 className="font-display text-3xl font-bold text-text-primary mb-2">
+                Tasks
+              </h1>
+              <p className="text-text-secondary">
+                Manage and monitor individual task executions
               </p>
-              <p>
-                <strong>Output:</strong> {selectedTask.output}
-              </p>
-              <p>
-                <strong>Agent:</strong> {selectedTask.agent}
-              </p>
-              <p>
-                <strong>Provider:</strong> {selectedTask.provider}
-              </p>
-              <p>
-                <strong>Cost:</strong> ${selectedTask.cost.toFixed(2)}
-              </p>
-              <p>
-                <strong>Duration:</strong> {(selectedTask.durationMs / 1000).toFixed(1)}s
-              </p>
-              {selectedTask.status === 'failed' && (
-                <button className="border rounded px-3 py-2 bg-black text-white" onClick={() => retryTask(selectedTask.id)}>
-                  Retry failed task
-                </button>
-              )}
             </div>
-          )}
-        </section>
+            <div className="flex items-center gap-3">
+              <button className="btn-industrial flex items-center gap-2">
+                <Filter className="w-4 h-4" />
+                Filter
+              </button>
+              <button className="btn-industrial flex items-center gap-2">
+                <Plus className="w-4 h-4" />
+                New Task
+              </button>
+            </div>
+          </div>
+
+          {/* Filters */}
+          <div className="flex items-center gap-2 mb-6">
+            {filters.map((filter) => (
+              <button
+                key={filter}
+                onClick={() => setActiveFilter(filter)}
+                className={`
+                  px-4 py-2 rounded font-display text-sm uppercase tracking-wider transition-all
+                  ${activeFilter === filter
+                    ? "bg-cyan text-void"
+                    : "bg-panel border border-border text-text-secondary hover:text-text-primary hover:border-cyan/30"
+                  }
+                `}
+              >
+                {filter}
+              </button>
+            ))}
+          </div>
+
+          {/* Tasks Table */}
+          <div className="glass-card overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-panel border-b border-border">
+                <tr>
+                  <th className="text-left p-4 font-display text-xs uppercase tracking-wider text-text-tertiary">Task</th>
+                  <th className="text-left p-4 font-display text-xs uppercase tracking-wider text-text-tertiary">Workflow</th>
+                  <th className="text-left p-4 font-display text-xs uppercase tracking-wider text-text-tertiary">Status</th>
+                  <th className="text-left p-4 font-display text-xs uppercase tracking-wider text-text-tertiary">Agent</th>
+                  <th className="text-left p-4 font-display text-xs uppercase tracking-wider text-text-tertiary">Duration</th>
+                  <th className="text-left p-4 font-display text-xs uppercase tracking-wider text-text-tertiary">Priority</th>
+                  <th className="text-left p-4 font-display text-xs uppercase tracking-wider text-text-tertiary">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {filteredTasks.map((task) => (
+                  <tr key={task.id} className="hover:bg-panel-elevated/50 transition-colors">
+                    <td className="p-4">
+                      <div className="flex items-center gap-3">
+                        {getStatusIcon(task.status)}
+                        <div>
+                          <p className="font-display font-medium text-text-primary">{task.name}</p>
+                          <p className="text-xs text-text-tertiary font-display">{task.id}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-4">
+                      <span className="text-sm text-text-secondary font-display">{task.workflow}</span>
+                    </td>
+                    <td className="p-4">
+                      <span className={`badge badge-${task.status}`}>
+                        {task.status}
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      <span className="text-sm text-text-secondary font-display">{task.agent}</span>
+                    </td>
+                    <td className="p-4">
+                      <span className="text-sm text-text-secondary font-display">{task.duration}</span>
+                    </td>
+                    <td className="p-4">
+                      {getPriorityBadge(task.priority)}
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center gap-2">
+                        {task.status === "running" ? (
+                          <button className="p-2 hover:bg-panel-elevated rounded transition-colors">
+                            <Pause className="w-4 h-4 text-amber" />
+                          </button>
+                        ) : task.status === "pending" ? (
+                          <button className="p-2 hover:bg-panel-elevated rounded transition-colors">
+                            <Play className="w-4 h-4 text-cyan" />
+                          </button>
+                        ) : null}
+                        <button className="p-2 hover:bg-panel-elevated rounded transition-colors">
+                          <Trash2 className="w-4 h-4 text-failed" />
+                        </button>
+                        <button className="p-2 hover:bg-panel-elevated rounded transition-colors">
+                          <MoreVertical className="w-4 h-4 text-text-secondary" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </main>
       </div>
-    </main>
+    </div>
   );
 }

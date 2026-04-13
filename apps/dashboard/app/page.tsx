@@ -1,294 +1,277 @@
-import type { LucideIcon } from 'lucide-react';
-import {
-  Activity,
-  AlertTriangle,
-  ArrowDownRight,
-  ArrowUpRight,
-  Bot,
-  Clock3,
-  DollarSign,
-  ShieldCheck,
-  Signal,
-  Sparkles,
-  Workflow,
-} from 'lucide-react';
-import { Space_Grotesk, JetBrains_Mono } from 'next/font/google';
-import styles from './dashboard-home.module.css';
+"use client";
 
-const displayFont = Space_Grotesk({
-  weight: ['400', '500', '600', '700'],
-  subsets: ['latin'],
-  variable: '--font-dashboard-display',
-});
+import { useEffect, useState } from "react";
+import { 
+  Activity, 
+  CheckCircle, 
+  Clock, 
+  Cpu, 
+  Database, 
+  Play, 
+  Plus, 
+  TrendingUp,
+  XCircle 
+} from "lucide-react";
+import Sidebar from "@/components/Sidebar";
+import Header from "@/components/Header";
 
-const bodyFont = JetBrains_Mono({
-  weight: ['400', '500', '600', '700'],
-  subsets: ['latin'],
-  variable: '--font-dashboard-body',
-});
-
-interface StatCard {
-  label: string;
-  value: string;
-  trend: string;
-  trendDirection: 'up' | 'down';
-  note: string;
-  icon: LucideIcon;
-}
-
-const KPI_STATS: StatCard[] = [
-  {
-    label: 'Active agents',
-    value: '24',
-    trend: '+3',
-    trendDirection: 'up',
-    note: 'vs previous shift',
-    icon: Bot,
-  },
-  {
-    label: 'Latency p95',
-    value: '42ms',
-    trend: '-6ms',
-    trendDirection: 'up',
-    note: 'routing optimization',
-    icon: Clock3,
-  },
-  {
-    label: 'Task success',
-    value: '98.4%',
-    trend: '+0.7%',
-    trendDirection: 'up',
-    note: 'stability window',
-    icon: ShieldCheck,
-  },
-  {
-    label: 'Burn rate',
-    value: '$124.5',
-    trend: '+4.1%',
-    trendDirection: 'down',
-    note: 'daily provider spend',
-    icon: DollarSign,
-  },
+const stats = [
+  { label: "Active Workflows", value: "12", change: "+3", icon: Activity, color: "cyan" },
+  { label: "Success Rate", value: "98.5%", change: "+2.1%", icon: TrendingUp, color: "success" },
+  { label: "Tasks Completed", value: "1,284", change: "+42", icon: CheckCircle, color: "amber" },
+  { label: "Avg Latency", value: "145ms", change: "-12ms", icon: Clock, color: "cyan" },
 ];
 
-const THROUGHPUT = [
-  { hour: '00', ingress: 42, completion: 40 },
-  { hour: '03', ingress: 56, completion: 52 },
-  { hour: '06', ingress: 64, completion: 62 },
-  { hour: '09', ingress: 83, completion: 79 },
-  { hour: '12', ingress: 88, completion: 82 },
-  { hour: '15', ingress: 73, completion: 71 },
-  { hour: '18', ingress: 61, completion: 58 },
-  { hour: '21', ingress: 49, completion: 45 },
+const recentWorkflows = [
+  { id: "wf-001", name: "Deploy Production", status: "running", progress: 65, agent: "deploy-agent", started: "2m ago" },
+  { id: "wf-002", name: "Run Test Suite", status: "success", progress: 100, agent: "test-agent", started: "15m ago" },
+  { id: "wf-003", name: "Code Review", status: "failed", progress: 45, agent: "review-agent", started: "32m ago" },
+  { id: "wf-004", name: "Data Migration", status: "pending", progress: 0, agent: "db-agent", started: "-" },
 ];
 
-const PROVIDER_LOAD = [
-  { name: 'Anthropic Sonnet', load: 78, quality: 'high', route: 'architecture + critique' },
-  { name: 'GPT-5.3 Codex', load: 69, quality: 'high', route: 'implementation + refactor' },
-  { name: 'Gemini 2.5 Pro', load: 41, quality: 'balanced', route: 'parallel analysis' },
-  { name: 'Groq Llama', load: 33, quality: 'latency', route: 'quick transforms' },
+const agentStatus = [
+  { name: "Planner", status: "idle", lastActive: "2m ago" },
+  { name: "Coder", status: "busy", lastActive: "Now" },
+  { name: "Tester", status: "idle", lastActive: "5m ago" },
+  { name: "Reviewer", status: "error", lastActive: "1h ago" },
 ];
 
-const INCIDENT_TAPE = [
-  {
-    time: '09:42:17',
-    title: 'Provider fallback engaged',
-    detail: 'OpenAI latency spike detected; switched to Anthropic chain in 120ms.',
-    severity: 'warning',
-  },
-  {
-    time: '09:38:02',
-    title: 'Memory write checkpoint',
-    detail: 'Session graph persisted with 100% consistency.',
-    severity: 'info',
-  },
-  {
-    time: '09:31:44',
-    title: 'CI gate passed',
-    detail: 'Governance and unit tests completed for deployment candidate.',
-    severity: 'success',
-  },
-];
+export default function Dashboard() {
+  const [mounted, setMounted] = useState(false);
 
-export default function DashboardPage() {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "running":
+        return <span className="badge badge-running flex items-center gap-1"><span className="w-1.5 h-1.5 bg-cyan rounded-full animate-pulse" /> Running</span>;
+      case "success":
+        return <span className="badge badge-success">Success</span>;
+      case "failed":
+        return <span className="badge badge-failed">Failed</span>;
+      case "pending":
+        return <span className="badge badge-pending">Pending</span>;
+      default:
+        return <span className="badge badge-pending">{status}</span>;
+    }
+  };
+
+  const getAgentStatusBadge = (status: string) => {
+    switch (status) {
+      case "idle":
+        return <span className="w-2 h-2 bg-success rounded-full" />;
+      case "busy":
+        return <span className="w-2 h-2 bg-cyan rounded-full animate-pulse" />;
+      case "error":
+        return <span className="w-2 h-2 bg-failed rounded-full" />;
+      default:
+        return <span className="w-2 h-2 bg-text-tertiary rounded-full" />;
+    }
+  };
+
+  if (!mounted) return null;
+
   return (
-    <section className={`${styles.dashboardShell} ${displayFont.variable} ${bodyFont.variable}`}>
-      <div className={styles.atmosphere} aria-hidden="true" />
-
-      <header className={styles.hero}>
-        <div>
-          <p className={styles.heroEyebrow}>NODE MAIN · LIVE ORCHESTRATION GRID</p>
-          <h1 className={styles.heroTitle}>MISSION CONTROL</h1>
-          <p className={styles.heroLead}>
-            Ultra-Dex is routing multi-agent execution across providers in real time with
-            deterministic governance and memory-backed recovery paths.
-          </p>
-        </div>
-
-        <aside className={styles.heroMeta} aria-label="System snapshot">
-          <div className={styles.signalPill}>
-            <Signal size={14} />
-            <span>Core Link Stable</span>
-          </div>
-          <dl className={styles.metaGrid}>
+    <div className="flex min-h-screen bg-void">
+      <Sidebar />
+      <div className="flex-1 ml-64">
+        <Header />
+        <main className="pt-24 pb-8 px-6">
+          {/* Page Title */}
+          <div className="mb-8 flex items-center justify-between">
             <div>
-              <dt>Region</dt>
-              <dd>us-east-1</dd>
+              <h1 className="font-display text-3xl font-bold text-text-primary mb-2">
+                Control Center
+              </h1>
+              <p className="text-text-secondary">
+                Monitor and manage your AI orchestration workflows
+              </p>
             </div>
-            <div>
-              <dt>Mode</dt>
-              <dd>Autonomous</dd>
-            </div>
-            <div>
-              <dt>Queue</dt>
-              <dd>187 tasks</dd>
-            </div>
-            <div>
-              <dt>Uptime</dt>
-              <dd>14d 09h</dd>
-            </div>
-          </dl>
-        </aside>
-      </header>
-
-      <section className={styles.statGrid} aria-label="Key performance indicators">
-        {KPI_STATS.map((stat) => (
-          <article key={stat.label} className={styles.statCard}>
-            <div className={styles.statTop}>
-              <p>{stat.label}</p>
-              <stat.icon size={16} />
-            </div>
-            <p className={styles.statValue}>{stat.value}</p>
-            <p className={styles.statBottom}>
-              <span className={stat.trendDirection === 'up' ? styles.trendUp : styles.trendDown}>
-                {stat.trendDirection === 'up' ? (
-                  <ArrowUpRight size={14} />
-                ) : (
-                  <ArrowDownRight size={14} />
-                )}
-                {stat.trend}
-              </span>
-              {stat.note}
-            </p>
-          </article>
-        ))}
-      </section>
-
-      <section className={styles.deck}>
-        <article className={styles.flowPanel}>
-          <header className={styles.panelHeader}>
-            <div>
-              <h2 className={styles.panelTitle}>
-                <Activity size={16} />
-                Throughput Spectrum
-              </h2>
-              <p className={styles.panelSubtle}>Ingress vs completion · 24 hour scan</p>
-            </div>
-            <span className={styles.panelBadge}>Window: rolling 24h</span>
-          </header>
-
-          <div className={styles.legend}>
-            <span>
-              <i className={styles.legendIngress} aria-hidden="true" />
-              ingress
-            </span>
-            <span>
-              <i className={styles.legendCompletion} aria-hidden="true" />
-              completion
-            </span>
+            <button className="btn-industrial flex items-center gap-2">
+              <Plus className="w-4 h-4" />
+              New Workflow
+            </button>
           </div>
 
-          <div
-            className={styles.bars}
-            role="img"
-            aria-label="Ingress and completion volume by hour"
-          >
-            {THROUGHPUT.map((point, index) => (
-              <div className={styles.barGroup} key={point.hour}>
-                <div className={styles.barTrack}>
-                  <span
-                    className={styles.barIngress}
-                    style={{ height: `${point.ingress}%`, animationDelay: `${index * 70}ms` }}
-                  />
-                  <span
-                    className={styles.barCompletion}
-                    style={{ height: `${point.completion}%`, animationDelay: `${index * 90}ms` }}
-                  />
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 stagger-in">
+            {stats.map((stat, index) => {
+              const Icon = stat.icon;
+              return (
+                <div key={index} className="glass-card p-6 group">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={`w-10 h-10 bg-${stat.color}/10 border border-${stat.color}/30 rounded flex items-center justify-center`}>
+                      <Icon className={`w-5 h-5 text-${stat.color}`} />
+                    </div>
+                    <span className={`text-sm font-display ${stat.change.startsWith("+") ? "text-success" : "text-cyan"}`}>
+                      {stat.change}
+                    </span>
+                  </div>
+                  <h3 className="font-display text-2xl font-bold text-text-primary mb-1">
+                    {stat.value}
+                  </h3>
+                  <p className="text-sm text-text-secondary uppercase tracking-wider font-display">
+                    {stat.label}
+                  </p>
                 </div>
-                <span className={styles.barLabel}>{point.hour}</span>
+              );
+            })}
+          </div>
+
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Workflows */}
+            <div className="lg:col-span-2 glass-card">
+              <div className="p-6 border-b border-border flex items-center justify-between">
+                <h2 className="font-display text-lg font-semibold text-text-primary uppercase tracking-wider">
+                  Active Workflows
+                </h2>
+                <button className="text-sm text-cyan hover:text-cyan-dim transition-colors font-display uppercase">
+                  View All
+                </button>
               </div>
-            ))}
+              <div className="p-6">
+                <div className="space-y-4">
+                  {recentWorkflows.map((workflow) => (
+                    <div 
+                      key={workflow.id} 
+                      className="flex items-center gap-4 p-4 bg-panel-elevated rounded border border-border hover:border-border-accent transition-all group"
+                    >
+                      <button className="w-8 h-8 bg-cyan/10 border border-cyan/30 rounded flex items-center justify-center hover:bg-cyan hover:text-void transition-all">
+                        <Play className="w-4 h-4 text-cyan group-hover:text-void" />
+                      </button>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-1">
+                          <h4 className="font-display font-medium text-text-primary">
+                            {workflow.name}
+                          </h4>
+                          {getStatusBadge(workflow.status)}
+                        </div>
+                        <div className="flex items-center gap-4 text-xs text-text-tertiary font-display">
+                          <span>ID: {workflow.id}</span>
+                          <span>Agent: {workflow.agent}</span>
+                          <span>Started: {workflow.started}</span>
+                        </div>
+                      </div>
+                      <div className="w-32">
+                        <div className="progress-bar">
+                          <div 
+                            className="progress-bar-fill" 
+                            style={{ width: `${workflow.progress}%` }}
+                          />
+                        </div>
+                        <span className="text-xs text-text-tertiary font-display mt-1 block text-right">
+                          {workflow.progress}%
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Sidebar Widgets */}
+            <div className="space-y-6">
+              {/* Agent Status */}
+              <div className="glass-card">
+                <div className="p-6 border-b border-border">
+                  <h2 className="font-display text-lg font-semibold text-text-primary uppercase tracking-wider">
+                    Agent Status
+                  </h2>
+                </div>
+                <div className="p-6">
+                  <div className="space-y-3">
+                    {agentStatus.map((agent) => (
+                      <div 
+                        key={agent.name} 
+                        className="flex items-center justify-between p-3 bg-panel-elevated rounded border border-border"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Cpu className="w-4 h-4 text-cyan" />
+                          <span className="font-display text-sm text-text-primary">
+                            {agent.name}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {getAgentStatusBadge(agent.status)}
+                          <span className="text-xs text-text-tertiary font-display">
+                            {agent.lastActive}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Memory Usage */}
+              <div className="glass-card">
+                <div className="p-6 border-b border-border">
+                  <h2 className="font-display text-lg font-semibold text-text-primary uppercase tracking-wider">
+                    Memory Usage
+                  </h2>
+                </div>
+                <div className="p-6">
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-text-secondary font-display">Epodic</span>
+                        <span className="text-sm text-cyan font-display">2.4 GB</span>
+                      </div>
+                      <div className="progress-bar">
+                        <div className="progress-bar-fill" style={{ width: "65%" }} />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-text-secondary font-display">Semantic</span>
+                        <span className="text-sm text-cyan font-display">1.8 GB</span>
+                      </div>
+                      <div className="progress-bar">
+                        <div className="progress-bar-fill" style={{ width: "45%" }} />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-text-secondary font-display">State</span>
+                        <span className="text-sm text-cyan font-display">512 MB</span>
+                      </div>
+                      <div className="progress-bar">
+                        <div className="progress-bar-fill" style={{ width: "25%" }} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="glass-card">
+                <div className="p-6 border-b border-border">
+                  <h2 className="font-display text-lg font-semibold text-text-primary uppercase tracking-wider">
+                    Quick Actions
+                  </h2>
+                </div>
+                <div className="p-6 space-y-2">
+                  <button className="w-full btn-industrial text-left justify-start">
+                    <Play className="w-4 h-4 mr-2" />
+                    Run Test Workflow
+                  </button>
+                  <button className="w-full btn-industrial text-left justify-start">
+                    <Database className="w-4 h-4 mr-2" />
+                    Clear Cache
+                  </button>
+                  <button className="w-full btn-industrial text-left justify-start">
+                    <Activity className="w-4 h-4 mr-2" />
+                    View Logs
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-        </article>
-
-        <article className={styles.providerPanel}>
-          <header className={styles.panelHeader}>
-            <div>
-              <h2 className={styles.panelTitle}>
-                <Workflow size={16} />
-                Provider Load Routing
-              </h2>
-              <p className={styles.panelSubtle}>Cost-quality balancing in live traffic</p>
-            </div>
-          </header>
-
-          <ul className={styles.providerList}>
-            {PROVIDER_LOAD.map((provider) => (
-              <li className={styles.providerItem} key={provider.name}>
-                <div className={styles.providerTop}>
-                  <p>{provider.name}</p>
-                  <span>{provider.load}%</span>
-                </div>
-                <div className={styles.providerMeter} aria-hidden="true">
-                  <span style={{ width: `${provider.load}%` }} />
-                </div>
-                <p className={styles.providerMeta}>
-                  {provider.quality} priority · {provider.route}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </article>
-
-        <article className={styles.eventsPanel}>
-          <header className={styles.panelHeader}>
-            <div>
-              <h2 className={styles.panelTitle}>
-                <AlertTriangle size={16} />
-                Event Tape
-              </h2>
-              <p className={styles.panelSubtle}>Critical runtime updates and automated decisions</p>
-            </div>
-            <span className={styles.panelBadge}>
-              <Sparkles size={12} />
-              auto triage on
-            </span>
-          </header>
-
-          <ul className={styles.eventList}>
-            {INCIDENT_TAPE.map((event) => (
-              <li className={styles.eventRow} key={`${event.time}-${event.title}`}>
-                <time className={styles.eventTime}>{event.time}</time>
-                <div>
-                  <p className={styles.eventTitle}>{event.title}</p>
-                  <p className={styles.eventDetail}>{event.detail}</p>
-                </div>
-                <span
-                  className={`${styles.eventState} ${
-                    event.severity === 'success'
-                      ? styles.success
-                      : event.severity === 'warning'
-                        ? styles.warning
-                        : styles.info
-                  }`}
-                >
-                  {event.severity}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </article>
-      </section>
-    </section>
+        </main>
+      </div>
+    </div>
   );
 }

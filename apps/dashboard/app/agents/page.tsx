@@ -1,153 +1,205 @@
-'use client';
+"use client";
 
-import { useMemo, useState } from 'react';
+import { 
+  Activity, 
+  Brain, 
+  CheckCircle, 
+  Cpu, 
+  MessageSquare, 
+  MoreVertical, 
+  Pause, 
+  Play, 
+  RefreshCw, 
+  Settings,
+  Terminal 
+} from "lucide-react";
+import Sidebar from "@/components/Sidebar";
+import Header from "@/components/Header";
 
-interface AgentMetric {
-  id: string;
-  role: string;
-  model: string;
-  capabilities: string[];
-  status: 'idle' | 'running' | 'error';
-  totalTasks: number;
-  successRate: number;
-  avgCost: number;
-  source: 'core' | 'plugin';
-}
-
-const AGENTS: AgentMetric[] = [
-  {
-    id: 'planner',
-    role: 'Planner',
-    model: 'gpt-5.3-codex',
-    capabilities: ['planning', 'roadmap'],
-    status: 'idle',
-    totalTasks: 220,
-    successRate: 0.96,
-    avgCost: 0.09,
-    source: 'core',
+const agents = [
+  { 
+    id: "agent-001", 
+    name: "Planner", 
+    role: "Orchestration",
+    status: "active", 
+    lastActive: "2m ago",
+    tasksCompleted: 1284,
+    successRate: 99.2,
+    latency: "45ms",
+    description: "Plans and coordinates multi-step workflows",
+    icon: Brain
   },
-  {
-    id: 'backend',
-    role: 'Backend',
-    model: 'claude-sonnet-4',
-    capabilities: ['api', 'db', 'migrations'],
-    status: 'running',
-    totalTasks: 180,
-    successRate: 0.93,
-    avgCost: 0.14,
-    source: 'core',
+  { 
+    id: "agent-002", 
+    name: "Coder", 
+    role: "Development",
+    status: "busy", 
+    lastActive: "Now",
+    tasksCompleted: 892,
+    successRate: 96.8,
+    latency: "120ms",
+    description: "Generates and reviews code changes",
+    icon: Terminal
   },
-  {
-    id: 'plugin-github',
-    role: 'GitHub Specialist',
-    model: 'gemini-2.5-pro',
-    capabilities: ['pr-review', 'issue-triage'],
-    status: 'idle',
-    totalTasks: 67,
-    successRate: 0.91,
-    avgCost: 0.07,
-    source: 'plugin',
+  { 
+    id: "agent-003", 
+    name: "Tester", 
+    role: "QA",
+    status: "active", 
+    lastActive: "5m ago",
+    tasksCompleted: 2156,
+    successRate: 98.5,
+    latency: "80ms",
+    description: "Runs tests and validates outputs",
+    icon: CheckCircle
+  },
+  { 
+    id: "agent-004", 
+    name: "Reviewer", 
+    role: "Quality",
+    status: "error", 
+    lastActive: "1h ago",
+    tasksCompleted: 643,
+    successRate: 94.2,
+    latency: "200ms",
+    description: "Reviews code quality and security",
+    icon: MessageSquare
   },
 ];
 
 export default function AgentsPage() {
-  const [agents, setAgents] = useState(AGENTS);
-  const [selectedId, setSelectedId] = useState(AGENTS[0].id);
-  const [nextModel, setNextModel] = useState('');
-  const [nextPrompt, setNextPrompt] = useState('');
-
-  const selected = useMemo(() => agents.find((agent) => agent.id === selectedId) ?? agents[0], [agents, selectedId]);
-
-  function saveConfiguration() {
-    setAgents((prev) =>
-      prev.map((agent) =>
-        agent.id === selected.id
-          ? {
-              ...agent,
-              model: nextModel.trim() || agent.model,
-              capabilities: nextPrompt.trim() ? [...agent.capabilities, 'custom-prompt-updated'] : agent.capabilities,
-            }
-          : agent
-      )
-    );
-    setNextModel('');
-    setNextPrompt('');
-  }
-
-  const pluginAgents = agents.filter((agent) => agent.source === 'plugin');
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "active":
+        return <span className="badge badge-success">Active</span>;
+      case "busy":
+        return <span className="badge badge-running">Busy</span>;
+      case "error":
+        return <span className="badge badge-failed">Error</span>;
+      case "paused":
+        return <span className="badge badge-pending">Paused</span>;
+    }
+  };
 
   return (
-    <main className="p-6 space-y-4">
-      <h1 className="text-2xl font-semibold">Agents</h1>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <section className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3">
-          {agents.map((agent) => (
-            <button
-              key={agent.id}
-              onClick={() => setSelectedId(agent.id)}
-              className={`border rounded p-3 text-left ${agent.id === selected.id ? 'bg-gray-100' : ''}`}
-            >
-              <div className="flex justify-between">
-                <h2 className="font-medium">{agent.role}</h2>
-                <span className="text-xs uppercase">{agent.status}</span>
-              </div>
-              <p className="text-sm text-gray-600">{agent.model}</p>
-              <p className="text-xs mt-1">Tasks: {agent.totalTasks}</p>
-            </button>
-          ))}
-        </section>
-
-        <section className="border rounded p-3 space-y-2">
-          <h2 className="font-medium">Agent detail</h2>
-          <p className="text-sm">
-            <strong>Role:</strong> {selected.role}
-          </p>
-          <p className="text-sm">
-            <strong>Model:</strong> {selected.model}
-          </p>
-          <p className="text-sm">
-            <strong>Success rate:</strong> {(selected.successRate * 100).toFixed(1)}%
-          </p>
-          <p className="text-sm">
-            <strong>Avg cost:</strong> ${selected.avgCost.toFixed(2)}
-          </p>
-          <p className="text-sm">
-            <strong>Capabilities:</strong> {selected.capabilities.join(', ')}
-          </p>
-
-          <div className="pt-2 border-t space-y-2">
-            <h3 className="text-sm font-medium">Configuration</h3>
-            <input
-              className="w-full border rounded px-2 py-1 text-sm"
-              placeholder="Change model"
-              value={nextModel}
-              onChange={(e) => setNextModel(e.target.value)}
-            />
-            <textarea
-              className="w-full border rounded px-2 py-1 text-sm"
-              placeholder="Adjust prompt"
-              rows={3}
-              value={nextPrompt}
-              onChange={(e) => setNextPrompt(e.target.value)}
-            />
-            <button className="border rounded px-3 py-1 bg-black text-white text-sm" onClick={saveConfiguration}>
-              Save configuration
+    <div className="flex min-h-screen bg-void">
+      <Sidebar />
+      <div className="flex-1 ml-64">
+        <Header />
+        <main className="pt-24 pb-8 px-6">
+          {/* Header */}
+          <div className="mb-8 flex items-center justify-between">
+            <div>
+              <h1 className="font-display text-3xl font-bold text-text-primary mb-2">
+                Agents
+              </h1>
+              <p className="text-text-secondary">
+                Manage AI agent workers and monitor performance
+              </p>
+            </div>
+            <button className="btn-industrial flex items-center gap-2">
+              <RefreshCw className="w-4 h-4" />
+              Restart All
             </button>
           </div>
-        </section>
-      </div>
 
-      <section className="border rounded p-3">
-        <h2 className="font-medium mb-2">Plugin agents</h2>
-        <ul className="text-sm space-y-1">
-          {pluginAgents.map((agent) => (
-            <li key={agent.id}>
-              {agent.role} ({agent.model}) — {agent.totalTasks} tasks
-            </li>
-          ))}
-        </ul>
-      </section>
-    </main>
+          {/* Agents Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {agents.map((agent) => {
+              const Icon = agent.icon;
+              return (
+                <div key={agent.id} className="glass-card group">
+                  {/* Card Header */}
+                  <div className="p-6 border-b border-border">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-12 h-12 rounded border flex items-center justify-center ${
+                          agent.status === "error" 
+                            ? "bg-failed/10 border-failed/30" 
+                            : "bg-cyan/10 border-cyan/30"
+                        }`}>
+                          <Icon className={`w-6 h-6 ${
+                            agent.status === "error" ? "text-failed" : "text-cyan"
+                          }`} />
+                        </div>
+                        <div>
+                          <h3 className="font-display text-lg font-semibold text-text-primary">
+                            {agent.name}
+                          </h3>
+                          <p className="text-sm text-text-tertiary font-display uppercase tracking-wider">
+                            {agent.role}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {getStatusBadge(agent.status)}
+                        <button className="p-2 hover:bg-panel-elevated rounded transition-colors">
+                          <Settings className="w-4 h-4 text-text-secondary" />
+                        </button>
+                      </div>
+                    </div>
+                    <p className="mt-4 text-sm text-text-secondary">
+                      {agent.description}
+                    </p>
+                  </div>
+
+                  {/* Stats */}
+                  <div className="p-6 border-b border-border">
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="text-center">
+                        <p className="font-display text-2xl font-bold text-cyan">
+                          {agent.tasksCompleted.toLocaleString()}
+                        </p>
+                        <p className="text-xs text-text-tertiary font-display uppercase tracking-wider mt-1">
+                          Tasks Done
+                        </p>
+                      </div>
+                      <div className="text-center border-x border-border">
+                        <p className="font-display text-2xl font-bold text-success">
+                          {agent.successRate}%
+                        </p>
+                        <p className="text-xs text-text-tertiary font-display uppercase tracking-wider mt-1">
+                          Success Rate
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <p className="font-display text-2xl font-bold text-amber">
+                          {agent.latency}
+                        </p>
+                        <p className="text-xs text-text-tertiary font-display uppercase tracking-wider mt-1">
+                          Avg Latency
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm text-text-tertiary font-display">
+                      <Activity className="w-4 h-4" />
+                      Last active: {agent.lastActive}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {agent.status === "busy" || agent.status === "active" ? (
+                        <button className="p-2 hover:bg-panel-elevated rounded transition-colors border border-border hover:border-amber/50">
+                          <Pause className="w-4 h-4 text-amber" />
+                        </button>
+                      ) : (
+                        <button className="p-2 hover:bg-panel-elevated rounded transition-colors border border-border hover:border-cyan/50">
+                          <Play className="w-4 h-4 text-cyan" />
+                        </button>
+                      )}
+                      <button className="p-2 hover:bg-panel-elevated rounded transition-colors border border-border hover:border-text-secondary/50">
+                        <MoreVertical className="w-4 h-4 text-text-secondary" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </main>
+      </div>
+    </div>
   );
 }
-
