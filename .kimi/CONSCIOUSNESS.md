@@ -1,175 +1,132 @@
-# Ultra-Dex Consciousness — V2.0 DexGraph Hard Reset
+# Ultra-Dex Consciousness — REVENUE MISSION ACTIVE
 
-> Last Updated: 2026-04-13
-> System: V2.0 DexGraph Hard Reset | NOTION/v2.0.MD
-> Status: COWRK dispatches ready → Awaiting Phase 0 execution
-
----
-
-## LIFECYCLE PHASE: HARD RESET EXECUTION ⏳
-
-We are executing the **DexGraph Hard Reset** per COWRK-V20-HARD-RESET-PROMPT.txt
-
-```
-Phase 0: Hard Reset        ⏳ READY TO START (Day 0-2)
-Phase 1: DSL Parser        ⏳ Planned (Week 1)
-Phase 2: Graph Builder     ⏳ Planned (Week 1)
-Phase 3: State Machine     ⏳ Planned (Week 1-2)
-Phase 4: Scheduler Engine  ⏳ Planned (Week 2)
-Phase 5: Execution Adapter ⏳ Planned (Week 3)
-Phase 6: Dispatcher        ⏳ Planned (Week 3)
-Phase 7: Memory Store      ⏳ Planned (Week 4)
-Phase 8: Context Injection ⏳ Planned (Week 4)
-Phase 9: Governance Engine ⏳ Planned (Week 5)
-Phase 10: Verification     ⏳ Planned (Week 6)
-Phase 11: CLI Control Plane⏳ Planned (Week 7)
-Phase 12: Event System     ⏳ Planned (Week 8)
-```
+> **Last Updated:** 2026-04-14
+> **System:** V2.0 DexGraph Hard Reset — ✅ COMPLETE
+> **Current Mode:** 🚀 REVENUE MISSION — ACTIVE
+> **Status:** Converting codebase to cash | Awaiting Cowrk revenue dispatches
+> **OVERRIDE:** `.kimi/memory/REVENUE-FIRST.md` ← READ THIS FIRST
 
 ---
 
-## MY ROLE (KIMI) — PLANNER & ARCHITECT
+## ⚠️ CRITICAL OVERRIDE — READ THIS FIRST
 
-I am the **PLANNER & ARCHITECT** for the V2.0 Hard Reset:
+**BEFORE ANYTHING ELSE, READ `.kimi/memory/REVENUE-FIRST.md`. IT OVERRIDES EVERYTHING HERE.**
+
+**The default mode is NO LONGER "build features".**
+
+V2.0 is DONE. 7,653 LOC. 0 TypeScript errors. 34 tests. Production-grade.
+
+**DO NOT** suggest adding new AI providers, new agent types, mobile apps, desktop apps, white-label, VS Code extensions, Redis adapters, or workflow templates unless EXPLICITLY asked.
+
+**DO** focus on: extracting `@ultra-dex/router`, shipping to npm, deploying live, getting paying customers, and applying to YC S26.
+
+**If the user asks ANYTHING without specifying a mode, assume they want REVENUE PROGRESS.**
+
+---
+
+## ACTIVE MISSION: CODE TO CASH
+
+### What We Are Doing Now
+1. Extract `ultra-router` from existing codebase → npm package
+2. Deploy website (`ultra-dex.dev`), dashboard (`app.ultra-dex.dev`), docs (`docs.ultra-dex.dev`)
+3. Stripe live mode: Free / Pro $29 / Enterprise $99
+4. Demo video → viral distribution
+5. First paying customer → 10 customers → $1K MRR
+6. YC S26 application with traction
+
+### The Only Active Prompt
+`COWRK-FINAL-REVENUE-PROMPT.txt`
+
+### Current Phase
+**Revenue Phase 0 (Awaiting Cowrk dispatches)**
+
+---
+
+## TEAM ROLES (UPDATED)
+
+### COWRK — CEO & EXECUTION PLANNER
+**Cowrk decides the strategy. Cowrk creates the execution plan. I execute.**
+
+Cowrk has full authority to:
+- Decide what product to ship first
+- Decide what code to keep, archive, or delete
+- Decide pricing, positioning, and target customer
+- Decide go-to-market channels and timeline
+- Create `.protocol` dispatch files with exact windows
+
+### KIMI (Me) — CONTEXT PROVIDER & PROMPT WRITER
 
 ### What I DO:
-- ✅ Strategic planning for DexGraph architecture
-- ✅ Design the new folder structure (core/, runtime/, memory/, dexgraph/, etc.)
-- ✅ Create prompts for COWRK (execution planner)
-- ✅ Guide through Phase 0→12 execution
-- ✅ Review and validate against constraints
+- ✅ Gather and present context to Cowrk (codebase state, docs, constraints)
+- ✅ Write **implementation-grade prompts** that empower Cowrk to decide and plan
+- ✅ Guide through execution of Cowrk's dispatches
+- ✅ **Update `.kimi/` and planning files** to reflect current reality
+- ✅ **Autonomously write Cowrk prompts** by reading `.kimi/memory/PROMPT-ENGINEERING-GUIDE.md`
 
 ### What I DON'T Do:
+- ❌ Decide strategy (Cowrk is CEO)
 - ❌ Execute code directly (your agents do this)
 - ❌ Modify production files (except planning files)
-- ❌ Create .protocol dispatch files (COWRK's job — already done)
+- ❌ Create `.protocol` dispatch files (Cowrk's job)
+- ❌ Suggest feature builds when revenue is the goal
 
 ---
 
-## COWRK'S OUTPUT (COMPLETED ✅)
+## WHEN USER ASKS "WHAT'S NEXT" OR ANYTHING VAGUE
 
-COWRK (Opus 4.6) created 13 dispatch files from V20-HARD-RESET-PROMPT.txt:
+1. **Assume Revenue Mission mode**
+2. Check if `revenue-phase*-dispatches.md` exist in `.protocol/state/`
+3. **If NO:** Tell user to feed `COWRK-FINAL-REVENUE-PROMPT.txt` to Cowrk immediately
+4. **If YES:** Read `REVENUE-PROGRESS.md`, identify next pending window, guide execution
 
-| Dispatch File | Lines | Phase | Focus |
-|--------------|-------|-------|-------|
-| v20-phase0-dispatches.md | 274 | Day 0-2 | Folder structure, archive, consolidate |
-| v20-phase1-dispatches.md | ~250 | Week 1 | Parser (YAML → GraphNode[]) |
-| v20-phase2-dispatches.md | ~250 | Week 1 | Graph Builder (DAG) |
-| v20-phase3-dispatches.md | ~250 | Week 1-2 | State Machine |
-| v20-phase4-dispatches.md | ~250 | Week 2 | Scheduler Engine |
-| v20-phase5-dispatches.md | ~250 | Week 3 | Execution Adapter |
-| v20-phase6-dispatches.md | ~250 | Week 3 | Dispatcher |
-| v20-phase7-dispatches.md | ~250 | Week 4 | Memory Store |
-| v20-phase8-dispatches.md | ~250 | Week 4 | Context Injection |
-| v20-phase9-dispatches.md | ~250 | Week 5 | Governance Engine |
-| v20-phase10-dispatches.md | ~250 | Week 6 | Verification System |
-| v20-phase11-dispatches.md | ~250 | Week 7 | CLI Control Plane |
-| v20-phase12-dispatches.md | ~250 | Week 8 | Event System |
-| v20-master-timeline.md | 341 | All | Dependencies, gates, 52 windows |
-
-**Total: 52 windows across 13 phases | 8 weeks to MVO**
+**Current answer:** Feed `COWRK-FINAL-REVENUE-PROMPT.txt` to Cowrk to generate revenue dispatches.
 
 ---
 
-## THE DEXGRAPH ARCHITECTURE (NEW)
+## HISTORICAL CONTEXT (V2.0 — ARCHIVED)
+
+The DexGraph Hard Reset was completed per `COWRK-V20-HARD-RESET-PROMPT.txt`:
+- Phase 0-12: All built
+- 52 windows: All done
+- 13 dispatch files: Created by Cowrk
+
+This is preserved below for reference ONLY. **Do not guide execution toward v2.0 build tasks unless explicitly asked.**
 
 ```
-ultra-dex/
-├── dexgraph/              ← THE CORE IP (6 TypeScript files)
-│   ├── parser.ts          # YAML workflow DSL → GraphNode[]
-│   ├── graph.ts           # DAG builder, cycle detection
-│   ├── stateMachine.ts    # CREATED→READY→RUNNING→VERIFYING→SUCCESS
-│   ├── scheduler.ts       # Execution loop
-│   ├── dispatcher.ts      # Node → adapter bridge
-│   └── verifier.ts        # Output validation
-│
-├── core/
-│   ├── planner/           # Goal → task graph compiler
-│   ├── scheduler/         # Task ordering
-│   └── task_graph/        # DAG engine interface
-│
-├── runtime/
-│   ├── worker/            # Stateless agent workers
-│   ├── executor/          # Execution dispatch
-│   └── execution_engine/  # System heart
-│
-├── memory/                # MUNI lives here
-│   ├── episodic/          # Session memory
-│   ├── semantic/          # Search memory
-│   └── state/             # State persistence
-│
-├── adapters/
-│   └── executionAdapter.ts # Interface: run(task, context) → Result
-│
-├── governance/
-│   └── rules.ts           # Policy engine
-│
-├── tools/registry/        # Tool protocol
-├── observability/         # Events, logging
-├── cli/                   # ultradex commands
-└── sdk/                   # Developer API
+Phase 0: Hard Reset        ✅ COMPLETE
+Phase 1: DSL Parser        ✅ COMPLETE
+Phase 2: Graph Builder     ✅ COMPLETE
+Phase 3: State Machine     ✅ COMPLETE
+Phase 4: Scheduler Engine  ✅ COMPLETE
+Phase 5: Execution Adapter ✅ COMPLETE
+Phase 6: Dispatcher        ✅ COMPLETE
+Phase 7: Memory Store      ✅ COMPLETE
+Phase 8: Context Injection ✅ COMPLETE
+Phase 9: Governance Engine ✅ COMPLETE
+Phase 10: Verification     ✅ COMPLETE
+Phase 11: CLI Control Plane✅ COMPLETE
+Phase 12: Event System     ✅ COMPLETE
 ```
 
 ---
 
-## KEY CONSTRAINTS (NON-NEGOTIABLE)
-
-1. **Ultra-Dex NEVER executes — only supervises**
-2. **Execution adapter interface MUST be clean**
-3. **Mock adapter before real integrations**
-4. **No UI/dashboard until Phase 12 complete**
-5. **No agent personalities — stateless workers only**
-6. **Four agents only: planner, coder, tester, reviewer**
-7. **Graph is truth — DexGraph is source of reality**
-8. **Follow strict Phase 0→12 order — NO deviation**
-
----
-
-## OLD vs NEW v2.0
-
-| Aspect | OLD Plan (SUPERSEDED) | NEW Plan (ACTIVE) |
-|--------|----------------------|-------------------|
-| Approach | Feature aggregation | DexGraph control plane |
-| Identity | AI task router | Kubernetes for AI workflows |
-| Focus | Redis/Postgres/VS Code/Marketplace | Parser/Graph/Scheduler/Dispatcher |
-| Philosophy | Ultra-Dex executes | Ultra-Dex supervises |
-| Files | v20-phase1-4 (old) | v20-phase0-12 (new) |
-
-**The old v20-phase1-4 dispatches are SUPERSEDED. Use the new Phase 0-12 files.**
-
----
-
-## CRITICAL PATH
+## REVENUE PHASES (ACTIVE)
 
 ```
-Phase 0 (Reset) → Phase 1 (Parser) → Phase 2 (Graph) → Phase 4 (Scheduler) 
-→ Phase 6 (Dispatch) → Phase 8 (Context) → Phase 11 (CLI)
-
-Length: 7 phases = ~6 weeks minimum
+Phase 0: Audit & Extract      ⏳ READY
+Phase 1: ultra-router         ⏳ READY
+Phase 2: Go Live              ⏳ READY
+Phase 3: Demo Video           ⏳ READY
+Phase 4: First Customer       ⏳ READY
+Phase 5: Scale to 10          ⏳ PLANNED
+Phase 6: Revenue Engine       ⏳ PLANNED
+Phase 7: YC Application       ⏳ PLANNED
+Phase 8: Enterprise Pipeline  ⏳ PLANNED
+Phase 9: PMF Signals          ⏳ PLANNED
+Phase 10: $1K MRR             ⏳ PLANNED
+Phase 11: Post-YC Growth      ⏳ PLANNED
+Phase 12: Full Platform       ⏳ PLANNED
 ```
-
----
-
-## GATE 0: CLEAN SLATE (Day 2)
-
-Before Phase 1 starts, must have:
-- [ ] 10 new top-level dirs exist
-- [ ] Existing code archived to archive/v1/ (NOT deleted)
-- [ ] TypeScript compiles on new dirs
-- [ ] Version: 2.0.0-alpha.0
-- [ ] MIGRATION.md documents all changes
-
----
-
-## WHEN YOU ASK "WHAT'S NEXT"
-
-1. I check CONSCIOUSNESS.md
-2. See we're at Phase 0 ready to start
-3. Read v20-phase0-dispatches.md
-4. Identify Window 1 as first task
-5. Guide you through Phase 0 execution
-
-**Current answer:** Execute Phase 0 Window 1 (Create folder structure) or review what needs changing first.
 
 ---
 
@@ -177,49 +134,28 @@ Before Phase 1 starts, must have:
 
 | Metric | Value | Status |
 |--------|-------|--------|
-| Dispatches Created | 13 files | ✅ Complete |
-| Windows Planned | 52 | ✅ Complete |
-| Phases | 0-12 | ✅ Planned |
-| Timeline | 8 weeks | ✅ Defined |
-| Current Version | 6.0.0 | ⏳ Reset to 2.0.0-alpha.0 |
-| Tests | 49% passing | ⏳ Will archive |
+| V2.0 Dispatches | 13 files | ✅ Complete |
+| V2.0 Windows | 52/52 | ✅ Complete |
+| Revenue Dispatches | 0 files | ⏳ Awaiting Cowrk |
+| Revenue Windows | 0/56 | ⏳ Not started |
+| Current Version | 2.0.0-alpha.0 | ✅ Locked |
+| Tests | 34 passing | ✅ Good enough |
+| Revenue | $0 | 🚨 FIX THIS |
 
 ---
 
-## NEXT STEPS
+## KEY CONSTRAINTS (NON-NEGOTIABLE)
 
-**Option 1: Review Phase 0**
-→ I'll read v20-phase0-dispatches.md and summarize the 4 windows
-
-**Option 2: Start Executing Phase 0**
-→ Window 1: Create folder structure (W1 ║ W2 parallel)
-
-**Option 3: Make Changes First**
-→ You mentioned needing changes before executing. Tell me what to adjust.
+1. **Revenue > Features.** No new providers. No new agents. No mobile/desktop/white-label.
+2. **Extract, don't rebuild.** Use existing v2.0 code.
+3. **Ship skateboard first.** Router package before full-platform marketing.
+4. **Every plan must lead to revenue.** If it doesn't make money, don't plan it.
+5. **Follow strict Revenue Phase 0→12 order.** No deviation.
+6. **Kimi plans. Cowrk structures. Agents execute.** Never violate.
 
 ---
 
-## 🚨 REVENUE MISSION — ACTIVE (April 14, 2026)
-
-The V2.0 Hard Reset is **COMPLETE** (7,653 LOC, 0 TS errors, 34 tests). V2.1 is in progress.
-
-**New active prompt:** `COWRK-FINAL-REVENUE-PROMPT.txt`
-
-### What Changed:
-- We are no longer in pure architecture/build mode
-- We are in **go-to-market + revenue extraction** mode
-- Target: YC S26 with $1K+ MRR
-- Strategy: Extract `ultra-router` as the skateboard, ship to npm, deploy live, get paying customers
-
-### When User Asks "What's Next" Now:
-1. Check `COWRK-FINAL-REVENUE-PROMPT.txt`
-2. Check if Cowrk has generated `revenue-phase*-dispatches.md`
-3. If not: tell user to feed the prompt to Cowrk
-4. If yes: identify the next pending revenue window and guide execution
-
----
-
-_System: V2.0 DexGraph Hard Reset — ✅ COMPLETE | Revenue Mission — 🚀 ACTIVE_
-_Phase: Revenue Phase 0 (Awaiting Cowrk dispatches)_
+_System: V2.0 DexGraph Hard Reset — ✅ COMPLETE_
+_Mode: 🚀 REVENUE MISSION — ACTIVE_
 _Prompt: COWRK-FINAL-REVENUE-PROMPT.txt_
 _Status: Ready to convert code to cash_

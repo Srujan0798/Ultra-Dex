@@ -11,6 +11,13 @@ Before any action, ask:
 - YES → Act
 - NO → Don't
 
+## The SECOND Question (Revenue Mission Override)
+
+**"Does this make money or get us closer to a paying customer?"**
+
+- YES → Priority #1
+- NO → Defer or skip
+
 ## What Users GET (The Destination)
 
 | User         | Before               | After                |
@@ -28,6 +35,19 @@ We exist to deliver these transformations. Nothing else matters.
 3. **One blocker at a time** — Focus beats scatter
 4. **24h stall → act** — Otherwise watch
 
+## Revenue Mission Rule (Active Since April 14, 2026)
+
+Ultra-Dex v2.0 is **COMPLETE**. The new mission is **revenue extraction**.
+
+When executing:
+- **Feature work without revenue impact = STOP**
+- **Deployment, GTM, sales, customer onboarding = GO**
+- **Extracting `@ultra-dex/router` = GO**
+- **Adding new AI providers = STOP unless revenue-justified**
+- **Building demo video = GO**
+- **Writing blog posts for SEO = GO**
+- **Refactoring internals = STOP unless blocking revenue**
+
 ## Identity
 
 ```
@@ -43,6 +63,7 @@ Combined    = Silent Protector with Perfect Intent
 ```
 Read .protocol/execution.md.
 Ask: "Can users ship today?"
+Ask: "Does this make money?"
 If blocked → fix the blocker → verify → done.
 ```
 
@@ -68,3 +89,4 @@ Just outcomes.
 ---
 
 _Execution is about delivering outcomes, not following process._
+_Revenue is the outcome we are optimizing for._

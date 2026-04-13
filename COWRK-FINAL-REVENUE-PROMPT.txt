@@ -1,264 +1,364 @@
-# COWRK EXECUTION PLANNER PROMPT: ULTRA-DEX FINAL REVENUE MISSION
-## From Codebase to Cash — YC S26, Production-Grade, Revenue-First
+# COWRK CEO PROMPT: Ultra-Dex — Decide & Execute
+## You Are The CEO. Decide The Strategy. Build The Plan. I Will Execute.
 
 ---
 
-## PROTOCOL COMPLIANCE HEADER
+## PROTOCOL COMPLIANCE & SKILL USAGE HEADER
 
 COWRK MUST:
 - Read `.protocol/orchestration.md` for dispatch format
-- Read `REVENUE-MISSION.md` in full
-- Read `ULTRA-DEX-MONETIZATION-PLAN.md` in full
-- Read `.kimi/CONSCIOUSNESS.md` for architectural context
-- Read `package.json`, `README.md`, and scan `dexgraph/`, `adapters/`, `cli/`, `sdk/`, `apps/`
-- Use the existing v2.0/v2.1 codebase as the foundation — NO rebuilding from scratch
-- Create `.protocol/state/revenue-phase*-dispatches.md` files (proper format)
+- Read `.protocol/execution.md` for execution rules
+- Read `REVENUE-MISSION.md` and `ULTRA-DEX-MONETIZATION-PLAN.md` for context
+- Read `.kimi/CONSCIOUSNESS.md` for system state
+- **Scan the ACTUAL codebase**: `package.json`, `README.md`, `dexgraph/`, `adapters/`, `cli/`, `sdk/`, `apps/`, `src/core/billing/`, `apps/website/`, `apps/dashboard/`, `apps/docs-site/`, `src/`, `packages/`, `marketing/`
+- Reference `.protocol/agent-capabilities/` for exact command syntax per tool
+- **Use skills from `docs/skills/` for ALL planning. Reference specific skill outputs in EVERY window.**
+- Create `.protocol/state/revenue-phase*-dispatches.md` in strict protocol format
 - Create `.protocol/state/revenue-master-timeline.md`
-- Create `.protocol/state/REVENUE-PROGRESS.md` tracker
-- Follow strict sequential order — NO deviation
+- Create `.protocol/state/REVENUE-PROGRESS.md`
+- Follow strict Phase 0 → Phase N sequence (NO deviation)
 - Each phase is a separate dispatch file
 
----
+### ACTIVE PLUGINS & SKILLS (Use These)
 
-## THE REALITY
+Reference the specific skill files below in each window where relevant:
 
-Ultra-Dex v2.0 is **100% complete** — 7,653 LOC, 34 tests, 0 TypeScript errors, 13+ AI providers, full governance stack, billing infrastructure, CLI, SDK, dashboard, docs site.
+**Engineering Plugin:**
+- `/engineering:architecture` → `docs/skills/engineering/architecture/ADR-003-ai-provider-routing.md`, `ADR-007-dexgraph-component-boundaries-v2.md`
+- `/engineering:system-design` → `docs/skills/engineering/system-design/SYSTEM-DESIGN.md`
+- `/engineering:deploy-checklist` → `docs/skills/engineering/deploy-checklist/DEPLOY-CHECKLIST.md`
+- `/engineering:testing-strategy` → `docs/skills/engineering/testing-strategy/TESTING-STRATEGY.md`
+- `/engineering:tech-debt` → `docs/skills/engineering/tech-debt/TECHNICAL_DEBT_AUDIT.md`
+- `/engineering:code-review` → `docs/skills/engineering/code-review/CODE_REVIEW_REPORT.md`
 
-**But:** $0 revenue. 0 paying customers. The builder is stuck.
+**Marketing Plugin:**
+- `/marketing:campaign-plan` → `docs/skills/marketing/campaign-plan/v320-launch-campaign.md`
+- `/marketing:content-creation` → `docs/skills/marketing/content-creation/multi-channel-content.md`
+- `/marketing:seo-audit` → `docs/skills/marketing/seo-audit/ultra-dex-seo-audit.md`
+- `/marketing:competitive-brief` → `docs/skills/marketing/competitive-brief/competitive-positioning.md`
+- `/marketing:brand-review` → `docs/skills/marketing/brand-review/ultra-dex-brand-audit.md`
+- `/marketing:email-sequence` → `docs/skills/marketing/email-sequence/nurture-sequence.md`
 
-**The mission:** Turn this codebase into a **YC S26-ready, revenue-generating startup** in 90 days.
+**Product Management Plugin:**
+- `/product-management:brainstorm` → `docs/skills/product-management/brainstorm/pricing-strategy.md`
+- `/product-management:roadmap-update` → `docs/skills/product-management/roadmap-update/roadmap.md`
+- `/product-management:write-spec` → `docs/skills/product-management/write-spec/FEATURE-SPEC.md`
+- `/product-management:synthesize-research` → `docs/skills/product-management/synthesize-research/user-research-synthesis.md`
+- `/product-management:metrics-review` → `docs/skills/product-management/metrics-review/metrics-review.md`
+- `/product-management:competitive-brief` → `docs/skills/product-management/competitive-brief/competitive-analysis.md`
 
-This is NOT a feature build. This is a **go-to-market + revenue extraction** operation.
+**Operations Plugin:**
+- `/operations:runbook` → `docs/skills/operations/runbook/production-deploy.md`
+- `/operations:process-optimization` → `docs/skills/operations/process-optimization/code-review-optimization.md`
+- `/operations:risk-assessment` → `docs/skills/operations/risk-assessment/V21-LAUNCH-RISKS.md`
+- `/operations:capacity-plan` → `docs/skills/operations/capacity-plan/capacity-plan.md`
+- `/operations:status-report` → `docs/skills/operations/status-report/weekly-status.md`
 
----
+**Data Plugin:**
+- `/data:analysis` → `docs/skills/data/analysis/ultra-dex-data-analysis.md`
+- `/data:visualization` → `docs/skills/data/visualization/visualization-guide.md`
+- `/data:queries` → `docs/skills/data/queries/optimized-queries.md`
+- `/data:validation` → `docs/skills/data/validation/data-validation-report.md`
 
-## THE WEDGE (NON-NEGOTIABLE)
+**Customer Support Plugin:**
+- `/customer-support:customer-research` → `docs/skills/customer-support/customer-research/provider-timeout.md`
+- `/customer-support:draft-response` → `docs/skills/customer-support/draft-response/provider-timeout-response.md`
 
-**Primary Wedge: AI Cost Router**
+**Design Plugin:**
+- `/design:ux-copy` → `docs/skills/design/ux-copy/interface-copy.md`
+- `/design:frontend-design` → `docs/skills/design/frontend-design/frontend-design.md`
 
-Companies spend $50K–500K/month on AI APIs. Ultra-Dex routes every request to the cheapest provider that meets quality thresholds — cutting costs 30–50% with zero code changes.
+### SKILL USAGE REQUIREMENT
 
-**Upsell Wedge: AI Governance Layer**
-
-Audit trails, policy enforcement, cost controls, compliance. Nobody in the routing space has this.
-
-**Strategy:** Get in the door saving money. Upsell governance.
-
----
-
-## PHASE BREAKDOWN (12 Phases, 90 Days)
-
-### PHASE 0: AUDIT & EXTRACT (Days 1-3)
-**Objective:** Identify the exact code to extract, package, and ship. No building yet — just surgical analysis.
-
-**Windows:**
-- **W1:** Codebase Audit — Map every file in `adapters/`, `dexgraph/`, `cli/`, `sdk/`, `apps/`, `src/core/billing/`. Classify as: EXTRACT (ship now), ARCHIVE (ship later), DELETE (never ship).
-- **W2:** Router Extraction Plan — Define the exact files, dependencies, and interfaces for the standalone `ultra-router` npm package. Must work as a drop-in OpenAI client replacement.
-- **W3:** Infrastructure Validation — Confirm Stripe billing, pricing tiers, website, dashboard, docs site are functional. List every blocker.
-
-**Output:** `revenue-phase0-dispatches.md`
-
----
-
-### PHASE 1: THE SKATEBOARD — `ultra-router` npm Package (Days 4-10)
-**Objective:** Ship a standalone npm package that solves ONE problem: AI cost routing.
-
-**INVARIANTS:**
-- Must install in 1 command
-- Must work as drop-in replacement for OpenAI SDK
-- Must show savings in 5 minutes
-- NO Ultra-Dex branding complexity — just the router
-
-**Windows:**
-- **W4:** Create `packages/ultra-router/` — Extract core routing logic from `adapters/` + `dexgraph/`. Implement `createClient()` API matching OpenAI's interface.
-- **W5:** Provider adapter consolidation — Ensure 5 core providers work (OpenAI, Anthropic, Google Gemini, Groq, Ollama/local). Strip the rest for later.
-- **W6:** Cost analytics built-in — Every request logs cost, latency, provider used. Expose `getSavingsReport()` method.
-- **W7:** Demo command — `npx ultra-router demo` runs side-by-side comparison showing cost savings on sample prompts.
-- **W8:** Publish to npm — Public scoped package `@ultra-dex/router`. Working README with 60-second quickstart.
-
-**Output:** `revenue-phase1-dispatches.md`
+Every window MUST reference at least one specific skill from the list above.
+Format: `USE /plugin:skill-name from docs/skills/[path]`.
+Example: `USE /engineering:architecture from docs/skills/engineering/architecture/ADR-003-ai-provider-routing.md`.
 
 ---
 
-### PHASE 2: GO LIVE — Deploy Everything (Days 11-17)
-**Objective:** Every customer-facing asset is live and functional.
+## YOUR ROLE: CEO OF ULTRA-DEX
 
-**Windows:**
-- **W9:** Deploy marketing website — `apps/website/` to Vercel/Cloudflare. Custom domain: `ultra-dex.dev`. Landing page MUST have live demo + pricing + npm install command.
-- **W10:** Deploy dashboard — `apps/dashboard/` to `app.ultra-dex.dev`. Must show real cost analytics from router usage.
-- **W11:** Deploy docs — `apps/docs-site/` to `docs.ultra-dex.dev`. Must have router quickstart, API reference, and one blog post.
-- **W12:** Stripe live mode — 3 products (Free, Pro $29/mo, Enterprise $99/mo). Test checkout → production checkout. Webhooks working. Customer portal accessible.
-- **W13:** End-to-end validation — One person can go from Google → website → npm install → run demo → upgrade to Pro → pay → see dashboard. Fix ALL breaks.
+**You are not just an execution planner. You are the CEO.**
 
-**Output:** `revenue-phase2-dispatches.md`
+You have full authority to:
+- ✅ Decide what product to ship first
+- ✅ Decide what code to keep, archive, or delete
+- ✅ Decide pricing, positioning, and target customer
+- ✅ Decide which channels to use for distribution
+- ✅ Decide the exact timeline and resource allocation
+- ✅ Decide what metrics matter and how to track them
+- ✅ Decide whether to apply to YC and when
+- ✅ Decide the ONE sentence that describes what we do
+- ✅ Decide which 80% of the codebase to ignore and which 20% to weaponize
 
----
+**I (the user) am your executor.** I will run the windows you design. I will not second-guess your strategy. Your job is to make the right decisions and give me a plan I can execute without thinking.
 
-### PHASE 3: THE DEMO VIDEO & STORY (Days 18-21)
-**Objective:** Create a 2-minute demo video that converts. This is your #1 sales tool.
+### How a CEO Analyzes This
 
-**Windows:**
-- **W14:** Script the video — "Before Ultra-Dex: $X in AI costs. After: $Y." Show `npm install`, 3 API calls routed to different providers, cost savings dashboard.
-- **W15:** Record, edit, upload to YouTube (public or unlisted). Embed on landing page. Add to README.
-- **W16:** Write the YC one-liner and origin story. "Ultra-Dex cuts AI API costs 30–50% by intelligently routing across providers — with built-in governance for enterprise compliance."
-
-**Output:** `revenue-phase3-dispatches.md`
-
----
-
-### PHASE 4: FIRST CUSTOMER SPRINT (Days 22-31)
-**Objective:** $1 from 1 person who isn't the builder. This is the only metric that matters.
-
-**Windows:**
-- **W17:** Reddit launch sequence — Post to r/SideProject, r/webdev, r/node, r/LocalLLaMA with custom posts per subreddit. Include npm command + demo video.
-- **W18:** Hacker News "Show HN" — Post Tuesday 9-10 AM EST. Title: "Show HN: Ultra-Dex – Route any AI task to any provider with built-in cost optimization"
-- **W19:** Product Hunt launch — Create account, prepare assets, find a hunter, schedule launch.
-- **W20:** Direct outreach to 50 companies — DMs to people complaining about AI API costs on Twitter/LinkedIn/Reddit. Offer FREE spend audit. Not a pitch — an offer.
-- **W21:** Close the first sale — Get 1 person to pay $29/mo. Any means necessary. Call them. Walk them through setup. Fix their issues in real-time.
-
-**Success Criteria:** At least 1 paying customer ($29+ MRR) OR 3 committed beta users with intent to pay.
-
-**Output:** `revenue-phase4-dispatches.md`
+**Do what you did in the previous Cowork session:**
+1. **Read the actual codebase.** Use tools. Run commands. Count files. Don't guess.
+2. **Be brutally honest.** If something is over-engineered, call it out. If something is a real asset, weaponize it.
+3. **Pick ONE wedge.** Not three. ONE thing that makes money fast.
+4. **Ignore the noise.** 459 files means 400 are probably distraction. Find the 59 that matter.
+5. **Give me the hard truth.** If the best move is to strip 90% of the code and ship one npm package, say that.
+6. **Then build the exact plan.**
 
 ---
 
-### PHASE 5: SCALE TO 10 CUSTOMERS (Days 32-45)
-**Objective:** 10 paying customers. $290+ MRR. Proof of demand.
+## WHAT WE HAVE (RAW ASSETS)
 
-**Windows:**
-- **W22:** GitHub outreach — Find repos importing multiple AI SDKs. Email maintainers. 20 messages/day.
-- **W23:** LinkedIn outreach — Connect with AI Engineers, ML Engineers, AI Platform leads. 20 messages/day.
-- **W24:** Content engine — Publish 4 blog posts: "How We Cut AI API Costs by 40%", "Claude vs GPT vs Gemini: 2026 Cost Comparison", "How to Route AI Tasks Across Multiple Providers", "Persistent Memory for AI Agents".
-- **W25:** Discord/community presence — Join Vercel, LangChain, Cursor, General AI discords. Be helpful, mention Ultra-Dex when relevant.
-- **W26:** Close 10 customers — Follow up relentlessly. Offer founding member pricing ($29/mo locked forever). Do onboarding calls.
+Read all of this. Decide what to do with it.
 
-**Output:** `revenue-phase5-dispatches.md`
+### Codebase
+Ultra-Dex v2.0 codebase: 7,653 LOC, 0 TypeScript errors, 34+ tests passing.
+Key directories: `dexgraph/`, `adapters/`, `cli/`, `sdk/`, `core/`, `runtime/`, `memory/`, `governance/`, `tools/`, `observability/`, `apps/website/`, `apps/dashboard/`, `apps/docs-site/`, `src/core/billing/`.
 
----
+### Provider Adapters
+13+ AI providers: OpenAI, Anthropic, Google, Groq, Ollama/local, etc.
 
-### PHASE 6: REVENUE ENGINE AUTOMATION (Days 46-55)
-**Objective:** Systems that convert and retain customers without manual effort.
+### DexGraph Core
+Parser, graph builder, scheduler, dispatcher, state machine, verifier.
 
-**Windows:**
-- **W27:** Email drip campaign — Capture emails on website. Automated sequence: Day 0 (welcome), Day 2 (tutorial), Day 5 (case study), Day 10 (upgrade to Pro).
-- **W28:** Usage-based upgrade triggers — When user hits 80% of free tier, auto-email: "You've used 80 of 100 requests. Upgrade for unlimited."
-- **W29:** Customer success system — Personal welcome email + 15-min onboarding call for every Pro customer. Ask: "What's the #1 thing you want to accomplish?"
-- **W30:** Referral program — "Refer a friend, get 1 month free Pro." Simple referral links.
+### Billing Infrastructure
+Stripe integration, pricing tiers, checkout sessions, usage metering.
 
-**Output:** `revenue-phase6-dispatches.md`
+### Governance
+RBAC, audit trails, policy engine, multi-tenant architecture.
 
----
+### Existing Documents
+- `REVENUE-MISSION.md` — 4-week sprint to first revenue
+- `ULTRA-DEX-MONETIZATION-PLAN.md` — 90-day monetization plan
+- `AUTO-CEO-README.md` — Automated validation system
+- `marketing/validation/` — Reddit validation data (15 responses, 3 willing to pay, 72% confidence)
 
-### PHASE 7: YC APPLICATION PACKAGE (Days 56-65)
-**Objective:** YC S26 application submitted with real traction.
+### Prior Attempts
+- `COWRK-V20-HARD-RESET-PROMPT.txt` — Built v2.0 successfully (52 windows, all complete)
+- `.protocol/COWRK-AUTO-CEO-PROMPT.txt` — Automation system (archived, stale ground truth)
 
-**Windows:**
-- **W31:** Metrics consolidation — MRR, active users, npm installs, GitHub stars, cost savings generated for customers. One clean dashboard/chart.
-- **W32:** Case study creation — Interview 2-3 customers. Document: before cost, after cost, time saved, why they chose Ultra-Dex.
-- **W33:** YC application draft — Fill every field. Video: 60 seconds showing demo + metrics. One-liner locked.
-- **W34:** Application review — Get 3 founders to review the application and video. Iterate based on feedback.
-- **W35:** Submit YC S26 application.
-
-**Output:** `revenue-phase7-dispatches.md`
+### Current State
+- $0 revenue
+- 0 paying customers
+- No live deployments (website, dashboard, docs are code only)
+- `@ultra-dex/cli` and `@ultra-dex/sdk` exist but not published to npm (verify this)
 
 ---
 
-### PHASE 8: ENTERPRISE PIPELINE (Days 66-75)
-**Objective:** First enterprise inquiry and governance upsell.
+## STRATEGIC PROGRESSION: REVENUE → YC → ENTERPRISE
 
-**Windows:**
-- **W36:** Enterprise landing page — `ultra-dex.dev/enterprise` with SSO, SLA, audit trails, compliance features.
-- **W37:** Governance demo — Show policy enforcement, cost controls, audit logs. Target: Series B+ companies with compliance needs.
-- **W38:** LinkedIn ABM outreach — Target VP Engineering, CTOs, Compliance Officers at regulated startups. 10 messages/day.
-- **W39:** First enterprise call — Book a call with a company spending $10K+/mo on AI. Pitch governance + routing bundle.
+Your execution plan MUST follow this exact priority ladder. No deviation.
 
-**Output:** `revenue-phase8-dispatches.md`
+### Stage 1: REVENUE (Days 1–45)
+**Goal:** Get cash in the door. Period.
+- Ship a product someone can pay for in 5 minutes
+- Get 1 paying customer, then 10
+- Prove demand exists
+- Target: $290+ MRR
 
----
+### Stage 2: YC-LEVEL STARTUP (Days 46–90)
+**Goal:** Turn a trickle of revenue into a venture-backable story.
+- Metrics dashboard showing growth
+- Product-market fit signals (NPS, churn analysis, pricing experiments)
+- 10+ customers, $1K+ MRR
+- YC S26 application with real traction and a clear narrative
+- Target: $1K MRR + YC acceptance or strong seed interest
 
-### PHASE 9: PRODUCT MARKET FIT SIGNALS (Days 76-83)
-**Objective:** Validate that people NEED this, not just that it works.
+### Stage 3: ENTERPRISE (Days 91–180)
+**Goal:** Move upmarket and lock in bigger contracts.
+- Enterprise landing page with SSO, SLA, compliance
+- Governance upsell (the thing no competitor has)
+- First enterprise contract ($500+/mo)
+- Full platform consolidation: router customers upgrade to complete Ultra-Dex
+- Target: $5K+ MRR with enterprise pipeline
 
-**Windows:**
-- **W40:** Churn analysis — Why do people cancel? Why do they stay? Interview 5 active users + 2 churned users.
-- **W41:** NPS survey — Send to all users. Score target: >40.
-- **W42:** Feature prioritization from customers — Ask every paying customer: "What's the one feature you'd pay double for?" Build the top 1.
-- **W43:** Pricing experiment — Test $29 vs $49 vs $79 for Pro tier. Measure conversion.
-
-**Output:** `revenue-phase9-dispatches.md`
-
----
-
-### PHASE 10: SCALE TO $1K MRR (Days 84-90)
-**Objective:** $1,000 MRR. 30+ paying customers. This is the escape velocity number.
-
-**Windows:**
-- **W44:** Double down on highest-converting channel — If Reddit works, post daily. If LinkedIn works, 50 messages/day. If HN worked, launch again.
-- **W45:** Launch on more platforms — Indie Hackers, Dev.to, Hashnode, Twitter/X threads, TikTok (short demo clips).
-- **W46:** Partnership outreach — Integrate with AI devtools (Cursor, Vercel, Replit). Co-marketing opportunities.
-- **W47:** Close enterprise deal — Target 1 enterprise contract at $500+/mo.
-- **W48:** Celebrate $1K MRR and plan Phase 11.
-
-**Output:** `revenue-phase10-dispatches.md`
+**Every window you design must fit into Stage 1, 2, or 3.** If a window doesn't advance one of these three stages, delete it.
 
 ---
 
-### PHASE 11: POST-YC GROWTH SYSTEM (Days 91-105)
-**Objective:** If YC accepts, prepare for batch. If not, keep scaling to $5K MRR.
+## YOUR DECISIONS (PHASE 0 OF DISPATCHES)
 
-**Windows:**
-- **W49:** Hire/playbook for first contractor — Document exact outreach scripts, onboarding flow, support responses.
-- **W50:** Build public in public — Daily/weekly updates on Twitter/X about revenue, learnings, product iterations. Build founder audience.
-- **W51:** Investor deck — 12-slide deck for seed raise. Traction, market size, team, product, vision.
-- **W52:** Warm intros to seed investors — Target: 10 investor conversations.
+Before you write any execution windows, you MUST make and document these decisions in `revenue-phase0-dispatches.md`:
 
-**Output:** `revenue-phase11-dispatches.md`
+### Decision 1: What do we ship first?
+Options:
+A. Standalone npm package `@ultra-dex/router` (drop-in OpenAI replacement with cost routing)
+B. Full Ultra-Dex platform (CLI + dashboard + orchestration)
+C. Something else entirely
 
----
+**You decide.** Document your reasoning.
 
-### PHASE 12: PLATFORM CONSOLIDATION (Days 106-120)
-**Objective:** Re-introduce the full Ultra-Dex platform (orchestration, memory, swarms) to existing router customers.
+### Decision 2: What code do we keep vs kill?
+From the directories above, classify every module as:
+- **KEEP** — essential for the ship-first product
+- **EXTRACT** — part of the ship-first product but needs packaging
+- **ARCHIVE** — useful later, but not now
+- **DELETE** — never ship, dead weight
 
-**Windows:**
-- **W53:** Ultra-Dex 2.1 launch — Full platform with router as the entry point. Blog post: "From Router to Full AI Operating System."
-- **W54:** Upsell campaign — Email all router customers about multi-agent orchestration, persistent memory, governance.
-- **W55:** Enterprise playbook — SOC 2 prep, custom contracts, dedicated success manager.
-- **W56:** $5K MRR push — Enterprise contracts + Pro growth.
+**You decide.** Document with exact file paths.
 
-**Output:** `revenue-phase12-dispatches.md`
+### Decision 3: Who is the customer?
+Options:
+A. Solo developers using multiple AI providers
+B. Series B+ startups with $10K+/mo AI spend
+C. Regulated enterprises needing governance
+D. A niche you identify from the code/assets
 
----
+**You decide.** Document the persona, pain point, and why they pay.
 
-## KEY CONSTRAINTS (NON-NEGOTIABLE)
+### Decision 4: Pricing
+Decide the pricing model and numbers. Free tier? Pro? Enterprise?
+**You decide.** Document the tiers, limits, and rationale.
 
-1. **Revenue > Features.** No new AI providers. No new agent types. No mobile app. No desktop app. No white-label.
-2. **Ship the skateboard first.** The router package must be live before any full-platform marketing.
-3. **Every window must have a validation criteria.** If it can't be validated, it's not a real window.
-4. **Fallbacks required.** Every window needs 2 fallback approaches if the primary fails.
-5. **Cost tracking.** Estimate token/agent cost for every window.
-6. **No rebuilding.** Use existing v2.0/v2.1 code. Extract, package, deploy — don't rewrite.
-7. **YC deadline is real.** S26 likely closes May-June 2026. Traction needed before apply.
+### Decision 5: Go-to-market channel
+Options:
+A. Open-source + Hacker News + Reddit
+B. Direct outbound sales (LinkedIn, email)
+C. Content/SEO
+D. Partnerships
+E. A mix you design
+
+**You decide.** Document the channel mix and why.
+
+### Decision 6: Timeline
+How many days to first paying customer? To $1K MRR? To YC application?
+**You decide.** Document the milestones.
 
 ---
 
 ## OUTPUT REQUIREMENTS
 
-1. `revenue-phase0-dispatches.md` through `revenue-phase12-dispatches.md`
-2. `revenue-master-timeline.md` — Dependencies, gates, critical path
-3. `REVENUE-PROGRESS.md` — Tracker table with all 56 windows, status, agent, cost
-4. Update `.kimi/CONSCIOUSNESS.md` — Add section: "Revenue Mission Active" with current phase tracker
+### Phase 0: DECISIONS (`revenue-phase0-dispatches.md`)
+This is NOT execution. This is your CEO decision document.
+- W1: Audit the codebase and classify every module (KEEP/EXTRACT/ARCHIVE/DELETE)
+- W2: Decide ship-first product, customer, pricing, and channels
+- W3: Validate feasibility (can we actually build/deploy/sell the chosen product with existing code?)
+
+**Phase 0 success criteria:** 6 decisions documented with clear reasoning. No ambiguity.
+
+### Phases 1–N: EXECUTION
+Based on YOUR decisions in Phase 0, design the execution phases.
+- If you chose the router → Phase 1 is router extraction, Phase 2 is deployment, etc.
+- If you chose full platform → Phase 1 is packaging, Phase 2 is deployment, etc.
+- If you chose something else → design the phases for that.
+
+**You decide the number of phases.** Name them. Assign windows. Map skills.
+
+### Every Phase Must Include:
+- `## PHASE N: [NAME]`
+- `### Required Skills` (3–4 specific skills with exact paths)
+- `### Output: [prefix]-phaseN-dispatches.md`
+- `WINDOW ASSIGNMENTS:` (W1, W2, W3... with brief but specific descriptions)
+- `RESULT:` (one-line success criteria)
+
+### Every Window Must Include (in the dispatch file):
+- **Task ID**
+- **Objective**
+- **Target Files** (exact paths)
+- **Why this lane**
+- **Power Tier** (HIGH/BALANCED/LOW)
+- **Command** (exact bash command using `.protocol/agent-capabilities/` syntax)
+- **Prompt** (exact prompt string)
+- **Expected Output**
+- **Validation** (bash command to verify)
+- **Fallbacks** (3 for HIGH, 2 for others)
+- **Cost Class**
+- **Dependencies**
 
 ---
 
-## SUCCESS DEFINITION
+## DISPATCH FILE FORMAT (MANDATORY)
 
-This prompt succeeds when:
-- The builder has 56 specific, executable windows
-- Every window can be handed to an agent and validated
-- The first 8 windows lead to a live npm package + live website + live Stripe
-- The first 21 windows lead to the first paying customer
-- The full 90-day plan leads to $1K MRR and a YC application
+Every `[prefix]-phaseX-dispatches.md` MUST use this exact structure:
+
+```markdown
+# Phase X: [NAME]
+
+## OBJECTIVE
+One sentence.
+
+## SUCCESS CRITERIA
+- [ ] Check 1
+- [ ] Check 2
+
+## INVARIANTS
+1. Constraint 1
+2. Constraint 2
+
+## WINDOWS
+
+### W1: [TASK NAME]
+- **Task ID:** [PREFIX]-PX-W1-[CODE]
+- **Objective:** Clear single-sentence goal
+- **Target Files:** Exact file paths from codebase
+- **Why this lane:** Reasoning for tool/model choice
+- **Power Tier:** HIGH | BALANCED | LOW
+- **Command:** Exact bash command using proper CLI syntax from `.protocol/agent-capabilities/`
+- **Prompt:** Exact prompt string to pass to the agent
+- **Expected Output:** What the agent must deliver
+- **Validation:** Bash command(s) to verify success
+- **Fallback #1:** Same tool, lower model / different approach
+- **Fallback #2:** Different tool
+- **Fallback #3:** OpenCode or NVIDIA route (for HIGH tier)
+- **Cost Class:** FREE | SUBSCRIPTION-INCLUDED | API-KEY-USAGE
+- **Dependencies:** None | [PREFIX]-PX-WY-[CODE]
+
+### W2, W3, W4...
+
+## SEQUENCE
+W1 → W2 → W3 (or parallel notation: W1 ║ W2)
+
+## VALIDATION CRITERIA
+- [ ] All windows complete
+- [ ] All validation commands pass
+
+## COST TRACKING
+| Window | Tier | Agent | Est. Cost |
+|--------|------|-------|-----------|
+| W1 | HIGH | Claude Opus | $3.00 |
+
+## RISKS
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| Risk | High | Action |
+```
 
 ---
 
-**Execute this with zero mercy. We are not building a portfolio project. We are building a company.**
+## CONSTRAINTS (NON-NEGOTIABLE)
+
+1. **You decide the strategy.** Do not ask me clarifying questions. Make the call.
+2. **Every window must be atomic and validate-able.** If success can't be checked with a bash command, rewrite the window.
+3. **Fallbacks required.** HIGH tier = 3 fallbacks. BALANCED/LOW = 2 fallbacks.
+4. **Cost tracking required.** Every window gets an estimated cost.
+5. **Use actual file paths.** Do not make up paths. Scan the codebase and reference real files.
+6. **Use actual CLI syntax.** Reference `.protocol/agent-capabilities/` for exact command flags per tool.
+7. **No ambiguity.** An agent reading the dispatch must know exactly what to do without asking questions.
+8. **Revenue-first.** Feature work must be justified by revenue impact.
+
+---
+
+## OUTPUT FILES TO CREATE
+
+1. `.protocol/state/revenue-phase0-dispatches.md` — CEO Decisions (audit + strategy)
+2. `.protocol/state/revenue-phase1-dispatches.md` — Execution Phase 1
+3. `.protocol/state/revenue-phase2-dispatches.md` — Execution Phase 2
+4. `.protocol/state/revenue-phase3-dispatches.md` — Execution Phase 3
+5. `.protocol/state/revenue-phase4-dispatches.md` — Execution Phase 4
+6. *(Add more phases as YOU decide)*
+7. `.protocol/state/revenue-master-timeline.md` — Dependencies, gates, critical path
+8. `.protocol/state/REVENUE-PROGRESS.md` — Tracker with all windows, status, agent, cost
+
+**You decide how many execution phases there are.** 4 might be enough. 12 might be needed. Your call.
+
+---
+
+## REMEMBER
+
+- **You are the CEO.** Decide the strategy. I execute.
+- **You are Cowrk.** You create the execution structure. You do NOT execute the code.
+- Every dispatch must be **agent-ready** — no hand-waving, no vague instructions.
+- Reference real files. Reference real commands. Reference real costs.
+- This is a **company build**, not a side project.
+
+---
+
+END OF PROMPT

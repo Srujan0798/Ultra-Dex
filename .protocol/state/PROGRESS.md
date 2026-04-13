@@ -126,14 +126,22 @@
 
 ---
 
-## Next Steps (Post V2.0)
+## Next Steps (Post V2.0) — SUPERSEDED BY REVENUE MISSION
 
-1. Add Redis cache adapter
-2. Add more LLM providers (Google, Cohere, etc.)
-3. Implement workflow versioning
-4. Add workflow templates marketplace
-5. Build web dashboard
-6. Performance optimization pass
+> **As of April 14, 2026, the old post-V2.0 feature roadmap is ABANDONED.**
+> 
+> The new mission is **Revenue First**: extract `ultra-router`, ship to npm, deploy live assets, get paying customers, and apply to YC S26.
+> 
+> **Active prompt:** `COWRK-FINAL-REVENUE-PROMPT.txt`
+> **Active tracker:** `.protocol/state/REVENUE-PROGRESS.md` (to be created by Cowrk)
+
+Old items (kept for archive only):
+- ~~Add Redis cache adapter~~
+- ~~Add more LLM providers~~
+- ~~Implement workflow versioning~~
+- ~~Add workflow templates marketplace~~
+- ~~Build web dashboard~~
+- ~~Performance optimization pass~~
 
 ---
 
