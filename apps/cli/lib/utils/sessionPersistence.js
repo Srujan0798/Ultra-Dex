@@ -110,7 +110,7 @@ class SessionPersistence {
       );
 
       // Index keywords for search
-      const keywords = this.extractKeywords(decision + ' ' + task);
+      const keywords = Array.from(this.extractKeywords(decision + ' ' + task));
       if (keywords.length > 0) {
         const placeholders = keywords.map(() => '(?, ?, ?)').join(', ');
         const values = [];
