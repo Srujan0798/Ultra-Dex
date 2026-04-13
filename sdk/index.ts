@@ -139,3 +139,15 @@ export {
   ErrorCategory,
   ErrorSeverity,
 } from '../dexgraph/errors.js';
+
+// ── Cache (V2.1) ──────────────────────────────────────────────────────────────
+export {
+  RedisCacheAdapter,
+  createRedisCache,
+} from '../cache/index.js';
+
+export type {
+  RedisAdapterConfig,
+  CacheEntry,
+  CacheStats,
+} from '../cache/index.js';
