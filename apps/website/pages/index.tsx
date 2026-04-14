@@ -122,10 +122,10 @@ export default function Home() {
                     <span className="text-[#00d4ff]">const</span> dex = <span className="text-[#00d4ff]">new</span> UltraDex()
                   </div>
                   <div className="mt-1 text-white">
-                    dex.enableRouter({{" "}}<span className="text-[#ff9900]">{"{ strategy: 'cheapest' }"}</span>)
+                    dex.enableRouter({' '}<span className="text-[#ff9900]">{"{ strategy: 'cheapest' }"}</span>)
                   </div>
                   <div className="mt-1 text-white">
-                    <span className="text-[#00d4ff]">await</span> dex.chat([{"{ "}<span className="text-[#ff9900]">role</span>: <span className="text-[#ff9900]">&apos;user&apos;</span>, <span className="text-[#ff9900]">content</span>: <span className="text-[#ff9900]">&apos;Hello&apos;</span> {"}"}])
+                    <span className="text-[#00d4ff]">await</span> dex.chat([{'{ '}<span className="text-[#ff9900]">role</span>: <span className="text-[#ff9900]">&apos;user&apos;</span>, <span className="text-[#ff9900]">content</span>: <span className="text-[#ff9900]">&apos;Hello&apos;</span> {'}'}])
                   </div>
                   <div className="mt-4 text-[#10b981]">→ Routed to cheapest provider in 142ms</div>
                 </div>
