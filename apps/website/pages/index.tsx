@@ -4,18 +4,18 @@ import { Terminal, Cpu, Activity, Zap, ArrowRight, Play } from 'lucide-react';
 
 export default function Home() {
   const stats = [
-    { value: '211K+', label: 'Lines Orchestrated', color: 'cyan' },
-    { value: '31', label: 'Core Modules', color: 'amber' },
-    { value: '152', label: 'CLI Commands', color: 'green' },
-    { value: '18', label: 'Agent Types', color: 'purple' },
+    { value: 'v1.0.0', label: 'Latest Release', color: 'cyan' },
+    { value: '4', label: 'Routing Strategies', color: 'amber' },
+    { value: '13+', label: 'AI Providers', color: 'green' },
+    { value: '0', label: 'Cost to Start', color: 'purple' },
   ];
 
   const features = [
     {
       icon: <Terminal className="w-6 h-6" />,
-      title: 'DexGraph Engine',
-      description: 'Deterministic workflow orchestration with DAG-based task graphs. State machines ensure reliable execution from goal to completion.',
-      highlights: ['YAML-defined workflows', 'Dependency resolution', 'Automatic retries'],
+      title: 'SmartRouter SDK',
+      description: 'Open-source TypeScript SDK that routes AI calls across providers with automatic failover, cost tracking, and circuit breakers.',
+      highlights: ['4 routing strategies', 'p50/p95/p99 latency tracking', 'Automatic failover'],
     },
     {
       icon: <Cpu className="w-6 h-6" />,
@@ -34,9 +34,9 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Ultra-Dex — AI Workflow Control Plane</title>
-        <meta name="description" content="Deterministic orchestration for AI agents. Build the brain, delegate the hands." />
-        <meta name="keywords" content="AI orchestration, workflow engine, multi-agent, DexGraph" />
+        <title>Ultra-Dex — AI Cost Router</title>
+        <meta name="description" content="Route AI calls across providers. Cut costs 30-50%. Automatic failover." />
+        <meta name="keywords" content="AI router, cost optimization, multi-provider, OpenAI, Anthropic, SDK" />
       </Head>
 
       {/* Hero Section */}
@@ -63,30 +63,30 @@ export default function Home() {
             <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-[#00d4ff]/30 bg-[#00d4ff]/5 mb-8">
               <span className="w-1.5 h-1.5 rounded-full bg-[#00d4ff] animate-pulse" />
               <span className="text-xs font-mono text-[#00d4ff] uppercase tracking-wider">
-                Now in v2.0
+                @ultra-dex/sdk v1.0.0 is live
               </span>
             </div>
 
             {/* Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-7xl font-semibold text-white leading-[0.95] tracking-tight mb-8">
-              AI Workflow
+              Route AI calls.
               <br />
-              <span className="text-gradient-cyan">Control Plane</span>
+              <span className="text-gradient-cyan">Cut costs 30-50%.</span>
             </h1>
 
             {/* Description */}
             <p className="text-lg sm:text-xl text-[#a0a0a8] max-w-2xl mb-10 leading-relaxed">
-              Ultra-Dex is a deterministic orchestration system that transforms high-level goals 
-              into governed, multi-agent, verifiable workflows.
+              Ultra-Dex is an open-source AI router that sits between your app and AI providers. 
+              Automatic failover, cost tracking, and circuit breakers — with zero code changes.
             </p>
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
-                href="/get-started"
+                href="https://www.npmjs.com/package/@ultra-dex/sdk"
                 className="inline-flex items-center justify-center gap-2 px-8 py-4 text-sm font-medium border border-[#00d4ff] text-[#00d4ff] hover:bg-[#00d4ff]/10 hover:shadow-[0_0_30px_rgba(0,212,255,0.3)] transition-all group"
               >
-                <span>Get Started</span>
+                <span>npm install @ultra-dex/sdk</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link
@@ -107,40 +107,27 @@ export default function Home() {
                   <span className="w-3 h-3 rounded-full bg-[#ff5f56]" />
                   <span className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
                   <span className="w-3 h-3 rounded-full bg-[#27ca40]" />
-                  <span className="ml-4 text-xs text-[#6b7280] font-mono">ultradex run workflow.dex</span>
+                  <span className="ml-4 text-xs text-[#6b7280] font-mono">npm install @ultra-dex/sdk</span>
                 </div>
                 {/* Terminal Content */}
                 <div className="p-6 font-mono text-sm">
-                  <div className="text-[#6b7280]"># Define your workflow</div>
+                  <div className="text-[#6b7280]"># 5-line setup</div>
                   <div className="mt-2">
-                    <span className="text-[#00d4ff]">workflow</span>
-                    <span className="text-white">:</span>
+                    <span className="text-[#00d4ff]">import</span>
+                    <span className="text-white"> {'{ UltraDex }'} </span>
+                    <span className="text-[#00d4ff]">from</span>
+                    <span className="text-[#ff9900]"> &quot;@ultra-dex/sdk&quot;</span>
                   </div>
-                  <div className="ml-4 text-white">
-                    name: <span className="text-[#ff9900]">&quot;Build Feature&quot;</span>
+                  <div className="mt-2 text-white">
+                    <span className="text-[#00d4ff]">const</span> dex = <span className="text-[#00d4ff]">new</span> UltraDex()
                   </div>
-                  <div className="ml-4 text-white">
-                    steps:
+                  <div className="mt-1 text-white">
+                    dex.enableRouter({{" "}}<span className="text-[#ff9900]">{"{ strategy: 'cheapest' }"}</span>)
                   </div>
-                  <div className="ml-8">
-                    <span className="text-[#a0a0a8]">- </span>
-                    <span className="text-[#00d4ff]">planner</span>
-                    <span className="text-[#a0a0a8]"> → </span>
-                    <span className="text-[#6b7280]">architect</span>
+                  <div className="mt-1 text-white">
+                    <span className="text-[#00d4ff]">await</span> dex.chat([{"{ "}<span className="text-[#ff9900]">role</span>: <span className="text-[#ff9900]">&apos;user&apos;</span>, <span className="text-[#ff9900]">content</span>: <span className="text-[#ff9900]">&apos;Hello&apos;</span> {"}"}])
                   </div>
-                  <div className="ml-8">
-                    <span className="text-[#a0a0a8]">- </span>
-                    <span className="text-[#00d4ff]">architect</span>
-                    <span className="text-[#a0a0a8]"> → </span>
-                    <span className="text-[#6b7280]">coder</span>
-                  </div>
-                  <div className="ml-8">
-                    <span className="text-[#a0a0a8]">- </span>
-                    <span className="text-[#00d4ff]">coder</span>
-                    <span className="text-[#a0a0a8]"> → </span>
-                    <span className="text-[#6b7280]">tester</span>
-                  </div>
-                  <div className="mt-4 text-[#10b981]">✓ Workflow complete (2.4s)</div>
+                  <div className="mt-4 text-[#10b981]">→ Routed to cheapest provider in 142ms</div>
                 </div>
               </div>
             </div>
@@ -254,24 +241,24 @@ export default function Home() {
       <section className="py-24 border-t border-[#2a2a35]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-semibold text-white mb-6">
-            Ready to orchestrate your AI workflows?
+            Ready to cut your AI bill?
           </h2>
           <p className="text-lg text-[#6b7280] max-w-2xl mx-auto mb-10">
-            Start building deterministic, multi-agent workflows with Ultra-Dex today.
+            Start routing AI calls intelligently with Ultra-Dex today.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link
-              href="/get-started"
+              href="https://www.npmjs.com/package/@ultra-dex/sdk"
               className="inline-flex items-center justify-center gap-2 px-8 py-4 text-sm font-medium border border-[#00d4ff] text-[#00d4ff] hover:bg-[#00d4ff]/10 hover:shadow-[0_0_30px_rgba(0,212,255,0.3)] transition-all"
             >
-              <span>Get Started</span>
+              <span>Install the SDK</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
-              href="/docs"
+              href="/pricing"
               className="inline-flex items-center justify-center gap-2 px-8 py-4 text-sm font-medium border border-[#2a2a35] text-[#a0a0a8] hover:border-[#00d4ff]/50 hover:text-white transition-all"
             >
-              <span>Read Documentation</span>
+              <span>See Pricing</span>
             </Link>
           </div>
         </div>
