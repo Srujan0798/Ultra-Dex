@@ -1,5 +1,6 @@
 import Stripe from 'stripe';
 import { PRICING_TIERS, getTierById, PricingTier } from './pricing-tiers.js';
+import { initBillingDb, getRow, run, query } from './billing-db.js';
 import {
   logSubscriptionCreated,
   logPaymentSucceeded,
@@ -29,10 +30,27 @@ export interface UsageRecord {
   timestamp: Date;
 }
 
-// In-memory stores (replace with database in production)
-const subscriptions = new Map<string, Subscription>();
-const customerIds = new Map<string, string>();
-const usageRecords: UsageRecord[] = [];
+let dbInitialized = false;
+
+async function ensureDb() {
+  if (!dbInitialized) {
+    await initBillingDb();
+    dbInitialized = true;
+  }
+}
+
+function rowToSubscription(row: any): Subscription {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    customerId: row.customer_id,
+    tierId: row.tier_id,
+    status: row.status,
+    currentPeriodStart: new Date(row.current_period_start),
+    currentPeriodEnd: new Date(row.current_period_end),
+    cancelAtPeriodEnd: !!row.cancel_at_period_end,
+  };
+}
 
 export class BillingService {
   async createCustomer(email: string, name: string): Promise<string> {
@@ -40,9 +58,7 @@ export class BillingService {
       const customer = await stripe.customers.create({
         email,
         name,
-        metadata: {
-          source: 'ultra-dex',
-        },
+        metadata: { source: 'ultra-dex' },
       });
       return customer.id;
     } catch (error) {
@@ -52,63 +68,93 @@ export class BillingService {
   }
 
   private async getOrCreateCustomer(userId: string, email: string, name: string): Promise<string> {
-    const existing = customerIds.get(userId);
+    await ensureDb();
+    const existing = await getRow('SELECT customer_id FROM billing_customers WHERE user_id = ?', [userId]);
     if (existing) {
-      return existing;
+      return existing.customer_id;
     }
 
     const customerId = await this.createCustomer(email, name);
-    customerIds.set(userId, customerId);
+    await run('INSERT INTO billing_customers (user_id, customer_id, email, name) VALUES (?, ?, ?, ?)', [
+      userId,
+      customerId,
+      email,
+      name,
+    ]);
     return customerId;
   }
 
-  async createSubscription(
-    userId: string,
-    tierId: string,
-    customerId: string
-  ): Promise<Subscription> {
+  async createSubscription(userId: string, tierId: string, customerId: string): Promise<Subscription> {
+    await ensureDb();
     const tier = getTierById(tierId);
     if (!tier) {
       throw new Error('Invalid tier');
     }
 
     try {
-      let stripeSubscription: Stripe.Subscription;
-
       if (tierId === 'free') {
-        // Free tier - no Stripe subscription needed
-        const subscription: Subscription = {
-          id: `sub_free_${userId}`,
+        const id = `sub_free_${userId}`;
+        const now = new Date();
+        const end = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        await run(
+          `INSERT INTO billing_subscriptions (id, user_id, customer_id, tier_id, status, current_period_start, current_period_end, cancel_at_period_end)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+           ON CONFLICT(user_id) DO UPDATE SET
+             id = excluded.id,
+             tier_id = excluded.tier_id,
+             status = excluded.status,
+             current_period_start = excluded.current_period_start,
+             current_period_end = excluded.current_period_end,
+             cancel_at_period_end = excluded.cancel_at_period_end`,
+          [id, userId, customerId, tierId, 'active', now.toISOString(), end.toISOString(), 0]
+        );
+
+        logSubscriptionCreated(userId, tierId, id, { tier: tier.name });
+        return {
+          id,
           userId,
           customerId,
           tierId,
           status: 'active',
-          currentPeriodStart: new Date(),
-          currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          currentPeriodStart: now,
+          currentPeriodEnd: end,
           cancelAtPeriodEnd: false,
         };
-        subscriptions.set(userId, subscription);
-        customerIds.set(userId, customerId);
-
-        logSubscriptionCreated(userId, tierId, subscription.id, { tier: tier.name });
-        return subscription;
       }
 
-      // Create Stripe subscription for paid tiers
       const priceId = this.getStripePriceId(tierId);
       if (!priceId) {
         throw new Error('Stripe price ID not configured for tier: ' + tierId);
       }
 
-      stripeSubscription = await stripe.subscriptions.create({
+      const stripeSubscription = await stripe.subscriptions.create({
         customer: customerId,
         items: [{ price: priceId }],
-        metadata: {
-          userId,
-          tierId,
-          source: 'ultra-dex',
-        },
+        metadata: { userId, tierId, source: 'ultra-dex' },
       });
+
+      await run(
+        `INSERT INTO billing_subscriptions (id, user_id, customer_id, tier_id, status, current_period_start, current_period_end, cancel_at_period_end)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+         ON CONFLICT(user_id) DO UPDATE SET
+           id = excluded.id,
+           customer_id = excluded.customer_id,
+           tier_id = excluded.tier_id,
+           status = excluded.status,
+           current_period_start = excluded.current_period_start,
+           current_period_end = excluded.current_period_end,
+           cancel_at_period_end = excluded.cancel_at_period_end`,
+        [
+          stripeSubscription.id,
+          userId,
+          customerId,
+          tierId,
+          stripeSubscription.status,
+          new Date(stripeSubscription.current_period_start * 1000).toISOString(),
+          new Date(stripeSubscription.current_period_end * 1000).toISOString(),
+          stripeSubscription.cancel_at_period_end ? 1 : 0,
+        ]
+      );
 
       const subscription: Subscription = {
         id: stripeSubscription.id,
@@ -121,14 +167,7 @@ export class BillingService {
         cancelAtPeriodEnd: stripeSubscription.cancel_at_period_end,
       };
 
-      subscriptions.set(userId, subscription);
-      customerIds.set(userId, customerId);
-
-      logSubscriptionCreated(userId, tierId, subscription.id, {
-        tier: tier.name,
-        price: tier.price,
-      });
-
+      logSubscriptionCreated(userId, tierId, subscription.id, { tier: tier.name, price: tier.price });
       return subscription;
     } catch (error) {
       logError('Failed to create subscription', error as Error, { userId, tierId });
@@ -137,17 +176,18 @@ export class BillingService {
   }
 
   private getStripePriceId(tierId: string): string | null {
-    // Map tier IDs to Stripe Price IDs
-    // These should be set as environment variables in production
     const priceMap: Record<string, string> = {
       pro: process.env.STRIPE_PRICE_PRO || '',
+      dexgraph: process.env.STRIPE_PRICE_DEXGRAPH || '',
       enterprise: process.env.STRIPE_PRICE_ENTERPRISE || '',
     };
     return priceMap[tierId] || null;
   }
 
   async getSubscription(userId: string): Promise<Subscription | null> {
-    return subscriptions.get(userId) || null;
+    await ensureDb();
+    const row = await getRow('SELECT * FROM billing_subscriptions WHERE user_id = ?', [userId]);
+    return row ? rowToSubscription(row) : null;
   }
 
   async createCheckoutSession(
@@ -169,7 +209,6 @@ export class BillingService {
     }
 
     const customerId = await this.getOrCreateCustomer(userId, email, name);
-    customerIds.set(userId, customerId);
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
@@ -178,9 +217,7 @@ export class BillingService {
       success_url: successUrl,
       cancel_url: cancelUrl,
       metadata: { userId, tierId },
-      subscription_data: {
-        metadata: { userId, tierId },
-      },
+      subscription_data: { metadata: { userId, tierId } },
     });
 
     if (!session.url) {
@@ -191,8 +228,9 @@ export class BillingService {
   }
 
   async createPortalSession(userId: string, returnUrl: string): Promise<{ url: string }> {
-    const subscription = subscriptions.get(userId);
-    const customerId = subscription?.customerId || customerIds.get(userId);
+    await ensureDb();
+    const row = await getRow('SELECT customer_id FROM billing_customers WHERE user_id = ?', [userId]);
+    const customerId = row?.customer_id;
 
     if (!customerId) {
       throw new Error('Customer not found for user');
@@ -209,8 +247,9 @@ export class BillingService {
   async listInvoices(
     userId: string
   ): Promise<Array<{ date: string; amount: number; status: string; pdfUrl?: string }>> {
-    const subscription = subscriptions.get(userId);
-    const customerId = subscription?.customerId || customerIds.get(userId);
+    await ensureDb();
+    const row = await getRow('SELECT customer_id FROM billing_customers WHERE user_id = ?', [userId]);
+    const customerId = row?.customer_id;
 
     if (!customerId) {
       return [];
@@ -227,20 +266,20 @@ export class BillingService {
 
   async cancelSubscription(userId: string): Promise<void> {
     try {
-      const sub = subscriptions.get(userId);
+      const sub = await this.getSubscription(userId);
       if (!sub) {
         throw new Error('Subscription not found');
       }
 
-      // Cancel Stripe subscription if it's a paid tier
       if (sub.tierId !== 'free' && !sub.id.startsWith('sub_free_')) {
-        await stripe.subscriptions.update(sub.id, {
-          cancel_at_period_end: true,
-        });
+        await stripe.subscriptions.update(sub.id, { cancel_at_period_end: true });
       }
 
-      sub.cancelAtPeriodEnd = true;
-      sub.status = 'canceled';
+      await run('UPDATE billing_subscriptions SET status = ?, cancel_at_period_end = ? WHERE user_id = ?', [
+        'canceled',
+        1,
+        userId,
+      ]);
 
       logSubscriptionCancelled(userId, sub.id, 'user_requested');
     } catch (error) {
@@ -256,7 +295,6 @@ export class BillingService {
           const invoice = event.data.object as Stripe.Invoice;
           const userId = invoice.metadata?.userId;
           const subscriptionId = invoice.subscription as string;
-
           if (userId) {
             logPaymentSucceeded(userId, (invoice.amount_paid || 0) / 100, subscriptionId, {
               invoiceId: invoice.id,
@@ -270,11 +308,8 @@ export class BillingService {
           const subscription = event.data.object as Stripe.Subscription;
           const userId = subscription.metadata?.userId;
           const tierId = subscription.metadata?.tierId;
-
           if (userId && tierId) {
-            logSubscriptionCreated(userId, tierId, subscription.id, {
-              status: subscription.status,
-            });
+            logSubscriptionCreated(userId, tierId, subscription.id, { status: subscription.status });
           }
           break;
         }
@@ -282,13 +317,8 @@ export class BillingService {
         case 'customer.subscription.deleted': {
           const subscription = event.data.object as Stripe.Subscription;
           const userId = subscription.metadata?.userId;
-
           if (userId) {
-            const localSub = subscriptions.get(userId);
-            if (localSub) {
-              localSub.status = 'canceled';
-            }
-
+            await run('UPDATE billing_subscriptions SET status = ? WHERE user_id = ?', ['canceled', userId]);
             logSubscriptionCancelled(userId, subscription.id, 'stripe_webhook');
           }
           break;
@@ -297,58 +327,52 @@ export class BillingService {
         case 'customer.subscription.updated': {
           const subscription = event.data.object as Stripe.Subscription;
           const userId = subscription.metadata?.userId;
-
           if (userId) {
-            const localSub = subscriptions.get(userId);
-            if (localSub) {
-              localSub.status = subscription.status as any;
-              localSub.cancelAtPeriodEnd = subscription.cancel_at_period_end;
-              localSub.currentPeriodEnd = new Date(subscription.current_period_end * 1000);
-            }
+            await run(
+              'UPDATE billing_subscriptions SET status = ?, cancel_at_period_end = ?, current_period_end = ? WHERE user_id = ?',
+              [
+                subscription.status,
+                subscription.cancel_at_period_end ? 1 : 0,
+                new Date(subscription.current_period_end * 1000).toISOString(),
+                userId,
+              ]
+            );
           }
           break;
         }
       }
     } catch (error) {
-      logError('Webhook processing failed', error as Error, {
-        eventType: event.type,
-        eventId: event.id,
-      });
+      logError('Webhook processing failed', error as Error, { eventType: event.type, eventId: event.id });
       throw error;
     }
   }
 
   async recordUsage(userId: string, requests: number, tokens: number): Promise<void> {
-    usageRecords.push({
+    await ensureDb();
+    await run('INSERT INTO billing_usage (user_id, requests, tokens) VALUES (?, ?, ?)', [
       userId,
       requests,
       tokens,
-      timestamp: new Date(),
-    });
+    ]);
 
     // Clean up old records (keep last 30 days)
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const index = usageRecords.findIndex((r) => r.timestamp > thirtyDaysAgo);
-    if (index > 0) {
-      usageRecords.splice(0, index);
-    }
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    await run('DELETE FROM billing_usage WHERE timestamp < ?', [thirtyDaysAgo]);
   }
 
   async getUsageForPeriod(
     userId: string,
     startDate: Date,
     endDate: Date
-  ): Promise<{
-    totalRequests: number;
-    totalTokens: number;
-  }> {
-    const records = usageRecords.filter(
-      (r) => r.userId === userId && r.timestamp >= startDate && r.timestamp <= endDate
+  ): Promise<{ totalRequests: number; totalTokens: number }> {
+    await ensureDb();
+    const row = await getRow(
+      'SELECT COALESCE(SUM(requests), 0) as total_requests, COALESCE(SUM(tokens), 0) as total_tokens FROM billing_usage WHERE user_id = ? AND timestamp >= ? AND timestamp <= ?',
+      [userId, startDate.toISOString(), endDate.toISOString()]
     );
-
     return {
-      totalRequests: records.reduce((sum, r) => sum + r.requests, 0),
-      totalTokens: records.reduce((sum, r) => sum + r.tokens, 0),
+      totalRequests: Number(row?.total_requests || 0),
+      totalTokens: Number(row?.total_tokens || 0),
     };
   }
 

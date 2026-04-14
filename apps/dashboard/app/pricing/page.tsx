@@ -1,85 +1,133 @@
-import React from 'react';
-import { Check, Zap, Shield, Crown, HelpCircle } from 'lucide-react';
+'use client';
+
+import React, { useState } from 'react';
+import { Check, Zap, Shield, Crown, Users, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../components/ui/card';
 
+const tiers = [
+  {
+    id: 'free',
+    name: 'Free',
+    price: '$0',
+    priceLabel: 'forever',
+    description: 'Open-source SDK for individuals and teams',
+    features: [
+      'SmartRouter with 4 strategies',
+      'All provider adapters',
+      'Circuit breakers & middleware',
+      'Local cost tracking',
+      'Community support',
+    ],
+    icon: Zap,
+    cta: 'Get Started',
+    variant: 'outline' as const,
+  },
+  {
+    id: 'pro',
+    name: 'Pro Dashboard',
+    price: '$29',
+    priceLabel: '/mo',
+    description: 'Cloud analytics for teams optimizing AI spend',
+    features: [
+      'Real-time cost breakdown by provider',
+      'Savings reports vs single-provider',
+      'Provider health (latency, errors, uptime)',
+      'Usage trends & email alerts',
+      'Priority support',
+    ],
+    icon: Crown,
+    cta: 'Start Pro',
+    variant: 'default' as const,
+    popular: true,
+  },
+  {
+    id: 'dexgraph',
+    name: 'DexGraph Pro',
+    price: '$99',
+    priceLabel: '/mo',
+    description: 'Workflow orchestration + persistent memory',
+    features: [
+      'Everything in Pro Dashboard',
+      'DexGraph workflow orchestration',
+      'Persistent memory & RAG pipeline',
+      'Agent coordination layer',
+      'YAML workflow DSL',
+    ],
+    icon: Users,
+    cta: 'Coming Soon',
+    variant: 'outline' as const,
+    disabled: true,
+  },
+  {
+    id: 'enterprise',
+    name: 'Enterprise',
+    price: '$499+',
+    priceLabel: '/mo',
+    description: 'Governance, SSO, and dedicated support',
+    features: [
+      'Everything in DexGraph Pro',
+      'Governance policies & audit trails',
+      'SSO/SAML & RBAC',
+      'Multi-tenant architecture',
+      'Dedicated support & SLA',
+    ],
+    icon: Shield,
+    cta: 'Contact Sales',
+    variant: 'outline' as const,
+    href: 'mailto:sales@ultra-dex.dev',
+  },
+];
+
 export default function PricingPage() {
-  const tiers = [
-    {
-      name: 'Free',
-      price: '$0',
-      description: 'Perfect for individual developers and hobbyists.',
-      features: [
-        'CLI Access',
-        '3 AI Providers',
-        'Basic Memory (L1/L2)',
-        'Community Support',
-        'Standard Routing',
-      ],
-      icon: Zap,
-      cta: 'Get Started',
-      variant: 'outline'
-    },
-    {
-      name: 'Pro',
-      price: '$29',
-      description: 'Advanced features for power users and small teams.',
-      features: [
-        'All Free features',
-        'Unlimited AI Providers',
-        'Advanced Hybrid Routing',
-        'Team Management (5 seats)',
-        'Plugin Marketplace Access',
-        'Email Support',
-      ],
-      icon: Crown,
-      cta: 'Upgrade to Pro',
-      variant: 'default',
-      popular: true
-    },
-    {
-      name: 'Enterprise',
-      price: 'Custom',
-      description: 'Mission-critical scale and security for organizations.',
-      features: [
-        'All Pro features',
-        'SSO Authentication',
-        'Full Audit Trail (SOC2)',
-        '99.9% Uptime SLA',
-        'Unlimited Seats',
-        'Dedicated Support Manager',
-        'Certification Program',
-      ],
-      icon: Shield,
-      cta: 'Contact Sales',
-      variant: 'outline'
-    },
-  ];
+  const [loading, setLoading] = useState<string | null>(null);
+
+  async function handleCheckout(tierId: string) {
+    if (tierId === 'free' || tierId === 'enterprise') return;
+    setLoading(tierId);
+    try {
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tierId,
+          userId: 'user_demo',
+          email: 'demo@ultra-dex.dev',
+          name: 'Demo User',
+        }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert(data.error || 'Checkout failed');
+        setLoading(null);
+      }
+    } catch (err) {
+      alert('Checkout failed');
+      setLoading(null);
+    }
+  }
 
   return (
-    <div className="space-y-16 py-8">
+    <div className="space-y-16 py-8 px-6">
       {/* Header */}
       <div className="text-center space-y-4">
         <h1 className="text-5xl font-bold tracking-tight">Simple, Transparent Pricing</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Choose the plan that fits your orchestration needs. Save 20% with annual billing.
+          Start free with the SDK. Upgrade when you need cloud analytics and orchestration.
         </p>
-        <div className="flex items-center justify-center gap-4 pt-4">
-          <span className="text-sm font-medium">Monthly</span>
-          <div className="w-12 h-6 bg-primary/20 rounded-full relative p-1 cursor-pointer">
-            <div className="w-4 h-4 bg-primary rounded-full absolute right-1 shadow-sm" />
-          </div>
-          <span className="text-sm font-medium">Annual</span>
-          <span className="bg-green-500/10 text-green-500 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
-            Save 20%
-          </span>
-        </div>
       </div>
 
       {/* Tiers Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto px-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
         {tiers.map((tier) => (
-          <Card key={tier.name} className={`relative flex flex-col ${tier.popular ? 'border-primary shadow-lg scale-105 z-10' : 'border-border'}`}>
+          <Card
+            key={tier.name}
+            className={`relative flex flex-col ${
+              tier.popular ? 'border-primary shadow-lg scale-105 z-10' : 'border-border'
+            }`}
+          >
             {tier.popular && (
               <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-primary-foreground text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
                 Most Popular
@@ -95,7 +143,7 @@ export default function PricingPage() {
             <CardContent className="flex-1 space-y-6">
               <div className="flex items-baseline gap-1">
                 <span className="text-4xl font-bold">{tier.price}</span>
-                {tier.price !== 'Custom' && <span className="text-muted-foreground">/mo</span>}
+                <span className="text-muted-foreground">{tier.priceLabel}</span>
               </div>
               <ul className="space-y-3">
                 {tier.features.map((feature) => (
@@ -107,22 +155,36 @@ export default function PricingPage() {
               </ul>
             </CardContent>
             <CardFooter>
-              <Button variant={tier.variant as any} className="w-full h-12 text-md font-bold" size="lg">
-                {tier.cta}
-              </Button>
+              {tier.href ? (
+                <a href={tier.href} className="w-full">
+                  <Button variant={tier.variant} className="w-full h-12 text-md font-bold" size="lg">
+                    {tier.cta}
+                  </Button>
+                </a>
+              ) : (
+                <Button
+                  variant={tier.variant}
+                  className="w-full h-12 text-md font-bold"
+                  size="lg"
+                  disabled={tier.disabled || loading === tier.id}
+                  onClick={() => handleCheckout(tier.id)}
+                >
+                  {loading === tier.id ? 'Loading...' : tier.cta}
+                </Button>
+              )}
             </CardFooter>
           </Card>
         ))}
       </div>
 
-      {/* Comparison Section */}
+      {/* FAQ Section */}
       <div className="max-w-4xl mx-auto space-y-8">
         <h2 className="text-3xl font-bold text-center">Frequently Asked Questions</h2>
         <div className="grid gap-6">
           {[
-            { q: 'Can I switch plans later?', a: 'Yes, you can upgrade or downgrade your plan at any time from your settings.' },
-            { q: 'What providers are included?', a: 'Free includes OpenAI, Anthropic, and Google. Pro and Enterprise include NVIDIA, Mistral, and more.' },
-            { q: 'Do you offer a trial for Pro?', a: 'Yes, every account starts with a 14-day free trial of our Pro features.' },
+            { q: 'Can I switch plans later?', a: 'Yes, you can upgrade or downgrade your plan at any time from your billing settings.' },
+            { q: 'What providers are included?', a: 'All plans include access to all provider adapters. The difference is in analytics, orchestration, and team features.' },
+            { q: 'Do you offer a trial for Pro?', a: 'Yes, every new account starts with a 14-day free trial of Pro Dashboard features.' },
           ].map((faq, i) => (
             <div key={i} className="space-y-2 p-6 bg-card border border-border rounded-xl">
               <h3 className="font-bold flex items-center gap-2">
