@@ -15,6 +15,9 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import Sidebar from '@/components/Sidebar';
+import Header from '@/components/Header';
+import { Activity, TrendingDown, DollarSign, Zap } from 'lucide-react';
 
 const providerCosts = [
   { provider: 'openai', cost: 320 },
@@ -23,147 +26,194 @@ const providerCosts = [
   { provider: 'groq', cost: 90 },
 ];
 
-const trendData = [
-  { day: 'Mon', cost: 92 },
-  { day: 'Tue', cost: 105 },
-  { day: 'Wed', cost: 88 },
-  { day: 'Thu', cost: 121 },
-  { day: 'Fri', cost: 109 },
-  { day: 'Sat', cost: 75 },
-  { day: 'Sun', cost: 66 },
+const usageTrend = [
+  { day: 'Mon', openai: 120, anthropic: 80, gemini: 45 },
+  { day: 'Tue', openai: 145, anthropic: 95, gemini: 50 },
+  { day: 'Wed', openai: 110, anthropic: 70, gemini: 40 },
+  { day: 'Thu', openai: 160, anthropic: 110, gemini: 60 },
+  { day: 'Fri', openai: 140, anthropic: 100, gemini: 55 },
+  { day: 'Sat', openai: 90, anthropic: 60, gemini: 35 },
+  { day: 'Sun', openai: 85, anthropic: 55, gemini: 30 },
 ];
 
-const tokenUsage = [
-  { day: 'Mon', gpt: 12000, claude: 8000, gemini: 5000 },
-  { day: 'Tue', gpt: 15000, claude: 9000, gemini: 4500 },
-  { day: 'Wed', gpt: 11000, claude: 7600, gemini: 4000 },
-  { day: 'Thu', gpt: 17000, claude: 10200, gemini: 5300 },
-  { day: 'Fri', gpt: 14000, claude: 9300, gemini: 4800 },
-];
-
-const heatmap = [
-  { task: 'coding', openai: 52, anthropic: 40, gemini: 8 },
-  { task: 'planning', openai: 26, anthropic: 62, gemini: 12 },
-  { task: 'analysis', openai: 35, anthropic: 25, gemini: 40 },
+const providerHealth = [
+  { name: 'openai', avgLatency: 340, p50: 310, p95: 520, errorRate: 0.02, status: 'healthy' },
+  { name: 'anthropic', avgLatency: 290, p50: 270, p95: 410, errorRate: 0.01, status: 'healthy' },
+  { name: 'gemini', avgLatency: 180, p50: 160, p95: 300, errorRate: 0.04, status: 'degraded' },
+  { name: 'groq', avgLatency: 120, p50: 110, p95: 190, errorRate: 0.0, status: 'healthy' },
 ];
 
 export default function AnalyticsPage() {
-  const [singleProviderMonthlyCost, setSingleProviderMonthlyCost] = useState(10000);
-  const [optimizedMonthlyCost, setOptimizedMonthlyCost] = useState(6800);
+  const [singleProviderCost, setSingleProviderCost] = useState(10000);
+  const [routedCost, setRoutedCost] = useState(6800);
 
-  const roi = useMemo(() => {
-    const savings = Math.max(0, singleProviderMonthlyCost - optimizedMonthlyCost);
-    const ratio = singleProviderMonthlyCost > 0 ? (savings / singleProviderMonthlyCost) * 100 : 0;
-    return { savings, ratio };
-  }, [singleProviderMonthlyCost, optimizedMonthlyCost]);
+  const savings = useMemo(() => {
+    const saved = Math.max(0, singleProviderCost - routedCost);
+    const ratio = singleProviderCost > 0 ? (saved / singleProviderCost) * 100 : 0;
+    return { saved, ratio };
+  }, [singleProviderCost, routedCost]);
+
+  const totalSpend = providerCosts.reduce((sum, p) => sum + p.cost, 0);
 
   return (
-    <main className="p-6 space-y-6">
-      <h1 className="text-2xl font-semibold">Cost Analytics</h1>
-
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="border rounded p-3">
-          <h2 className="font-medium mb-2">Cost by provider</h2>
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={providerCosts}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="provider" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="cost" fill="#111827" />
-              </BarChart>
-            </ResponsiveContainer>
+    <div className="flex min-h-screen bg-void">
+      <Sidebar />
+      <div className="flex-1 ml-64">
+        <Header />
+        <main className="pt-24 pb-8 px-6">
+          <div className="mb-8">
+            <h1 className="font-display text-3xl font-bold text-text-primary mb-2">
+              Pro Dashboard
+            </h1>
+            <p className="text-text-secondary">
+              Cost analytics, provider health, and routing savings
+            </p>
           </div>
-        </div>
 
-        <div className="border rounded p-3">
-          <h2 className="font-medium mb-2">Cost trend</h2>
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trendData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="day" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="cost" stroke="#2563eb" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
+          {/* Stats Row */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div className="bg-panel border border-border p-4 rounded">
+              <div className="flex items-center gap-2 text-text-secondary mb-1">
+                <DollarSign className="w-4 h-4" />
+                <span className="text-sm font-display uppercase tracking-wider">Total Spend</span>
+              </div>
+              <div className="text-2xl font-bold text-text-primary">${totalSpend}</div>
+              <div className="text-xs text-text-tertiary">This month</div>
+            </div>
+            <div className="bg-panel border border-border p-4 rounded">
+              <div className="flex items-center gap-2 text-text-secondary mb-1">
+                <TrendingDown className="w-4 h-4" />
+                <span className="text-sm font-display uppercase tracking-wider">Savings</span>
+              </div>
+              <div className="text-2xl font-bold text-success">${savings.saved.toFixed(0)}</div>
+              <div className="text-xs text-text-tertiary">{savings.ratio.toFixed(1)}% vs single provider</div>
+            </div>
+            <div className="bg-panel border border-border p-4 rounded">
+              <div className="flex items-center gap-2 text-text-secondary mb-1">
+                <Activity className="w-4 h-4" />
+                <span className="text-sm font-display uppercase tracking-wider">Requests</span>
+              </div>
+              <div className="text-2xl font-bold text-text-primary">1,245</div>
+              <div className="text-xs text-text-tertiary">This week</div>
+            </div>
+            <div className="bg-panel border border-border p-4 rounded">
+              <div className="flex items-center gap-2 text-text-secondary mb-1">
+                <Zap className="w-4 h-4" />
+                <span className="text-sm font-display uppercase tracking-wider">Active Providers</span>
+              </div>
+              <div className="text-2xl font-bold text-text-primary">4</div>
+              <div className="text-xs text-text-tertiary">1 degraded</div>
+            </div>
           </div>
-        </div>
-      </section>
 
-      <section className="border rounded p-3">
-        <h2 className="font-medium mb-2">Token usage by model</h2>
-        <div className="h-72">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={tokenUsage}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="day" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Area type="monotone" dataKey="gpt" stackId="1" stroke="#1d4ed8" fill="#93c5fd" />
-              <Area type="monotone" dataKey="claude" stackId="1" stroke="#7c3aed" fill="#c4b5fd" />
-              <Area type="monotone" dataKey="gemini" stackId="1" stroke="#059669" fill="#86efac" />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-      </section>
+          {/* Charts Row */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {/* Cost Overview */}
+            <div className="bg-panel border border-border p-5 rounded">
+              <h2 className="font-display font-semibold text-text-primary mb-4">Cost by Provider</h2>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={providerCosts}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#2a2a35" />
+                    <XAxis dataKey="provider" stroke="#6b7280" />
+                    <YAxis stroke="#6b7280" />
+                    <Tooltip contentStyle={{ backgroundColor: '#141418', borderColor: '#2a2a35' }} />
+                    <Bar dataKey="cost" fill="#00d4ff" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
 
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="border rounded p-3 space-y-2">
-          <h2 className="font-medium">ROI calculator</h2>
-          <label className="block text-sm">
-            Single-provider monthly cost
-            <input
-              className="w-full border rounded px-2 py-1 mt-1"
-              type="number"
-              value={singleProviderMonthlyCost}
-              onChange={(e) => setSingleProviderMonthlyCost(Number(e.target.value))}
-            />
-          </label>
-          <label className="block text-sm">
-            Routed monthly cost
-            <input
-              className="w-full border rounded px-2 py-1 mt-1"
-              type="number"
-              value={optimizedMonthlyCost}
-              onChange={(e) => setOptimizedMonthlyCost(Number(e.target.value))}
-            />
-          </label>
-          <p className="text-sm">
-            Estimated savings: <strong>${roi.savings.toFixed(2)}</strong> ({roi.ratio.toFixed(1)}%)
-          </p>
-        </div>
+            {/* Usage Trend */}
+            <div className="bg-panel border border-border p-5 rounded">
+              <h2 className="font-display font-semibold text-text-primary mb-4">Usage Trend (Requests)</h2>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={usageTrend}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#2a2a35" />
+                    <XAxis dataKey="day" stroke="#6b7280" />
+                    <YAxis stroke="#6b7280" />
+                    <Tooltip contentStyle={{ backgroundColor: '#141418', borderColor: '#2a2a35' }} />
+                    <Legend />
+                    <Area type="monotone" dataKey="openai" stackId="1" stroke="#00d4ff" fill="#00d4ff" fillOpacity={0.3} />
+                    <Area type="monotone" dataKey="anthropic" stackId="1" stroke="#ff9900" fill="#ff9900" fillOpacity={0.3} />
+                    <Area type="monotone" dataKey="gemini" stackId="1" stroke="#10b981" fill="#10b981" fillOpacity={0.3} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
 
-        <div className="border rounded p-3">
-          <h2 className="font-medium mb-2">Routing decisions heatmap</h2>
-          <div className="overflow-auto">
-            <table className="min-w-full text-sm border">
-              <thead>
-                <tr className="bg-gray-100">
-                  <th className="border px-2 py-1 text-left">Task type</th>
-                  <th className="border px-2 py-1">OpenAI</th>
-                  <th className="border px-2 py-1">Anthropic</th>
-                  <th className="border px-2 py-1">Gemini</th>
-                </tr>
-              </thead>
-              <tbody>
-                {heatmap.map((row) => (
-                  <tr key={row.task}>
-                    <td className="border px-2 py-1">{row.task}</td>
-                    <td className="border px-2 py-1 text-center">{row.openai}%</td>
-                    <td className="border px-2 py-1 text-center">{row.anthropic}%</td>
-                    <td className="border px-2 py-1 text-center">{row.gemini}%</td>
+          {/* Savings Report */}
+          <div className="bg-panel border border-border p-5 rounded mb-8">
+            <h2 className="font-display font-semibold text-text-primary mb-4">Savings Report</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+              <div>
+                <label className="block text-sm text-text-secondary mb-1">Single-provider monthly cost</label>
+                <input
+                  type="number"
+                  className="w-full bg-panel-elevated border border-border rounded px-3 py-2 text-text-primary focus:outline-none focus:border-cyan/50"
+                  value={singleProviderCost}
+                  onChange={(e) => setSingleProviderCost(Number(e.target.value))}
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-text-secondary mb-1">Routed monthly cost</label>
+                <input
+                  type="number"
+                  className="w-full bg-panel-elevated border border-border rounded px-3 py-2 text-text-primary focus:outline-none focus:border-cyan/50"
+                  value={routedCost}
+                  onChange={(e) => setRoutedCost(Number(e.target.value))}
+                />
+              </div>
+              <div className="bg-cyan/5 border border-cyan/20 p-4 rounded">
+                <div className="text-sm text-text-secondary">Estimated monthly savings</div>
+                <div className="text-3xl font-bold text-cyan">${savings.saved.toFixed(0)}</div>
+                <div className="text-sm text-cyan/80">{savings.ratio.toFixed(1)}% reduction</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Provider Health */}
+          <div className="bg-panel border border-border p-5 rounded">
+            <h2 className="font-display font-semibold text-text-primary mb-4">Provider Health</h2>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border text-text-secondary font-display uppercase tracking-wider">
+                    <th className="text-left py-3">Provider</th>
+                    <th className="text-left py-3">Status</th>
+                    <th className="text-left py-3">Avg Latency</th>
+                    <th className="text-left py-3">p50</th>
+                    <th className="text-left py-3">p95</th>
+                    <th className="text-left py-3">Error Rate</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {providerHealth.map((p) => (
+                    <tr key={p.name} className="border-b border-border/50">
+                      <td className="py-3 font-medium text-text-primary capitalize">{p.name}</td>
+                      <td className="py-3">
+                        <span className={`px-2 py-1 rounded text-xs font-display uppercase ${
+                          p.status === 'healthy'
+                            ? 'bg-success/10 text-success border border-success/30'
+                            : 'bg-amber/10 text-amber border border-amber/30'
+                        }`}>
+                          {p.status}
+                        </span>
+                      </td>
+                      <td className="py-3 text-text-secondary">{p.avgLatency}ms</td>
+                      <td className="py-3 text-text-secondary">{p.p50}ms</td>
+                      <td className="py-3 text-text-secondary">{p.p95}ms</td>
+                      <td className="py-3 text-text-secondary">{(p.errorRate * 100).toFixed(1)}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      </section>
-    </main>
+        </main>
+      </div>
+    </div>
   );
 }
-

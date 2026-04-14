@@ -32,12 +32,15 @@ export class UltraDex {
       timeoutMs: config.timeoutMs ?? 45000,
       distributedPeers: config.distributedPeers || [],
       instanceId: config.instanceId,
+      analyticsEndpoint: config.analyticsEndpoint,
+      analyticsIntervalMs: config.analyticsIntervalMs ?? 60000,
     };
     this.providers = new Map();
     this.agents = new Map();
     this.plugins = new PluginLoader();
     this.router = null;
     this.middleware = new MiddlewarePipeline();
+    this.analyticsTimer = null;
 
     // Initialize v2.0 components
     this.orchestrator = new Orchestrator();
@@ -53,6 +56,45 @@ export class UltraDex {
         orchestrator: this.orchestrator,
         executionEngine: this.executionEngine,
       });
+    }
+
+    // Start analytics if endpoint configured
+    if (this.config.analyticsEndpoint) {
+      this.startAnalytics();
+    }
+  }
+
+  startAnalytics() {
+    if (this.analyticsTimer) return;
+    this.analyticsTimer = setInterval(() => {
+      this.#sendAnalytics().catch(() => {});
+    }, this.config.analyticsIntervalMs);
+  }
+
+  stopAnalytics() {
+    if (this.analyticsTimer) {
+      clearInterval(this.analyticsTimer);
+      this.analyticsTimer = null;
+    }
+  }
+
+  async #sendAnalytics() {
+    if (!this.router || !this.config.analyticsEndpoint) return;
+    const stats = this.router.getAllStats();
+    const payload = {
+      apiKey: this.config.apiKey || 'anonymous',
+      providers: stats,
+      totalRequests: this.router.totalRequests,
+      totalCost: this.router.totalCost,
+    };
+    try {
+      await fetch(this.config.analyticsEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+    } catch {
+      // Silent fail for analytics
     }
   }
 
