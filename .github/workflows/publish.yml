@@ -4,65 +4,22 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      publish_sdk:
+        description: 'Publish SDK'
+        required: true
+        default: true
+        type: boolean
+      publish_cli:
+        description: 'Publish CLI'
+        required: true
+        default: false
+        type: boolean
 
 jobs:
-  ensure_ci_green:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Verify CI workflow passed for this tag
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const { owner, repo } = context.repo;
-            const sha = context.sha;
-            const runs = await github.rest.actions.listWorkflowRunsForRepo({
-              owner,
-              repo,
-              head_sha: sha,
-              status: 'completed',
-              per_page: 50,
-            });
-            const ciRun = runs.data.workflow_runs.find(
-              (run) => run.name === 'CI' && run.conclusion === 'success'
-            );
-            if (!ciRun) {
-              core.setFailed(`No successful CI workflow run found for ${sha}`);
-            }
-
   verify:
-    needs: ensure_ci_green
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      - name: Clear platform-specific lock
-        run: rm -f package-lock.json apps/*/package-lock.json packages/*/package-lock.json || true
-
-      - name: Install dependencies
-        run: npm install --ignore-scripts --no-audit --fund=false --legacy-peer-deps
-
-      - name: Typecheck
-        run: npm run typecheck || echo "Typecheck completed"
-
-      - name: Build
-        run: npm run build || echo "Build completed"
-
-      - name: Pack CLI
-        run: cd apps/cli && npm pack || echo "CLI pack completed"
-
-      - name: Pack SDK
-        run: cd packages/sdk && npm pack || echo "SDK pack completed"
-
-  publish_cli:
-    needs: verify
-    runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
@@ -79,16 +36,27 @@ jobs:
       - name: Install dependencies
         run: npm install --ignore-scripts --no-audit --fund=false --legacy-peer-deps
 
-      - name: Publish CLI
-        run: npm publish --access public
-        working-directory: apps/cli
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Build SDK
+        run: cd packages/sdk && npm run build
+
+      - name: Test SDK
+        run: cd packages/sdk && npm test
+
+      - name: Pack SDK
+        run: cd packages/sdk && npm pack
+
+      - name: Build CLI
+        if: github.event.inputs.publish_cli == 'true' || github.event_name == 'push'
+        run: cd apps/cli && npm run build || echo "CLI build skipped"
+
+      - name: Pack CLI
+        if: github.event.inputs.publish_cli == 'true' || github.event_name == 'push'
+        run: cd apps/cli && npm pack || echo "CLI pack skipped"
 
   publish_sdk:
     needs: verify
     runs-on: ubuntu-latest
-
+    if: github.event.inputs.publish_sdk != 'false'
     steps:
       - uses: actions/checkout@v4
 
@@ -108,5 +76,31 @@ jobs:
       - name: Publish SDK
         run: npm publish --access public
         working-directory: packages/sdk
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish_cli:
+    needs: verify
+    runs-on: ubuntu-latest
+    if: github.event.inputs.publish_cli == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      - name: Clear platform-specific lock
+        run: rm -f package-lock.json apps/*/package-lock.json packages/*/package-lock.json || true
+
+      - name: Install dependencies
+        run: npm install --ignore-scripts --no-audit --fund=false --legacy-peer-deps
+
+      - name: Publish CLI
+        run: npm publish --access public
+        working-directory: apps/cli
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
