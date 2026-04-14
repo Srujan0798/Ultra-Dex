@@ -1,28 +1,45 @@
-# 🌌 Ultra-Dex Documentation
+# @ultra-dex/sdk
 
-Welcome to the official documentation for **Ultra-Dex v6.0.0**, the AI Orchestration Meta-Layer.
+> Route AI calls across providers. Cut costs 30–50%. Automatic failover.
 
-## 🚀 Key Concepts
+## What is it?
 
-- **Meta-Layer Architecture**: A professional monorepo setup for large-scale AI orchestration.
-- **Protocol 21**: A rigorous 21-step verification engine for ensuring code quality and security.
-- **Agent Tiers**: 18 specialized agents organized into 7 functional tiers (0-6).
-- **Hardened Sandbox**: Docker-isolated execution environments for multiple runtimes.
-- **Tiered Memory**: High-performance Hot/Warm/Cold memory system using SQLite and Vector DBs.
+`@ultra-dex/sdk` is an open-source TypeScript SDK that sits between your app and AI providers. It intelligently routes each request based on cost, latency, or your custom rules — with built-in circuit breakers, middleware, and cost tracking.
 
-## 🛠️ Getting Started
+## Install
 
-1. [Introduction to Ultra-Dex](./intro)
-2. [Quick Start Guide](./getting-started)
-3. [CLI Reference](./cli)
-4. [Agent System](./agents)
+```bash
+npm install @ultra-dex/sdk
+```
 
-## 🧩 Extension & Customization
+## 5-line quickstart
 
-- [Building Plugins](./guides/plugins)
-- [MCP Integration](./mcp)
-- [SDK Usage](./api)
+```javascript
+import { UltraDex } from '@ultra-dex/sdk'
 
----
+const dex = new UltraDex()
+dex.enableRouter({ strategy: 'cheapest' })
 
-Built for the GenAI 2.0 era.
+const response = await dex.chat([{ role: 'user', content: 'Hello' }])
+// → Automatically routed to the cheapest available provider
+```
+
+## Documentation
+
+- [Installation](./getting-started/installation)
+- [Quick Start](./getting-started/quick-start)
+- [Provider Setup](./providers)
+- [Routing Strategies](./guides/routing-strategies)
+- [Middleware](./guides/middleware)
+- [SDK Reference](./sdk)
+
+## Why use it?
+
+| Feature | @ultra-dex/sdk | LiteLLM | Raw OpenAI SDK |
+|---------|---------------|---------|----------------|
+| Multi-provider routing | ✅ 4 strategies | ✅ basic | ❌ |
+| Circuit breakers | ✅ auto-disable unhealthy | ❌ | ❌ |
+| Cost tracking (p50/p95/p99) | ✅ per-provider | ❌ | ❌ |
+| Budget limits | ✅ auto-cutoff | ❌ | ❌ |
+| Middleware pipeline | ✅ logging, retry, cache, rate-limit | ❌ | ❌ |
+| TypeScript-first | ✅ | ❌ Python | ✅ |

@@ -1,79 +1,81 @@
 # Quick Start
 
-Get up and running with Ultra-Dex in just a few minutes.
-
-## Create a New Project
-
-Initialize a new project with Ultra-Dex:
+## 1. Create a project
 
 ```bash
-mkdir my-awesome-project
-cd my-awesome-project
-ultra-dex init
+mkdir my-ai-router && cd my-ai-router
+npm init -y
+npm install @ultra-dex/sdk openai
 ```
 
-Follow the interactive prompts to configure your project settings.
+## 2. Write your first router
 
-## Generate Your First Feature
+Create `index.js`:
 
-Describe what you want to build:
+```javascript
+import { UltraDex } from '@ultra-dex/sdk'
+import OpenAI from 'openai'
+
+// 1. Create client
+const dex = new UltraDex({ defaultProvider: 'openai' })
+
+// 2. Register a provider
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+
+dex.registerProvider('openai', {
+  async chat(messages, opts = {}) {
+    const res = await openai.chat.completions.create({
+      model: opts.model || 'gpt-4o',
+      messages,
+    })
+    return {
+      content: res.choices[0].message.content,
+      usage: {
+        promptTokens: res.usage.prompt_tokens,
+        completionTokens: res.usage.completion_tokens,
+      },
+      provider: 'openai',
+      model: res.model,
+    }
+  },
+
+  async *stream(messages, opts = {}) {
+    const res = await openai.chat.completions.create({
+      model: opts.model || 'gpt-4o',
+      messages,
+      stream: true,
+    })
+    for await (const chunk of res) {
+      yield { content: chunk.choices[0]?.delta?.content || '' }
+    }
+  },
+
+  async embed(text, opts = {}) {
+    const res = await openai.embeddings.create({
+      model: 'text-embedding-3-small',
+      input: text,
+    })
+    return { embedding: res.data[0].embedding }
+  },
+})
+
+// 3. Enable router
+dex.enableRouter({ strategy: 'cheapest' })
+
+// 4. Send a message
+const response = await dex.chat([{ role: 'user', content: 'Hello world' }])
+console.log(response.content)
+```
+
+## 3. Run it
 
 ```bash
-ultra-dex plan "Create a simple TODO list application with React and Node.js"
+node index.js
 ```
 
-This will generate an implementation plan based on your requirements.
+## Next steps
 
-## Review and Execute
-
-Review the generated plan:
-
-```bash
-cat IMPLEMENTATION_PLAN.md
-```
-
-Then execute it:
-
-```bash
-ultra-dex run IMPLEMENTATION_PLAN.md
-```
-
-## Verify Your Implementation
-
-Check that everything was implemented correctly:
-
-```bash
-ultra-dex verify --full
-```
-
-## Explore Advanced Features
-
-### Multi-Agent Collaboration
-
-Run a swarm of agents to work on different aspects simultaneously:
-
-```bash
-ultra-dex swarm start IMPLEMENTATION_PLAN.md --parallel 3
-```
-
-### Integration with External Services
-
-Connect to GitHub to create a repository:
-
-```bash
-ultra-dex github repo create --name my-awesome-project --private
-```
-
-### Quality Assurance
-
-Run comprehensive quality checks:
-
-```bash
-ultra-dex quality --fix
-```
-
-## Next Steps
-
-- Explore the [CLI Reference](../api/cli-reference.md) for all available commands
-- Learn about [Integrations](../api/integrations.md) with external services
-- Understand the [Architecture](../architecture/system-overview.md) behind Ultra-Dex
+- [Add multiple providers](../providers)
+- [Change routing strategy](../guides/routing-strategies)
+- [Add middleware](../guides/middleware)
+- [Track costs](../sdk#cost-tracking)

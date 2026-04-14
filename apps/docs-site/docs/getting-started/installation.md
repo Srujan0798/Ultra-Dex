@@ -1,63 +1,35 @@
 # Installation
 
-This guide will walk you through installing Ultra-Dex on your system.
+## Requirements
 
-## Prerequisites
+- Node.js 18 or higher
+- npm, yarn, or pnpm
 
-Before installing Ultra-Dex, ensure you have:
-
-- Node.js version 18 or higher
-- npm or yarn package manager
-- Git version control system
-- At least 4GB of free disk space
-
-## Quick Install
-
-Install Ultra-Dex globally using npm:
+## Install the SDK
 
 ```bash
-npm install -g ultra-dex
+npm install @ultra-dex/sdk
 ```
 
-Or using yarn:
+Or with yarn:
 
 ```bash
-yarn global add ultra-dex
+yarn add @ultra-dex/sdk
 ```
 
-## Verify Installation
-
-Check that Ultra-Dex is properly installed:
+Or with pnpm:
 
 ```bash
-ultra-dex --version
+pnpm add @ultra-dex/sdk
 ```
 
-You should see the version number printed to your terminal.
+## Verify
 
-## Docker Installation (Alternative)
-
-If you prefer using Docker, you can run Ultra-Dex without installing it globally:
-
-```bash
-docker run -it --rm srujan0798/ultra-dex:latest ultra-dex --version
+```javascript
+import { UltraDex } from '@ultra-dex/sdk'
+console.log(typeof UltraDex) // → function
 ```
 
-## Configuration
+## Next
 
-After installation, run the setup wizard to configure Ultra-Dex:
-
-```bash
-ultra-dex setup
-```
-
-This will guide you through setting up:
-
-- AI provider preferences (OpenAI, Anthropic, Google)
-- API keys for various services
-- Default project templates
-- Integration settings
-
-## Next Steps
-
-Once installed, proceed to the [Quick Start Guide](./quick-start.md) to create your first project with Ultra-Dex.
+Go to [Quick Start](./quick-start) to send your first routed request.
