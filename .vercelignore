@@ -24,11 +24,16 @@ coverage
 __tests__
 __mocks__
 
-# Documentation
-*.md
-docs
+# Documentation (root only)
+/*.md
+/docs
 .vscode
 .idea
+
+# Keep docs-site content
+!apps/docs-site/docs
+!apps/docs-site/**/*.md
+!apps/docs-site/**/*.mdx
 
 # Logs
 *.log
