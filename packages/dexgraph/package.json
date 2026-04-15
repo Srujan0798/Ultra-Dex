@@ -43,6 +43,14 @@
   "dependencies": {
     "js-yaml": "^4.1.0"
   },
+  "peerDependencies": {
+    "@ultra-dex/sdk": "^1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@ultra-dex/sdk": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^25.5.2",

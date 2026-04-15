@@ -79,3 +79,5 @@ export {
   EventType,
   EventHandler,
 } from './observability.js';
+
+export { UltraDexAdapter } from './adapters/ultraDexAdapter.js';
