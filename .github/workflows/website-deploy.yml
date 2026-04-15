@@ -5,6 +5,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -25,22 +26,30 @@ jobs:
       - name: Clear platform-specific lock
         run: rm -f package-lock.json apps/*/package-lock.json packages/*/package-lock.json || true
 
-      - name: Install dependencies
+      - name: Install root dependencies
         run: npm install --ignore-scripts --no-audit --fund=false --legacy-peer-deps
+
+      - name: Install website dependencies
+        run: |
+          cd apps/website
+          npm install --legacy-peer-deps
 
       - name: Build website
         run: |
           cd apps/website
           NEXT_DISABLE_ESLINT=1 npm run build
 
+      - name: Prepare Vercel project link
+        if: ${{ env.VERCEL_TOKEN != '' && env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != '' }}
+        run: |
+          mkdir -p apps/website/.vercel
+          echo '{"orgId":"'"$VERCEL_ORG_ID"'","projectId":"'"$VERCEL_PROJECT_ID"'"}' > apps/website/.vercel/project.json
+
       - name: Deploy to Vercel
         if: ${{ env.VERCEL_TOKEN != '' && env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != '' }}
         run: |
-          npx vercel@latest --prod --yes --token="$VERCEL_TOKEN" --scope="$VERCEL_ORG_ID"
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          cd apps/website
+          npx vercel@latest --prod --yes --token="$VERCEL_TOKEN"
 
       - name: Skip Vercel deploy (missing secrets)
         if: ${{ env.VERCEL_TOKEN == '' || env.VERCEL_ORG_ID == '' || env.VERCEL_PROJECT_ID == '' }}
