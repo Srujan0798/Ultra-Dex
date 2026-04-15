@@ -39,10 +39,18 @@ jobs:
           cd apps/website
           NEXT_DISABLE_ESLINT=1 npm run build
 
+      - name: Prepare Vercel project link
+        if: ${{ env.VERCEL_TOKEN != '' && env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != '' }}
+        run: |
+          mkdir -p apps/website/.vercel
+          echo '{"orgId":"'"$VERCEL_ORG_ID"'","projectId":"'"$VERCEL_PROJECT_ID"'"}' > apps/website/.vercel/project.json
+
       - name: Deploy to Vercel
         if: ${{ env.VERCEL_TOKEN != '' && env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != '' }}
         run: |
-          npx vercel@latest --prod --yes --token="$VERCEL_TOKEN" --scope="$VERCEL_ORG_ID"
+          cd apps/website
+          npx vercel@latest build --token="$VERCEL_TOKEN"
+          npx vercel@latest deploy --prebuilt --prod --yes --token="$VERCEL_TOKEN"
 
       - name: Skip Vercel deploy (missing secrets)
         if: ${{ env.VERCEL_TOKEN == '' || env.VERCEL_ORG_ID == '' || env.VERCEL_PROJECT_ID == '' }}
