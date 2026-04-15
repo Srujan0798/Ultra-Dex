@@ -1,0 +1,25 @@
+version: dexgraph/v1
+name: research-agent
+description: Research a topic, analyze findings, and summarize into actionable insights
+
+tasks:
+  - id: research
+    role: engineer
+    instruction: Gather key facts about the topic from multiple angles
+    output: research_findings
+    context:
+      topic: "agentic AI orchestration"
+
+  - id: analyze
+    role: architect
+    instruction: Analyze the research findings and identify the most important trend
+    depends_on: [research]
+    output: analysis
+    context: {}
+
+  - id: summarize
+    role: reviewer
+    instruction: Summarize the analysis into one actionable takeaway for engineers
+    depends_on: [analyze]
+    output: summary
+    context: {}

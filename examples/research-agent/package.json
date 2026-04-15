@@ -1,0 +1,14 @@
+{
+  "name": "@ultra-dex/example-research-agent",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Example: Research agent with Ultra-Dex SDK routing + DexGraph orchestration",
+  "scripts": {
+    "start": "node index.js",
+    "demo": "node index.js"
+  },
+  "dependencies": {
+    "@ultra-dex/sdk": "^1.0.0",
+    "@ultra-dex/dexgraph": "^1.1.0"
+  }
+}
