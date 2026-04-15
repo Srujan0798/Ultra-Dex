@@ -42,14 +42,13 @@ jobs:
       - name: Prepare Vercel project link
         if: ${{ env.VERCEL_TOKEN != '' && env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != '' }}
         run: |
-          mkdir -p apps/website/.vercel
-          echo '{"orgId":"'"$VERCEL_ORG_ID"'","projectId":"'"$VERCEL_PROJECT_ID"'"}' > apps/website/.vercel/project.json
+          mkdir -p .vercel
+          echo '{"orgId":"'"$VERCEL_ORG_ID"'","projectId":"'"$VERCEL_PROJECT_ID"'"}' > .vercel/project.json
 
       - name: Deploy to Vercel
         if: ${{ env.VERCEL_TOKEN != '' && env.VERCEL_ORG_ID != '' && env.VERCEL_PROJECT_ID != '' }}
         run: |
-          cd apps/website
-          npx vercel@latest --prod --yes --token="$VERCEL_TOKEN"
+          npx vercel@latest --prod --yes --token="$VERCEL_TOKEN" --scope="$VERCEL_ORG_ID"
 
       - name: Skip Vercel deploy (missing secrets)
         if: ${{ env.VERCEL_TOKEN == '' || env.VERCEL_ORG_ID == '' || env.VERCEL_PROJECT_ID == '' }}
