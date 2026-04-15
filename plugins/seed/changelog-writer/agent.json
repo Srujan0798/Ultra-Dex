@@ -1,1 +1,0 @@
-{"id":"changelog-writer","name":"Changelog Writer","role":"documentation","description":"Generates CHANGELOG entries from git history and commit messages","capabilities":["git-log-analysis","semantic-categorization","release-notes","breaking-change-detection"],"version":"1.0.0","provider":"claude","model":"claude-sonnet-4"}

@@ -117,7 +117,7 @@
     "lint:fix": "eslint apps/cli/lib --ext .js,.ts --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "npx tsc --noEmit",
+    "typecheck": "cd packages/dexgraph && npx tsc --noEmit && cd ../sdk && npx tsc --noEmit",
     "build": "npm run build:core && npm run build:cli && npm run build:dashboard",
     "build:core": "sh scripts/build-core.sh",
     "build:dashboard": "npm run dashboard:build",

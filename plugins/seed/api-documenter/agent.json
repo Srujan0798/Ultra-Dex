@@ -1,1 +1,0 @@
-{"id":"api-documenter","name":"API Documenter","role":"documentation","description":"Auto-generates API documentation from source code and OpenAPI specs","capabilities":["openapi-gen","javadoc","markdown-docs","endpoint-discovery"],"version":"1.0.0","provider":"claude","model":"claude-sonnet-4"}

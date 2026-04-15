@@ -10,6 +10,8 @@ Thumbs.db
 # Dependencies
 node_modules/
 **/node_modules/
+**/.node_modules-*
+**/node_modules.nosync/
 
 # Build artifacts
 *.vsix

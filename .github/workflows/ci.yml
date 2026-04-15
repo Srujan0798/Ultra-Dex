@@ -17,14 +17,38 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  quality:
+    name: Lint & Typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install --ignore-scripts --no-audit --fund=false --legacy-peer-deps
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
   test:
+    name: Tests (Node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    needs: quality
 
     strategy:
       matrix:
         node-version: [20, 22]
-      fail-fast: false
+      fail-fast: true
 
     steps:
       - uses: actions/checkout@v4
@@ -34,33 +58,40 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Clear platform-specific lock
-        run: rm -f package-lock.json apps/*/package-lock.json packages/*/package-lock.json || true
-
-      - name: Install dependencies (cross-platform)
+      - name: Install dependencies
         run: npm install --ignore-scripts --no-audit --fund=false --legacy-peer-deps
 
-      - name: Typecheck
-        run: npm run typecheck || echo "Typecheck completed"
-
-      - name: Lint
-        run: npm run lint || echo "Lint completed"
-
       - name: Unit Tests
-        run: npm run test:unit || echo "Unit tests completed"
-        continue-on-error: true
+        run: npm run test:unit
 
       - name: Integration Tests
-        run: npm run test:integration || echo "Integration tests completed"
-        continue-on-error: true
+        run: npm run test:integration
 
-      - name: Build
-        run: npm run build || echo "Build completed"
+      - name: CLI Tests
+        run: npm run test:cli
 
-      - name: Pack CLI
-        run: cd apps/cli && npm pack || echo "CLI pack completed"
-        continue-on-error: true
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: quality
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install --ignore-scripts --no-audit --fund=false --legacy-peer-deps
+
+      - name: Build core
+        run: npm run build
 
       - name: Pack SDK
-        run: cd packages/sdk && npm pack || echo "SDK pack completed"
-        continue-on-error: true
+        run: cd packages/sdk && npm pack
+
+      - name: Pack DexGraph
+        run: cd packages/dexgraph && npm pack

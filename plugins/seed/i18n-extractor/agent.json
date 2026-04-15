@@ -1,1 +1,0 @@
-{"id":"i18n-extractor","name":"i18n Extractor","role":"localization","description":"Extracts translatable strings and generates locale files for internationalization","capabilities":["string-extraction","locale-gen","plural-handling","rtl-support"],"version":"1.0.0","provider":"claude","model":"claude-sonnet-4"}

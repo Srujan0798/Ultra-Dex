@@ -31,6 +31,6 @@
     "typescript": "^5.7.0"
   },
   "overrides": {
-    "webpack": "5.101.3"
+    "webpack": "5.97.1"
   }
 }

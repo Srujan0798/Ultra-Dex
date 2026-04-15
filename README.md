@@ -1,151 +1,152 @@
 # Ultra-Dex
 
-Route any AI task to any provider with persistent memory.
+**Route AI tasks across providers. Orchestrate multi-agent workflows. Persist everything.**
 
-[![Version](https://img.shields.io/badge/version-6.0.0-blue.svg)](package.json) [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE) [![Node >=18](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg)](package.json) [![CI](https://github.com/Srujan0798/Ultra-Dex/actions/workflows/ci.yml/badge.svg)](https://github.com/Srujan0798/Ultra-Dex/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/@ultra-dex/sdk?label=%40ultra-dex%2Fsdk)](https://www.npmjs.com/package/@ultra-dex/sdk)
+[![npm](https://img.shields.io/npm/v/@ultra-dex/dexgraph?label=%40ultra-dex%2Fdexgraph)](https://www.npmjs.com/package/@ultra-dex/dexgraph)
+[![CI](https://github.com/Srujan0798/Ultra-Dex/actions/workflows/ci.yml/badge.svg)](https://github.com/Srujan0798/Ultra-Dex/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-## What Is Ultra-Dex?
+Ultra-Dex is an AI orchestration layer that routes tasks across providers (OpenAI, Anthropic, Google, NVIDIA, Mistral, Groq, and 7 more), coordinates multi-agent workflows as DAGs, and persists memory and execution state automatically.
 
-Ultra-Dex is a CLI-first orchestration layer for running AI tasks through a consistent command surface. It can route work across multiple providers, run agent-style workflows, and persist project state and run artifacts on disk. The repo is active and usable today, but the most reliable workflow right now is running from source rather than treating it as a polished published product.
+**[Website](https://ultradex.vercel.app)** | **[Docs](https://ultradex-docs.vercel.app)** | **[Dashboard](https://ultradex-dashboard.vercel.app)**
 
-## Quick Start
+---
 
-The package name is `@ultra-dex/cli`, but the source workflow below is the safest path today.
+## Install
+
+```bash
+npm install @ultra-dex/sdk        # Provider routing + smart selection
+npm install @ultra-dex/dexgraph   # Workflow orchestration engine
+```
+
+## Quick Example
+
+### Route to the cheapest provider automatically
+
+```javascript
+import { UltraDex } from '@ultra-dex/sdk';
+
+const dex = new UltraDex();
+dex.registerProvider('openai', openaiProvider);
+dex.registerProvider('anthropic', anthropicProvider);
+dex.registerProvider('google', googleProvider);
+
+// SDK picks the cheapest provider for each call
+dex.enableRouter({ strategy: 'cheapest' });
+
+const result = await dex.chat('Explain quantum computing');
+// Routed to google (cheapest) — saved 80% vs OpenAI
+```
+
+### Orchestrate a multi-step workflow
+
+```yaml
+# workflow.yaml
+version: dexgraph/v1
+name: research-agent
+
+tasks:
+  - id: research
+    role: engineer
+    instruction: Gather key facts about the topic
+
+  - id: analyze
+    role: architect
+    instruction: Identify the most important trends
+    depends_on: [research]
+
+  - id: summarize
+    role: reviewer
+    instruction: Distill into actionable takeaways
+    depends_on: [analyze]
+```
+
+```bash
+npx @ultra-dex/dexgraph run workflow.yaml
+# Execution order: research -> analyze -> summarize
+# All 3 nodes succeeded in 330ms
+```
+
+## Architecture
+
+```
+@ultra-dex/sdk                        @ultra-dex/dexgraph
++-----------------------+             +------------------------+
+| SmartRouter           |             | YAML Parser            |
+|   cheapest / fastest  |   bridge    | DAG Builder (DexGraph) |
+|   quality / fallback  | <--------+ | Scheduler              |
+| Provider Registry     |             | State Machine          |
+| Middleware Pipeline   |             | UltraDexAdapter        |
++-----------------------+             +------------------------+
+         |                                       |
+    13+ AI Providers                    Workflow Orchestration
+    (OpenAI, Anthropic,                 (parallel, sequential,
+     Google, NVIDIA, ...)                retry, halt-on-fail)
+```
+
+## Supported Providers
+
+| Provider   | ID          | Model examples                         |
+| ---------- | ----------- | -------------------------------------- |
+| OpenAI     | `openai`    | GPT-4o, GPT-4, GPT-3.5                |
+| Anthropic  | `anthropic` | Claude Opus, Sonnet, Haiku             |
+| Google     | `google`    | Gemini Pro, Gemini Flash               |
+| NVIDIA     | `nvidia`    | Nemotron, Llama 3.1 via NVIDIA API     |
+| Mistral    | `mistral`   | Mistral Large, Medium, Small           |
+| Groq       | `groq`      | Llama, Mixtral via Groq inference      |
+| DeepSeek   | `deepseek`  | DeepSeek V3, DeepSeek Coder           |
+| Cohere     | `cohere`    | Command R, Command R+                  |
+| Together   | `together`  | Open-source models via Together AI     |
+| Fireworks  | `fireworks` | Fast open-source inference             |
+| Perplexity | `perplexity`| Sonar models with web search           |
+| Grok       | `grok`      | Grok-2                                 |
+| Llama      | `llama`     | Llama 4 via Meta API                   |
+
+## CLI
+
+The full CLI provides agent-based task execution, swarm workflows, and diagnostics:
 
 ```bash
 git clone https://github.com/Srujan0798/Ultra-Dex.git && cd Ultra-Dex && npm install
 
-# Option 1: With Docker (Redis + Postgres)
-docker compose up  # Start with full database layer
+# Run with mock provider (no API keys needed)
+MOCK_AI=true npm start -- run planner -t "design a REST API"
 
-# Option 2: Without Docker (file-based memory)
-npm run ultra-dex -- config --set providers.default=nvidia
-MOCK_AI=true npm run ultra-dex -- run planner -t "hello"
-MOCK_AI=true npm run ultra-dex -- swarm "draft a launch checklist"
-npm run ultra-dex -- serve
+# Multi-agent swarm
+MOCK_AI=true npm start -- swarm "build a landing page"
+
+# Start local server + MCP endpoint
+npm start -- serve
 ```
 
-Notes:
+## Key Features
 
-- `docker compose up` starts Ultra-Dex with Redis and Postgres for production-grade persistence
-- `MEMORY_BACKEND=file` can be used without Docker for file-based memory
-- `MOCK_AI=true` lets you verify the CLI without any provider keys.
-- `serve` starts the local server on port `3001` by default.
-- Once you add a real provider key, drop `MOCK_AI=true` and choose a provider with `-p`.
+- **Smart Routing** — 4 strategies: cheapest, fastest, quality-weighted, fallback chain
+- **DAG Orchestration** — Define workflows in YAML, execute as dependency graphs
+- **13+ Providers** — One interface for all major AI providers
+- **Persistent Memory** — SQLite-backed storage with vector search and graph queries
+- **Multi-Agent Swarms** — Named agent roles (planner, backend, frontend, reviewer, debugger)
+- **Governance** — Policy enforcement, audit logging, execution traces
+- **MCP Server** — Model Context Protocol integration for tool registries
 
-## Why Ultra-Dex?
+## Project Structure
 
-| Tool              | Best at                                | Multi-provider CLI | Persistent local state | Agent workflow | Honest tradeoff                                           |
-| ----------------- | -------------------------------------- | ------------------ | ---------------------- | -------------- | --------------------------------------------------------- |
-| Ultra-Dex         | CLI-driven orchestration from one repo | Yes                | Yes                    | Yes            | Powerful, but still rough around packaging and onboarding |
-| LangChain         | Building library-level app logic       | Not the focus      | You assemble it        | Partial        | Mature ecosystem, less opinionated CLI workflow           |
-| CrewAI            | Multi-agent Python workflows           | Partial            | You assemble it        | Yes            | Good agent abstractions, but Python-first                 |
-| Raw provider APIs | Maximum control                        | No                 | No                     | No             | Lowest abstraction, highest setup cost                    |
-
-Ultra-Dex is worth using if you want one command surface for routing, execution, diagnostics, and project-local artifacts. It is not yet the cleanest choice if your priority is a minimal install story or a tiny dependency footprint.
-
-## Supported Providers
-
-These are the provider IDs exposed by the current CLI factory:
-
-| Provider ID | Backing service  | Configuration                                                      |
-| ----------- | ---------------- | ------------------------------------------------------------------ |
-| `claude`    | Anthropic Claude | `ANTHROPIC_API_KEY`                                                |
-| `openai`    | OpenAI           | `OPENAI_API_KEY`                                                   |
-| `gemini`    | Google Gemini    | `GOOGLE_AI_KEY`                                                    |
-| `nvidia`    | NVIDIA Nemotron  | `NVIDIA_API_KEY`                                                   |
-| `ollama`    | Local Ollama     | `ULTRA_DEX_ENABLE_LOCAL_PROVIDERS=1` and a running Ollama instance |
-| `router`    | Hybrid router    | Uses whichever configured providers are available                  |
-| `mock`      | Test provider    | Set `MOCK_AI=true`                                                 |
-
-## Core Concepts
-
-### Routing
-
-`ultra-dex run` selects an execution path for a named agent and can either use the provider you specify or fall back to the default/provider router logic already in the CLI. In practice, the safest workflow today is to be explicit about the agent and provider when you care about repeatability.
-
-### Agents
-
-Ultra-Dex ships with named roles such as `planner`, `cto`, `backend`, `frontend`, `reviewer`, and `debugger`. `run` executes a single agent loop, while `swarm` chains a broader workflow together and stores artifacts for later inspection.
-
-### Memory
-
-Today the most dependable memory story is local persistence: config files, run artifacts, and project state stored under `.ultra-dex/` and related project files. Redis and Postgres support exist in the repo, but file-backed local usage is still the path to trust first.
-
-### Governance
-
-The CLI already applies governance checks around execution and records traces/artifacts for debugging. That makes it more structured than a shell script wrapper, even if some enterprise-facing claims in older docs were ahead of the implementation.
-
-## CLI Reference
-
-| Command                     | What it does                        | Example                                                 |
-| --------------------------- | ----------------------------------- | ------------------------------------------------------- |
-| `ultra-dex run <agent>`     | Run one agent task                  | `npm run ultra-dex -- run planner -t "hello"`           |
-| `ultra-dex swarm <feature>` | Run a multi-agent workflow          | `npm run ultra-dex -- swarm "draft a launch checklist"` |
-| `ultra-dex config`          | Show or update project config       | `npm run ultra-dex -- config --show`                    |
-| `ultra-dex doctor`          | Check local environment health      | `npm run ultra-dex -- doctor`                           |
-| `ultra-dex serve`           | Start the local server/MCP endpoint | `npm run ultra-dex -- serve --port 3001`                |
-| `ultra-dex --help`          | Show top-level command help         | `npm run ultra-dex -- --help`                           |
-| `ultra-dex --version`       | Print the CLI version               | `npm run ultra-dex -- --version`                        |
-
-If you have a global install later, replace `npm run ultra-dex --` with `ultra-dex`.
-
-## Configuration
-
-Start from the checked-in template:
-
-```bash
-cp .env.example .env
 ```
-
-Minimal example:
-
-```bash
-# Pick one provider
-ANTHROPIC_API_KEY=
-OPENAI_API_KEY=
-GOOGLE_AI_KEY=
-NVIDIA_API_KEY=
-
-# Optional defaults
-ULTRA_DEX_DEFAULT_PROVIDER=nvidia
-
-# Optional local infrastructure
-REDIS_URL=redis://localhost:6379
-DATABASE_URL=postgresql://ultradex:password@localhost:5432/ultradex
-MEMORY_BACKEND=file
-```
-
-You can set a project-local default with:
-
-```bash
-npm run ultra-dex -- config --set providers.default=nvidia
-```
-
-If you prefer prompts, the interactive wizard still exists:
-
-```bash
-npm run ultra-dex -- config --wizard
-```
-
-## Docker
-
-The repo includes `docker-compose.yml` and `Dockerfile` for local infrastructure and app startup.
-
-```bash
-cp .env.example .env
-docker compose up
-```
-
-If you do not want Redis or Postgres locally, keep using the source workflow and set:
-
-```bash
-MEMORY_BACKEND=file
+packages/sdk/         @ultra-dex/sdk — provider routing and smart selection
+packages/dexgraph/    @ultra-dex/dexgraph — workflow DAG engine
+apps/cli/             CLI with 55+ commands
+apps/website/         Marketing site (Next.js)
+apps/dashboard/       SaaS dashboard (Next.js)
+apps/docs-site/       Documentation (Docusaurus)
+src/core/             Core engine (orchestration, memory, governance, agents)
+examples/             Working examples
+tests/                526 tests (unit + integration + CLI)
 ```
 
 ## Contributing
 
-Contributions are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for setup, testing, and repo layout.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, testing, and guidelines.
 
 ## License
 

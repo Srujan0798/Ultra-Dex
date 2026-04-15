@@ -1,1 +1,0 @@
-{"id":"code-reviewer","name":"Code Reviewer","role":"reviewer","description":"Multi-pass code review for bugs, style, architecture, and maintainability","capabilities":["bug-detection","style-check","architecture-review","maintainability-score"],"version":"1.0.0","provider":"claude","model":"claude-sonnet-4"}

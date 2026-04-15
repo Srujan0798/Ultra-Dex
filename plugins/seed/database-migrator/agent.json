@@ -1,1 +1,0 @@
-{"id":"database-migrator","name":"Database Migrator","role":"database","description":"Generates and validates database migrations for PostgreSQL, MySQL, SQLite","capabilities":["migration-gen","schema-validation","rollback-gen","data-migration"],"version":"1.0.0","provider":"claude","model":"claude-sonnet-4"}
