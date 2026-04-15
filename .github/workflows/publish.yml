@@ -16,6 +16,11 @@ on:
         required: true
         default: false
         type: boolean
+      publish_dexgraph:
+        description: 'Publish DexGraph'
+        required: true
+        default: true
+        type: boolean
 
 jobs:
   verify:
@@ -52,6 +57,14 @@ jobs:
       - name: Pack CLI
         if: github.event.inputs.publish_cli == 'true' || github.event_name == 'push'
         run: cd apps/cli && npm pack || echo "CLI pack skipped"
+
+      - name: Build DexGraph
+        if: github.event.inputs.publish_dexgraph != 'false' || github.event_name == 'push'
+        run: cd packages/dexgraph && npm run build
+
+      - name: Pack DexGraph
+        if: github.event.inputs.publish_dexgraph != 'false' || github.event_name == 'push'
+        run: cd packages/dexgraph && npm pack
 
   publish_sdk:
     needs: verify
@@ -102,5 +115,31 @@ jobs:
       - name: Publish CLI
         run: npm publish --access public
         working-directory: apps/cli
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish_dexgraph:
+    needs: verify
+    runs-on: ubuntu-latest
+    if: github.event.inputs.publish_dexgraph != 'false'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      - name: Clear platform-specific lock
+        run: rm -f package-lock.json apps/*/package-lock.json packages/*/package-lock.json || true
+
+      - name: Install dependencies
+        run: npm install --ignore-scripts --no-audit --fund=false --legacy-peer-deps
+
+      - name: Publish DexGraph
+        run: npm publish --access public
+        working-directory: packages/dexgraph
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

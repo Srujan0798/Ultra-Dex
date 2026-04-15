@@ -1,0 +1,51 @@
+{
+  "name": "@ultra-dex/dexgraph",
+  "version": "1.0.0",
+  "description": "Deterministic workflow orchestration with DAG-based task graphs",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist/",
+    "README.md"
+  ],
+  "scripts": {
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "build": "npm run clean && tsc -p tsconfig.json",
+    "prepack": "npm run build",
+    "prepublishOnly": "npm run build",
+    "test": "node --test",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "keywords": [
+    "ultra-dex",
+    "dexgraph",
+    "workflow",
+    "dag",
+    "orchestration",
+    "yaml"
+  ],
+  "author": "Srujan Sai Karna",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Srujan0798/Ultra-Dex"
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^25.5.2",
+    "typescript": "^6.0.2"
+  }
+}
