@@ -1,6 +1,6 @@
 {
   "name": "@ultra-dex/dexgraph",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Deterministic workflow orchestration with DAG-based task graphs",
   "type": "module",
   "main": "./dist/index.js",
