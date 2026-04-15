@@ -56,14 +56,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Forward to core billing service if available
-    try {
-      const { billingService } = await import('../../../../../../src/core/billing/billing-service.js');
-      await billingService.handleWebhook(event);
-    } catch {
-      // If billing service import fails, the console logs above are enough for MVP
-    }
-
+    // Billing service integration deferred — console logs are sufficient for MVP
     return NextResponse.json({ received: true });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Webhook processing failed' }, { status: 500 });
