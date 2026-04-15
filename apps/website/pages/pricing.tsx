@@ -60,9 +60,9 @@ const PLANS: Plan[] = [
       'Agent coordination layer',
       'YAML workflow DSL',
     ],
-    cta: 'Coming Soon',
+    cta: 'Get DexGraph Pro',
     icon: <Users className="w-5 h-5" />,
-    href: '#',
+    href: 'https://www.npmjs.com/package/@ultra-dex/dexgraph',
   },
   {
     name: 'Enterprise',
