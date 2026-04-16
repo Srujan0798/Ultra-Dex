@@ -1,33 +1,40 @@
-/**
- * @fileoverview Index module
- * @module pages/index
- */
-
 import React from 'react';
-import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import HomepageFeatures from '@site/src/components/HomepageFeatures';
-
-import Heading from '@theme/Heading';
 import styles from './index.module.css';
 
 function HomepageHeader() {
-  const {siteConfig} = useDocusaurusContext();
+  const { siteConfig } = useDocusaurusContext();
   return (
-    <header className={clsx('hero hero--primary', styles.heroBanner)}>
+    <header className={styles.heroBanner}>
       <div className="container">
-        <Heading as="h1" className="hero__title">
-          {siteConfig.title}
-        </Heading>
-        <p className="hero__subtitle">{siteConfig.tagline}</p>
+        <div className={styles.badge}>
+          <span className={styles.badgeDot} />
+          v2.1 LIVE
+        </div>
+
+        <h1 className={styles.heroTitle}>{siteConfig.title}</h1>
+        <p className={styles.heroSubtitle}>
+          The AI orchestration meta-layer. Route tasks across 13+ providers,
+          coordinate multi-agent swarms, and build with persistent memory.
+        </p>
+
         <div className={styles.buttons}>
-          <Link
-            className="button button--secondary button--lg"
-            to="/docs/intro">
-            Get Started - 5 min ⏱️
+          <Link className={styles.btnPrimary} to="/docs/intro">
+            Get Started
           </Link>
+          <Link
+            className={styles.btnSecondary}
+            href="https://github.com/Srujan0798/Ultra-Dex"
+          >
+            View on GitHub
+          </Link>
+        </div>
+
+        <div className={styles.codeSnippet}>
+          <code>npm install @ultra-dex/sdk</code>
         </div>
       </div>
     </header>
@@ -35,27 +42,16 @@ function HomepageHeader() {
 }
 
 export default function Home() {
-  const {siteConfig} = useDocusaurusContext();
+  const { siteConfig } = useDocusaurusContext();
   return (
     <Layout
-      title={`Hello from ${siteConfig.title}`}
-      description="Documentation site for Ultra-Dex: The Autonomous OS for Software Engineering">
+      title="Docs"
+      description="Ultra-Dex — AI orchestration meta-layer. Route tasks across 13+ providers, coordinate multi-agent swarms, persistent memory."
+    >
       <HomepageHeader />
       <main>
         <HomepageFeatures />
       </main>
     </Layout>
   );
-}
-
-/**
- * Error handler for index
- * @param {Error} error - Error to handle
- */
-function handleIndexError(error) {
-  try {
-    console.error('[index]', error instanceof Error ? error.message : String(error));
-  } catch (_) {
-    // Fail silently
-  }
 }

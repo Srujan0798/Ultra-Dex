@@ -276,7 +276,6 @@ Import the Ultra-Dex Postman collection for easy testing:
 
 ## Next Steps
 
-- Explore [API Endpoints](./endpoints.md) in detail
-- Learn about [Authentication](./authentication.md) methods
-- Review [Webhook Configuration](./webhooks.md)
-- Check out [SDK Documentation](./sdks.md)
+- Explore the [CLI Overview](./cli-overview.md) for command-line usage
+- Review the [SDK Reference](/docs/sdk) for client libraries
+- Check the [Troubleshooting Guide](/docs/troubleshooting) for common issues

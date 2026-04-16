@@ -136,4 +136,4 @@ alias udx-dev='ultra-dex run DEVELOPMENT_PLAN.md'
 
 ## Command Reference
 
-For a complete list of all 135+ commands with detailed documentation, see the [Generated CLI Reference](./generated-cli-reference.md).
+For more details, see the [CLI Reference](/docs/cli/overview) in the main documentation.

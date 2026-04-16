@@ -1,56 +1,60 @@
-/**
- * @fileoverview HomepageFeatures module
- * @module components/HomepageFeatures
- */
-
 import React from 'react';
-import clsx from 'clsx';
-import Heading from '@theme/Heading';
 import styles from './styles.module.css';
 
-const FeatureList = [
+const features = [
   {
-    title: 'AI Orchestration',
-    Svg: require('@site/static/img/ai-orchestration.svg').default,
-    description: (
-      <>
-        Coordinate 18 specialized AI agents in 6 tiers to build complex applications
-        with consistent architecture and quality standards.
-      </>
-    ),
+    title: 'Multi-Provider Routing',
+    icon: '\u2B21',
+    accent: '#00d4ff',
+    description:
+      '13+ AI providers with intelligent routing. SmartRouter selects by cost, latency, or quality — with automatic fallback chains.',
   },
   {
-    title: 'MCP Integration',
-    Svg: require('@site/static/img/mcp-integration.svg').default,
-    description: (
-      <>
-        Native support for Cursor, Claude Desktop, and other MCP-compatible tools
-        for seamless AI-assisted development workflows.
-      </>
-    ),
+    title: 'Agent Swarms',
+    icon: '\u29BF',
+    accent: '#10b981',
+    description:
+      '9 specialized agent roles coordinate via DAG-based task graphs. Planner, Backend, Frontend, CTO, Reviewer, and more.',
   },
   {
-    title: 'Verification Framework',
-    Svg: require('@site/static/img/verification-framework.svg').default,
-    description: (
-      <>
-        21-step verification process ensures production-ready quality with every
-        AI-generated code change.
-      </>
-    ),
+    title: 'DexGraph Engine',
+    icon: '\u2B22',
+    accent: '#ff9900',
+    description:
+      'DAG workflow orchestration with topological execution, cycle detection, conditional branching, and real-time progress tracking.',
+  },
+  {
+    title: 'Persistent Memory',
+    icon: '\u2BC1',
+    accent: '#a78bfa',
+    description:
+      'Three-tier memory system — instant, session, persistent. Vector-based semantic search with automatic knowledge graph storage.',
+  },
+  {
+    title: 'Governance Layer',
+    icon: '\u2B23',
+    accent: '#f43f5e',
+    description:
+      'Policy enforcement on every task and tool execution. Audit logging, cost controls, and DeniedException for violations.',
+  },
+  {
+    title: 'MCP Protocol',
+    icon: '\u2B2C',
+    accent: '#06b6d4',
+    description:
+      'Native Model Context Protocol server with tool registry. Works with Cursor, Claude Desktop, and any MCP-compatible client.',
   },
 ];
 
-function Feature({Svg, title, description}) {
+function FeatureCard({ title, icon, accent, description }) {
   return (
-    <div className={clsx('col col--4')}>
-      <div className="text--center">
-        <Svg className={styles.featureSvg} role="img" />
+    <div className={styles.card}>
+      <div className={styles.cardIcon} style={{ color: accent }}>
+        {icon}
       </div>
-      <div className="text--center padding-horiz--md">
-        <Heading as="h3">{title}</Heading>
-        <p>{description}</p>
-      </div>
+      <h3 className={styles.cardTitle}>{title}</h3>
+      <p className={styles.cardDescription}>{description}</p>
+      <div className={styles.cardAccent} style={{ background: accent }} />
     </div>
   );
 }
@@ -58,25 +62,37 @@ function Feature({Svg, title, description}) {
 export default function HomepageFeatures() {
   return (
     <section className={styles.features}>
-      <div className="container">
-        <div className="row">
-          {FeatureList.map((props, idx) => (
-            <Feature key={idx} {...props} />
-          ))}
+      <div className={styles.sectionHeader}>
+        <span className={styles.sectionLabel}>CAPABILITIES</span>
+        <h2 className={styles.sectionTitle}>Built for production AI workloads</h2>
+      </div>
+      <div className={styles.grid}>
+        {features.map((feature, idx) => (
+          <FeatureCard key={idx} {...feature} />
+        ))}
+      </div>
+
+      <div className={styles.stats}>
+        <div className={styles.stat}>
+          <span className={styles.statValue}>13+</span>
+          <span className={styles.statLabel}>AI Providers</span>
+        </div>
+        <div className={styles.statDivider} />
+        <div className={styles.stat}>
+          <span className={styles.statValue}>9</span>
+          <span className={styles.statLabel}>Agent Roles</span>
+        </div>
+        <div className={styles.statDivider} />
+        <div className={styles.stat}>
+          <span className={styles.statValue}>350+</span>
+          <span className={styles.statLabel}>Tests Passing</span>
+        </div>
+        <div className={styles.statDivider} />
+        <div className={styles.stat}>
+          <span className={styles.statValue}>3</span>
+          <span className={styles.statLabel}>npm Packages</span>
         </div>
       </div>
     </section>
   );
-}
-
-/**
- * Error handler for HomepageFeatures
- * @param {Error} error - Error to handle
- */
-function handleHomepageFeaturesError(error) {
-  try {
-    console.error('[HomepageFeatures]', error instanceof Error ? error.message : String(error));
-  } catch (_) {
-    // Fail silently
-  }
 }

@@ -4,17 +4,22 @@ import { themes as prismThemes } from 'prism-react-renderer';
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Ultra-Dex',
-  tagline: 'The AI Orchestration Meta-Layer — A Skeleton, Not a Cage',
+  tagline: 'AI Orchestration Documentation',
   favicon: 'img/logo.svg',
 
-  url: 'https://ultra-dex.dev',
+  url: 'https://ultradex-docs.vercel.app',
   baseUrl: '/',
 
   organizationName: 'Srujan0798',
   projectName: 'Ultra-Dex',
 
   onBrokenLinks: 'warn',
-  onBrokenMarkdownLinks: 'warn',
+
+  markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: 'warn',
+    },
+  },
 
   i18n: {
     defaultLocale: 'en',
@@ -58,7 +63,16 @@ const config = {
           },
           { to: '/docs/providers', label: 'Providers', position: 'left' },
           { to: '/docs/sdk', label: 'SDK', position: 'left' },
-          { to: '/blog', label: 'Blog', position: 'left' },
+          {
+            href: 'https://ultradex.vercel.app',
+            label: 'Website',
+            position: 'right',
+          },
+          {
+            href: 'https://github.com/Srujan0798/Ultra-Dex',
+            label: 'GitHub',
+            position: 'right',
+          },
         ],
       },
       footer: {
@@ -76,31 +90,33 @@ const config = {
           {
             title: 'Develop',
             items: [
-              { label: 'Extension Guide', to: '/docs/extensions' },
-              { label: 'Plugin System', to: '/docs/plugins' },
-              { label: 'CLI Reference', to: '/docs/cli' },
+              { label: 'Extensions', to: '/docs/extensions' },
+              { label: 'CLI Reference', to: '/docs/cli/overview' },
+              { label: 'API Reference', to: '/docs/api-reference' },
+              { label: 'Troubleshooting', to: '/docs/troubleshooting' },
             ],
           },
           {
-            title: 'More',
+            title: 'Links',
             items: [
-              { label: 'Blog', to: '/blog' },
-              { label: 'Changelog', to: '/docs/changelog' },
-              { label: 'Roadmap', to: '/docs/roadmap' },
+              { label: 'Website', href: 'https://ultradex.vercel.app' },
+              { label: 'Dashboard', href: 'https://ultradex-dashboard.vercel.app' },
+              { label: 'GitHub', href: 'https://github.com/Srujan0798/Ultra-Dex' },
+              { label: 'npm', href: 'https://www.npmjs.com/package/@ultra-dex/sdk' },
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} Ultra-Dex Core Team. Built with Docusaurus.`,
+        copyright: `Copyright \u00A9 ${new Date().getFullYear()} Ultra-Dex. Built with Docusaurus.`,
       },
       prism: {
         theme: prismThemes.github,
         darkTheme: prismThemes.dracula,
-        additionalLanguages: ['bash', 'json', 'yaml', 'docker'],
+        additionalLanguages: ['bash', 'json', 'yaml', 'docker', 'typescript'],
       },
       colorMode: {
         defaultMode: 'dark',
-        disableSwitch: false,
-        respectPrefersColorScheme: true,
+        disableSwitch: true,
+        respectPrefersColorScheme: false,
       },
     }),
 };

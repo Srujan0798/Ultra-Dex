@@ -183,6 +183,6 @@ ultra-dex agents update
 
 ## Next Steps
 
-- Explore [Individual Agent Commands](./list.md)
-- Learn about [Custom Agent Creation](./custom.md)
-- Understand [Multi-Agent Orchestration](./orchestration.md)
+- Read the [CLI Overview](/docs/cli/overview) for agent command syntax
+- Explore [Routing Strategies](/docs/guides/routing-strategies) for provider selection
+- Review the [SDK Reference](/docs/sdk) for programmatic agent access

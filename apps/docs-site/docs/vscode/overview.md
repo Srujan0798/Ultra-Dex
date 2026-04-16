@@ -193,6 +193,6 @@ Customize keyboard shortcuts in VS Code's keybinding settings:
 
 ## Next Steps
 
-- Install the [VS Code Extension](./installation.md)
-- Explore [Extension Features](./features.md)
-- Learn about [Configuration Options](./configuration.md)
+- Review the [Getting Started Guide](/docs/getting-started/quick-start) for initial setup
+- Read the [CLI Overview](/docs/cli/overview) for command-line usage
+- Check the [MCP Integration Guide](/docs/mcp/overview) for AI tool connections

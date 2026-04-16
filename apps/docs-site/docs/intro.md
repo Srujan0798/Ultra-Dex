@@ -58,6 +58,6 @@ Ready to transform your development workflow? Start with our [Quick Start Guide]
 
 ## Learn More
 
-- [Architecture Overview](./architecture/system-overview.md) - Deep dive into the system design
-- [CLI Reference](./api/cli-reference.md) - Complete command documentation
-- [Integration Guides](./api/integrations.md) - Connect with your favorite tools
+- [Architecture Overview](./architecture.md) - Deep dive into the system design
+- [CLI Reference](./cli/overview.md) - Complete command documentation
+- [Extensions](./extensions.md) - Extend Ultra-Dex with plugins and integrations

@@ -184,6 +184,6 @@ Configure security in `.ultra-dexrc`:
 
 ## Next Steps
 
-- Configure [MCP Setup](./setup.md) for your environment
-- Learn about [MCP Providers](./providers.md) and compatibility
-- Review [Troubleshooting](./troubleshooting.md) guides
+- Review the [Provider Guide](/docs/providers) for supported AI providers
+- Read the [Extensions Guide](/docs/extensions) for plugin development
+- Check the [Troubleshooting Guide](/docs/troubleshooting) for common issues
