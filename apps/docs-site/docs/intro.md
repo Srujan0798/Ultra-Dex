@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Introduction
 
-Ultra-Dex is the **Autonomous OS for Software Engineering** — essentially the "Headless CTO". It's a meta-orchestration layer that standardizes context, planning, verification, and multi-agent execution across your entire development stack.
+Ultra-Dex is an **AI orchestration meta-layer** that routes tasks across 13+ providers, coordinates multi-agent swarms, and maintains persistent memory for your entire development stack.
 
 ## What is Ultra-Dex?
 

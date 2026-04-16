@@ -6,7 +6,7 @@
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
-  "description": "The AI Orchestration Meta-Layer for SaaS Development - OVERPOWERED Edition (1000% Efficiency)",
+  "description": "AI orchestration meta-layer — route tasks across 13+ providers, coordinate multi-agent swarms, persistent memory",
   "keywords": [
     "ai",
     "orchestration",
@@ -34,7 +34,7 @@
     "type": "git",
     "url": "https://github.com/Srujan0798/Ultra-Dex"
   },
-  "homepage": "https://github.com/Srujan0798/Ultra-Dex",
+  "homepage": "https://ultradex.vercel.app",
   "bugs": {
     "url": "https://github.com/Srujan0798/Ultra-Dex/issues"
   },
@@ -82,6 +82,7 @@
     "packages/compliance",
     "packages/core",
     "packages/cursor-rules",
+    "packages/dexgraph",
     "packages/mcp-server",
     "packages/marketplace",
     "packages/plugins",

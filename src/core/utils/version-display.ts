@@ -7,7 +7,7 @@ function showVersionCard() {
   const ultraGradient = gradient(['#6366f1', '#8b5cf6', '#d946ef']);
   const content = [
     ultraGradient.bold('ULTRA-DEX AI'),
-    chalk.gray(`The Headless CTO Meta-Layer`),
+    chalk.gray(`AI Orchestration Meta-Layer`),
     '',
     `${chalk.white('Version:')} ${chalk.cyan(VERSION)}`,
     `${chalk.white('Status:')} ${chalk.green('Stable/Production')}`,

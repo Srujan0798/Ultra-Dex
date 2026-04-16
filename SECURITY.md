@@ -26,10 +26,9 @@ When reporting a vulnerability, please include:
 
 | Version | Supported              |
 | ------- | ---------------------- |
-| 3.1.x   | ✅ Yes                 |
-| 3.0.x   | ✅ Yes                 |
-| 2.x     | ⚠️ Security fixes only |
-| < 2.0   | ❌ No                  |
+| 6.x     | ✅ Yes                 |
+| 5.x     | ⚠️ Security fixes only |
+| < 5.0   | ❌ No                  |
 
 ### 🛡️ Security Measures
 

@@ -13,7 +13,7 @@ export function showVersionCard() {
 
   const content = [
     ultraGradient.bold('ULTRA-DEX AI'),
-    chalk.gray(`The Headless CTO Meta-Layer`),
+    chalk.gray(`AI Orchestration Meta-Layer`),
     '',
     `${chalk.white('Version:')} ${chalk.cyan(VERSION)}`,
     `${chalk.white('Status:')} ${chalk.green('Stable/Production')}`,
