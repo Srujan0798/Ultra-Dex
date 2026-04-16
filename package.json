@@ -166,6 +166,7 @@
     "test:automation": "NODE_ENV=test node --import=tsx --test tests/automation/*.test.ts",
     "incidents:verify": "node gitFail/incidents/verify-incident-archive.js",
     "start:prod": "./scripts/start-production.sh",
+    "start:api": "node --import=tsx src/core/server/api-server.ts",
     "start:server": "node --import=tsx src/core/server/production-server.ts"
   },
   "dependencies": {
