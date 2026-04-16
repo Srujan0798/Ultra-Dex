@@ -14,24 +14,29 @@ import { SkillExecutor } from './executor.js';
 import { SkillDefinition, SkillExecutionOptions, SkillExecutionResult } from './types.js';
 import { engineeringSkills, registerEngineeringSkills } from './engineering/index.js';
 import { dataSkills, registerDataSkills } from './data/index.js';
+import { loadSkillsFromDocs, registerDocsSkills } from './docs-loader.js';
 
 // Re-export types
 export * from './types.js';
 export { defineSkill, renderTemplate, parseJsonOutput, SkillRegistry } from './framework.js';
 export { SkillExecutor } from './executor.js';
+export { loadSkillsFromDocs, registerDocsSkills } from './docs-loader.js';
 
-// All skills in one array
+// All code-defined skills
 export const allSkills: SkillDefinition[] = [...engineeringSkills, ...dataSkills];
 
 /**
- * Initialize the skills system with all 20 skills
+ * Initialize the skills system — code-defined skills first, then docs-based.
+ * Code-defined skills (with schemas and templates) take priority.
+ * Docs-based skills fill in the remaining 66+ skills from the Cowrk registry.
  */
 export function initializeSkills(registry: SkillRegistry = globalSkillRegistry): SkillRegistry {
-  // Register engineering skills
+  // Register code-defined skills (engineering + data)
   registerEngineeringSkills(registry);
-
-  // Register data skills
   registerDataSkills(registry);
+
+  // Register docs-based skills (all 11 plugins — skips already-registered)
+  registerDocsSkills(registry);
 
   return registry;
 }
@@ -98,7 +103,7 @@ export class SkillsAPI {
   /**
    * Find skills by category
    */
-  findByCategory(category: 'engineering' | 'data'): SkillDefinition[] {
+  findByCategory(category: SkillDefinition['category']): SkillDefinition[] {
     return this.registry.findByCategory(category);
   }
 

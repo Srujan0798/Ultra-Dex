@@ -59,8 +59,6 @@ export interface SkillDefinition {
     | 'marketing'
     | 'finance'
     | 'legal'
-    | 'hr'
-    | 'customer-support'
     | 'design'
     | 'operations';
   agent: SkillAgent;
@@ -105,6 +103,6 @@ export interface SkillRegistry {
   get(skillId: string): SkillDefinition | undefined;
   register(skill: SkillDefinition): void;
   list(): SkillDefinition[];
-  findByCategory(category: 'engineering' | 'data'): SkillDefinition[];
+  findByCategory(category: SkillDefinition['category']): SkillDefinition[];
   findByAgent(agentId: string): SkillDefinition[];
 }

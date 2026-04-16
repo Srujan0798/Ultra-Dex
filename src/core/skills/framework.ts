@@ -113,7 +113,7 @@ export class SkillRegistry implements ISkillRegistry {
     return Array.from(this.skills.values());
   }
 
-  findByCategory(category: 'engineering' | 'data'): SkillDefinition[] {
+  findByCategory(category: SkillDefinition['category']): SkillDefinition[] {
     return this.list().filter((s) => s.category === category);
   }
 
