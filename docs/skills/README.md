@@ -1,318 +1,293 @@
-# 🎨 Claude Plugins Skills - Master Index
+# Cowrk Plugins — Skills Registry
 
-> **All 9 Claude plugin skills fully implemented for Ultra-Dex**
-> **System Version:** 2.0.0 | **Lifecycle:** Self-improving | **Quality:** 100/100
+> Model-agnostic skill definitions for Ultra-Dex agents.
+> Any AI agent (Claude, GPT, Nemotron, Llama, Gemini) can read this file to understand available skills and when to use them.
 
----
-
-## Overview
-
-This directory contains **complete, production-quality implementations** of all 9 Claude plugin skills, applied to the Ultra-Dex AI orchestration platform.
-
-| #   | Plugin             | Skills | Documents | Lines  | Status       |
-| --- | ------------------ | ------ | --------- | ------ | ------------ |
-| 1   | Engineering        | 10/10  | 21        | 6,592  | ✅ Benchmark |
-| 2   | Data               | 10/10  | 12        | 4,412  | ✅ Complete  |
-| 3   | Product Management | 9/9    | 13        | 1,719  | ✅ Complete  |
-| 4   | Enterprise Search  | 5/5    | 6         | 455    | ✅ Complete  |
-| 5   | Operations         | 9/9    | 11        | 923    | ✅ Complete  |
-| 6   | Customer Support   | 5/5    | 6         | 495    | ✅ Complete  |
-| 7   | Productivity       | 4/4    | 5         | 346    | ✅ Complete  |
-| 8   | Design             | 8/8    | 9         | 1,000+ | ✅ Complete  |
-| 9   | Marketing          | 8/8    | 8         | 6,500+ | ✅ Complete  |
-
-**Total:** 68/68 skills | 90+ documents | 22,000+ lines
-
----
-
-## Plugin Details
-
-### 1. Engineering (Benchmark Quality)
-
-**10 Skills Implemented:**
-
-- `/architecture` — 6 Architecture Decision Records (ADRs)
-- `/code-review` — Security & performance review
-- `/debug` — Root cause analysis
-- `/deploy-checklist` — 49-point deployment verification
-- `/documentation` — Operational docs
-- `/incident-response` — Playbooks & procedures
-- `/standup` — Daily standup templates
-- `/system-design` — Scalable architecture docs
-- `/tech-debt` — 156 issues catalogued
-- `/testing-strategy` — Complete test framework
-
-**Key Outputs:**
-
-- 6 ADRs (TypeScript, ESM, AI Routing, Memory, Testing, Architecture)
-- 156 technical debt items identified
-- 300+ tests documented
-- Complete deployment checklist
-
-→ [View Engineering Skills](engineering/README.md)
-
----
-
-### 2. Data
-
-**10 Skills Implemented:**
-
-- `/analysis` — Ultra-Dex data analysis
-- `/context` — Data context documentation
-- `/dashboards` — Dashboard templates
-- `/exploration` — Dataset profiling
-- `/queries` — Optimized query library
-- `/statistical` — Statistical analysis
-- `/validation` — Data validation reports
-- `/visualization` — Visualization guides
-
-**Key Outputs:**
-
-- Complete data analysis (100% test pass rate)
-- Statistical analysis with benchmarks
-- Visualization best practices
-- Optimized query library
-
-→ [View Data Skills](data/README.md)
-
----
-
-### 3. Product Management
-
-**9 Skills Implemented:**
-
-- `/brainstorm` — Pricing strategy brainstorm
-- `/competitive-brief` — Competitive analysis
-- `/metrics-review` — Metrics analysis
-- `/product-brainstorming` — Marketplace brainstorm
-- `/roadmap-update` — Roadmap documentation
-- `/sprint-planning` — Sprint 16 plan
-- `/stakeholder-update` — Executive brief
-- `/synthesize-research` — User research synthesis
-- `/write-spec` — Feature specifications
-
-**Key Outputs:**
-
-- RALPH Loop v2.0 specification
-- Competitive positioning brief
-- Roadmap with timeline
-- Stakeholder communication
-
-→ [View Product Management Skills](product-management/README.md)
-
----
-
-### 4. Enterprise Search
-
-**5 Skills Implemented:**
-
-- `/digest` — Weekly digest
-- `/knowledge-synthesis` — Architecture synthesis
-- `/search` — Redis search implementation
-- `/search-strategy` — Query decomposition
-- `/source-management` — Source inventory
-
-**Key Outputs:**
-
-- Redis search configuration
-- 4 knowledge sources connected
-- Query decomposition strategy
-- Weekly digest template
-
-→ [View Enterprise Search Skills](enterprise-search/README.md)
-
----
-
-### 5. Operations
-
-**9 Skills Implemented:**
-
-- `/capacity-plan` — Q2-Q4 capacity planning
-- `/change-request` — Redis migration CR
-- `/compliance-tracking` — SOC 2 tracking
-- `/process-doc` — Bug tracking SOP
-- `/process-optimization` — Code review optimization
-- `/risk-assessment` — v3.2.0 launch risks
-- `/runbook` — Production deploy runbook
-- `/status-report` — Weekly status
-- `/vendor-review` — Render.com review
-
-**Key Outputs:**
-
-- Complete deployment runbook
-- SOC 2 compliance tracking
-- Risk assessment matrix
-- Process optimization analysis
-
-→ [View Operations Skills](operations/README.md)
-
----
-
-### 6. Customer Support
-
-**5 Skills Implemented:**
-
-- `/customer-escalation` — Enterprise escalation brief
-- `/customer-research` — Provider timeout analysis
-- `/draft-response` — Response templates
-- `/kb-article` — Knowledge base article
-- `/ticket-triage` — Triage framework
-
-**Key Outputs:**
-
-- Triage framework with SLAs
-- Knowledge base article
-- Escalation brief template
-- Response template library
-
-→ [View Customer Support Skills](customer-support/README.md)
-
----
-
-### 7. Productivity
-
-**4 Skills Implemented:**
-
-- `/memory-management` — Context memory system
-- `/start` — System initialization
-- `/task-management` — Task list tracking
-- `/update` — Sync and triage
-
-**Key Outputs:**
-
-- System initialization checklist
-- Task management workflow
-- Memory context documentation
-- Sync update process
-
-→ [View Productivity Skills](productivity/README.md)
-
----
-
-### 8. Design
-
-**8 Skills Implemented:**
-
-- `/accessibility-review` — WCAG dashboard audit
-- `/design-critique` — CLI interface critique
-- `/design-handsoff` — Dashboard component spec
-- `/design-system` — Token & component audit
-- `/research-synthesis` — User research synthesis
-- `/user-research` — Research plan
-- `/ux-copy` — Interface copy guidelines
-- `/frontend-design` — Production-grade frontend interface generation
-
-**Key Outputs:**
-
-- 8 accessibility issues identified
-- Design rating: 4.3/5
-- Component handoff specification
-- UX copy standards
-- Frontend design blueprint and implementation protocol
-
-→ [View Design Skills](design/README.md)
-
----
-
-### 9. Marketing
-
-**8 Skills Implemented:**
-
-- `/brand-review` — Brand voice audit
-- `/campaign-plan` — v3.2.0 launch campaign
-- `/competitive-brief` — Competitive positioning
-- `/content-creation` — Multi-channel content
-- `/draft-content` — Launch blog post
-- `/email-sequence` — 7-email nurture flow
-- `/performance-report` — Q1 marketing report
-- `/seo-audit` — Complete SEO audit
-
-**Key Outputs:**
-
-- Brand voice score: 87/100
-- 7-email onboarding sequence
-- Q1 performance report
-- SEO score: 76/100 with 15 recommendations
-
-→ [View Marketing Skills](marketing/README.md)
-
----
-
-## System Files
-
-| File                                             | Purpose                                    |
-| ------------------------------------------------ | ------------------------------------------ |
-| [SYSTEM.md](SYSTEM.md)                           | Lifecycle, self-improvement, agent context |
-| [USAGE-GUIDE.md](USAGE-GUIDE.md)                 | Skill invocation patterns                  |
-| [VERIFICATION-REPORT.md](VERIFICATION-REPORT.md) | Detailed skill status                      |
-| [CHANGELOG.md](CHANGELOG.md)                     | Version history                            |
-
----
-
-## Quick Navigation
-
-| Plugin             | Primary Use Case                    |
-| ------------------ | ----------------------------------- |
-| Engineering        | Technical documentation & decisions |
-| Data               | Analysis, queries, visualizations   |
-| Product Management | Roadmaps, specs, research           |
-| Enterprise Search  | Knowledge management                |
-| Operations         | Processes, compliance, runbooks     |
-| Customer Support   | Tickets, KB, escalations            |
-| Productivity       | Tasks, memory, updates              |
-| Design             | UI/UX, accessibility, handoff       |
-| Marketing          | Brand, content, campaigns, SEO      |
-
----
-
-## Lifecycle
+## Structure
 
 ```
-Bootstrap → Execution → Review → Update → Repeat
+docs/skills/              ← Skill DEFINITIONS (you are here)
+  engineering/            10 skills, 10 connectors
+  product-management/      9 skills, 16 connectors
+  design/                  7 skills,  9 connectors
+  pdf-viewer/              5 skills,  1 connector
+  data/                   10 skills,  8 connectors
+  marketing/               8 skills, 13 connectors
+  sales/                   9 skills, 14 connectors
+  legal/                   9 skills,  8 connectors
+  finance/                 8 skills,  7 connectors
+  slack-by-salesforce/     7 skills,  1 connector
+  productivity/            4 skills, 10 connectors
+
+docs/skills-reports/      ← Skill OUTPUT REPORTS (generated documents)
+docs/CONNECTORS.md        ← MCP connector reference
 ```
 
-1. **Bootstrap:** Initialize system with skills
-2. **Execution:** Apply skills to project
-3. **Review:** Verify outputs and quality
-4. **Update:** Improve based on findings
-5. **Repeat:** Continuous improvement
-
-See [SYSTEM.md](SYSTEM.md) for full self-improvement protocol.
+**Totals: 11 plugins, 86 skills, 97 connectors**
 
 ---
 
-## Quality Metrics
+## How to Use This File
 
-| Metric                | Value   | Target | Status      |
-| --------------------- | ------- | ------ | ----------- |
-| Skills Implemented    | 68/68   | 68     | ✅ 100%     |
-| Document Quality      | 100/100 | 90     | ✅ Exceeds  |
-| Line Coverage         | 22,000+ | 10,000 | ✅ Exceeds  |
-| Plugin Coverage       | 9/9     | 9      | ✅ Complete |
-| Engineering Benchmark | Met     | —      | ✅ Matched  |
+- **For AI agents**: Include this file in your system prompt or context window. Use the skill definitions to determine which capabilities to invoke for a given task.
+- **For orchestrators**: Parse the blocks below to build a skill routing table.
+- **For humans**: Reference this when configuring agent workflows or onboarding new team members.
 
 ---
 
-## Usage for COWRK
+## Skill Priority Tiers
 
-When giving COWRK-FINAL-PROMPT.txt to Claude Code:
+### TIER 1 — Active Now
 
-1. Reference `docs/skills/` for all plugin documentation
-2. Each plugin README has complete skill inventory
-3. Each skill has detailed output documentation
-4. Use SYSTEM.md for lifecycle management
+#### Engineering (10 skills)
+Streamline engineering workflows — standups, code review, architecture decisions, incident response, and technical documentation.
+
+| Skill | Description |
+|-------|-------------|
+| `/architecture` | Create or evaluate an architecture decision record (ADR) |
+| `/code-review` | Review code changes for security, performance, and correctness |
+| `/debug` | Structured debugging session — reproduce, isolate, diagnose, and fix |
+| `/deploy-checklist` | Pre-deployment verification checklist |
+| `/documentation` | Write and maintain technical documentation |
+| `/incident-response` | Run an incident response workflow — triage, communicate, and write postmortem |
+| `/standup` | Generate a standup update from recent activity |
+| `/system-design` | Design systems, services, and architectures |
+| `/tech-debt` | Identify, categorize, and prioritize technical debt |
+| `/testing-strategy` | Design test strategies and test plans |
+
+**Connectors:** slack, linear, asana, atlassian, notion, github, pagerduty, datadog, google-calendar, gmail
 
 ---
 
-## Summary
+#### Product Management (9 skills)
+Write feature specs, plan roadmaps, and synthesize user research faster. Keep stakeholders updated and stay ahead of the competitive landscape.
 
-**Total Skills Implemented:** 68/68 (100%)
-**Total Documents:** 90+
-**Total Lines:** 22,000+
-**Project Status:** ✅ Ready for COWRK-FINAL-PROMPT.txt!
+| Skill | Description |
+|-------|-------------|
+| `/competitive-brief` | Create a competitive analysis brief for one or more competitors or a feature area |
+| `/metrics-review` | Review and analyze product metrics with trend analysis and actionable insights |
+| `/product-brainstorming` | Brainstorm product ideas, explore problem spaces, and challenge assumptions as a thinking partner |
+| `/roadmap-update` | Update, create, or reprioritize your product roadmap |
+| `/sprint-planning` | Plan a sprint — scope work, estimate capacity, set goals, and draft a sprint plan |
+| `/stakeholder-update` | Generate a stakeholder update tailored to audience and cadence |
+| `/synthesize-research` | Synthesize user research from interviews, surveys, and feedback into structured insights |
+| `/write-spec` | Write a feature spec or PRD from a problem statement or feature idea |
+| `/brainstorm` | Brainstorm a product idea, problem space, or strategic question with a sharp thinking partner |
 
-**All 9 Claude plugins fully implemented at Engineering quality level! 🚀**
+**Connectors:** slack, linear, asana, monday, clickup, atlassian, notion, figma, amplitude, amplitude-eu, pendo, intercom, fireflies, google-calendar, gmail, similarweb
 
 ---
 
-**Last Updated:** 2026-04-12 | **System:** v2.1.0 | **Quality:** 100/100
+#### Design (7 skills)
+Accelerate design workflows — critique, design system management, UX writing, accessibility audits, research synthesis, and dev handoff.
+
+| Skill | Description |
+|-------|-------------|
+| `/accessibility-review` | Run a WCAG 2.1 AA accessibility audit on a design or page |
+| `/design-critique` | Get structured design feedback on usability, hierarchy, and consistency |
+| `/design-handoff` | Generate developer handoff specs from a design |
+| `/design-system` | Audit, document, or extend your design system |
+| `/research-synthesis` | Synthesize user research into themes, insights, and recommendations |
+| `/user-research` | Plan, conduct, and synthesize user research |
+| `/ux-copy` | Write or review UX copy — microcopy, error messages, empty states, CTAs |
+
+**Connectors:** slack, figma, linear, asana, atlassian, notion, intercom, google-calendar, gmail
+
+---
+
+#### PDF Viewer (5 skills)
+View, annotate, and sign PDFs in a live interactive viewer.
+
+| Skill | Description |
+|-------|-------------|
+| `/view-pdf` | Interactive PDF viewer for visual collaboration |
+| `/annotate` | Collaboratively annotate a PDF — propose markup, review together, iterate |
+| `/fill-form` | Fill PDF form fields interactively with live visual feedback |
+| `/open` | Open a PDF in the interactive viewer |
+| `/sign` | Place a signature or initials image on a PDF |
+
+**Connectors:** pdf
+
+---
+
+#### Data (10 skills)
+Write SQL, explore datasets, and generate insights faster. Build visualizations and dashboards, and turn raw data into clear stories for stakeholders.
+
+| Skill | Description |
+|-------|-------------|
+| `/analyze` | Answer data questions — from quick lookups to full analyses |
+| `/build-dashboard` | Build an interactive HTML dashboard with charts, filters, and tables |
+| `/create-viz` | Create publication-quality visualizations with Python |
+| `/data-context-extractor` | Generate or improve a company-specific data analysis skill by extracting tribal knowledge |
+| `/data-visualization` | Create effective data visualizations with Python (matplotlib, seaborn, plotly) |
+| `/explore-data` | Profile and explore a dataset to understand its shape, quality, and patterns |
+| `/sql-queries` | Write correct, performant SQL across all major data warehouse dialects |
+| `/statistical-analysis` | Apply statistical methods including descriptive stats, trend analysis, outlier detection, and hypothesis testing |
+| `/validate-data` | QA an analysis before sharing — methodology, accuracy, and bias checks |
+| `/write-query` | Write optimized SQL for your dialect with best practices |
+
+**Connectors:** snowflake, databricks, bigquery, hex, amplitude, amplitude-eu, atlassian, definite
+
+---
+
+### TIER 2 — Next Stage (Install at Milestone)
+
+#### Marketing (8 skills)
+Create content, plan campaigns, and analyze performance across marketing channels.
+
+| Skill | Description |
+|-------|-------------|
+| `/brand-review` | Review content against your brand voice, style guide, and messaging pillars |
+| `/campaign-plan` | Generate a full campaign brief with objectives, audience, messaging, channel strategy |
+| `/competitive-brief` | Research competitors and generate a positioning and messaging comparison |
+| `/content-creation` | Draft marketing content across channels |
+| `/draft-content` | Draft blog posts, social media, email newsletters, landing pages, press releases, and case studies |
+| `/email-sequence` | Design and draft multi-email sequences with full copy, timing, branching logic |
+| `/performance-report` | Build a marketing performance report with key metrics, trend analysis, and recommendations |
+| `/seo-audit` | Run a comprehensive SEO audit — keyword research, on-page analysis, content gaps |
+
+**Connectors:** slack, canva, figma, hubspot, amplitude, amplitude-eu, notion, ahrefs, similarweb, klaviyo, supermetrics, google-calendar, gmail
+**Install when:** Public launch or content marketing begins
+
+---
+
+#### Sales (9 skills)
+Prospect, craft outreach, and build deal strategy faster.
+
+| Skill | Description |
+|-------|-------------|
+| `/account-research` | Research a company or person and get actionable sales intel |
+| `/call-prep` | Prepare for a sales call with account context, attendee research, and suggested agenda |
+| `/call-summary` | Process call notes or a transcript — extract action items, draft follow-up email |
+| `/competitive-intelligence` | Research your competitors and build an interactive battlecard |
+| `/create-an-asset` | Generate tailored sales assets (landing pages, decks, one-pagers, workflow demos) |
+| `/daily-briefing` | Start your day with a prioritized sales briefing |
+| `/draft-outreach` | Research a prospect then draft personalized outreach |
+| `/forecast` | Generate a weighted sales forecast with best/likely/worst scenarios |
+| `/pipeline-review` | Analyze pipeline health — prioritize deals, flag risks, get a weekly action plan |
+
+**Connectors:** slack, hubspot, close, clay, zoominfo, notion, atlassian, fireflies, ms365, apollo, outreach, google-calendar, gmail, similarweb
+**Install when:** First paying customers or enterprise leads
+
+---
+
+#### Legal (9 skills)
+Speed up contract review, NDA triage, and compliance workflows for in-house legal teams.
+
+| Skill | Description |
+|-------|-------------|
+| `/brief` | Generate contextual briefings for legal work — daily summary, topic research, or incident response |
+| `/compliance-check` | Run a compliance check on a proposed action, product feature, or business initiative |
+| `/legal-response` | Generate a response to a common legal inquiry using configured templates |
+| `/legal-risk-assessment` | Assess and classify legal risks using a severity-by-likelihood framework |
+| `/meeting-briefing` | Prepare structured briefings for meetings with legal relevance |
+| `/review-contract` | Review a contract against your organization's negotiation playbook |
+| `/signature-request` | Prepare and route a document for e-signature |
+| `/triage-nda` | Rapidly triage an incoming NDA and classify it as GREEN/YELLOW/RED |
+| `/vendor-check` | Check the status of existing agreements with a vendor across all connected systems |
+
+**Connectors:** slack, box, egnyte, atlassian, ms365, docusign, google-calendar, gmail
+**Install when:** Real contracts, partnerships, or legal filings needed
+
+---
+
+#### Finance (8 skills)
+Streamline finance and accounting workflows, from journal entries and reconciliation to financial statements and variance analysis.
+
+| Skill | Description |
+|-------|-------------|
+| `/audit-support` | Support SOX 404 compliance with control testing methodology, sample selection, and documentation |
+| `/close-management` | Manage the month-end close process with task sequencing, dependencies, and status tracking |
+| `/financial-statements` | Generate financial statements with period-over-period comparison and variance analysis |
+| `/journal-entry` | Prepare journal entries with proper debits, credits, and supporting detail |
+| `/journal-entry-prep` | Prepare journal entries with proper debits, credits, and supporting documentation for month-end close |
+| `/reconciliation` | Reconcile accounts by comparing GL balances to subledgers, bank statements, or third-party data |
+| `/sox-testing` | Generate SOX sample selections, testing workpapers, and control assessments |
+| `/variance-analysis` | Decompose financial variances into drivers with narrative explanations and waterfall analysis |
+
+**Connectors:** snowflake, databricks, bigquery, slack, ms365, google-calendar, gmail
+**Install when:** Managing actual revenue or preparing fundraising materials
+
+---
+
+#### Slack by Salesforce (7 skills)
+Official Slack MCP server for interactive and collaborative workflows.
+
+| Skill | Description |
+|-------|-------------|
+| `/slack-messaging` | Guidance for composing well-formatted, effective Slack messages using mrkdwn syntax |
+| `/slack-search` | Guidance for effectively searching Slack to find messages, files, channels, and people |
+| `/channel-digest` | Get a digest of recent activity across multiple Slack channels |
+| `/draft-announcement` | Draft a well-formatted Slack announcement and save it as a draft |
+| `/find-discussions` | Find discussions about a specific topic across Slack channels |
+| `/standup` | Generate a standup update based on your recent Slack activity |
+| `/summarize-channel` | Summarize recent activity in a Slack channel |
+
+**Connectors:** slack
+**Install when:** Team grows to 3+ people and Slack is the communication hub
+
+---
+
+#### Productivity (4 skills)
+Manage tasks, plan your day, and build up memory of important context about your work.
+
+| Skill | Description |
+|-------|-------------|
+| `/memory-management` | Two-tier memory system that makes Claude a true workplace collaborator |
+| `/start` | Initialize the productivity system and open the dashboard |
+| `/task-management` | Simple task management using a shared TASKS.md file |
+| `/update` | Sync tasks and refresh memory from your current activity |
+
+**Connectors:** slack, notion, asana, linear, atlassian, ms365, monday, clickup, google-calendar, gmail
+**Install when:** Calendar/task management overhead becomes a bottleneck
+
+---
+
+### TIER 3 — Not Needed (Do Not Install)
+
+| Skill | Reason to Skip |
+|-------|---------------|
+| Zoom | Meeting summaries are overhead, not output. Ship code instead. |
+| Common Room | Community analytics — no community to analyze yet. |
+| Apollo | Sales prospecting — building phase, not cold-emailing phase. |
+| Brand Voice | The product IS the brand. Code quality > brand guidelines. |
+| Enterprise Search | Internal knowledge base — you are the knowledge base. |
+| Customer Support | No customers to support yet. |
+| Human Resources | Solo/tiny team — HR tooling is pure overhead. |
+| Bio Research | Irrelevant domain entirely. |
+| Operations | Process optimization for teams that don't exist yet. |
+
+---
+
+## Skill Routing Rules
+
+For any AI agent or orchestrator consuming this file:
+
+```
+IF task involves code/architecture/debugging       → use Engineering
+IF task involves planning/roadmap/priorities        → use Product Management
+IF task involves UI/UX/visual/frontend              → use Design
+IF task involves PDF/document reading               → use PDF Viewer
+IF task involves metrics/analytics/data/SQL         → use Data
+IF task involves content/campaigns/SEO              → use Marketing
+IF task involves prospects/pipeline/outreach         → use Sales
+IF task involves contracts/NDA/compliance            → use Legal
+IF task involves accounting/journal entries/close    → use Finance
+IF task involves Slack messaging/search              → use Slack by Salesforce
+IF task involves tasks/memory/daily planning         → use Productivity
+IF task matches a Tier 3 skill                       → SKIP, explain why
+```
+
+## Integration Points
+
+- **Ultra-Dex AgentOrchestrator**: Read this file to inform agent selection
+- **MCP Server**: Expose Tier 1 skills as available tools
+- **CLI Commands**: Map skills to `ultra-dex run --agent <skill>` options
+- **Dashboard**: Show active skills and their usage stats
+
+---
+
+## Versioning
+
+- **v1.0** — 2026-04-16 — Initial registry, 5 active / 6 staged / 9 excluded
+- **v1.1** — 2026-04-17 — Full skill lists added, frontmatter standardized, CONNECTORS.md created, 86 skills documented

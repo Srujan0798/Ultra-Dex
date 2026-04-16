@@ -1,165 +1,67 @@
-# 📊 Data Skills Output
+# Data
 
-> **Complete outputs from Claude Data plugin skills**
+> **Source:** Marketplace (Anthropic & Partners)
+> **Version:** 1.1.0
+> **Author:** Anthropic
+> **Verified:** Anthropic Verified
+> **Tier:** 1 — Active Now
+> **Skills:** 10
+> **Connectors:** 8 — snowflake, databricks, bigquery, hex, amplitude, amplitude-eu, atlassian, definite
+> **Install:** [Claude Cowork](https://claude.ai/redirect/claudedotcom.v1.cd205027-b086-4e65-9180-ec8b914abe62/desktop/customize/plugins/new?marketplace=anthropics/knowledge-work-plugins&plugin=data)
+> **View:** [claude.com/plugins/data](https://claude.com/plugins/data)
 
----
+## Description
 
-## Overview
+Data transforms Claude into a data analyst collaborator. Explore datasets, write optimized SQL for any dialect, build publication-quality visualizations, and create interactive dashboards — all in one plugin.
 
-This directory contains all outputs from applying Claude Data skills to Ultra-Dex:
+Connect your data warehouse (Snowflake, Databricks, BigQuery, or any SQL-compatible database) and Claude will query directly, explore schemas, and iterate on analyses end-to-end. Without a connection, paste SQL results or upload CSV/Excel files for analysis.
 
-| Skill              | Purpose                | Output               |
-| ------------------ | ---------------------- | -------------------- |
-| `/analyze`         | Data analysis          | Analysis reports     |
-| `/build-dashboard` | Interactive dashboards | HTML dashboards      |
-| `/explore-data`    | Dataset profiling      | Data exploration     |
-| `/queries`         | SQL queries            | Query templates      |
-| `/validation`      | QA validation          | Validation reports   |
-| `/visualization`   | Data viz               | Chart/figure outputs |
+Use `/analyze` for ad-hoc data questions, `/explore-data` to profile a dataset's shape and quality, `/write-query` for optimized SQL with best practices, `/create-viz` for Python visualizations, `/build-dashboard` for interactive HTML dashboards with filters and charts, and `/validate-data` to QA an analysis before sharing.
 
----
+The plugin covers SQL best practices across dialects, statistical analysis, data profiling, and pre-delivery validation to catch issues like survivorship bias or incorrect aggregation before results go to stakeholders.
 
-## Directory Structure
+## Skills
 
-```
-docs/skills/data/
-├── README.md                          # This file
-├── analysis/                          # Data analysis reports
-│   └── ultra-dex-data-analysis.md     # Comprehensive analysis
-├── dashboards/                        # Interactive dashboards
-│   └── dashboard.html                 # HTML dashboard with charts
-├── exploration/                       # Data exploration outputs
-├── queries/                           # SQL query files
-├── validation/                        # QA validation reports
-└── visualization/                     # Visualization outputs
-```
+Invoke by typing `/` in chat, or let Claude use them automatically for relevant tasks.
 
----
+### `/analyze`
+Answer data questions — from quick lookups to full analyses. Use when looking up a single metric, investigating what's driving a trend or drop, comparing segments over time, or preparing a formal data report for stakeholders.
 
-## Skills Applied
+### `/build-dashboard`
+Build an interactive HTML dashboard with charts, filters, and tables. Use when creating an executive overview with KPI cards, turning query results into a shareable self-contained report, building a team monitoring snapshot, or needing multiple charts with filters in one browser-openable file.
 
-### ✅ `/analyze` - Data Analysis
+### `/create-viz`
+Create publication-quality visualizations with Python. Use when turning query results or a DataFrame into a chart, selecting the right chart type for a trend or comparison, generating a plot for a report or presentation, or needing an interactive chart with hover and zoom.
 
-**Purpose:** Answer data questions, investigate trends, prepare reports
+### `/data-context-extractor`
+Generate or improve a company-specific data analysis skill by extracting tribal knowledge from analysts. BOOTSTRAP MODE — Triggers: "Create a data context skill", "Set up data analysis for our warehouse", "Help me create a skill for our database", "Generate a data skill for [company]" -> Discovers schemas, asks key questions, generates initial skill with reference files. ITERATION MODE — Triggers: "Add context about [domain]", "The skill needs more info about [topic]", "Update the data skill with [metrics/tables/terminology]", "Improve the [domain] reference" -> Loads existing skill, asks targeted questions, appends/updates reference files. Use when data analysts want Claude to understand their company's specific data warehouse, terminology, metrics definitions, and common query patterns.
 
-**Output:** `analysis/ultra-dex-data-analysis.md`
+### `/data-visualization`
+Create effective data visualizations with Python (matplotlib, seaborn, plotly). Use when building charts, choosing the right chart type for a dataset, creating publication-quality figures, or applying design principles like accessibility and color theory.
 
-**Analysis Performed:**
+### `/explore-data`
+Profile and explore a dataset to understand its shape, quality, and patterns. Use when encountering a new table or file, checking null rates and column distributions, spotting data quality issues like duplicates or suspicious values, or deciding which dimensions and metrics to analyze.
 
-- Test results analysis (498/498 tests passing)
-- Performance metrics (70-120s trends)
-- Code quality tracking (500+ TS errors by module)
-- Security vulnerability breakdown (3 critical, 4 high, 5 medium)
-- Technical debt prioritization (156 items)
-- Dependencies analysis (15 outdated packages)
-- Build performance benchmarking
-- Actionable recommendations with timeline
+### `/sql-queries`
+Write correct, performant SQL across all major data warehouse dialects (Snowflake, BigQuery, Databricks, PostgreSQL, etc.). Use when writing queries, optimizing slow SQL, translating between dialects, or building complex analytical queries with CTEs, window functions, or aggregations.
 
-**Key Findings:**
+### `/statistical-analysis`
+Apply statistical methods including descriptive stats, trend analysis, outlier detection, and hypothesis testing. Use when analyzing distributions, testing for significance, detecting anomalies, computing correlations, or interpreting statistical results.
 
-- Test pass rate: 100% (trending +6% per week)
-- Critical blockers: TypeScript errors (500+, prevents deployment)
-- Security: 3 P0 issues requiring immediate fix
-- Timeline to production: 2-3 weeks
-- Required effort: 158 hours across 4 weeks
+### `/validate-data`
+QA an analysis before sharing — methodology, accuracy, and bias checks. Use when reviewing an analysis before a stakeholder presentation, spot-checking calculations and aggregation logic, verifying a SQL query's results look right, or assessing whether conclusions are actually supported by the data.
 
----
+### `/write-query`
+Write optimized SQL for your dialect with best practices. Use when translating a natural-language data need into SQL, building a multi-CTE query with joins and aggregations, optimizing a query against a large partitioned table, or getting dialect-specific syntax for Snowflake, BigQuery, Postgres, etc.
 
-### ✅ `/build-dashboard` - Interactive Dashboards
+## Try Asking
 
-**Purpose:** Build shareable interactive dashboards with KPIs, filters, charts
+- Explore and profile a dataset
+- Build an interactive dashboard from my data
+- Write an optimized SQL query
+- Map out my data warehouse schema and tables
+- Run a statistical analysis on my dataset
 
-**Output:** `dashboards/dashboard.html`
+## Reports
 
-**Dashboard Features:**
-
-- 6 KPI cards with color-coded status (🟢,🟡,🟠,🟥)
-- 4 interactive Plotly.js charts:
-  - Health score trend over time
-  - Technical debt by category
-  - TypeScript error distribution
-  - Security issues breakdown
-- Critical action items table
-- Responsive design (works on desktop and mobile)
-- Filters for severity, time range
-- Self-contained (single HTML file)
-
-**Data Sources:**
-
-- Test execution metrics
-- Code quality scans
-- Security vulnerability reports
-- Dependency status data
-- Performance benchmarks
-
----
-
-### 📂 Structure Matching Engineering Skills
-
-**Engineering Skills:** `docs/skills/engineering/`
-
-- Architecture, Code Review, Debug, Deploy Checklist, etc.
-
-**Data Skills:** `docs/skills/data/`
-
-- Analysis, Dashboards, Queries, Exploration, etc.
-
-**Consistency:** Both follow the same organizational pattern
-
----
-
-## Usage
-
-### For Analysis & Reporting
-
-```bash
-# View comprehensive data analysis
-cat docs/skills/data/analysis/ultra-dex-data-analysis.md
-
-# Open dashboard in browser
-open docs/skills/data/dashboards/dashboard.html
-```
-
-### For Stakeholders
-
-- **Analysis report:** Share `analysis/ultra-dex-data-analysis.md` with leadership
-- **Dashboard:** Present `dashboards/dashboard.html` in meetings
-- **Charts:** Use dashboard charts in presentations
-
-### For Engineers
-
-- **Root causes:** See `analysis/` for detailed issue analysis
-- **Next steps:** Dashboard shows prioritized action items
-- **Validation:** Data-driven decisions based on real metrics
-
----
-
-## Summary
-
-| Metric           | Engineering             | Data                |
-| ---------------- | ----------------------- | ------------------- |
-| **Skills**       | 10/10 ✅                | 10/10 ✅            |
-| **Documents**    | 25+                     | 9+                  |
-| **Lines**        | 10,000+                 | 2,000+              |
-| **Issues Found** | 156 tech debt + 10 code | 500+ TS, 3 security |
-
-**Total Skills Applied:** 20/20 (100%)  
-**Documents Created:** 34+ files  
-**Project Status:** Ready for COWRK
-
----
-
-## Next Steps
-
-### Data Skills Still Available:
-
-1. `/explore-data` - Profile dataset shape and quality
-2. `/queries` - Write optimized SQL queries
-3. `/validation` - QA analysis before sharing
-4. `/visualization` - Create publication-quality visuals
-
-**Ready for next data request! 🚀**
-
----
-
-**Last Updated:** 2026-04-10
+See `docs/skills-reports/data/` for all generated outputs.

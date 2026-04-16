@@ -1,267 +1,68 @@
-# 🛠️ Engineering Skills Output
-
-> **Complete outputs from Claude Engineering plugin skills**
-
----
-
-## Overview
-
-This directory contains all outputs from applying the **10 Claude Engineering skills** to Ultra-Dex:
-
-| Skill                | Purpose                 | Output                          |
-| -------------------- | ----------------------- | ------------------------------- |
-| `/architecture`      | ADR creation            | 7 Architecture Decision Records |
-| `/code-review`       | Code analysis           | Security/performance review     |
-| `/debug`             | Root cause analysis     | Debug findings & fixes          |
-| `/deploy-checklist`  | Deployment verification | 49-point checklist              |
-| `/documentation`     | Technical docs          | Runbooks & guides               |
-| `/incident-response` | Incident handling       | Playbooks & procedures          |
-| `/standup`           | Standup updates         | Daily standup template          |
-| `/system-design`     | System architecture     | Scalable design docs            |
-| `/tech-debt`         | Debt identification     | 156 issues catalogued           |
-| `/testing-strategy`  | Testing framework       | Complete test strategy          |
+# Engineering
 
----
+> **Source:** Marketplace (Anthropic & Partners)
+> **Version:** 1.2.0
+> **Author:** Anthropic
+> **Verified:** Anthropic Verified
+> **Tier:** 1 — Active Now
+> **Skills:** 10
+> **Connectors:** 10 — slack, linear, asana, atlassian, notion, github, pagerduty, datadog, google-calendar, gmail
+> **Install:** [Claude Cowork](https://claude.ai/redirect/claudedotcom.v1.cd205027-b086-4e65-9180-ec8b914abe62/desktop/customize/plugins/new?marketplace=anthropics/knowledge-work-plugins&plugin=engineering)
+> **View:** [claude.com/plugins/engineering](https://claude.com/plugins/engineering)
 
-## Directory Structure
+## Description
 
-```
-docs/skills/engineering/
-├── README.md                           # This file
-├── architecture/                       # ADRs & architecture docs
-│   ├── ADR-001-typescript-over-javascript.md
-│   ├── ADR-002-esm-over-commonjs.md
-│   ├── ADR-003-ai-provider-routing.md
-│   ├── ADR-004-three-tier-memory.md
-│   ├── ADR-005-native-test-runner.md
-│   ├── ADR-006-architectural-improvements.md
-│   ├── ADR-007-dexgraph-component-boundaries-v2.md
-│   └── ARCHITECTURAL-IMPROVEMENTS-SUMMARY.md
-├── code-review/                        # Code review findings
-│   └── CODE-REVIEW-REPORT.md
-├── debug/                              # Debug analysis
-│   └── DEBUG-ANALYSIS.md
-├── deploy-checklist/                   # Deployment verification
-│   └── DEPLOY-CHECKLIST.md
-├── documentation/                      # Documentation guides
-│   └── (operational docs in root)
-├── incident-response/                  # Incident handling
-│   ├── INCIDENT-RESPONSE-PLAYBOOK.md
-│   └── RUNBOOK.md
-├── standup/                            # Standup updates
-│   └── STANDUP-UPDATE.md
-├── system-design/                      # System architecture
-│   └── SYSTEM-DESIGN.md
-├── tech-debt/                          # Technical debt
-│   ├── TECH-DEBT-BACKLOG.md
-│   └── TECHNICAL_DEBT_AUDIT.md
-└── testing-strategy/                   # Testing framework
-    └── TESTING-STRATEGY.md
-```
+Streamline engineering workflows — standups, code review, architecture decisions, incident response, and technical documentation.
 
----
+You can use Engineering to:
 
-## Skill Outputs
+- **Code Review:** "Review this pull request and flag potential issues with error handling and performance"
+- **Architecture Decision:** "Draft an ADR for migrating our monolith to microservices"
+- **Incident Response:** "Write a post-mortem for yesterday's database outage with root cause analysis"
+- **Standup Summary:** "Summarize our team's recent commits and PRs into a standup update"
 
-### 1. Architecture (`/architecture`)
+## Skills
 
-**Purpose:** Document key architectural decisions
+Invoke by typing `/` in chat, or let Claude use them automatically for relevant tasks.
 
-**Outputs:**
+### `/architecture`
+Create or evaluate an architecture decision record (ADR). Use when choosing between technologies (e.g., Kafka vs SQS), documenting a design decision with trade-offs and consequences, reviewing a system design proposal, or designing a new component from requirements and constraints.
 
-- **7 ADRs** covering:
-  - TypeScript over JavaScript
-  - ES Modules over CommonJS
-  - Multi-Provider AI Routing
-  - 3-Tier Memory Architecture
-  - Native Node.js Test Runner
-  - Critical Architectural Improvements
-  - DexGraph component boundaries for V2.0
+### `/code-review`
+Review code changes for security, performance, and correctness. Trigger with a PR URL or diff, "review this before I merge", "is this code safe?", or when checking a change for N+1 queries, injection risks, missing edge cases, or error handling gaps.
 
-**Location:** `docs/skills/engineering/architecture/`
+### `/debug`
+Structured debugging session — reproduce, isolate, diagnose, and fix. Trigger with an error message or stack trace, "this works in staging but not prod", "something broke after the deploy", or when behavior diverges from expected and the cause isn't obvious.
 
----
+### `/deploy-checklist`
+Pre-deployment verification checklist. Use when about to ship a release, deploying a change with database migrations or feature flags, verifying CI status and approvals before going to production, or documenting rollback triggers ahead of time.
 
-### 2. Code Review (`/code-review`)
+### `/documentation`
+Write and maintain technical documentation. Trigger with "write docs for", "document this", "create a README", "write a runbook", "onboarding guide", or when the user needs help with any form of technical writing — API docs, architecture docs, or operational runbooks.
 
-**Purpose:** Review code for security, performance, correctness
+### `/incident-response`
+Run an incident response workflow — triage, communicate, and write postmortem. Trigger with "we have an incident", "production is down", an alert that needs severity assessment, a status update mid-incident, or when writing a blameless postmortem after resolution.
 
-**Outputs:**
+### `/standup`
+Generate a standup update from recent activity. Use when preparing for daily standup, summarizing yesterday's commits and PRs and ticket moves, formatting work into yesterday/today/blockers, or structuring a few rough notes into a shareable update.
 
-- **10 critical issues** found:
-  - 3 Critical (security + performance)
-  - 4 High (error handling + architecture)
-  - 3 Medium (code quality)
+### `/system-design`
+Design systems, services, and architectures. Trigger with "design a system for", "how should we architect", "system design for", "what's the right architecture for", or when the user needs help with API design, data modeling, or service boundaries.
 
-**Location:** `docs/skills/engineering/code-review/CODE-REVIEW-REPORT.md`
+### `/tech-debt`
+Identify, categorize, and prioritize technical debt. Trigger with "tech debt", "technical debt audit", "what should we refactor", "code health", or when the user asks about code quality, refactoring priorities, or maintenance backlog.
 
----
+### `/testing-strategy`
+Design test strategies and test plans. Trigger with "how should we test", "test strategy for", "write tests for", "test plan", "what tests do we need", or when the user needs help with testing approaches, coverage, or test architecture.
 
-### 3. Debug (`/debug`)
+## Try Asking
 
-**Purpose:** Root cause analysis
+- Generate my standup update from recent activity
+- Review a PR for security and correctness
+- Write an architecture decision record
+- Run an incident response workflow
+- Audit our codebase for tech debt priorities
 
-**Outputs:**
+## Reports
 
-- **6 root causes** identified:
-  - Missing property declarations
-  - Compiled output issues
-  - Circular dependencies
-  - Implicit 'any' types
-  - Decorator compilation
-  - Environment handling
-
-**Location:** `docs/skills/engineering/debug/DEBUG-ANALYSIS.md`
-
----
-
-### 4. Deploy Checklist (`/deploy-checklist`)
-
-**Purpose:** Pre-deployment verification
-
-**Outputs:**
-
-- **49-point checklist** covering:
-  - Pre-deployment (13 items)
-  - CI/CD pipeline (6 items)
-  - Infrastructure (8 items)
-  - Deployment execution (11 items)
-  - Post-deployment (8 items)
-  - Rollback plan (3 items)
-
-**Location:** `docs/skills/engineering/deploy-checklist/DEPLOY-CHECKLIST.md`
-
----
-
-### 5. Documentation (`/documentation`)
-
-**Purpose:** Technical documentation
-
-**Outputs:**
-
-- RUNBOOK.md (operational procedures)
-- ARCHITECTURE.md (technical deep-dive)
-- CONTRIBUTING.md (contributor guide)
-- SECURITY.md (security policy)
-- CODE_OF_CONDUCT.md (community guidelines)
-
-**Note:** Root-level docs in project root
-
----
-
-### 6. Incident Response (`/incident-response`)
-
-**Purpose:** Incident handling procedures
-
-**Outputs:**
-
-- INCIDENT-RESPONSE-PLAYBOOK.md
-- RUNBOOK.md (operational runbook)
-
-**Location:** `docs/skills/engineering/incident-response/`
-
----
-
-### 7. Standup (`/standup`)
-
-**Purpose:** Daily standup updates
-
-**Outputs:**
-
-- STANDUP-UPDATE.md (template)
-
-**Location:** `docs/skills/engineering/standup/`
-
----
-
-### 8. System Design (`/system-design`)
-
-**Purpose:** Scalable system architecture
-
-**Outputs:**
-
-- SYSTEM-DESIGN.md covering:
-  - High-level architecture
-  - Service boundaries
-  - Data models
-  - API design
-  - Scaling strategy
-  - Security design
-  - Multi-region deployment
-
-**Location:** `docs/skills/engineering/system-design/`
-
----
-
-### 9. Tech Debt (`/tech-debt`)
-
-**Purpose:** Identify and prioritize debt
-
-**Outputs:**
-
-- **156 issues** catalogued:
-  - TECHNICAL_DEBT_AUDIT.md (727 lines)
-  - TECH-DEBT-BACKLOG.md (prioritized)
-
-**Location:** `docs/skills/engineering/tech-debt/`
-
----
-
-### 10. Testing Strategy (`/testing-strategy`)
-
-**Purpose:** Complete testing framework
-
-**Outputs:**
-
-- TESTING-STRATEGY.md covering:
-  - Testing pyramid
-  - Unit testing
-  - Integration testing
-  - E2E testing
-  - Performance testing
-  - Security testing
-  - Coverage goals (85%+)
-
-**Location:** `docs/skills/engineering/testing-strategy/`
-
----
-
-## Usage
-
-### For Contributors
-
-1. **Start here:** `architecture/` - Understand key decisions
-2. **Code quality:** `code-review/` - Know the issues
-3. **Development:** `testing-strategy/` - Testing guidelines
-4. **Deployment:** `deploy-checklist/` - Before releasing
-
-### For Operations
-
-1. **Incidents:** `incident-response/` - Response procedures
-2. **Deployment:** `deploy-checklist/` - Verification steps
-3. **System:** `system-design/` - Architecture reference
-
-### For Architecture
-
-1. **Decisions:** `architecture/` - All ADRs
-2. **Design:** `system-design/` - Scalable architecture
-3. **Debt:** `tech-debt/` - Known issues
-
----
-
-## Summary
-
-| Metric                | Value                          |
-| --------------------- | ------------------------------ |
-| **Skills Applied**    | 10/10                          |
-| **Documents Created** | 25+                            |
-| **Lines Written**     | 10,000+                        |
-| **Issues Found**      | 156 tech debt + 10 code review |
-| **ADRs Created**      | 6                              |
-| **Checklist Points**  | 49                             |
-
-**All engineering skills successfully applied! ✅**
-
----
-
-**Last Updated:** 2026-04-10
+See `docs/skills-reports/engineering/` for all generated outputs.

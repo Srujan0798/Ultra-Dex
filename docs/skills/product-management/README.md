@@ -1,226 +1,64 @@
-# 📦 Product Management Skills Output
+# Product Management
 
-> **Complete outputs from Claude Product Management plugin skills**
+> **Source:** Marketplace (Anthropic & Partners)
+> **Version:** 1.2.0
+> **Author:** Anthropic
+> **Verified:** Anthropic Verified
+> **Tier:** 1 — Active Now
+> **Skills:** 9
+> **Connectors:** 16 — slack, linear, asana, monday, clickup, atlassian, notion, figma, amplitude, amplitude-eu, pendo, intercom, fireflies, google-calendar, gmail, similarweb
+> **Install:** [Claude Cowork](https://claude.ai/redirect/claudedotcom.v1.cd205027-b086-4e65-9180-ec8b914abe62/desktop/customize/plugins/new?marketplace=anthropics/knowledge-work-plugins&plugin=product-management)
+> **View:** [claude.com/plugins/product-management](https://claude.com/plugins/product-management)
 
----
+## Description
 
-## Overview
+Product Management covers the full PM workflow: writing feature specs, managing roadmaps, communicating with stakeholders, synthesizing user research, analyzing competitors, and tracking product metrics.
 
-This directory contains all outputs from applying the **9 Claude Product Management skills** to Ultra-Dex:
+Use `/write-spec` to generate structured PRDs from a problem statement or feature idea, complete with user stories, requirements prioritization, and success metrics. Plan and reprioritize your roadmap with `/roadmap-update`, supporting Now/Next/Later, quarterly themes, and OKR-aligned formats.
 
-| Skill                    | Purpose                   | Output                     |
-| ------------------------ | ------------------------- | -------------------------- |
-| `/competitive-brief`     | Competitive analysis      | Battle cards & positioning |
-| `/metrics-review`        | Product metrics           | Scorecard with actions     |
-| `/product-brainstorming` | Problem space exploration | Marketplace strategy       |
-| `/roadmap-update`        | Roadmap planning          | Now/Next/Later view        |
-| `/sprint-planning`       | Sprint planning           | 2-week sprint backlog      |
-| `/stakeholder-update`    | Stakeholder communication | Executive + Engineering    |
-| `/synthesize-research`   | User research synthesis   | Theme analysis             |
-| `/write-spec`            | Feature specs & PRDs      | RALPH Loop v2, LiteLLM     |
-| `/brainstorm`            | Strategic thinking        | Pricing strategy           |
+Generate tailored stakeholder updates with `/stakeholder-update` — for executives, engineering, or customers. Turn interview notes and survey data into structured insights with `/synthesize-research`, create competitive analysis briefs with `/competitive-brief`, and review product metrics with `/metrics-review`.
 
----
+Connect your project tracker, chat, knowledge base, design tools, analytics, and user feedback platforms via MCP for the richest experience.
 
-## Directory Structure
+## Skills
 
-```
-docs/skills/product-management/
-├── README.md                           # This file
-├── IMPLEMENTATION-STATUS.md            # Skills completion status
-├── brainstorm/                         # Strategic brainstorming
-│   └── pricing-strategy.md             # Monetization strategy
-├── competitive-brief/                  # Competitive analysis
-│   └── competitive-analysis.md         # Market positioning
-├── metrics-review/                     # Product metrics
-│   └── metrics-review.md               # Monthly scorecard
-├── product-brainstorming/              # Problem exploration
-│   └── marketplace-brainstorm.md       # Agent marketplace
-├── roadmap-update/                    # Roadmap planning
-│   └── roadmap.md                     # Now/Next/Later
-├── sprint-planning/                   # Sprint management
-│   └── sprint-16.md                   # Current sprint
-├── stakeholder-update/                # Communications
-│   ├── executive-brief.md             # Board/exec update
-│   └── engineering-update.md          # Engineering weekly
-├── synthesize-research/               # User research
-│   └── user-research-synthesis.md     # Theme analysis
-└── write-spec/                        # Feature specs
-    ├── ralph-loop-v2.md                # RALPH enhancement
-    └── litellm-adapter.md              # LiteLLM integration
-```
+Invoke by typing `/` in chat, or let Claude use them automatically for relevant tasks.
 
----
+### `/competitive-brief`
+Create a competitive analysis brief for one or more competitors or a feature area. Use when informing product strategy or feature prioritization, building sales battle cards, prepping board or investor materials, or deciding where to differentiate vs. achieve parity.
 
-## Skill Outputs
+### `/metrics-review`
+Review and analyze product metrics with trend analysis and actionable insights. Use when running a weekly, monthly, or quarterly metrics review, investigating a sudden spike or drop, comparing performance against targets, or turning raw numbers into a scorecard with recommended actions.
 
-### 1. Competitive Brief (`/competitive-brief`)
+### `/product-brainstorming`
+Brainstorm product ideas, explore problem spaces, and challenge assumptions as a thinking partner. Use when exploring a new opportunity, generating solutions to a product problem, stress-testing an idea, or when a PM needs to think out loud with a sharp sparring partner before converging on a direction.
 
-**Purpose:** Inform product strategy, build battle cards
+### `/roadmap-update`
+Update, create, or reprioritize your product roadmap. Use when adding a new initiative and deciding what moves to make room, shifting priorities after new information comes in, moving timelines due to a dependency slip, or building a Now/Next/Later view from scratch.
 
-**Outputs:**
+### `/sprint-planning`
+Plan a sprint — scope work, estimate capacity, set goals, and draft a sprint plan. Use when kicking off a new sprint, sizing a backlog against team availability (accounting for PTO and meetings), deciding what's P0 vs. stretch, or handling carryover from the last sprint.
 
-- Competitive analysis vs LangGraph, CrewAI, MS Agent
-- Market positioning (18.38B -> 58B by 2032)
-- Battle cards for sales
-- Differentiation strategy
+### `/stakeholder-update`
+Generate a stakeholder update tailored to audience and cadence. Use when writing a weekly or monthly status for leadership, announcing a launch, escalating a risk or blocker, or translating the same progress into exec-brief, engineering-detail, or customer-facing versions.
 
-**Location:** `competitive-brief/competitive-analysis.md`
+### `/synthesize-research`
+Synthesize user research from interviews, surveys, and feedback into structured insights. Use when you have a pile of interview notes, survey responses, or support tickets to make sense of, need to extract themes and rank findings by frequency and impact, or want to turn raw feedback into roadmap recommendations.
 
----
+### `/write-spec`
+Write a feature spec or PRD from a problem statement or feature idea. Use when turning a vague idea or user request into a structured document, scoping a feature with goals and non-goals, defining success metrics and acceptance criteria, or breaking a big ask into a phased spec.
 
-### 2. Metrics Review (`/metrics-review`)
+### `/brainstorm`
+Brainstorm a product idea, problem space, or strategic question with a sharp thinking partner.
 
-**Purpose:** Analyze product metrics with trends
+## Try Asking
 
-**Outputs:**
+- Write a feature spec from a problem statement
+- Synthesize user research into themes
+- Generate a stakeholder update for leadership
+- Reprioritize my product roadmap
+- Review product metrics against our OKRs
 
-- Executive scorecard (test pass, coverage, TS errors, security)
-- Performance trends (46% test speed improvement)
-- Action items by priority
-- Monthly review framework
+## Reports
 
-**Location:** `metrics-review/metrics-review.md`
-
----
-
-### 3. Product Brainstorming (`/product-brainstorming`)
-
-**Purpose:** Explore problem spaces with thinking partner
-
-**Outputs:**
-
-- Agent marketplace discovery solutions
-- Trust & quality mechanisms
-- Monetization models
-- Assumptions to validate
-
-**Location:** `product-brainstorming/marketplace-brainstorm.md`
-
----
-
-### 4. Roadmap Update (`/roadmap-update`)
-
-**Purpose:** Plan and reprioritize roadmap
-
-**Outputs:**
-
-- Now/Next/Later format
-- Q2-Q4 2026 milestones
-- OKR tracking
-- Reprioritization notes
-
-**Location:** `roadmap-update/roadmap.md`
-
----
-
-### 5. Sprint Planning (`/sprint-planning`)
-
-**Purpose:** Scope work, estimate capacity
-
-**Outputs:**
-
-- 2-week sprint plan (Sprint 16)
-- P0/P1/P2 backlog (8 points capacity)
-- Risk assessment
-- Definition of done
-
-**Location:** `sprint-planning/sprint-16.md`
-
----
-
-### 6. Stakeholder Update (`/stakeholder-update`)
-
-**Purpose:** Tailored communications for audiences
-
-**Outputs:**
-
-- Executive brief (monthly)
-- Engineering update (weekly)
-- Risk escalation
-- Progress vs OKRs
-
-**Location:** `stakeholder-update/`
-
----
-
-### 7. Synthesize Research (`/synthesize-research`)
-
-**Purpose:** Turn raw feedback into insights
-
-**Outputs:**
-
-- 100+ data points analyzed
-- 5 themes ranked by frequency/impact
-- Roadmap recommendations
-- Research gaps identified
-
-**Location:** `synthesize-research/user-research-synthesis.md`
-
----
-
-### 8. Write Spec (`/write-spec`)
-
-**Purpose:** Structured PRDs from problem statements
-
-**Outputs:**
-
-- RALPH Loop v2.0 spec (autonomous reasoning)
-- LiteLLM Adapter spec (100+ providers)
-- User stories, success metrics, timeline
-
-**Location:** `write-spec/`
-
----
-
-### 9. Brainstorm (`/brainstorm`)
-
-**Purpose:** Strategic thinking partner
-
-**Outputs:**
-
-- Pricing strategy analysis
-- 3 pricing model options evaluated
-- Recommended freemium model
-- Validation plan
-
-**Location:** `brainstorm/pricing-strategy.md`
-
----
-
-## Usage
-
-### For Product Strategy
-
-1. **Competitive:** `competitive-brief/` - Know the market
-2. **Research:** `synthesize-research/` - Know the users
-3. **Roadmap:** `roadmap-update/` - Plan the work
-
-### For Execution
-
-1. **Sprints:** `sprint-planning/` - Execute work
-2. **Specs:** `write-spec/` - Define requirements
-3. **Metrics:** `metrics-review/` - Measure progress
-
-### For Communication
-
-1. **Stakeholders:** `stakeholder-update/` - Different audiences
-2. **Strategy:** `brainstorm/` - Strategic decisions
-
----
-
-## Summary
-
-| Metric                   | Value                 |
-| ------------------------ | --------------------- |
-| **Skills Applied**       | 9/9                   |
-| **Documents Created**    | 11+                   |
-| **Features Spec'd**      | 2 (RALPH v2, LiteLLM) |
-| **Sprints Planned**      | 1                     |
-| **Competitors Analyzed** | 3                     |
-
-**All product management skills successfully applied! ✅**
-
----
-
-**Last Updated:** 2026-04-11
+See `docs/skills-reports/product-management/` for all generated outputs.

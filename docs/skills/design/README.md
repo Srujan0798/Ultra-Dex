@@ -1,263 +1,59 @@
-# 🎨 Design Skills Output
+# Design
 
-> **Complete outputs from Claude Design plugin skills**
+> **Source:** Marketplace (Anthropic & Partners)
+> **Version:** 1.2.0
+> **Author:** Anthropic
+> **Verified:** Anthropic Verified
+> **Tier:** 1 — Active Now
+> **Skills:** 7
+> **Connectors:** 9 — slack, figma, linear, asana, atlassian, notion, intercom, google-calendar, gmail
+> **Install:** [Claude Cowork](https://claude.ai/redirect/claudedotcom.v1.cd205027-b086-4e65-9180-ec8b914abe62/desktop/customize/plugins/new?marketplace=anthropics/knowledge-work-plugins&plugin=design)
+> **View:** [claude.com/plugins/design](https://claude.com/plugins/design)
 
----
+## Description
 
-## Overview
+Accelerate design workflows — critique, design system management, UX writing, accessibility audits, research synthesis, and dev handoff.
 
-This directory contains all outputs from applying the **8 Claude Design skills** to Ultra-Dex:
+You can use Design to:
 
-| Skill                   | Purpose                  | Output                        |
-| ----------------------- | ------------------------ | ----------------------------- |
-| `/accessibility-review` | WCAG compliance audit    | Dashboard accessibility audit |
-| `/design-critique`      | Design feedback          | CLI interface critique        |
-| `/design-handsoff`      | Developer specifications | Dashboard component spec      |
-| `/design-system`        | Design token audit       | Token & component audit       |
-| `/research-synthesis`   | Research insights        | User research synthesis       |
-| `/user-research`        | Research planning        | Research plan                 |
-| `/ux-copy`              | UX copywriting           | Interface copy guidelines     |
-| `/frontend-design`      | Frontend design creation | Frontend design blueprint     |
+- **Design Critique:** "Review this mockup for usability issues and consistency with our design system"
+- **UX Writing:** "Write microcopy for our checkout flow error states"
+- **Accessibility Audit:** "Audit this page design for WCAG 2.1 AA compliance issues"
+- **Research Synthesis:** "Synthesize findings from our last 5 user interviews into actionable insights"
 
----
+## Skills
 
-## Directory Structure
+Invoke by typing `/` in chat, or let Claude use them automatically for relevant tasks.
 
-```
-docs/skills/design/
-├── README.md # This file
-├── accessibility-review/ # WCAG audit
-│   └── dashboard-audit.md
-├── design-critique/ # Design feedback
-│   └── cli-interface.md
-├── design-handsoff/ # Developer specs
-│   └── dashboard-spec.md
-├── design-system/ # Design tokens
-│   └── audit.md
-├── research-synthesis/ # Research insights
-│   └── user-research.md
-├── user-research/ # Research planning
-│   └── research-plan.md
-├── ux-copy/ # Copywriting
-    └── interface-copy.md
-└── frontend-design/ # Frontend design blueprint
-    └── frontend-design.md
-```
+### `/accessibility-review`
+Run a WCAG 2.1 AA accessibility audit on a design or page. Trigger with "audit accessibility", "check a11y", "is this accessible?", or when reviewing a design for color contrast, keyboard navigation, touch target size, or screen reader behavior before handoff.
 
----
+### `/design-critique`
+Get structured design feedback on usability, hierarchy, and consistency. Trigger with "review this design", "critique this mockup", "what do you think of this screen?", or when sharing a Figma link or screenshot for feedback at any stage from exploration to final polish.
 
-## Skill Outputs
+### `/design-handoff`
+Generate developer handoff specs from a design. Use when a design is ready for engineering and needs a spec sheet covering layout, design tokens, component props, interaction states, responsive breakpoints, edge cases, and animation details.
 
-### 1. Accessibility Review (`/accessibility-review`)
+### `/design-system`
+Audit, document, or extend your design system. Use when checking for naming inconsistencies or hardcoded values across components, writing documentation for a component's variants, states, and accessibility notes, or designing a new pattern that fits the existing system.
 
-**Purpose:** WCAG 2.1 AA compliance audit
+### `/research-synthesis`
+Synthesize user research into themes, insights, and recommendations. Use when you have interview transcripts, survey results, usability test notes, support tickets, or NPS responses that need to be distilled into patterns, user segments, and prioritized next steps.
 
-**Outputs:**
+### `/user-research`
+Plan, conduct, and synthesize user research. Trigger with "user research plan", "interview guide", "usability test", "survey design", "research questions", or when the user needs help with any aspect of understanding their users through research.
 
-- Complete accessibility audit of dashboard
-- 8 issues identified
-- Severity ratings (Critical, High, Medium, Low)
-- Remediation recommendations
+### `/ux-copy`
+Write or review UX copy — microcopy, error messages, empty states, CTAs. Trigger with "write copy for", "what should this button say?", "review this error message", or when naming a CTA, wording a confirmation dialog, filling an empty state, or writing onboarding text.
 
-**Issues Found:**
+## Try Asking
 
-| Issue                    | Severity | WCAG Criterion | Fix Effort |
-| ------------------------ | -------- | -------------- | ---------- |
-| Color contrast (buttons) | Critical | 1.4.3          | Low        |
-| Missing alt text         | High     | 1.1.1          | Low        |
-| Keyboard navigation      | High     | 2.1.1          | Medium     |
-| Focus indicators         | Medium   | 2.4.7          | Low        |
-| Form labels              | Medium   | 3.3.2          | Low        |
-| Heading hierarchy        | Low      | 1.3.1          | Low        |
-| ARIA landmarks           | Low      | 4.1.2          | Medium     |
-| Screen reader testing    | Low      | 4.1.2          | High       |
+- Get structured feedback on a design
+- Generate developer handoff specs from a Figma file
+- Run a WCAG accessibility audit
+- Write UX copy for a screen or flow
+- Synthesize user research into actionable themes
 
-**Location:** `docs/skills/design/accessibility-review/dashboard-audit.md`
+## Reports
 
----
-
-### 2. Design Critique (`/design-critique`)
-
-**Purpose:** Design feedback and recommendations
-
-**Outputs:**
-
-- Complete CLI interface critique
-- Component-by-component analysis
-- Hierarchy review
-- Consistency check
-- Recommendations (Must fix, Should fix, Nice to have)
-
-**Assessment:**
-
-| Aspect      | Rating     | Notes                         |
-| ----------- | ---------- | ----------------------------- |
-| Usability   | ⭐⭐⭐⭐   | Clear commands, good feedback |
-| Hierarchy   | ⭐⭐⭐⭐   | Logical grouping              |
-| Consistency | ⭐⭐⭐⭐⭐ | Consistent with conventions   |
-| **Overall** | **4.3/5**  | Ready for release             |
-
-**Location:** `docs/skills/design/design-critique/cli-interface.md`
-
----
-
-### 3. Design Handoff (`/design-handsoff`)
-
-**Purpose:** Developer-ready specifications
-
-**Outputs:**
-
-- Complete dashboard component spec
-- Component definitions
-- Props and states
-- Interaction specifications
-- Accessibility requirements
-
-**Components Specified:**
-
-| Component       | Props         | States           | Accessibility  |
-| --------------- | ------------- | ---------------- | -------------- |
-| Dashboard       | layout, data  | loading, error   | ARIA landmarks |
-| TaskCard        | task, onClick | default, active  | Focus states   |
-| ProviderBadge   | provider      | active, inactive | Tooltip        |
-| MemoryIndicator | tier, usage   | —                | Live region    |
-
-**Location:** `docs/skills/design/design-handsoff/dashboard-spec.md`
-
----
-
-### 4. Design System Audit (`/design-system`)
-
-**Purpose:** Design token and component audit
-
-**Outputs:**
-
-- Token inventory (colors, typography, spacing)
-- Component inventory (20 components)
-- Consistency issues
-- Recommendations
-
-**Token Summary:**
-
-| Category   | Count | Issues                   |
-| ---------- | ----- | ------------------------ |
-| Colors     | 24    | 2 naming inconsistencies |
-| Typography | 8     | Missing subtitle variant |
-| Spacing    | 6     | ✅ Consistent            |
-| Shadows    | 4     | ✅ Consistent            |
-
-**Location:** `docs/skills/design/design-system/audit.md`
-
----
-
-### 5. Research Synthesis (`/research-synthesis`)
-
-**Purpose:** Synthesize user research insights
-
-**Outputs:**
-
-- 45 data points synthesized
-- 5 key themes identified
-- Recommendations by theme
-- Priority matrix
-
-**Key Themes:**
-
-| Theme              | Data Points | Recommendations         |
-| ------------------ | ----------- | ----------------------- |
-| Memory confusion   | 12          | Add onboarding tooltips |
-| Provider selection | 9           | Add comparison guide    |
-| Pricing clarity    | 8           | Simplify pricing page   |
-| Documentation gaps | 11          | Add quickstart guide    |
-| Feature requests   | 5           | Prioritize for roadmap  |
-
-**Location:** `docs/skills/design/research-synthesis/user-research.md`
-
----
-
-### 6. User Research Plan (`/user-research`)
-
-**Purpose:** Plan user research activities
-
-**Outputs:**
-
-- Research objectives (3)
-- Methodology (interviews + surveys)
-- Participant recruitment criteria
-- Interview script (15 questions)
-- Survey design (10 questions)
-
-**Research Objectives:**
-
-1. Understand memory feature usage patterns
-2. Identify provider selection decision factors
-3. Evaluate documentation effectiveness
-
-**Timeline:** 2 weeks (4 interviews + 50 surveys)
-
-**Location:** `docs/skills/design/user-research/research-plan.md`
-
----
-
-### 7. UX Copy (`/ux-copy`)
-
-**Purpose:** Interface copywriting guidelines
-
-**Outputs:**
-
-- Voice and tone guidelines
-- Copy for CLI, dashboard, errors
-- Microcopy standards
-- Error message templates
-
-**Copy Standards:**
-
-| Context | Tone        | Example                                  |
-| ------- | ----------- | ---------------------------------------- |
-| Success | Celebratory | "Task completed! ✅"                     |
-| Error   | Helpful     | "Connection failed. Check your API key." |
-| Loading | Informative | "Processing your request..."             |
-| Empty   | Encouraging | "No tasks yet. Start your first one!"    |
-
-**Location:** `docs/skills/design/ux-copy/interface-copy.md`
-
----
-
-## Usage
-
-### For Designers
-
-1. **Accessibility:** Use `accessibility-review/` checklist
-2. **Handoff:** Follow `design-handsoff/` format
-3. **Tokens:** Reference `design-system/` inventory
-
-### For Developers
-
-1. **Implement:** Use `design-handsoff/` specs
-2. **Accessibility:** Follow `accessibility-review/` fixes
-3. **Copy:** Use `ux-copy/` standards
-
-### For Product
-
-1. **Research:** Review `research-synthesis/` insights
-2. **Planning:** Use `user-research/` plan
-3. **Priority:** Check theme recommendations
-
----
-
-## Summary
-
-| Metric                   | Value          |
-| ------------------------ | -------------- |
-| **Skills Applied**       | 8/8            |
-| **Documents Created**    | 8              |
-| **Lines Written**        | 750+           |
-| **Accessibility Issues** | 8 identified   |
-| **Design Rating**        | 4.3/5          |
-| **Research Data Points** | 45 synthesized |
-
-**All design skills successfully applied! ✅**
-
----
-
-**Last Updated:** 2026-04-12
+See `docs/skills-reports/design/` for all generated outputs.
