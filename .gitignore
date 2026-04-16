@@ -18,6 +18,7 @@ node_modules/
 **/out/
 **/*.tsbuildinfo
 **/dist/
+**/build/
 **/.next/
 **/.docusaurus/
 
