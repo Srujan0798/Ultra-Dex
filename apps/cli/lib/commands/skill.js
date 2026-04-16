@@ -19,35 +19,26 @@ export function registerSkillCommand(targetProgram) {
     .option('--info', 'Show skill info')
     .action(async (skillId, options) => {
       try {
-        console.log('🔄 Starting skill handler...');
-
-        console.log('🔄 Step 1: Importing skills...');
         const { SkillsAPI, initializeSkills } =
           await import('../../../../src/core/skills/index.ts');
 
-        console.log('🔄 Step 2: Initializing skills...');
         initializeSkills();
-
-        console.log('🔄 Step 3: Creating SkillsAPI...');
         const skillsAPI = new SkillsAPI();
-
-        console.log('✅ Skills system ready');
 
         if (options.list) {
           const skills = skillsAPI.list();
           console.log('\n📋 Available Skills:');
 
           const categories = {
-            engineering: '🏗️  Engineering Skills',
-            data: '📊 Data Skills',
-            sales: '💰 Sales Skills',
-            product: '📈 Product Management Skills',
-            'customer-support': '🎯 Customer Support Skills',
-            finance: '💰 Finance Skills',
-            productivity: '⚡ Productivity Skills',
-            operations: '⚙️  Operations Skills',
-            marketing: '📣 Marketing Skills',
-            design: '🎨 Design Skills',
+            engineering: '🏗️  Engineering',
+            data: '📊 Data',
+            design: '🎨 Design',
+            operations: '📄 PDF Viewer & Operations',
+            productivity: '⚡ Product Management & Productivity',
+            marketing: '📣 Marketing',
+            sales: '💰 Sales',
+            legal: '⚖️  Legal',
+            finance: '💵 Finance',
           };
 
           Object.entries(categories).forEach(([category, label]) => {
