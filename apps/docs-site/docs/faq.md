@@ -3,7 +3,7 @@
 ## General
 
 ### What is Ultra-Dex?
-Ultra-Dex is an autonomous OS for software engineering that acts as a "Headless CTO". It's a meta-orchestration layer that standardizes context, planning, verification, and multi-agent execution across your entire development stack.
+Ultra-Dex is an AI orchestration meta-layer that routes tasks across 13+ providers, coordinates multi-agent swarms, and maintains persistent memory for software engineering workflows.
 
 ### How is Ultra-Dex different from other AI coding tools?
 Unlike tools that focus on code completion, Ultra-Dex orchestrates entire development workflows. It manages context across tools, coordinates multiple AI agents, enforces quality standards, and integrates with 100+ services.
@@ -25,7 +25,7 @@ npm install -g ultra-dex
 ```
 
 ### What AI providers does Ultra-Dex support?
-Ultra-Dex supports OpenAI, Anthropic, Google, and Azure OpenAI. You can configure your preferred provider in the settings.
+Ultra-Dex supports 13+ providers: OpenAI, Anthropic, Google Gemini, NVIDIA Nemotron, Mistral, Groq, DeepSeek, Cohere, Together AI, Fireworks, Perplexity, Grok, and Llama 4. The SmartRouter selects by cost, latency, or quality with automatic fallback chains.
 
 ## Usage
 
