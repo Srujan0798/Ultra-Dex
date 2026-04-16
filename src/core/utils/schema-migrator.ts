@@ -1,24 +1,63 @@
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __decorateClass = (decorators, target, key, kind) => {
+var __decorateClass = (
+  decorators: Function[],
+  target: object,
+  key: PropertyKey = '',
+  kind: number = 0
+) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
     if ((decorator = decorators[i]))
-      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+      result = (
+        kind
+          ? (decorator as (value: object, propertyKey: PropertyKey, descriptor?: unknown) => unknown)(
+              target,
+              key,
+              result
+            )
+          : (decorator as (value: object) => unknown)(result as object)
+      ) || result;
   if (kind && result) __defProp(target, key, result);
   return result;
 };
 import { singleton } from 'tsyringe';
+
+interface MigrationContext extends Record<string, unknown> {
+  fromVersion: number;
+  toVersion: number;
+  recomputeChecksum?: (entry: Record<string, unknown>) => unknown;
+}
+
+type MigrationTransform = (data: unknown, context: MigrationContext) => unknown;
+
+interface SchemaVersionRow {
+  version: number;
+}
+
+interface SqliteLikeDatabase {
+  exec(sql: string): Promise<unknown>;
+  run(sql: string): Promise<unknown>;
+  get(sql: string): Promise<SchemaVersionRow>;
+}
+
 const CURRENT_SCHEMA_VERSION = 1;
 let SchemaMigrator = class {
+  migrations: Map<string, MigrationTransform>;
+
   constructor() {
-    this.migrations = /* @__PURE__ */ new Map();
+    this.migrations = /* @__PURE__ */ new Map<string, MigrationTransform>();
   }
-  register(fromVersion, toVersion, transformFn) {
+  register(fromVersion: number, toVersion: number, transformFn: MigrationTransform): this {
     this.migrations.set(`${fromVersion}->${toVersion}`, transformFn);
     return this;
   }
-  migrate(data, fromVersion, targetVersion = CURRENT_SCHEMA_VERSION, context = {}) {
+  migrate(
+    data: unknown,
+    fromVersion: number,
+    targetVersion: number = CURRENT_SCHEMA_VERSION,
+    context: Record<string, unknown> = {}
+  ): unknown {
     let current = fromVersion;
     let result = data;
     while (current < targetVersion) {
@@ -33,36 +72,52 @@ let SchemaMigrator = class {
     return result;
   }
 };
-SchemaMigrator = __decorateClass([singleton()], SchemaMigrator);
-const memoryMigrator = new SchemaMigrator().register(0, 1, (data) => ({
+SchemaMigrator = __decorateClass([singleton()], SchemaMigrator) as typeof SchemaMigrator;
+const memoryMigrator = new SchemaMigrator().register(0, 1, (data: unknown) => ({
   _version: 1,
   _migratedAt: /* @__PURE__ */ new Date().toISOString(),
-  entries: Array.isArray(data) ? data : data?.entries || [],
+  entries:
+    Array.isArray(data) || !data || typeof data !== 'object'
+      ? Array.isArray(data)
+        ? data
+        : []
+      : ((data as { entries?: unknown[] }).entries ?? []),
 }));
-const ledgerMigrator = new SchemaMigrator().register(0, 1, (data, context) =>
-  (Array.isArray(data) ? data : []).map((entry) => {
-    const migrated = { ...entry, _v: 1 };
+const ledgerMigrator = new SchemaMigrator().register(0, 1, (data: unknown, context) =>
+  (Array.isArray(data) ? data : []).map((entry: unknown) => {
+    const migrated: Record<string, unknown> & { _v: number } = {
+      ...(typeof entry === 'object' && entry ? (entry as Record<string, unknown>) : {}),
+      _v: 1,
+    };
     if (typeof context.recomputeChecksum === 'function') {
       migrated.checksum = context.recomputeChecksum(migrated);
     }
     return migrated;
   })
 );
-function detectMemoryVersion(data) {
+function detectMemoryVersion(data: unknown): number {
   if (Array.isArray(data)) {
     return 0;
   }
-  return data?._version ?? 0;
+  return typeof data === 'object' && data && '_version' in data
+    ? ((data as { _version?: number })._version ?? 0)
+    : 0;
 }
-function detectLedgerVersion(entries) {
+function detectLedgerVersion(entries: unknown): number {
   if (!Array.isArray(entries) || entries.length === 0) {
     return CURRENT_SCHEMA_VERSION;
   }
-  return entries.every((entry) => entry && typeof entry._v === 'number')
+  return entries.every(
+    (entry) =>
+      typeof entry === 'object' &&
+      entry !== null &&
+      '_v' in entry &&
+      typeof (entry as { _v?: unknown })._v === 'number'
+  )
     ? CURRENT_SCHEMA_VERSION
     : 0;
 }
-async function ensureSqliteSchemaVersion(db) {
+async function ensureSqliteSchemaVersion(db: SqliteLikeDatabase): Promise<SchemaVersionRow> {
   await db.exec(`
     CREATE TABLE IF NOT EXISTS schema_version (
       id INTEGER PRIMARY KEY CHECK (id = 1),

@@ -3,19 +3,50 @@
 
 import { logger as betterStackLogger } from '../monitoring/better-stack-logger.js';
 
-class GovernanceLogger {
-  subscribers = new Map();
+interface GovernanceEvent {
+  data: Record<string, unknown>;
+  timestamp: number;
+}
 
-  subscribe(topic, handler, options = {}) {
+type GovernanceEventHandler = (event: GovernanceEvent) => Promise<unknown> | unknown;
+
+interface GovernanceSubscription {
+  handler: GovernanceEventHandler;
+  options: Record<string, unknown>;
+}
+
+interface GovernanceLoggerSink {
+  track(event: string, properties?: Record<string, unknown>): void;
+  info(message: string, metadata?: Record<string, unknown>): void;
+  warn(message: string, metadata?: Record<string, unknown>): void;
+  debug(message: string, metadata?: Record<string, unknown>): void;
+  error(message: string, error?: unknown, context?: Record<string, unknown>): void;
+}
+
+const loggerSink = betterStackLogger as unknown as GovernanceLoggerSink;
+
+class GovernanceLogger {
+  subscribers = new Map<string, GovernanceSubscription[]>();
+
+  subscribe(
+    topic: string,
+    handler: GovernanceEventHandler,
+    options: Record<string, unknown> = {}
+  ): void {
     if (!this.subscribers.has(topic)) {
       this.subscribers.set(topic, []);
     }
-    this.subscribers.get(topic).push({ handler, options });
+    this.subscribers.get(topic)?.push({ handler, options });
   }
 
-  async event(eventType, data, options = {}) {
+  async event(
+    eventType: string,
+    data: Record<string, unknown>,
+    options: Record<string, unknown> = {}
+  ): Promise<void> {
+    void options;
     // Log to Better Stack
-    betterStackLogger.track(eventType, data);
+    loggerSink.track(eventType, data);
 
     // Notify subscribers
     const subscribers = this.subscribers.get(eventType) || [];
@@ -29,20 +60,20 @@ class GovernanceLogger {
   }
 
   // Delegate other methods to Better Stack logger
-  info(message, context) {
-    betterStackLogger.info(message, context);
+  info(message: string, context?: Record<string, unknown>): void {
+    loggerSink.info(message, context);
   }
 
-  error(message, error, context) {
-    betterStackLogger.error(message, error, context);
+  error(message: string, error?: unknown, context?: Record<string, unknown>): void {
+    loggerSink.error(message, error, context);
   }
 
-  warn(message, context) {
-    betterStackLogger.warn(message, context);
+  warn(message: string, context?: Record<string, unknown>): void {
+    loggerSink.warn(message, context);
   }
 
-  debug(message, context) {
-    betterStackLogger.debug(message, context);
+  debug(message: string, context?: Record<string, unknown>): void {
+    loggerSink.debug(message, context);
   }
 }
 

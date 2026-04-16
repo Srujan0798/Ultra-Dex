@@ -1,5 +1,35 @@
 import fs from 'fs/promises';
 import path from 'path';
+
+interface SyncClassification {
+  appFiles: string[];
+  apiFiles: string[];
+  schemaFiles: string[];
+  configFiles: string[];
+}
+
+interface SyncSummary extends SyncClassification {
+  generatedAt: string;
+  root: string;
+  fileCount: number;
+  appCount: number;
+  apiCount: number;
+  schemaCount: number;
+  configCount: number;
+  stack: string;
+  fileList: string[];
+}
+
+interface SnapshotResult {
+  summary: SyncSummary;
+  updated: boolean;
+  missingContext: boolean;
+  diff: {
+    added: number;
+    removed: number;
+  };
+}
+
 const IGNORED_DIRS = /* @__PURE__ */ new Set([
   '.git',
   'node_modules',
@@ -27,8 +57,8 @@ const SCHEMA_PATTERNS = [
   /migrations\/.*\.(sql|ts|js)$/i,
   /db\/schema/i,
 ];
-async function listFilesRecursive(rootDir, baseDir = rootDir) {
-  let results = [];
+async function listFilesRecursive(rootDir: string, baseDir: string = rootDir): Promise<string[]> {
+  let results: string[] = [];
   const entries = await fs.readdir(rootDir, { withFileTypes: true });
   for (const entry of entries) {
     if (IGNORED_DIRS.has(entry.name)) continue;
@@ -43,25 +73,27 @@ async function listFilesRecursive(rootDir, baseDir = rootDir) {
   }
   return results;
 }
-function inferStackFromFiles(fileList) {
-  if (fileList.some((file) => file.includes('package.json'))) {
-    if (fileList.some((file) => file.includes('next.config'))) return 'Next.js';
-    if (fileList.some((file) => file.includes('remix.config'))) return 'Remix';
-    if (fileList.some((file) => file.includes('svelte.config'))) return 'SvelteKit';
+function inferStackFromFiles(fileList: string[]): string {
+  if (fileList.some((file: string) => file.includes('package.json'))) {
+    if (fileList.some((file: string) => file.includes('next.config'))) return 'Next.js';
+    if (fileList.some((file: string) => file.includes('remix.config'))) return 'Remix';
+    if (fileList.some((file: string) => file.includes('svelte.config'))) return 'SvelteKit';
     return 'Node.js';
   }
   if (
-    fileList.some((file) => file.includes('pyproject.toml') || file.includes('requirements.txt'))
+    fileList.some(
+      (file: string) => file.includes('pyproject.toml') || file.includes('requirements.txt')
+    )
   ) {
     return 'Python';
   }
   return 'Unknown';
 }
-function classifyFilePaths(files) {
-  const appFiles = [];
-  const apiFiles = [];
-  const schemaFiles = [];
-  const configFiles = [];
+function classifyFilePaths(files: string[]): SyncClassification {
+  const appFiles: string[] = [];
+  const apiFiles: string[] = [];
+  const schemaFiles: string[] = [];
+  const configFiles: string[] = [];
   for (const file of files) {
     if (SCHEMA_PATTERNS.some((pattern) => pattern.test(file))) {
       schemaFiles.push(file);
@@ -81,8 +113,8 @@ function classifyFilePaths(files) {
   }
   return { appFiles, apiFiles, schemaFiles, configFiles };
 }
-function buildAutoSyncSection(summary) {
-  const lines = [];
+function buildAutoSyncSection(summary: SyncSummary): string {
+  const lines: string[] = [];
   lines.push(AUTO_SYNC_HEADER);
   lines.push('');
   lines.push(`- Last synced: ${summary.generatedAt}`);
@@ -116,7 +148,10 @@ function buildAutoSyncSection(summary) {
   }
   return lines.join('\n').trim();
 }
-function summarizeDiff(previous, next) {
+function summarizeDiff(
+  previous: Pick<SyncSummary, 'fileCount' | 'fileList'> | null,
+  next: Pick<SyncSummary, 'fileCount' | 'fileList'>
+): { added: number; removed: number } {
   if (!previous) {
     return {
       added: next.fileCount,
@@ -135,10 +170,10 @@ function summarizeDiff(previous, next) {
   }
   return { added, removed };
 }
-async function snapshotContext(rootDir) {
+async function snapshotContext(rootDir: string): Promise<SnapshotResult> {
   const files = await listFilesRecursive(rootDir);
   const { appFiles, apiFiles, schemaFiles, configFiles } = classifyFilePaths(files);
-  const summary = {
+  const summary: SyncSummary = {
     generatedAt: /* @__PURE__ */ new Date().toISOString(),
     root: rootDir,
     fileCount: files.length,
@@ -156,10 +191,10 @@ async function snapshotContext(rootDir) {
   const snapshotDir = path.join(rootDir, SNAPSHOT_DIR);
   await fs.mkdir(snapshotDir, { recursive: true });
   const snapshotPath = path.join(snapshotDir, SNAPSHOT_FILE);
-  let previous = null;
+  let previous: SyncSummary | null = null;
   try {
     const previousRaw = await fs.readFile(snapshotPath, 'utf-8');
-    previous = JSON.parse(previousRaw);
+    previous = JSON.parse(previousRaw) as SyncSummary;
   } catch {
     previous = null;
   }

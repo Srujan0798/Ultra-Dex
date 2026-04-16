@@ -1,6 +1,25 @@
 import fs from 'fs/promises';
 import path from 'path';
-async function loadImplementationPlan(dir = '.') {
+interface LoadedPlan {
+  content: string;
+  path: string;
+}
+interface PlanTask {
+  id: string;
+  title: string;
+  section?: number;
+  status?: 'complete' | 'pending';
+  line?: number;
+  estimate?: string;
+  dependencies?: string[];
+}
+interface AgentContextParams {
+  plan?: string | null;
+  context?: string | null;
+  task?: PlanTask | null;
+  section?: number | null;
+}
+async function loadImplementationPlan(dir: string = '.'): Promise<LoadedPlan | null> {
   const possibleNames = ['IMPLEMENTATION-PLAN.md', 'implementation-plan.md', 'PLAN.md', 'plan.md'];
   for (const name of possibleNames) {
     const filePath = path.join(dir, name);
@@ -13,7 +32,7 @@ async function loadImplementationPlan(dir = '.') {
   }
   return null;
 }
-async function loadContext(dir = '.') {
+async function loadContext(dir: string = '.'): Promise<string | null> {
   const possibleNames = ['CONTEXT.md', 'context.md'];
   for (const name of possibleNames) {
     try {
@@ -24,8 +43,8 @@ async function loadContext(dir = '.') {
   }
   return null;
 }
-function extractTasks(planContent) {
-  const tasks = [];
+function extractTasks(planContent: string): PlanTask[] {
+  const tasks: PlanTask[] = [];
   let currentSection = 0;
   const lines = planContent.split('\n');
   let lineIndex = 0;
@@ -48,8 +67,8 @@ function extractTasks(planContent) {
   }
   return tasks;
 }
-function extractAtomicTasks(planContent) {
-  const tasks = [];
+function extractAtomicTasks(planContent: string): PlanTask[] {
+  const tasks: PlanTask[] = [];
   const section16Match = planContent.match(/## SECTION 16:.*?(?=## SECTION 17:|$)/is);
   if (!section16Match) return tasks;
   const section16 = section16Match[0];
@@ -71,20 +90,21 @@ function extractAtomicTasks(planContent) {
   }
   return tasks;
 }
-function getPendingTasks(tasks) {
-  return tasks.filter((t) => t.status === 'pending');
+function getPendingTasks(tasks: PlanTask[]): PlanTask[] {
+  return tasks.filter((t: PlanTask) => t.status === 'pending');
 }
-function groupTasksBySection(tasks) {
-  const grouped = /* @__PURE__ */ new Map();
+function groupTasksBySection(tasks: PlanTask[]): Map<number, PlanTask[]> {
+  const grouped = /* @__PURE__ */ new Map<number, PlanTask[]>();
   for (const task of tasks) {
-    if (!grouped.has(task.section)) {
-      grouped.set(task.section, []);
+    const section = task.section ?? 0;
+    if (!grouped.has(section)) {
+      grouped.set(section, []);
     }
-    grouped.get(task.section).push(task);
+    grouped.get(section)?.push(task);
   }
   return grouped;
 }
-function formatAgentContext({ plan, context, task, section }) {
+function formatAgentContext({ plan, context, task, section }: AgentContextParams): string {
   let formatted = `# Project Context
 
 `;
@@ -133,7 +153,7 @@ ${sectionContent}
 `;
   return formatted;
 }
-function extractSection(planContent, sectionNum) {
+function extractSection(planContent: string, sectionNum: number): string | null {
   const nextSection =
     sectionNum < 34
       ? `## SECTION ${sectionNum + 1}:`

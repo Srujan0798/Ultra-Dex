@@ -6,8 +6,8 @@ const STONES = [
   { name: 'Soul', color: '#ff9e00', symbol: '\u{1F7E0}' },
   { name: 'Time', color: '#4cc9f0', symbol: '\u{1F7E2}' },
   { name: 'Mind', color: '#fee440', symbol: '\u{1F7E1}' },
-];
-function renderSnapProgress(step, total = 6) {
+] as const;
+function renderSnapProgress(step: number, total: number = 6): string {
   const stonesCollected = Math.min(step, STONES.length);
   const line = STONES.map((s, i) => {
     if (i < stonesCollected) return chalk.hex(s.color)(s.symbol);

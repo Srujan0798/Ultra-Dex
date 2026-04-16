@@ -1,13 +1,21 @@
 import { readFileSync } from 'fs';
 import { logger } from './logging.js';
-const pkg = JSON.parse(readFileSync(new URL('../../../package.json', import.meta.url), 'utf8'));
+
+interface PackageJson {
+  name: string;
+  version: string;
+}
+
+const pkg = JSON.parse(
+  readFileSync(new URL('../../../package.json', import.meta.url), 'utf8')
+) as PackageJson;
 const VERSION = pkg.version;
 const PACKAGE_NAME = pkg.name;
-function getVersion() {
+function getVersion(): string {
   return VERSION;
 }
 var version_default = VERSION;
-function _handleModuleError(error, context = 'version') {
+function _handleModuleError(error: unknown, context: string = 'version'): void {
   try {
     const message = error instanceof Error ? error.message : String(error);
     logger.error(`[${context}] Error: ${message}`);

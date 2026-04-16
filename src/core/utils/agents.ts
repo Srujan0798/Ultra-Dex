@@ -1,5 +1,10 @@
 import { logger } from './logging.js';
-const agents = {
+interface AgentDefinition {
+  name: string;
+  emoji: string;
+  tagline: string;
+}
+const agents: Record<string, AgentDefinition> = {
   // Leadership Tier
   cto: { name: 'Chief Architect', emoji: '\u{1F4D0}', tagline: 'Defining system architecture' },
   planner: { name: 'Product Planner', emoji: '\u{1F4CB}', tagline: 'breaking down requirements' },
@@ -31,7 +36,7 @@ const agents = {
   },
 };
 const avengersAgents = agents;
-function _handleError(error) {
+function _handleError(error: unknown): void {
   try {
     logger.error('[agents]', error instanceof Error ? error.message : String(error));
   } catch (_) {}

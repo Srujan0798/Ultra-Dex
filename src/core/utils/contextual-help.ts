@@ -1,6 +1,11 @@
 import chalk from 'chalk';
 import { logger } from './logging.js';
-const HELP_TOPICS = {
+interface HelpTopic {
+  description: string;
+  examples: string[];
+  tips: string[];
+}
+const HELP_TOPICS: Record<string, HelpTopic> = {
   init: {
     description: 'Initialize a new Ultra-Dex project',
     examples: [
@@ -163,7 +168,7 @@ const HELP_TOPICS = {
     ],
   },
 };
-function getCommandHelp(command) {
+function getCommandHelp(command: string): string {
   const help = HELP_TOPICS[command];
   if (!help) {
     return chalk.yellow(`No detailed help available for "${command}"`);
@@ -175,21 +180,21 @@ function getCommandHelp(command) {
     '',
     chalk.cyan('Examples:'),
   ];
-  help.examples.forEach((ex) => {
+  help.examples.forEach((ex: string) => {
     lines.push(chalk.green(`  ${ex}`));
   });
   lines.push('', chalk.cyan('Pro Tips:'));
-  help.tips.forEach((tip) => {
+  help.tips.forEach((tip: string) => {
     lines.push(chalk.white(`  \u2022 ${tip}`));
   });
   lines.push('');
   return lines.join('\n');
 }
-function showHelp(command) {
+function showHelp(command: string): void {
   logger.log(getCommandHelp(command));
 }
-function suggestCommands(intent) {
-  const suggestions = [];
+function suggestCommands(intent: string): string[] {
+  const suggestions: string[] = [];
   const keywords = {
     start: ['init', 'generate'],
     create: ['init', 'generate', 'swarm'],
@@ -214,7 +219,7 @@ var contextual_help_default = {
   suggestCommands,
   HELP_TOPICS,
 };
-function _handleModuleError(error, context = 'contextual-help') {
+function _handleModuleError(error: unknown, context: string = 'contextual-help'): void {
   try {
     const message = error instanceof Error ? error.message : String(error);
     logger.error(`[${context}] Error: ${message}`);

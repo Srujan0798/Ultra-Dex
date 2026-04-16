@@ -1,7 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { loadState, saveState, parsePlanFromMarkdown, generateMarkdown } from '../commands/plan.js';
-async function syncState() {
+async function syncState(): Promise<{ source: 'markdown' | 'json'; target: 'json' | 'markdown' } | null> {
   const projectRoot = process.cwd();
   const statePath = path.resolve(projectRoot, '.ultra/state.json');
   const planPath = path.resolve(projectRoot, 'IMPLEMENTATION-PLAN.md');
@@ -41,7 +41,7 @@ async function syncState() {
   }
   return null;
 }
-async function syncJsonToMarkdown() {
+async function syncJsonToMarkdown(): Promise<boolean> {
   const state = await loadState();
   if (state && state.phases) {
     const markdown = generateMarkdown(state);
@@ -50,7 +50,7 @@ async function syncJsonToMarkdown() {
   }
   return false;
 }
-async function syncMarkdownToJson() {
+async function syncMarkdownToJson(): Promise<boolean> {
   const phases = await parsePlanFromMarkdown();
   if (phases.length > 0) {
     const state = await loadState();

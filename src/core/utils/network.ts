@@ -1,6 +1,11 @@
 import { logger } from './logging.js';
-async function fetchWithRetry(url, options = {}, retries = 2, delayMs = 400) {
-  let lastError;
+async function fetchWithRetry(
+  url: RequestInfo | URL,
+  options: RequestInit = {},
+  retries: number = 2,
+  delayMs: number = 400
+): Promise<Response> {
+  let lastError: unknown;
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       const response = await fetch(url, options);
@@ -9,8 +14,9 @@ async function fetchWithRetry(url, options = {}, retries = 2, delayMs = 400) {
       }
       return response;
     } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
       logger.warn(
-        `[Network] Attempt ${attempt + 1}/${retries + 1} failed for ${url}: ${err.message}`
+        `[Network] Attempt ${attempt + 1}/${retries + 1} failed for ${String(url)}: ${message}`
       );
       lastError = err;
       if (attempt < retries) {
@@ -18,7 +24,7 @@ async function fetchWithRetry(url, options = {}, retries = 2, delayMs = 400) {
       }
     }
   }
-  logger.error(`[Network] All ${retries + 1} attempts failed for ${url}`);
+  logger.error(`[Network] All ${retries + 1} attempts failed for ${String(url)}`);
   throw lastError;
 }
 export { fetchWithRetry };

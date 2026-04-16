@@ -1,9 +1,40 @@
 import fs from 'fs/promises';
 import { glob } from 'glob';
-let cachedGraph = null;
+
+interface GraphEdge {
+  source: string;
+  target: string;
+  type: 'depends_on' | 'contained_in';
+}
+
+interface FunctionNode {
+  id: string;
+  type: 'function';
+  name: string;
+  parent: string;
+}
+
+interface FileNode {
+  id: string;
+  type: 'file';
+  path: string;
+  exports: string[];
+  imports: string[];
+}
+
+type GraphNode = FunctionNode | FileNode;
+
+interface ProjectGraphSnapshot {
+  nodes: GraphNode[];
+  edges: GraphEdge[];
+  lastUpdated: string;
+}
+
+let cachedGraph: ProjectGraphSnapshot | null = null;
 let lastCacheTime = 0;
 const CACHE_DURATION = 3e4;
-async function buildGraph(useCache = true) {
+
+async function buildGraph(useCache: boolean = true): Promise<ProjectGraphSnapshot> {
   const now = Date.now();
   if (useCache && cachedGraph && now - lastCacheTime < CACHE_DURATION) {
     return cachedGraph;
@@ -12,7 +43,7 @@ async function buildGraph(useCache = true) {
     ignore: ['node_modules/**', '.git/**', 'dist/**', 'build/**'],
     nodir: true,
   });
-  const graph = {
+  const graph: ProjectGraphSnapshot = {
     nodes: [],
     edges: [],
     lastUpdated: /* @__PURE__ */ new Date().toISOString(),
@@ -20,7 +51,7 @@ async function buildGraph(useCache = true) {
   const promises = files.map(async (file) => {
     try {
       const content = await fs.readFile(file, 'utf8');
-      const fileNode = {
+      const fileNode: FileNode = {
         id: file,
         type: 'file',
         path: file,
@@ -62,15 +93,15 @@ async function buildGraph(useCache = true) {
   lastCacheTime = now;
   return graph;
 }
-function getImpactAnalysis(graph, filePath) {
+function getImpactAnalysis(graph: ProjectGraphSnapshot, filePath: string): string[] {
   const impactedBy = graph.edges
-    .filter((edge) => edge.target === filePath || filePath.endsWith(edge.target))
-    .map((edge) => edge.source);
+    .filter((edge: GraphEdge) => edge.target === filePath || filePath.endsWith(edge.target))
+    .map((edge: GraphEdge) => edge.source);
   return [...new Set(impactedBy)];
 }
-function queryGraph(graph, query) {
+function queryGraph(graph: ProjectGraphSnapshot, query: string): GraphNode[] {
   return graph.nodes.filter(
-    (node) => node.id.includes(query) || (node.name && node.name === query)
+    (node: GraphNode) => node.id.includes(query) || ('name' in node && node.name === query)
   );
 }
 var graph_default = {

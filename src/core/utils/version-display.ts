@@ -3,8 +3,9 @@ import gradient from 'gradient-string';
 import chalk from 'chalk';
 import { VERSION } from './version.js';
 import { logger } from './logging.js';
-function showVersionCard() {
-  const ultraGradient = gradient(['#6366f1', '#8b5cf6', '#d946ef']);
+type StyledGradient = typeof chalk;
+function showVersionCard(): void {
+  const ultraGradient = gradient(['#6366f1', '#8b5cf6', '#d946ef']) as unknown as StyledGradient;
   const content = [
     ultraGradient.bold('ULTRA-DEX AI'),
     chalk.gray(`AI Orchestration Meta-Layer`),
@@ -25,7 +26,7 @@ function showVersionCard() {
   logger.log(card);
 }
 var version_display_default = showVersionCard;
-function _handleModuleError(error, context = 'version-display') {
+function _handleModuleError(error: unknown, context: string = 'version-display'): void {
   try {
     const message = error instanceof Error ? error.message : String(error);
     logger.error(`[${context}] Error: ${message}`);

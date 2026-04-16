@@ -1,12 +1,12 @@
 import { logger } from './logging.js';
 let isDoomsday = false;
-function setDoomsdayMode(enabled) {
+function setDoomsdayMode(enabled: boolean): void {
   isDoomsday = enabled;
 }
-function isDoomsdayMode() {
+function isDoomsdayMode(): boolean {
   return isDoomsday;
 }
-function _handleModuleError(error, context = 'theme-state') {
+function _handleModuleError(error: unknown, context: string = 'theme-state'): void {
   try {
     const message = error instanceof Error ? error.message : String(error);
     logger.error(`[${context}] Error: ${message}`);

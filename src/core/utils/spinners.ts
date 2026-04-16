@@ -26,14 +26,15 @@ const SPINNERS = {
     interval: 200,
     frames: ['\u2299', '\u229A', '\u229B', '\u229C', '\u229D'].map((f) => ultraGradient(f)),
   },
-};
-function createSpinner(text, type = 'quantum') {
+} as const;
+type SpinnerType = keyof typeof SPINNERS;
+function createSpinner(text: string, type: SpinnerType = 'quantum') {
   return ora({
     text,
     spinner: SPINNERS[type] || SPINNERS.quantum,
   });
 }
-function startSpinner(text, type = 'quantum') {
+function startSpinner(text: string, type: SpinnerType = 'quantum') {
   const spinner = createSpinner(text, type);
   return spinner.start();
 }
@@ -42,7 +43,7 @@ var spinners_default = {
   createSpinner,
   startSpinner,
 };
-function _handleModuleError(error, context = 'spinners') {
+function _handleModuleError(error: unknown, context: string = 'spinners'): void {
   try {
     const message = error instanceof Error ? error.message : String(error);
     logger.error(`[${context}] Error: ${message}`);

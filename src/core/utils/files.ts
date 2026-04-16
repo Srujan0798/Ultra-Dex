@@ -1,18 +1,23 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { logger } from './logging.js';
-async function readFileSafe(filePath, label = '') {
+type FileSystemError = NodeJS.ErrnoException;
+async function readFileSafe(
+  filePath: string,
+  label: string = ''
+): Promise<{ label: string; content: string }> {
   try {
     const content = await fs.readFile(filePath, 'utf-8');
     return { label, content };
   } catch (err) {
-    if (err.code !== 'ENOENT') {
-      logger.error(`[File] Error reading ${filePath}: ${err.message}`);
+    const fileError = err as FileSystemError;
+    if (fileError.code !== 'ENOENT') {
+      logger.error(`[File] Error reading ${filePath}: ${fileError.message}`);
     }
     return { label, content: '' };
   }
 }
-async function pathExists(targetPath, type = 'file') {
+async function pathExists(targetPath: string, type: 'file' | 'dir' = 'file'): Promise<boolean> {
   try {
     const stats = await fs.stat(targetPath);
     if (type === 'file') return stats.isFile();
@@ -22,15 +27,16 @@ async function pathExists(targetPath, type = 'file') {
     return false;
   }
 }
-function resolveAssetPath(basePath, relativePath) {
+function resolveAssetPath(basePath: string, relativePath: string): string {
   try {
     return path.join(basePath, relativePath);
   } catch (err) {
-    logger.error(`[File] Error resolving path: ${err.message}`);
+    const fileError = err as FileSystemError;
+    logger.error(`[File] Error resolving path: ${fileError.message}`);
     return '';
   }
 }
-async function copyDirectory(sourceDir, targetDir) {
+async function copyDirectory(sourceDir: string, targetDir: string): Promise<void> {
   try {
     await fs.mkdir(targetDir, { recursive: true });
     const entries = await fs.readdir(sourceDir, { withFileTypes: true });
@@ -44,7 +50,10 @@ async function copyDirectory(sourceDir, targetDir) {
       }
     }
   } catch (err) {
-    logger.error(`[File] Error copying directory ${sourceDir} to ${targetDir}: ${err.message}`);
+    const fileError = err as FileSystemError;
+    logger.error(
+      `[File] Error copying directory ${sourceDir} to ${targetDir}: ${fileError.message}`
+    );
     throw err;
   }
 }

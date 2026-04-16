@@ -1,18 +1,40 @@
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __decorateClass = (decorators, target, key, kind) => {
+var __decorateClass = (
+  decorators: Function[],
+  target: object,
+  key: PropertyKey = '',
+  kind: number = 0
+) => {
   var result = kind > 1 ? void 0 : kind ? __getOwnPropDesc(target, key) : target;
   for (var i = decorators.length - 1, decorator; i >= 0; i--)
     if ((decorator = decorators[i]))
-      result = (kind ? decorator(target, key, result) : decorator(result)) || result;
+      result = (
+        kind
+          ? (decorator as (value: object, propertyKey: PropertyKey, descriptor?: unknown) => unknown)(
+              target,
+              key,
+              result
+            )
+          : (decorator as (value: object) => unknown)(result as object)
+      ) || result;
   if (kind && result) __defProp(target, key, result);
   return result;
 };
 import { singleton } from 'tsyringe';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'fs';
 import path from 'path';
+
+type ErrorDetails = Record<string, unknown>;
+type FileSystemError = NodeJS.ErrnoException;
+
 let DataCorruptionError = class extends Error {
-  constructor(filePath, cause, details = {}) {
+  filePath: string;
+  override cause: unknown;
+  details: ErrorDetails;
+  recoveryInstructions: string[];
+
+  constructor(filePath: string, cause: unknown, details: ErrorDetails = {}) {
     super(
       `Data corruption detected in ${filePath}. Backup recovery was attempted. Manual recovery may be needed.`
     );
@@ -27,8 +49,8 @@ let DataCorruptionError = class extends Error {
     ];
   }
 };
-DataCorruptionError = __decorateClass([singleton()], DataCorruptionError);
-function atomicWriteSync(filePath, data) {
+DataCorruptionError = __decorateClass([singleton()], DataCorruptionError) as typeof DataCorruptionError;
+function atomicWriteSync(filePath: string, data: string): void {
   const directory = path.dirname(filePath);
   const tmpPath = `${filePath}.tmp`;
   const backupPath = `${filePath}.bak`;
@@ -39,44 +61,44 @@ function atomicWriteSync(filePath, data) {
   writeFileSync(tmpPath, data, 'utf8');
   renameSync(tmpPath, filePath);
 }
-function safeReadJSON(filePath, defaultValue = null) {
+function safeReadJSON<T>(filePath: string, defaultValue: T | null = null): T | null {
   try {
     const data = readFileSync(filePath, 'utf8');
-    return JSON.parse(data);
+    return JSON.parse(data) as T;
   } catch (error) {
-    if (error?.code === 'ENOENT') {
+    const fileError = error as FileSystemError;
+    if (fileError?.code === 'ENOENT') {
       return defaultValue;
     }
     const backupPath = `${filePath}.bak`;
     if (existsSync(backupPath)) {
       try {
         const backup = readFileSync(backupPath, 'utf8');
-        const recovered = JSON.parse(backup);
+        const recovered = JSON.parse(backup) as T;
         atomicWriteSync(filePath, backup);
         return recovered;
       } catch (backupError) {
-        throw new DataCorruptionError(filePath, error, {
+        throw new DataCorruptionError(filePath, fileError, {
           backupPath,
           backupError: backupError instanceof Error ? backupError.message : String(backupError),
         });
       }
     }
-    throw new DataCorruptionError(filePath, error, { backupPath });
+    throw new DataCorruptionError(filePath, fileError, { backupPath });
   }
 }
-function safeReadJSONL(filePath, defaultValue = []) {
+function safeReadJSONL<T = unknown>(filePath: string, defaultValue: T[] = []): T[] {
   try {
     const data = readFileSync(filePath, 'utf8');
-    const validEntries = [];
+    const validEntries: T[] = [];
     let corruptedLines = 0;
     for (const [index, line] of data.split('\n').filter(Boolean).entries()) {
       try {
-        validEntries.push(JSON.parse(line));
+        validEntries.push(JSON.parse(line) as T);
       } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
         corruptedLines += 1;
-        console.warn(
-          `[safe-fs] Skipping corrupt JSONL line ${index + 1} in ${filePath}: ${error.message}`
-        );
+        console.warn(`[safe-fs] Skipping corrupt JSONL line ${index + 1} in ${filePath}: ${message}`);
       }
     }
     if (corruptedLines > 0 && validEntries.length === 0) {
@@ -84,7 +106,8 @@ function safeReadJSONL(filePath, defaultValue = []) {
     }
     return validEntries;
   } catch (error) {
-    if (error?.code === 'ENOENT') {
+    const fileError = error as FileSystemError;
+    if (fileError?.code === 'ENOENT') {
       return defaultValue;
     }
     const backupPath = `${filePath}.bak`;
@@ -94,17 +117,17 @@ function safeReadJSONL(filePath, defaultValue = []) {
         const recovered = backup
           .split('\n')
           .filter(Boolean)
-          .map((line) => JSON.parse(line));
+          .map((line) => JSON.parse(line) as T);
         atomicWriteSync(filePath, backup);
         return recovered;
       } catch (backupError) {
-        throw new DataCorruptionError(filePath, error, {
+        throw new DataCorruptionError(filePath, fileError, {
           backupPath,
           backupError: backupError instanceof Error ? backupError.message : String(backupError),
         });
       }
     }
-    throw new DataCorruptionError(filePath, error, { backupPath });
+    throw new DataCorruptionError(filePath, fileError, { backupPath });
   }
 }
 export {

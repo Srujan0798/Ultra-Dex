@@ -2,6 +2,17 @@ import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import { homedir } from 'os';
+interface PrivacyConfig {
+  localOnly: boolean;
+  encryption: boolean;
+}
+type SanitizedPayload =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: SanitizedPayload }
+  | SanitizedPayload[];
 const DEFAULT_CONFIG = {
   localOnly: true,
   encryption: false,
@@ -10,17 +21,17 @@ const CONFIG_PATHS = [
   path.join(process.cwd(), '.ultra-dex', 'config.json'),
   path.join(homedir(), '.ultra-dex', 'config.json'),
 ];
-function getPrivacyConfig() {
+function getPrivacyConfig(): PrivacyConfig {
   for (const configPath of CONFIG_PATHS) {
     try {
       const raw = fs.readFileSync(configPath, 'utf8');
-      const config = JSON.parse(raw);
+      const config = JSON.parse(raw) as { privacy?: Partial<PrivacyConfig> };
       return { ...DEFAULT_CONFIG, ...(config.privacy || {}) };
     } catch {}
   }
   return { ...DEFAULT_CONFIG };
 }
-function stripPII(text = '') {
+function stripPII(text: string = ''): string {
   if (!text) return text;
   let output = String(text);
   output = output.replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[email]');
@@ -28,23 +39,25 @@ function stripPII(text = '') {
   output = output.replace(/\b\d{1,3}(?:\.\d{1,3}){3}\b/g, '[ip]');
   return output;
 }
-function sanitizePayload(payload) {
+function sanitizePayload(payload: unknown): SanitizedPayload | undefined {
   if (payload == null) return payload;
   if (typeof payload === 'string') return stripPII(payload);
-  if (Array.isArray(payload)) return payload.map(sanitizePayload);
+  if (Array.isArray(payload)) {
+    return payload.map((item) => sanitizePayload(item) ?? null);
+  }
   if (typeof payload === 'object') {
     return Object.fromEntries(
-      Object.entries(payload).map(([key, value]) => [key, sanitizePayload(value)])
-    );
+      Object.entries(payload).map(([key, value]) => [key, sanitizePayload(value) ?? null])
+    ) as SanitizedPayload;
   }
-  return payload;
+  return payload as SanitizedPayload;
 }
-function getEncryptionKey() {
+function getEncryptionKey(): Buffer | null {
   const raw = process.env.ULTRA_DEX_PRIVACY_KEY;
   if (!raw) return null;
   return crypto.createHash('sha256').update(raw).digest();
 }
-function encryptData(data) {
+function encryptData(data: string): string {
   const key = getEncryptionKey();
   if (!key) return data;
   const iv = crypto.randomBytes(12);
@@ -53,7 +66,7 @@ function encryptData(data) {
   const tag = cipher.getAuthTag();
   return Buffer.concat([iv, tag, encrypted]).toString('base64');
 }
-function decryptData(payload) {
+function decryptData(payload: string): string {
   const key = getEncryptionKey();
   if (!key) return payload;
   const buffer = Buffer.from(payload, 'base64');
@@ -64,7 +77,7 @@ function decryptData(payload) {
   decipher.setAuthTag(tag);
   return Buffer.concat([decipher.update(data), decipher.final()]).toString('utf8');
 }
-function privacyReport() {
+function privacyReport(): PrivacyConfig & { timestamp: string } {
   const config = getPrivacyConfig();
   return {
     localOnly: config.localOnly,

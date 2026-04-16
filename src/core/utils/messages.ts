@@ -28,12 +28,13 @@ const professionalMessages = {
     'Optimizing Local-First Daemons...',
     'Verifying 21-Step Security Protocols...',
   ],
-};
-function getRandomMessage(type) {
+} as const satisfies Record<string, readonly string[]>;
+type MessageType = keyof typeof professionalMessages;
+function getRandomMessage(type: MessageType): string {
   const messages = professionalMessages[type];
   return messages[Math.floor(Math.random() * messages.length)];
 }
-function _handleModuleError(error, context = 'messages') {
+function _handleModuleError(error: unknown, context: string = 'messages'): void {
   try {
     const message = error instanceof Error ? error.message : String(error);
     logger.error(`[${context}] Error: ${message}`);

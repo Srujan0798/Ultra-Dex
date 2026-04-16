@@ -1,5 +1,6 @@
 const PROJECT_NAME_REGEX = /^[a-z0-9-]+$/i;
-function validateProjectName(name) {
+import path from 'path';
+function validateProjectName(name: string): true | string {
   if (!name || !name.trim()) {
     return 'Project name is required';
   }
@@ -16,8 +17,7 @@ function validateProjectName(name) {
     return 'Invalid project name format';
   }
 }
-import path from 'path';
-function validateSafePath(input, label = 'Path') {
+function validateSafePath(input: string, label: string = 'Path'): true | string {
   if (!input || !input.trim()) {
     return `${label} is required`;
   }
@@ -38,7 +38,7 @@ function validateSafePath(input, label = 'Path') {
     return `${label} is invalid`;
   }
 }
-function assertValidPath(input, label) {
+function assertValidPath(input: string, label: string = 'Path'): string {
   const result = validateSafePath(input, label);
   if (result !== true) {
     throw new Error(result);

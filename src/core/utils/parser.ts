@@ -1,5 +1,27 @@
 import { logger } from './logging.js';
-function extractProjectName(content) {
+interface TechStack {
+  frontend: string;
+  backend: string;
+  database: string;
+  auth: string;
+  payments: string;
+  hosting: string;
+}
+interface CompletenessResult {
+  complete: boolean;
+  missingSections: number[];
+  percentage: number;
+}
+interface UsageSummary {
+  inputTokens: number;
+  outputTokens: number;
+}
+interface CostSummary {
+  total: number;
+  input: number;
+  output: number;
+}
+function extractProjectName(content: string): string {
   const projectMatch = content.match(/PROJECT:\s*(.+)/i);
   if (projectMatch) {
     return projectMatch[1].trim();
@@ -10,7 +32,7 @@ function extractProjectName(content) {
   }
   return 'My SaaS Project';
 }
-function extractSummary(content) {
+function extractSummary(content: string): string {
   const visionMatch = content.match(/### 1\.1 Product Vision.*?\n(.+?)(?=\n###|\n##|$)/is);
   if (visionMatch) {
     return visionMatch[1].trim().slice(0, 200);
@@ -21,8 +43,8 @@ function extractSummary(content) {
   }
   return 'A SaaS application';
 }
-function extractTechStack(content) {
-  const defaults = {
+function extractTechStack(content: string): TechStack {
+  const defaults: TechStack = {
     frontend: 'Next.js + TypeScript',
     backend: 'Next.js API Routes',
     database: 'PostgreSQL + Prisma',
@@ -45,8 +67,8 @@ function extractTechStack(content) {
     hosting: defaults.hosting,
   };
 }
-function validateCompleteness(content) {
-  const missingSections = [];
+function validateCompleteness(content: string): CompletenessResult {
+  const missingSections: number[] = [];
   for (let i = 1; i <= 34; i++) {
     const regex = new RegExp(`## SECTION ${i}:`, 'i');
     if (!regex.test(content)) {
@@ -60,8 +82,8 @@ function validateCompleteness(content) {
     percentage,
   };
 }
-function splitIntoSections(content) {
-  const sections = /* @__PURE__ */ new Map();
+function splitIntoSections(content: string): Map<number, string> {
+  const sections = /* @__PURE__ */ new Map<number, string>();
   for (let i = 1; i <= 34; i++) {
     const nextSection =
       i < 34
@@ -75,11 +97,11 @@ function splitIntoSections(content) {
   }
   return sections;
 }
-function formatUsage(usage) {
+function formatUsage(usage: UsageSummary): string {
   const total = usage.inputTokens + usage.outputTokens;
   return `${total.toLocaleString()} tokens (${usage.inputTokens.toLocaleString()} in / ${usage.outputTokens.toLocaleString()} out)`;
 }
-function formatCost(cost) {
+function formatCost(cost: CostSummary): string {
   return `$${cost.total.toFixed(4)} (input: $${cost.input.toFixed(4)}, output: $${cost.output.toFixed(4)})`;
 }
 var parser_default = {
@@ -91,7 +113,7 @@ var parser_default = {
   formatUsage,
   formatCost,
 };
-function _handleModuleError(error, context = 'parser') {
+function _handleModuleError(error: unknown, context: string = 'parser'): void {
   try {
     const message = error instanceof Error ? error.message : String(error);
     logger.error(`[${context}] Error: ${message}`);
