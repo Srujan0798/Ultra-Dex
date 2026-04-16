@@ -3,7 +3,7 @@ import assert from 'node:assert';
 import { performance } from 'node:perf_hooks';
 import { execSync } from 'node:child_process';
 
-const CLI = 'node apps/cli/bin/ultra-dex.js';
+const CLI = 'node --import=tsx apps/cli/bin/ultra-dex.js';
 const ENV = { ...process.env, MOCK_AI: 'true' };
 
 describe('Performance: CLI Load Tests', () => {

@@ -15,7 +15,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { performance } from 'node:perf_hooks';
 
-const CLI = 'node apps/cli/bin/ultra-dex.js';
+const CLI = 'node --import=tsx apps/cli/bin/ultra-dex.js';
 const ENV = { ...process.env, MOCK_AI: 'true' };
 
 // ---------------------------------------------------------------------------

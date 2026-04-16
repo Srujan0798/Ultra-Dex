@@ -4,7 +4,7 @@ import { execSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const CLI = 'node apps/cli/bin/ultra-dex.js';
+const CLI = 'node --import=tsx apps/cli/bin/ultra-dex.js';
 const ENV = { ...process.env, MOCK_AI: 'true' };
 
 describe('E2E: Memory and Persistence', () => {

@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { execSync } from 'node:child_process';
 
-const CLI = 'node apps/cli/bin/ultra-dex.js';
+const CLI = 'node --import=tsx apps/cli/bin/ultra-dex.js';
 const ENV = { ...process.env, MOCK_AI: 'true' };
 
 describe('E2E: Provider Routing', () => {

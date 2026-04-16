@@ -5,7 +5,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import os from 'node:os';
 
-const CLI = 'node apps/cli/bin/ultra-dex.js';
+const CLI = 'node --import=tsx apps/cli/bin/ultra-dex.js';
 
 describe('Install Smoke Tests', () => {
   it('should npm pack and install tarball with a working ultra-dex binary', (t) => {
