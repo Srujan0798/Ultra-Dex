@@ -1,4 +1,5 @@
 import { EventEmitter } from 'events';
+import fs from 'fs';
 import * as path from 'path';
 import { randomUUID } from 'crypto';
 import { RedisMemoryAdapter } from './redis-adapter.js';
@@ -44,6 +45,7 @@ class UnifiedMemory extends EventEmitter {
   sqliteDriver: unknown | null;
   cleanupInterval: NodeJS.Timeout | null;
   redisAdapter: RedisMemoryAdapter | null;
+  memoryBackend: string;
   constructor(config: UnifiedMemoryConfig = {}) {
     super();
     this.config = {
@@ -65,10 +67,15 @@ class UnifiedMemory extends EventEmitter {
     this.initialized = false;
     this.sqliteDriver = null;
     this.cleanupInterval = null;
+    this.memoryBackend = String(process.env.MEMORY_BACKEND || 'sqlite').toLowerCase();
     this.redisAdapter = process.env.MEMORY_BACKEND === 'redis' ? new RedisMemoryAdapter() : null;
   }
   async _loadSQLiteDriver() {
     if (this.sqliteDriver) {
+      return this.sqliteDriver;
+    }
+    if (this.memoryBackend === 'file') {
+      this.sqliteDriver = this._createFileBackedSQLiteDriver();
       return this.sqliteDriver;
     }
     // Try to load real sqlite3 driver first
@@ -78,115 +85,142 @@ class UnifiedMemory extends EventEmitter {
       this.sqliteDriver = sqlite3.verbose ? sqlite3.verbose() : sqlite3;
       return this.sqliteDriver;
     } catch {
-      // sqlite3 not available — use in-memory Map-based fallback
-      // This actually stores and retrieves data (unlike the old noop mock)
-      const InMemoryDatabase = class {
-        private store = new Map<string, Record<string, unknown>[]>();
-        private tables = new Map<string, boolean>();
-        constructor(_path: unknown, callback?: (err: Error | null) => void) {
-          if (callback) setTimeout(() => callback(null), 0);
-        }
-        run(sql: string, params?: unknown, callback?: (err: Error | null) => void) {
-          let cb = callback;
-          if (typeof params === 'function') { cb = params as (err: Error | null) => void; }
-          const p = Array.isArray(params) ? params : [];
-          // Handle CREATE TABLE
-          const createMatch = sql.match(/CREATE TABLE IF NOT EXISTS (\w+)/i);
-          if (createMatch) {
-            this.tables.set(createMatch[1], true);
-            if (!this.store.has(createMatch[1])) this.store.set(createMatch[1], []);
-          }
-          // Handle INSERT
-          const insertMatch = sql.match(/INSERT INTO (\w+)\s*\(([^)]+)\)\s*VALUES/i);
-          if (insertMatch) {
-            const table = insertMatch[1];
-            const cols = insertMatch[2].split(',').map(c => c.trim());
-            const row: Record<string, unknown> = {};
-            cols.forEach((col, i) => { row[col] = p[i] ?? null; });
-            row.created_at = new Date().toISOString();
-            row.updated_at = new Date().toISOString();
-            row.access_count = 0;
-            const rows = this.store.get(table) || [];
-            rows.push(row);
-            this.store.set(table, rows);
-          }
-          // Handle UPDATE
-          const updateMatch = sql.match(/UPDATE (\w+)\s+SET/i);
-          if (updateMatch) {
-            // Basic update support - increment access_count
-            const table = updateMatch[1];
-            const rows = this.store.get(table) || [];
-            const idParam = p[p.length - 1];
-            const row = rows.find(r => r.id === idParam);
-            if (row) {
-              row.access_count = ((row.access_count as number) || 0) + 1;
-              row.last_accessed = new Date().toISOString();
-            }
-          }
-          // Handle DELETE
-          const deleteMatch = sql.match(/DELETE FROM (\w+)\s+WHERE\s+id\s*=\s*\?/i);
-          if (deleteMatch) {
-            const table = deleteMatch[1];
-            const rows = this.store.get(table) || [];
-            this.store.set(table, rows.filter(r => r.id !== p[0]));
-          }
-          if (cb) setTimeout(() => cb(null), 0);
-          return this;
-        }
-        all(sql: string, params?: unknown, callback?: (err: Error | null, rows?: unknown[]) => void) {
-          let cb = callback;
-          if (typeof params === 'function') { cb = params as (err: Error | null, rows?: unknown[]) => void; }
-          const p = Array.isArray(params) ? params : [];
-          const tableMatch = sql.match(/FROM (\w+)/i);
-          let results: Record<string, unknown>[] = [];
-          if (tableMatch) {
-            const rows = this.store.get(tableMatch[1]) || [];
-            // Handle LIKE queries
-            const likeMatch = sql.match(/content LIKE \?/i);
-            if (likeMatch && p[0]) {
-              const pattern = String(p[0]).replace(/%/g, '');
-              results = rows.filter(r => {
-                const content = String(r.content || '');
-                return content.toLowerCase().includes(pattern.toLowerCase());
-              });
-            } else {
-              results = [...rows];
-            }
-            // Handle LIMIT
-            const limitMatch = sql.match(/LIMIT\s+(\?|\d+)/i);
-            if (limitMatch) {
-              const limit = limitMatch[1] === '?' ? Number(p[p.length - 1]) : Number(limitMatch[1]);
-              results = results.slice(0, limit);
-            }
-          }
-          if (cb) setTimeout(() => cb(null, results), 0);
-          return this;
-        }
-        get(sql: string, params?: unknown, callback?: (err: Error | null, row?: unknown) => void) {
-          let cb = callback;
-          if (typeof params === 'function') { cb = params as (err: Error | null, row?: unknown) => void; }
-          const p = Array.isArray(params) ? params : [];
-          const tableMatch = sql.match(/FROM (\w+)/i);
-          let result = null;
-          if (tableMatch) {
-            const rows = this.store.get(tableMatch[1]) || [];
-            if (p[0]) {
-              result = rows.find(r => r.id === p[0]) || null;
-            } else {
-              result = rows[0] || null;
-            }
-          }
-          if (cb) setTimeout(() => cb(null, result), 0);
-          return this;
-        }
-        close(callback?: (err: Error | null) => void) {
-          if (callback) setTimeout(() => callback(null), 0);
-          return this;
-        }
-      };
-      this.sqliteDriver = { Database: InMemoryDatabase };
+      // sqlite3 unavailable — persist memory to JSON file store
+      this.sqliteDriver = this._createFileBackedSQLiteDriver();
       return this.sqliteDriver;
     }
+  }
+  _createFileBackedSQLiteDriver() {
+    const FileBackedDatabase = class {
+      private filePath: string;
+      private store = new Map<string, Record<string, unknown>[]>();
+      constructor(dbPath: string, callback?: (err: Error | null) => void) {
+        this.filePath = dbPath.endsWith('.json') ? dbPath : `${dbPath}.json`;
+        this._load();
+        if (callback) setTimeout(() => callback(null), 0);
+      }
+      _load() {
+        const dir = path.dirname(this.filePath);
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+        }
+        if (!fs.existsSync(this.filePath)) {
+          return;
+        }
+        try {
+          const raw = fs.readFileSync(this.filePath, 'utf-8');
+          const parsed = JSON.parse(raw) as Record<string, Record<string, unknown>[]>;
+          for (const [table, rows] of Object.entries(parsed || {})) {
+            this.store.set(table, Array.isArray(rows) ? rows : []);
+          }
+        } catch {
+          this.store = new Map();
+        }
+      }
+      _persist() {
+        const serializable: Record<string, Record<string, unknown>[]> = {};
+        for (const [table, rows] of this.store.entries()) {
+          serializable[table] = rows;
+        }
+        fs.writeFileSync(this.filePath, JSON.stringify(serializable, null, 2), 'utf-8');
+      }
+      run(sql: string, params?: unknown, callback?: (err: Error | null) => void) {
+        let cb = callback;
+        if (typeof params === 'function') cb = params as (err: Error | null) => void;
+        const p = Array.isArray(params) ? params : [];
+        const createMatch = sql.match(/CREATE TABLE IF NOT EXISTS (\w+)/i);
+        if (createMatch && !this.store.has(createMatch[1])) {
+          this.store.set(createMatch[1], []);
+          this._persist();
+        }
+        const insertMatch = sql.match(/INSERT INTO (\w+)\s*\(([^)]+)\)\s*VALUES/i);
+        if (insertMatch) {
+          const table = insertMatch[1];
+          const cols = insertMatch[2].split(',').map((c) => c.trim());
+          const row: Record<string, unknown> = {};
+          cols.forEach((col, i) => {
+            row[col] = p[i] ?? null;
+          });
+          row.created_at = new Date().toISOString();
+          row.updated_at = new Date().toISOString();
+          row.access_count = 0;
+          const rows = this.store.get(table) || [];
+          rows.push(row);
+          this.store.set(table, rows);
+          this._persist();
+        }
+        const updateMatch = sql.match(/UPDATE (\w+)\s+SET/i);
+        if (updateMatch) {
+          const table = updateMatch[1];
+          const rows = this.store.get(table) || [];
+          const idParam = p[p.length - 1];
+          const row = rows.find((r) => r.id === idParam);
+          if (row) {
+            row.access_count = ((row.access_count as number) || 0) + 1;
+            row.last_accessed = new Date().toISOString();
+            this._persist();
+          }
+        }
+        const deleteMatch = sql.match(/DELETE FROM (\w+)\s+WHERE\s+id\s*=\s*\?/i);
+        if (deleteMatch) {
+          const table = deleteMatch[1];
+          const rows = this.store.get(table) || [];
+          this.store.set(
+            table,
+            rows.filter((r) => r.id !== p[0])
+          );
+          this._persist();
+        }
+        if (cb) setTimeout(() => cb(null), 0);
+        return this;
+      }
+      all(sql: string, params?: unknown, callback?: (err: Error | null, rows?: unknown[]) => void) {
+        let cb = callback;
+        if (typeof params === 'function') cb = params as (err: Error | null, rows?: unknown[]) => void;
+        const p = Array.isArray(params) ? params : [];
+        const tableMatch = sql.match(/FROM (\w+)/i);
+        let results: Record<string, unknown>[] = [];
+        if (tableMatch) {
+          const rows = this.store.get(tableMatch[1]) || [];
+          const likeMatch = sql.match(/content LIKE \?/i);
+          if (likeMatch && p[0]) {
+            const pattern = String(p[0]).replace(/%/g, '');
+            results = rows.filter((r) => {
+              const content = String(r.content || '');
+              return content.toLowerCase().includes(pattern.toLowerCase());
+            });
+          } else {
+            results = [...rows];
+          }
+          const limitMatch = sql.match(/LIMIT\s+(\?|\d+)/i);
+          if (limitMatch) {
+            const limit = limitMatch[1] === '?' ? Number(p[p.length - 1]) : Number(limitMatch[1]);
+            results = results.slice(0, limit);
+          }
+        }
+        if (cb) setTimeout(() => cb(null, results), 0);
+        return this;
+      }
+      get(sql: string, params?: unknown, callback?: (err: Error | null, row?: unknown) => void) {
+        let cb = callback;
+        if (typeof params === 'function') cb = params as (err: Error | null, row?: unknown) => void;
+        const p = Array.isArray(params) ? params : [];
+        const tableMatch = sql.match(/FROM (\w+)/i);
+        let result = null;
+        if (tableMatch) {
+          const rows = this.store.get(tableMatch[1]) || [];
+          result = p[0] ? rows.find((r) => r.id === p[0]) || null : rows[0] || null;
+        }
+        if (cb) setTimeout(() => cb(null, result), 0);
+        return this;
+      }
+      close(callback?: (err: Error | null) => void) {
+        this._persist();
+        if (callback) setTimeout(() => callback(null), 0);
+        return this;
+      }
+    };
+    return { Database: FileBackedDatabase };
   }
   async initialize() {
     const startTime = Date.now();

@@ -1,0 +1,17 @@
+node_modules/
+.vscode/
+.git/
+src/
+*.ts
+*.tsx
+!*.d.ts
+.eslintrc.json
+.vitest.config.ts
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+coverage/
+.DS_Store
+.agents/
+*.md

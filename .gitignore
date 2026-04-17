@@ -136,3 +136,36 @@ node_modules.nosync/
 
 # Grok AI
 .grok/
+
+# AI tool configs (other editors/agents)
+.adal/
+.augment/
+.bob/
+.codebuddy/
+.commandcode/
+.continue/
+.cortex/
+.crush/
+.factory/
+.goose/
+.iflow/
+.junie/
+.kilocode/
+.kiro/
+.kode/
+.mcpjam/
+.mux/
+.neovate/
+.npm-cache/
+.openhands/
+.pi/
+.pochi/
+.qoder/
+.roo/
+.trae/
+.vibe/
+.windsurf/
+.zencoder/
+skills-lock.json
+skills/
+*.tgz

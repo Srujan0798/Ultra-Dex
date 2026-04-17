@@ -1,11 +1,19 @@
-import sqlite3 from 'sqlite3';
 import { Client as PgClient } from 'pg';
 import { open, Database } from 'sqlite';
 
 const usePostgres = !!process.env.DATABASE_URL;
 
 let pgClient: PgClient | null = null;
-let sqliteDb: Database<sqlite3.Database, sqlite3.Statement> | null = null;
+let sqliteDb: Database | null = null;
+
+async function loadSqlite3() {
+  try {
+    const sqlite3Module = await import('sqlite3');
+    return sqlite3Module.default || sqlite3Module;
+  } catch {
+    return null;
+  }
+}
 
 export async function initBillingDb(): Promise<void> {
   if (usePostgres) {
@@ -39,6 +47,10 @@ export async function initBillingDb(): Promise<void> {
       );
     `);
   } else {
+    const sqlite3 = await loadSqlite3();
+    if (!sqlite3?.Database) {
+      throw new Error('sqlite3 is not available. Install optional dependency sqlite3 to use billing SQLite mode.');
+    }
     sqliteDb = await open({
       filename: process.env.BILLING_DB_PATH || './billing.db',
       driver: sqlite3.Database,

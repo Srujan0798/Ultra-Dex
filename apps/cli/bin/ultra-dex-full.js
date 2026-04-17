@@ -7,8 +7,8 @@
 
 import { program } from 'commander';
 import chalk from 'chalk';
+import path from 'path';
 import { VERSION } from '../lib/utils/version.js';
-import { pathToFileURL } from 'url';
 
 const commandRegistrars = [
   { path: '../lib/commands/run.js', register: 'registerRunCommand' },
@@ -82,17 +82,24 @@ export async function registerFullProgram(targetProgram = program) {
 }
 
 const isEntrypoint =
-  Boolean(process.argv[1]) && import.meta.url === pathToFileURL(process.argv[1]).href;
+  Boolean(process.argv[1]) && path.basename(process.argv[1]) === 'ultra-dex-full.js';
 
 if (isEntrypoint) {
-  program
-    .name('ultra-dex')
-    .description('AI Orchestration Meta-Layer for SaaS Development')
-    .version(VERSION);
+  const run = async () => {
+    program
+      .name('ultra-dex')
+      .description('AI Orchestration Meta-Layer for SaaS Development')
+      .version(VERSION);
 
-  await registerFullProgram(program);
+    await registerFullProgram(program);
 
-  const argv = process.argv.length > 2 ? process.argv : [...process.argv, '--help'];
-  await program.parseAsync(argv);
-  process.exit(process.exitCode ?? 0);
+    const argv = process.argv.length > 2 ? process.argv : [...process.argv, '--help'];
+    await program.parseAsync(argv);
+    process.exit(process.exitCode ?? 0);
+  };
+
+  run().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
 }

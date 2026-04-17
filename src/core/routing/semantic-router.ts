@@ -164,13 +164,21 @@ let TransformersEmbeddingModel = class {
   }
   async getExtractor() {
     if (!this.pipelinePromise) {
-      this.pipelinePromise = import('@xenova/transformers').then(async ({ env, pipeline }) => {
-        env.allowRemoteModels = true;
-        env.allowLocalModels = true;
-        return await pipeline('feature-extraction', this.modelName, { quantized: true });
-      });
+      this.pipelinePromise = import('@xenova/transformers')
+        .then(async ({ env, pipeline }) => {
+          env.allowRemoteModels = true;
+          env.allowLocalModels = true;
+          return await pipeline('feature-extraction', this.modelName, { quantized: true });
+        })
+        .catch(() => null);
     }
-    return await this.pipelinePromise;
+    const extractor = await this.pipelinePromise;
+    if (!extractor) {
+      throw new Error(
+        '@xenova/transformers is not available. Install the optional dependency or use the hashed backend.'
+      );
+    }
+    return extractor;
   }
   async embed(text) {
     const extractor = await this.getExtractor();

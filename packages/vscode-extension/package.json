@@ -2,7 +2,7 @@
   "name": "ultra-dex-vscode",
   "displayName": "Ultra-Dex",
   "description": "AI orchestration from within VSCode",
-  "version": "4.0.0",
+  "version": "0.3.0",
   "publisher": "ultra-dex",
   "license": "MIT",
   "repository": "https://github.com/ultra-dex/ultra-dex",
@@ -150,12 +150,13 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "esbuild src/extension.ts --bundle --outfile=out/extension.js --external:vscode --platform=node --format=cjs",
-    "build:webview": "esbuild src/webview/index.tsx --bundle --outfile=out/webview.js --platform=browser --format=iife --loader:.tsx=tsx --minify",
-    "watch": "esbuild src/extension.ts --bundle --outfile=out/extension.js --external:vscode --platform=node --format=cjs --watch",
+    "compile": "npx esbuild src/extension.ts --bundle --outfile=out/extension.js --external:vscode --external:eventemitter3 --platform=node --format=cjs",
+    "build:webview": "npx esbuild src/webview/index.tsx --bundle --outfile=out/webview.js --platform=browser --format=iife --loader:.tsx=tsx --minify",
+    "watch": "npx esbuild src/extension.ts --bundle --outfile=out/extension.js --external:vscode --external:eventemitter3 --platform=node --format=cjs --watch",
     "test": "vitest run",
     "lint": "eslint src --ext ts",
-    "package": "vsce package"
+    "package": "npx @vscode/vsce package --no-git-tag-version",
+    "publish": "npx @vscode/vsce publish"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",

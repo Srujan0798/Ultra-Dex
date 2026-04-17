@@ -1,0 +1,7 @@
+{
+  "name": "@ultra-dex/cloud-integrations",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cloud integrations for Ultra-Dex",
+  "type": "module"
+}

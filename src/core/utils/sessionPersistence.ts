@@ -1,9 +1,17 @@
 import { open } from 'sqlite';
-import sqlite3 from 'sqlite3';
 import { join } from 'path';
 import { mkdirSync, existsSync } from 'fs';
 import { createHash } from 'crypto';
 import { logger } from './logging.js';
+
+async function loadSqlite3() {
+  try {
+    const sqlite3Module = await import('sqlite3');
+    return sqlite3Module.default || sqlite3Module;
+  } catch {
+    return null;
+  }
+}
 class SessionPersistence {
   constructor(projectRoot) {
     this.projectRoot = projectRoot;
@@ -16,6 +24,12 @@ class SessionPersistence {
     const dbDir = join(this.projectRoot, '.ultra', 'memory');
     if (!existsSync(dbDir)) {
       mkdirSync(dbDir, { recursive: true });
+    }
+    const sqlite3 = await loadSqlite3();
+    if (!sqlite3?.Database) {
+      throw new Error(
+        'sqlite3 is not available. Install optional dependency sqlite3 to enable session persistence.'
+      );
     }
     this.db = await open({
       filename: this.dbPath,
