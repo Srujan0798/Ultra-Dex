@@ -30,22 +30,25 @@ async function bootstrap(options: any = {}) {
 
   console.log('[Bootstrap] Initializing DI container...');
 
-  // 0. Redis Cache
-  registerSingleton(DI_TOKENS.RedisCache, () => {
-    const redisCache = new RedisCache();
-    const cleanup = async () => {
-      if (typeof (redisCache as any).disconnect === 'function')
-        await (redisCache as any).disconnect();
-      if (typeof (redisCache as any).shutdown === 'function') await (redisCache as any).shutdown();
-    };
-    shutdownCallbacks.push(cleanup);
-    return redisCache;
-  });
+  // 0. Redis Cache (skip in test env if skipRedis is set)
+  if (!options.skipRedis) {
+    registerSingleton(DI_TOKENS.RedisCache, () => {
+      const redisCache = new RedisCache();
+      const cleanup = async () => {
+        if (typeof (redisCache as any).disconnect === 'function')
+          await (redisCache as any).disconnect();
+        if (typeof (redisCache as any).shutdown === 'function')
+          await (redisCache as any).shutdown();
+      };
+      shutdownCallbacks.push(cleanup);
+      return redisCache;
+    });
+  }
 
   // 1. Memory Manager
   registerSingleton(DI_TOKENS.memoryManager, () => {
     const memoryManager = new MemoryManager({
-      persistent: process.env.NODE_ENV !== 'test',
+      persistent: process.env.NODE_ENV !== 'test' && !options.skipDatabase,
       maxSize: 10000,
     });
     const cleanup = async () => {
@@ -129,9 +132,17 @@ async function bootstrap(options: any = {}) {
 
   // Initialize services
   try {
-    // Connect Redis first
-    const redis = container.resolve(DI_TOKENS.RedisCache) as any;
-    if (typeof redis.connect === 'function') await redis.connect();
+    // Connect Redis first (if registered)
+    if (container.isRegistered(DI_TOKENS.RedisCache)) {
+      const redis = container.resolve(DI_TOKENS.RedisCache) as any;
+      if (typeof redis.connect === 'function') {
+        try {
+          await redis.connect();
+        } catch (err) {
+          console.warn('[Bootstrap] Redis unavailable, continuing without cache');
+        }
+      }
+    }
 
     const memory = container.resolve(DI_TOKENS.memoryManager) as any;
     if (typeof memory.initialize === 'function') await memory.initialize();
