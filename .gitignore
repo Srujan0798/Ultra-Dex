@@ -169,3 +169,5 @@ node_modules.nosync/
 skills-lock.json
 skills/
 *.tgz
+lib/
+dist/
