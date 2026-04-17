@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-> **PROJECT STATUS: v2.1.0 - ETERNAL STATE ACHIEVED** | 68 unit tests, 14 integration tests passing | All 6 NoopSubsystems replaced | Native deps moved to optionalDependencies
+> **PROJECT STATUS: v0.3.0** | 503 tests passing, 0 fail | CLI boots via tsx | Native deps in optionalDependencies | 83 skills registered | 13 providers
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 

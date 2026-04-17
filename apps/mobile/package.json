@@ -1,6 +1,6 @@
 {
   "name": "@ultra-dex/mobile",
-  "version": "6.0.0",
+  "version": "0.3.0",
   "private": true,
   "main": "App.tsx",
   "scripts": {

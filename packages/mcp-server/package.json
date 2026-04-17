@@ -1,6 +1,6 @@
 {
   "name": "@ultra-dex/mcp-server",
-  "version": "1.0.0",
+  "version": "0.3.0",
   "description": "MCP server exposing Ultra-Dex functionality as tools",
   "main": "index.js",
   "type": "module",
@@ -19,9 +19,6 @@
   ],
   "author": "Srujan Sai Karna",
   "license": "MIT",
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.29.0"
-  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@ultra-dex/core": "^2.0.0"

@@ -1,6 +1,6 @@
 {
   "name": "@ultra-dex/compliance",
-  "version": "1.0.0",
+  "version": "0.3.0",
   "description": "Comprehensive compliance and audit logging package for Ultra-Dex",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

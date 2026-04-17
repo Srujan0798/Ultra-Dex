@@ -1,6 +1,6 @@
 {
   "name": "@ultra-dex/cli",
-  "version": "2.0.0-alpha.0",
+  "version": "0.3.0",
   "private": true,
   "publishConfig": {
     "access": "public",

@@ -1,6 +1,6 @@
 {
   "name": "@ultra-dex/mobile-sdk",
-  "version": "1.0.0",
+  "version": "0.3.0",
   "description": "React Native SDK for Ultra-Dex mobile integration",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",

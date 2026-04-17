@@ -1,6 +1,6 @@
 {
   "name": "@ultra-dex/desktop",
-  "version": "6.0.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Ultra-Dex Desktop Application",
   "main": "src/main.js",

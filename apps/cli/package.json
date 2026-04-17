@@ -1,6 +1,6 @@
 {
   "name": "@ultra-dex/cli",
-  "version": "6.0.0",
+  "version": "0.3.0",
   "description": "Ultra-Dex command-line interface",
   "publishConfig": {
     "access": "public",

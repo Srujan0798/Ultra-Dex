@@ -1,6 +1,6 @@
 {
   "name": "@ultra-dex/core-api",
-  "version": "6.0.0",
+  "version": "0.3.0",
   "description": "Ultra-Dex Core API Server",
   "main": "server.js",
   "type": "module",

@@ -1,6 +1,6 @@
 {
   "name": "@ultra-dex/mobile-app",
-  "version": "1.0.0",
+  "version": "0.3.0",
   "description": "Ultra-Dex Mobile Companion App",
   "main": "index.js",
   "scripts": {

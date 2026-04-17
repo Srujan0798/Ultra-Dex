@@ -1,6 +1,6 @@
 {
   "name": "@ultra-dex/analytics",
-  "version": "1.0.0",
+  "version": "0.3.0",
   "description": "Advanced analytics and insights platform for Ultra-Dex",
   "type": "module",
   "main": "./src/index.js",

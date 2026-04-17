@@ -1,6 +1,6 @@
 {
   "name": "@ultra-dex/marketplace",
-  "version": "1.0.0",
+  "version": "0.3.0",
   "description": "Plugin marketplace server for Ultra-Dex",
   "main": "dist/index.js",
   "type": "module",
