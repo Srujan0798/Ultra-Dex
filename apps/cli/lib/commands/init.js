@@ -71,8 +71,13 @@ export function registerInitCommand(program) {
       '--stack <preset>',
       'Preset: next15-saas, remix-saas, sveltekit-saas, fastapi-api, ecommerce-next, ai-saas (plus others)'
     )
+    .option('--quick', 'Quick setup: configure API keys and test connection')
     .action(async (objective, options) => {
       try {
+        if (options.quick || (!objective && !options.template && !options.live)) {
+          return await handleQuickSetup();
+        }
+
         showBanner();
         logger.info('⚡ ACTIVATING NEXUS INTELLIGENCE...');
         logger.spacer();
@@ -117,6 +122,86 @@ export function registerInitCommand(program) {
         process.exit(error.exitCode || 1);
       }
     });
+}
+
+/**
+ * Handle quick setup: configure API keys and test connection
+ * @returns {Promise<void>}
+ */
+async function handleQuickSetup() {
+  logger.header('⚡ ULTRA-DEX QUICK SETUP');
+  logger.spacer();
+
+  const answers = await inquirer.prompt([
+    {
+      type: 'password',
+      name: 'anthropicKey',
+      message: 'Enter your Anthropic API Key (required):',
+      mask: '*',
+      validate: (input) => input.length > 10 || 'Please enter a valid API key',
+    },
+    {
+      type: 'password',
+      name: 'openaiKey',
+      message: 'Enter your OpenAI API Key (optional, press Enter to skip):',
+      mask: '*',
+    },
+  ]);
+
+  const configDir = path.join(process.cwd(), '.ultra-dex');
+  const configPath = path.join(configDir, 'config.yaml');
+
+  await fs.mkdir(configDir, { recursive: true });
+
+  const configYaml = `ai:
+  defaultProvider: anthropic
+  providers:
+    anthropic:
+      enabled: true
+      apiKey: ${answers.anthropicKey}
+    openai:
+      enabled: ${!!answers.openaiKey}
+      apiKey: ${answers.openaiKey || ''}
+`;
+
+  await fs.writeFile(configPath, configYaml);
+  logger.success(`Config written to ${configPath}`);
+  logger.spacer();
+  logger.info('Testing connection...');
+  logger.spacer();
+
+  try {
+    const { anthropic } = await import('@ai-sdk/anthropic');
+    const client = anthropic({ apiKey: answers.anthropicKey });
+
+    const start = Date.now();
+    const response = await client.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 100,
+      messages: [{ role: 'user', content: 'Say "Hello from Ultra-Dex!" in exactly those words.' }],
+    });
+    const latency = Date.now() - start;
+
+    const content = response.content[0]?.type === 'text' ? response.content[0].text : '';
+    const inputTokens = response.usage?.input_tokens || 0;
+    const outputTokens = response.usage?.output_tokens || 0;
+
+    const cost = (inputTokens * 3 + outputTokens * 15) / 1_000_000;
+
+    logger.success('✅ Connection successful!');
+    logger.spacer();
+    logger.header('Response:');
+    console.log(chalk.cyan(content));
+    logger.spacer();
+    logger.info(`Latency: ${latency}ms`);
+    logger.info(`Cost: ~$${cost.toFixed(6)}`);
+    logger.spacer();
+    logger.success('Ultra-Dex is ready! Run: ultra-dex run planner -t "your task"');
+  } catch (error) {
+    logger.error(`Connection failed: ${error.message}`);
+    logger.info('Check your API key and try again.');
+    process.exit(1);
+  }
 }
 
 /**
@@ -303,7 +388,7 @@ async function handleInteractiveInit(options) {
     const outputDir = path.resolve(options.dir, answers.projectName);
     await scaffoldSimpleDexProject(outputDir, answers);
     spinner.succeed(chalk.green('Script initialization complete.'));
-    
+
     logger.info('Next steps:');
     logger.info(`  1. cd ${answers.projectName}`);
     logger.info('  2. npm install');
@@ -777,7 +862,7 @@ async function scaffoldSimpleDexProject(outputDir, answers) {
 
   const envExample = `# Ultra-Dex Configuration
 # Add keys for selected providers
-${(answers.providers || []).map(p => `${p.toUpperCase()}_API_KEY=`).join('\n')}
+${(answers.providers || []).map((p) => `${p.toUpperCase()}_API_KEY=`).join('\n')}
 
 # Optional: Memory configuration
 # REDIS_URL=redis://localhost:6379
@@ -824,7 +909,10 @@ console.log('Result:', result.output);
 
   await fs.writeFile(path.join(outputDir, '.env.example'), envExample);
   await fs.writeFile(path.join(outputDir, 'package.json'), JSON.stringify(packageJson, null, 2));
-  await fs.writeFile(path.join(outputDir, 'ultra-dex.config.json'), JSON.stringify(configJson, null, 2));
+  await fs.writeFile(
+    path.join(outputDir, 'ultra-dex.config.json'),
+    JSON.stringify(configJson, null, 2)
+  );
   await fs.writeFile(path.join(outputDir, 'src', 'index.js'), indexTs); // Using .js for simplicity in simple script mode
 }
 

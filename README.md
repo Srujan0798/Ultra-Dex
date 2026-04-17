@@ -16,8 +16,24 @@ Ultra-Dex is an AI orchestration layer that routes tasks across providers (OpenA
 ## Install
 
 ```bash
-npm install @ultra-dex/sdk        # Provider routing + smart selection
-npm install @ultra-dex/dexgraph   # Workflow orchestration engine
+npm i -g @ultra-dex/cli
+ultra-dex init
+```
+
+The `ultra-dex init` command will:
+
+1. Prompt for your API keys (Anthropic required, OpenAI optional)
+2. Create `.ultra-dex/config.yaml`
+3. Run a hello-world chat and show the response + cost
+
+## Quick Start
+
+```bash
+# After ultra-dex init, run your first AI task
+ultra-dex run planner -t "design a REST API"
+
+# Or use a multi-agent swarm
+ultra-dex swarm "build a landing page"
 ```
 
 ## Quick Example
@@ -87,21 +103,21 @@ npx @ultra-dex/dexgraph run workflow.yaml
 
 ## Supported Providers
 
-| Provider   | ID          | Model examples                         |
-| ---------- | ----------- | -------------------------------------- |
-| OpenAI     | `openai`    | GPT-4o, GPT-4, GPT-3.5                |
-| Anthropic  | `anthropic` | Claude Opus, Sonnet, Haiku             |
-| Google     | `google`    | Gemini Pro, Gemini Flash               |
-| NVIDIA     | `nvidia`    | Nemotron, Llama 3.1 via NVIDIA API     |
-| Mistral    | `mistral`   | Mistral Large, Medium, Small           |
-| Groq       | `groq`      | Llama, Mixtral via Groq inference      |
-| DeepSeek   | `deepseek`  | DeepSeek V3, DeepSeek Coder           |
-| Cohere     | `cohere`    | Command R, Command R+                  |
-| Together   | `together`  | Open-source models via Together AI     |
-| Fireworks  | `fireworks` | Fast open-source inference             |
-| Perplexity | `perplexity`| Sonar models with web search           |
-| Grok       | `grok`      | Grok-2                                 |
-| Llama      | `llama`     | Llama 4 via Meta API                   |
+| Provider   | ID           | Model examples                     |
+| ---------- | ------------ | ---------------------------------- |
+| OpenAI     | `openai`     | GPT-4o, GPT-4, GPT-3.5             |
+| Anthropic  | `anthropic`  | Claude Opus, Sonnet, Haiku         |
+| Google     | `google`     | Gemini Pro, Gemini Flash           |
+| NVIDIA     | `nvidia`     | Nemotron, Llama 3.1 via NVIDIA API |
+| Mistral    | `mistral`    | Mistral Large, Medium, Small       |
+| Groq       | `groq`       | Llama, Mixtral via Groq inference  |
+| DeepSeek   | `deepseek`   | DeepSeek V3, DeepSeek Coder        |
+| Cohere     | `cohere`     | Command R, Command R+              |
+| Together   | `together`   | Open-source models via Together AI |
+| Fireworks  | `fireworks`  | Fast open-source inference         |
+| Perplexity | `perplexity` | Sonar models with web search       |
+| Grok       | `grok`       | Grok-2                             |
+| Llama      | `llama`      | Llama 4 via Meta API               |
 
 ## CLI
 
