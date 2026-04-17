@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-> **PROJECT STATUS: v0.3.0** | 503 tests passing, 0 fail | CLI boots via tsx | Native deps in optionalDependencies | 83 skills registered | 13 providers
+> **PROJECT STATUS: v0.3.0** | 537 pass, 0 fail, 5 skipped | CLI boots via tsx | All deps pinned (no ^) | `init --quick` API key wizard | Live e2e gated by ULTRA_DEX_LIVE=1
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 

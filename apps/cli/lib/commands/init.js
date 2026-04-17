@@ -131,75 +131,92 @@ export function registerInitCommand(program) {
 async function handleQuickSetup() {
   logger.header('⚡ ULTRA-DEX QUICK SETUP');
   logger.spacer();
+  logger.info('This wizard configures your API keys and tests connectivity.');
+  logger.spacer();
+
+  const existing = {
+    anthropic: process.env.ANTHROPIC_API_KEY || '',
+    openai: process.env.OPENAI_API_KEY || '',
+    gemini: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || '',
+  };
 
   const answers = await inquirer.prompt([
     {
       type: 'password',
       name: 'anthropicKey',
-      message: 'Enter your Anthropic API Key (required):',
+      message: 'Anthropic API Key (required):',
       mask: '*',
-      validate: (input) => input.length > 10 || 'Please enter a valid API key',
+      default: existing.anthropic,
+      validate: (input) => input.length > 10 || 'Please enter a valid key (starts with sk-ant-...)',
     },
     {
       type: 'password',
       name: 'openaiKey',
-      message: 'Enter your OpenAI API Key (optional, press Enter to skip):',
+      message: 'OpenAI API Key (optional, Enter to skip):',
       mask: '*',
+      default: existing.openai,
+    },
+    {
+      type: 'password',
+      name: 'geminiKey',
+      message: 'Google Gemini API Key (optional, Enter to skip):',
+      mask: '*',
+      default: existing.gemini,
     },
   ]);
 
-  const configDir = path.join(process.cwd(), '.ultra-dex');
-  const configPath = path.join(configDir, 'config.yaml');
+  // Write to .env in cwd
+  const envPath = path.join(process.cwd(), '.env');
+  let envContent = '';
+  try {
+    envContent = await fs.readFile(envPath, 'utf8');
+  } catch { /* new file */ }
 
-  await fs.mkdir(configDir, { recursive: true });
+  function setEnvVar(content, key, value) {
+    if (!value) return content;
+    const re = new RegExp(`^${key}=.*$`, 'm');
+    return re.test(content)
+      ? content.replace(re, `${key}=${value}`)
+      : content + (content.endsWith('\n') || !content ? '' : '\n') + `${key}=${value}\n`;
+  }
 
-  const configYaml = `ai:
-  defaultProvider: anthropic
-  providers:
-    anthropic:
-      enabled: true
-      apiKey: ${answers.anthropicKey}
-    openai:
-      enabled: ${!!answers.openaiKey}
-      apiKey: ${answers.openaiKey || ''}
-`;
+  envContent = setEnvVar(envContent, 'ANTHROPIC_API_KEY', answers.anthropicKey);
+  envContent = setEnvVar(envContent, 'OPENAI_API_KEY', answers.openaiKey);
+  envContent = setEnvVar(envContent, 'GEMINI_API_KEY', answers.geminiKey);
 
-  await fs.writeFile(configPath, configYaml);
-  logger.success(`Config written to ${configPath}`);
+  await fs.writeFile(envPath, envContent);
+  logger.success(`Keys saved to ${envPath}`);
   logger.spacer();
-  logger.info('Testing connection...');
-  logger.spacer();
+  logger.info('Testing Anthropic connection...');
 
   try {
-    const { anthropic } = await import('@ai-sdk/anthropic');
-    const client = anthropic({ apiKey: answers.anthropicKey });
+    const { default: Anthropic } = await import('@anthropic-ai/sdk');
+    const client = new Anthropic({ apiKey: answers.anthropicKey });
 
     const start = Date.now();
     const response = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 100,
-      messages: [{ role: 'user', content: 'Say "Hello from Ultra-Dex!" in exactly those words.' }],
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 50,
+      messages: [{ role: 'user', content: 'Reply with exactly: Hello from Ultra-Dex!' }],
     });
     const latency = Date.now() - start;
 
     const content = response.content[0]?.type === 'text' ? response.content[0].text : '';
     const inputTokens = response.usage?.input_tokens || 0;
     const outputTokens = response.usage?.output_tokens || 0;
+    const cost = (inputTokens * 0.8 + outputTokens * 4) / 1_000_000;
 
-    const cost = (inputTokens * 3 + outputTokens * 15) / 1_000_000;
-
-    logger.success('✅ Connection successful!');
     logger.spacer();
-    logger.header('Response:');
-    console.log(chalk.cyan(content));
+    console.log(chalk.cyan(`  "${content.trim()}"`));
     logger.spacer();
-    logger.info(`Latency: ${latency}ms`);
-    logger.info(`Cost: ~$${cost.toFixed(6)}`);
+    logger.success(`✅ Connected! (${latency}ms · ~$${cost.toFixed(6)})`);
     logger.spacer();
-    logger.success('Ultra-Dex is ready! Run: ultra-dex run planner -t "your task"');
+    logger.info('Next steps:');
+    logger.info('  ultra-dex run planner -t "your task"');
+    logger.info('  ultra-dex swarm "build a SaaS product"');
   } catch (error) {
     logger.error(`Connection failed: ${error.message}`);
-    logger.info('Check your API key and try again.');
+    logger.info('Check your API key at https://console.anthropic.com');
     process.exit(1);
   }
 }
