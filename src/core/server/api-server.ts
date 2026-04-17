@@ -26,22 +26,71 @@ app.onError((err, c) => {
 // ── Agent definitions ────────────────────────────────────────────────────
 
 const AGENTS = [
-  { id: 'planner', name: '@Planner', tier: 'Leadership', description: 'Project planning, task breakdown, dependencies' },
-  { id: 'cto', name: '@CTO', tier: 'Leadership', description: 'Architecture, technology decisions, trade-off analysis' },
-  { id: 'backend', name: '@Backend', tier: 'Development', description: 'APIs, business logic, data processing' },
-  { id: 'frontend', name: '@Frontend', tier: 'Development', description: 'UI/UX, client-side functionality' },
-  { id: 'database', name: '@Database', tier: 'Development', description: 'Schema design, queries, migrations' },
-  { id: 'auth', name: '@Auth', tier: 'Security', description: 'Authentication, security protocols' },
-  { id: 'devops', name: '@DevOps', tier: 'DevOps', description: 'CI/CD, infrastructure, monitoring' },
-  { id: 'reviewer', name: '@Reviewer', tier: 'Quality', description: 'Code review, architectural compliance' },
-  { id: 'debugger', name: '@Debugger', tier: 'Quality', description: 'Bug investigation, root cause analysis' },
+  {
+    id: 'planner',
+    name: '@Planner',
+    tier: 'Leadership',
+    description: 'Project planning, task breakdown, dependencies',
+  },
+  {
+    id: 'cto',
+    name: '@CTO',
+    tier: 'Leadership',
+    description: 'Architecture, technology decisions, trade-off analysis',
+  },
+  {
+    id: 'backend',
+    name: '@Backend',
+    tier: 'Development',
+    description: 'APIs, business logic, data processing',
+  },
+  {
+    id: 'frontend',
+    name: '@Frontend',
+    tier: 'Development',
+    description: 'UI/UX, client-side functionality',
+  },
+  {
+    id: 'database',
+    name: '@Database',
+    tier: 'Development',
+    description: 'Schema design, queries, migrations',
+  },
+  {
+    id: 'auth',
+    name: '@Auth',
+    tier: 'Security',
+    description: 'Authentication, security protocols',
+  },
+  {
+    id: 'devops',
+    name: '@DevOps',
+    tier: 'DevOps',
+    description: 'CI/CD, infrastructure, monitoring',
+  },
+  {
+    id: 'reviewer',
+    name: '@Reviewer',
+    tier: 'Quality',
+    description: 'Code review, architectural compliance',
+  },
+  {
+    id: 'debugger',
+    name: '@Debugger',
+    tier: 'Quality',
+    description: 'Bug investigation, root cause analysis',
+  },
 ];
 
 // ── Provider definitions ─────────────────────────────────────────────────
 
 const PROVIDERS = [
   { name: 'openai', models: ['gpt-4o', 'gpt-4o-mini', 'o1', 'o3-mini'], status: 'available' },
-  { name: 'anthropic', models: ['claude-sonnet-4-20250514', 'claude-haiku-4-5-20251001'], status: 'available' },
+  {
+    name: 'anthropic',
+    models: ['claude-sonnet-4-20250514', 'claude-haiku-4-5-20251001'],
+    status: 'available',
+  },
   { name: 'google', models: ['gemini-2.5-flash', 'gemini-2.5-pro'], status: 'available' },
   { name: 'groq', models: ['llama-3.3-70b', 'mixtral-8x7b'], status: 'available' },
   { name: 'mistral', models: ['mistral-large', 'mistral-small'], status: 'available' },
@@ -57,20 +106,27 @@ const PROVIDERS = [
 
 // ── Swarm store (in-memory) ──────────────────────────────────────────────
 
-const swarms = new Map<string, {
-  id: string;
-  objective: string;
-  agents: string[];
-  status: 'pending' | 'running' | 'completed' | 'failed';
-  progress: number;
-  results: Record<string, unknown>[];
-  startedAt: number;
-  completedAt?: number;
-}>();
+const swarms = new Map<
+  string,
+  {
+    id: string;
+    objective: string;
+    agents: string[];
+    status: 'pending' | 'running' | 'completed' | 'failed';
+    progress: number;
+    results: Record<string, unknown>[];
+    startedAt: number;
+    completedAt?: number;
+  }
+>();
 
 // ── Mock AI response ─────────────────────────────────────────────────────
 
-function mockChatResponse(messages: { role: string; content: string }[], provider: string, model: string) {
+function mockChatResponse(
+  messages: { role: string; content: string }[],
+  provider: string,
+  model: string
+) {
   const lastMessage = messages[messages.length - 1]?.content || '';
   return {
     content: `[MOCK] Response to: "${lastMessage.slice(0, 80)}${lastMessage.length > 80 ? '...' : ''}"`,
@@ -238,7 +294,12 @@ app.get('/api/memory/search', async (c) => {
       query,
       results: [
         { id: 'mem-1', content: `[MOCK] Memory matching "${query}"`, score: 0.95, type: 'task' },
-        { id: 'mem-2', content: `[MOCK] Related memory for "${query}"`, score: 0.82, type: 'knowledge' },
+        {
+          id: 'mem-2',
+          content: `[MOCK] Related memory for "${query}"`,
+          score: 0.82,
+          type: 'knowledge',
+        },
       ],
       count: 2,
     });
@@ -268,12 +329,13 @@ app.get('/api/stats', (c) => {
 
 // ── Start ────────────────────────────────────────────────────────────────
 
-const port = parseInt(process.env.PORT || '3001', 10);
-
-serve({ fetch: app.fetch, port }, () => {
-  console.log(`\n  Ultra-Dex API Server`);
-  console.log(`  ${isMock ? '[MOCK MODE]' : '[LIVE]'} http://localhost:${port}`);
-  console.log(`  ${PROVIDERS.length} providers | ${AGENTS.length} agents\n`);
-});
+if (process.argv[1]?.includes('api-server')) {
+  const port = parseInt(process.env.PORT || '3001', 10);
+  serve({ fetch: app.fetch, port }, () => {
+    console.log(`\n  Ultra-Dex API Server`);
+    console.log(`  ${isMock ? '[MOCK MODE]' : '[LIVE]'} http://localhost:${port}`);
+    console.log(`  ${PROVIDERS.length} providers | ${AGENTS.length} agents\n`);
+  });
+}
 
 export { app };

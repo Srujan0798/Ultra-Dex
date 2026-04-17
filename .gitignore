@@ -133,3 +133,6 @@ docker-compose.override.yml
 node_modules.nosync/
 **/*.node
 **/@next/swc-*
+
+# Grok AI
+.grok/
