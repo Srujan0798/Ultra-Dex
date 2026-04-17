@@ -1,5 +1,3 @@
-#!/usr/bin/env -S node --import=tsx
-
 /**
  * Ultra-Dex CLI Entry Point
  * Simplified version that always uses the full program

@@ -13,6 +13,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const packageJsonCandidates = [
   path.resolve(__dirname, '../../package.json'),
   path.resolve(__dirname, '../../../../../package.json'),
+  path.resolve(process.cwd(), 'package.json'),
+  path.resolve(process.cwd(), '../package.json'),
 ];
 const packageJsonPath = packageJsonCandidates.find((candidate) => fs.existsSync(candidate));
 

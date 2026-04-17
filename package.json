@@ -39,9 +39,9 @@
     "url": "https://github.com/Srujan0798/Ultra-Dex/issues"
   },
   "bin": {
-    "ultra-dex": "./dist/ultra-dex.js"
+    "ultra-dex": "./dist/ultra-dex.mjs"
   },
-  "main": "./dist/ultra-dex.js",
+  "main": "./dist/ultra-dex.mjs",
   "files": [
     "apps/cli/bin",
     "apps/cli/lib",
@@ -89,8 +89,9 @@
     "packages/sdk"
   ],
   "scripts": {
-    "start": "node --import=tsx dist/ultra-dex.js",
-    "ultra-dex": "node --import=tsx dist/ultra-dex.js",
+    "prepare": "npm run build:cli",
+    "start": "node dist/ultra-dex.mjs",
+    "ultra-dex": "node dist/ultra-dex.mjs",
     "dev": "node --watch dist/ultra-dex.js",
     "nemotron": "node examples/nemotron-cli.js",
     "nemotron:example": "node examples/nemotron-example.js",
@@ -269,7 +270,7 @@
     "@vitejs/plugin-react": "^6.0.1",
     "bullmq": "^5.73.1",
     "c8": "^11.0.0",
-    "esbuild": "^0.28.0",
+    "esbuild": "^0.24.0",
     "eslint": "^10.2.0",
     "globals": "^17.4.0",
     "lucide-react": "^1.7.0",
