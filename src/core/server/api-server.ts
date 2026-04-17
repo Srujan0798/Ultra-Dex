@@ -329,7 +329,7 @@ app.get('/api/stats', (c) => {
 
 // ── Start ────────────────────────────────────────────────────────────────
 
-if (process.argv[1]?.includes('api-server')) {
+if (process.argv[1] && process.argv[1].endsWith('api-server.ts')) {
   const port = parseInt(process.env.PORT || '3001', 10);
   serve({ fetch: app.fetch, port }, () => {
     console.log(`\n  Ultra-Dex API Server`);
