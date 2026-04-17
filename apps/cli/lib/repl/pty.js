@@ -5,12 +5,21 @@
  * Enables vim, git rebase, and other interactive shell tools within the AI orchestration
  */
 
-import pty from 'node-pty';
 import os from 'os';
 import { EventEmitter } from 'events';
 
 import { printInfo, printSuccess, printError } from '../utils/output.js';
 import { AppError } from '../utils/errors.js';
+
+// Dynamic import helper for node-pty
+async function loadNodePty() {
+  try {
+    const pty = await import('node-pty');
+    return pty.default || pty;
+  } catch {
+    return null;
+  }
+}
 
 class PTYBridge extends EventEmitter {
   constructor(options = {}) {
@@ -26,6 +35,7 @@ class PTYBridge extends EventEmitter {
     this.isActive = false;
     this.commandHistory = [];
     this.aiCallback = null;
+    this.ptyModule = null;
   }
 
   /**
@@ -33,7 +43,15 @@ class PTYBridge extends EventEmitter {
    */
   async init() {
     try {
-      this.terminal = pty.spawn(this.options.shell, [], {
+      // Load node-pty dynamically
+      this.ptyModule = await loadNodePty();
+      if (!this.ptyModule) {
+        throw new AppError(
+          'node-pty is not available. Please install it as an optional dependency.'
+        );
+      }
+
+      this.terminal = this.ptyModule.spawn(this.options.shell, [], {
         name: 'xterm-color',
         cols: this.options.cols,
         rows: this.options.rows,

@@ -9,10 +9,20 @@ var __decorateClass = (decorators, target, key, kind) => {
   return result;
 };
 var __decorateParam = (index, decorator) => (target, key) => decorator(target, key, index);
-import ivm from 'isolated-vm';
 import { singleton, inject } from 'tsyringe';
 import { DI_TOKENS } from '../di/tokens.js';
 import { VirtualFileSystem } from './virtual-fs.js';
+
+// Dynamic import helper for isolated-vm
+async function loadIsolatedVm() {
+  try {
+    const ivm = await import('isolated-vm');
+    return ivm.default || ivm;
+  } catch {
+    return null;
+  }
+}
+
 let IsolatedVMSandbox = class {
   constructor(logger, config) {
     this.logger = logger;
@@ -20,6 +30,7 @@ let IsolatedVMSandbox = class {
     this.maxIsolates = this.config.get('sandbox.isolatedVm.maxIsolates', 100);
     this.defaultTimeout = this.config.get('sandbox.isolatedVm.timeout', 5e3);
     this.defaultMemoryLimit = this.config.get('sandbox.isolatedVm.memoryLimit', 128);
+    this.ivm = null;
   }
   isolates = [];
   stats = {
@@ -31,6 +42,20 @@ let IsolatedVMSandbox = class {
   defaultTimeout;
   defaultMemoryLimit;
   async execute(code, context) {
+    // Load isolated-vm dynamically
+    if (!this.ivm) {
+      this.ivm = await loadIsolatedVm();
+      if (!this.ivm) {
+        return {
+          success: false,
+          error: 'isolated-vm is not available. Please install it as an optional dependency.',
+          exitCode: 1,
+          executionTime: 0,
+          memoryUsed: 0,
+        };
+      }
+    }
+
     const startTime = Date.now();
     const executionId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     if (this.isolates.length >= this.maxIsolates) {
@@ -44,14 +69,14 @@ let IsolatedVMSandbox = class {
       memoryLimit,
       timeout,
     });
-    const isolate = new ivm.Isolate({
+    const isolate = new this.ivm.Isolate({
       memoryLimit,
       // MB
     });
     this.isolates.push({ isolate, createdAt: Date.now() });
     try {
       const jail = await isolate.createContext();
-      const consoleRef = new ivm.Reference({
+      const consoleRef = new this.ivm.Reference({
         log: (...args) => {
           const message = args
             .map((arg) => (typeof arg === 'object' ? JSON.stringify(arg) : String(arg)))
@@ -77,15 +102,15 @@ let IsolatedVMSandbox = class {
         await this.injectFileSystem(jail, context.filesystem);
       }
       const wrappedCode = `
-        (async () => {
-          const console = _console;
-          try {
-            ${code}
-          } catch (error) {
-            return { __error: error.message, __stack: error.stack };
-          }
-        })()
-      `;
+(async () => {
+  const console = _console;
+  try {
+    ${code}
+  } catch (error) {
+    return { __error: error.message, __stack: error.stack };
+  }
+})()
+`;
       this.logger.debug('Compiling script', { executionId, codeLength: code.length });
       const script = await isolate.compileScript(wrappedCode);
       this.logger.debug('Executing script', { executionId, timeout });
@@ -102,9 +127,9 @@ let IsolatedVMSandbox = class {
         };
       }
       let copiedResult;
-      if (result instanceof ivm.Reference) {
+      if (result instanceof this.ivm.Reference) {
         copiedResult = await result.copy();
-      } else if (result instanceof ivm.ExternalCopy) {
+      } else if (result instanceof this.ivm.ExternalCopy) {
         copiedResult = result.copy();
       } else {
         copiedResult = result;
@@ -176,7 +201,7 @@ let IsolatedVMSandbox = class {
     for (const mod of allowedModules) {
       switch (mod) {
         case 'crypto': {
-          const cryptoRef = new ivm.Reference({
+          const cryptoRef = new this.ivm.Reference({
             randomUUID: () => crypto.randomUUID(),
             randomBytes: (size) => {
               if (size > 1024) {
@@ -189,7 +214,7 @@ let IsolatedVMSandbox = class {
           break;
         }
         case 'util': {
-          const utilRef = new ivm.Reference({
+          const utilRef = new this.ivm.Reference({
             inspect: (obj) => JSON.stringify(obj),
           });
           await jail.global.set('_util', utilRef, { reference: true });
@@ -199,7 +224,7 @@ let IsolatedVMSandbox = class {
     }
   }
   async injectFileSystem(jail, fs) {
-    const fsRef = new ivm.Reference({
+    const fsRef = new this.ivm.Reference({
       readFile: async (path) => {
         return fs.readFile(path);
       },

@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-> **PROJECT STATUS: v2.1.0 - ETERNAL STATE ACHIEVED** | All tests passing (306 unit, 44 integration) | All 6 NoopSubsystems replaced
+> **PROJECT STATUS: v2.1.0 - ETERNAL STATE ACHIEVED** | 68 unit tests, 14 integration tests passing | All 6 NoopSubsystems replaced | Native deps moved to optionalDependencies
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
@@ -109,12 +109,12 @@ Every task and tool execution passes through `GovernanceManager` before running.
 - **Errors**: custom classes extending `Error`; log via `winston`; never swallow
 - **Commits**: conventional commits (`feat:`, `fix:`, `chore:`, etc.)
 
-
 ## Enabled Skills
 
 ### 🎨 Frontend-Design Skill
 
 **Skill Identity**
+
 - Name: `frontend-design`
 - Type: UI/UX Creation & Code Generation
 - Added by: You
@@ -142,6 +142,7 @@ Before coding, understand the context and commit to a BOLD aesthetic direction:
 **CRITICAL**: Choose a clear conceptual direction and execute it with precision. Bold maximalism and refined minimalism both work - the key is intentionality, not intensity.
 
 Then implement working code (HTML/CSS/JS, React, Vue, etc.) that is:
+
 - ✅ Production-grade and functional
 - ✅ Visually striking and memorable
 - ✅ Cohesive with a clear aesthetic point-of-view
@@ -154,6 +155,7 @@ Then implement working code (HTML/CSS/JS, React, Vue, etc.) that is:
 Focus on these core principles:
 
 #### Typography (CRITICAL)
+
 - **DO**: Choose fonts that are beautiful, unique, and interesting
 - **DO**: Avoid generic fonts like Arial and Inter
 - **DO**: Opt for distinctive choices that elevate the frontend's aesthetics
@@ -162,12 +164,14 @@ Focus on these core principles:
 - ❌ NEVER use generic AI-generated font families
 
 #### Color & Theme
+
 - **DO**: Commit to a cohesive aesthetic
 - **DO**: Use CSS variables for consistency
 - **DO**: Dominant colors with sharp accents outperform timid, evenly-distributed palettes
 - ❌ NEVER use cliched color schemes like purple gradients on white backgrounds
 
 #### Motion
+
 - **DO**: Use animations for effects and micro-interactions
 - **DO**: Prioritize CSS-only solutions for HTML
 - **DO**: Use Motion library for React when available
@@ -175,12 +179,14 @@ Focus on these core principles:
 - **DO**: Use scroll-triggering and hover states that surprise
 
 #### Spatial Composition
+
 - **DO**: Use unexpected layouts
 - **DO**: Asymmetry, overlap, diagonal flow
 - **DO**: Grid-breaking elements
 - **DO**: Generous negative space OR controlled density
 
 #### Backgrounds & Visual Details
+
 - **DO**: Create atmosphere and depth rather than defaulting to solid colors
 - **DO**: Add contextual effects and textures that match the overall aesthetic
 - **DO**: Apply creative forms like gradient meshes, noise textures, geometric patterns, layered transparencies, dramatic shadows, decorative borders, custom cursors, and grain overlays

@@ -79,14 +79,18 @@
     "apps/white-label",
     "packages/agent-protocol",
     "packages/analytics",
+    "packages/cloud-integrations",
     "packages/compliance",
     "packages/core",
     "packages/cursor-rules",
     "packages/dexgraph",
+    "packages/extensions",
     "packages/mcp-server",
     "packages/marketplace",
+    "packages/mobile-sdk",
     "packages/plugins",
-    "packages/sdk"
+    "packages/sdk",
+    "packages/vscode-extension"
   ],
   "scripts": {
     "prepare": "npm run build:cli",

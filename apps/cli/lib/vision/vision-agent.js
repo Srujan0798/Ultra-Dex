@@ -7,11 +7,20 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 
 import axios from 'axios';
-import sharp from 'sharp';
 import { AppError } from '../utils/errors.js';
 import { printInfo, printSuccess, printWarning } from '../utils/output.js';
 
 const _execAsync = promisify(exec);
+
+// Dynamic import helper for sharp
+async function loadSharp() {
+  try {
+    const sharp = await import('sharp');
+    return sharp.default || sharp;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Vision Agent for Screenshot-to-Code Conversion
@@ -110,6 +119,12 @@ export class VisionAgent {
    * Preprocess image for better analysis
    */
   async preprocessImage(imagePath) {
+    const sharp = await loadSharp();
+    if (!sharp) {
+      printWarning('⚠️ sharp module not available. Image preprocessing skipped.');
+      return imagePath;
+    }
+
     try {
       // Resize image if too large (for better API performance and cost)
       const image = sharp(imagePath);
@@ -126,13 +141,13 @@ export class VisionAgent {
           .jpeg({ quality: 85 })
           .toFile(resizedPath);
 
-        printInfo(`🖼️  Image resized from ${metadata.width}x${metadata.height} to fit 1024x1024`);
+        printInfo(`🖼️ Image resized from ${metadata.width}x${metadata.height} to fit 1024x1024`);
         return resizedPath;
       }
 
       return imagePath;
     } catch (error) {
-      printWarning(`⚠️  Could not preprocess image: ${error.message}. Using original.`);
+      printWarning(`⚠️ Could not preprocess image: ${error.message}. Using original.`);
       return imagePath;
     }
   }
@@ -234,15 +249,15 @@ Output only the code with no explanations unless specifically asked.`;
     const base64Image = await this.encodeImageToBase64(imagePath);
 
     const prompt = `Analyze this UI screenshot and extract design tokens including:
-    - Color palette (primary, secondary, accents, neutrals)
-    - Typography scale (font sizes, weights, families)
-    - Spacing scale (padding, margins, gaps)
-    - Border radius values
-    - Shadow definitions
-    - Component styles (buttons, inputs, cards)
-    - Layout patterns
+- Color palette (primary, secondary, accents, neutrals)
+- Typography scale (font sizes, weights, families)
+- Spacing scale (padding, margins, gaps)
+- Border radius values
+- Shadow definitions
+- Component styles (buttons, inputs, cards)
+- Layout patterns
 
-    Return as a JSON object with structured design tokens.`;
+Return as a JSON object with structured design tokens.`;
 
     try {
       const response = await axios.post(
@@ -313,13 +328,13 @@ Output only the code with no explanations unless specifically asked.`;
     const base64Image2 = await this.encodeImageToBase64(imagePath2);
 
     const prompt = `Compare these two UI screenshots and provide a detailed analysis:
-    1. Visual differences (colors, layout, components)
-    2. Functional differences
-    3. Design improvements in the newer version
-    4. Potential accessibility issues
-    5. Recommendations for consistency
+1. Visual differences (colors, layout, components)
+2. Functional differences
+3. Design improvements in the newer version
+4. Potential accessibility issues
+5. Recommendations for consistency
 
-    Focus on actionable insights for developers.`;
+Focus on actionable insights for developers.`;
 
     try {
       const response = await axios.post(
