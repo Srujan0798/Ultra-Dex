@@ -172,7 +172,10 @@
     "incidents:verify": "node gitFail/incidents/verify-incident-archive.js",
     "start:prod": "./scripts/start-production.sh",
     "start:api": "node --import=tsx src/core/server/api-server.ts",
-    "start:server": "node --import=tsx src/core/server/production-server.ts"
+    "start:server": "node --import=tsx src/core/server/production-server.ts",
+    "test:report": "node scripts/test-report.mjs",
+    "test:report:unit": "node scripts/test-report.mjs --dir tests/core",
+    "test:report:integration": "node scripts/test-report.mjs --dir tests/integration"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "3.0.71",
