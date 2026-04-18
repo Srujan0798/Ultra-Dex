@@ -1,0 +1,25 @@
+version: dexgraph/v1
+name: smoke-test-workflow
+description: E2E smoke test workflow
+context:
+  project: ultra-dex
+tasks:
+  - id: step1
+    role: architect
+    instruction: Design the system architecture
+    output: architecture.json
+  - id: step2
+    role: engineer
+    instruction: Implement the design from {{step1.output}}
+    depends_on:
+      - step1
+    output: implementation.ts
+  - id: step3
+    role: tester
+    instruction: Write tests for {{step2.output}}
+    depends_on:
+      - step2
+    output: tests.test.ts
+on_failure:
+  retry: 3
+  rollback: true

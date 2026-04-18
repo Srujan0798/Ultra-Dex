@@ -7,11 +7,15 @@ export class DexGraph {
   private adjacency: Map<string, string[]>; // node → dependents
   private reverseAdjacency: Map<string, string[]>; // node → dependencies
 
-  constructor() {
+  constructor(parseResult?: { nodes: GraphNode[]; edges: GraphEdge[] }) {
     this.nodes = new Map();
     this.edges = [];
     this.adjacency = new Map();
     this.reverseAdjacency = new Map();
+    if (parseResult) {
+      for (const node of parseResult.nodes) this.addNode(node);
+      for (const edge of parseResult.edges) this.addEdge(edge);
+    }
   }
 
   /**
@@ -118,14 +122,14 @@ export class DexGraph {
    * Get nodes with zero dependencies (entry points)
    */
   getRootNodes(): GraphNode[] {
-    return this.getAllNodes().filter(node => this.getDependencies(node.id).length === 0);
+    return this.getAllNodes().filter((node) => this.getDependencies(node.id).length === 0);
   }
 
   /**
    * Get nodes with zero dependents (exit points)
    */
   getLeafNodes(): GraphNode[] {
-    return this.getAllNodes().filter(node => this.getDependents(node.id).length === 0);
+    return this.getAllNodes().filter((node) => this.getDependents(node.id).length === 0);
   }
 
   /**
@@ -148,7 +152,6 @@ export class DexGraph {
       const dependents = this.getDependents(u);
       for (const v of dependents) {
         if (colors.get(v) === 'gray') {
-          // Cycle found
           const cyclePath = path.slice(path.indexOf(v));
           cyclePath.push(v);
           cycles.push(cyclePath);
@@ -167,6 +170,10 @@ export class DexGraph {
     }
 
     return cycles.length > 0 ? cycles : null;
+  }
+
+  hasCycles(): boolean {
+    return this.detectCycles() !== null;
   }
 
   /**
@@ -220,13 +227,17 @@ export class DexGraph {
     return result;
   }
 
+  getExecutionOrder(): string[] {
+    return this.topologicalSort();
+  }
+
   /**
    * Return nodes in READY state whose ALL dependencies are in SUCCESS state
    */
   getExecutableNodes(): GraphNode[] {
-    return this.getNodesByState('READY').filter(node => {
+    return this.getNodesByState('READY').filter((node) => {
       const dependencies = this.getDependencies(node.id);
-      return dependencies.every(depId => this.getNode(depId).state === 'SUCCESS');
+      return dependencies.every((depId) => this.getNode(depId).state === 'SUCCESS');
     });
   }
 

@@ -1,6 +1,6 @@
 {
   "name": "@ultra-dex/dexgraph",
-  "version": "0.3.0",
+  "version": "1.2.0",
   "description": "Deterministic workflow orchestration with DAG-based task graphs",
   "type": "module",
   "main": "./dist/index.js",
@@ -46,14 +46,7 @@
   "dependencies": {
     "js-yaml": "^4.1.0"
   },
-  "peerDependencies": {
-    "@ultra-dex/sdk": "^1.0.0"
-  },
-  "peerDependenciesMeta": {
-    "@ultra-dex/sdk": {
-      "optional": true
-    }
-  },
+  "peerDependencies": {},
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^25.5.2",

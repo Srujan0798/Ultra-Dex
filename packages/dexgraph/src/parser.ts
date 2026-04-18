@@ -62,10 +62,7 @@ export function loadYAML(filepath: string): WorkflowDefinition {
 
 // ── Dependency Extraction ───────────────────────────────
 
-function extractDependencies(
-  tasks: TaskDefinition[],
-  taskIds: Set<string>
-): GraphEdge[] {
+function extractDependencies(tasks: TaskDefinition[], taskIds: Set<string>): GraphEdge[] {
   const edges: GraphEdge[] = [];
 
   for (const task of tasks) {
@@ -88,9 +85,7 @@ function extractDependencies(
         const refs = extractTemplateRefs(value);
         for (const ref of refs) {
           if (!taskIds.has(ref)) {
-            throw new GraphError(
-              `Unknown template ref "{{${ref}.output}}" in task "${task.id}"`
-            );
+            throw new GraphError(`Unknown template ref "{{${ref}.output}}" in task "${task.id}"`);
           }
           edges.push({ from: ref, to: task.id });
         }
@@ -113,9 +108,7 @@ function extractTemplateRefs(value: string): string[] {
 
 // ── Template Resolution ─────────────────────────────────
 
-export function resolveTemplates(
-  tasks: TaskDefinition[]
-): TaskDefinition[] {
+export function resolveTemplates(tasks: TaskDefinition[]): TaskDefinition[] {
   return tasks.map((task) => {
     const resolved = { ...task };
 
@@ -165,15 +158,31 @@ function getDirectDependencies(task: TaskDefinition): string[] {
 
 export function parse(filepath: string): DexGraphResult {
   const def = loadYAML(filepath);
+  return parseWorkflowDefinition(def);
+}
+
+export function parseString(yamlContent: string): DexGraphResult {
+  const doc = yaml.load(yamlContent, { schema: yaml.JSON_SCHEMA });
+
+  if (doc === null || typeof doc !== 'object' || Array.isArray(doc)) {
+    throw new ParseError('YAML root must be a mapping');
+  }
+
+  const result = validateWorkflow(doc);
+  if (!result.valid) {
+    throw new ParseError(`Workflow validation failed: ${result.errors.join('; ')}`);
+  }
+
+  return parseWorkflowDefinition(doc as WorkflowDefinition);
+}
+
+function parseWorkflowDefinition(def: WorkflowDefinition): DexGraphResult {
   const taskIds = new Set<string>(def.tasks.map((t: TaskDefinition) => t.id));
 
-  // Resolve templates
   const resolved = resolveTemplates(def.tasks);
 
-  // Build edges (from explicit deps + template refs in original tasks)
   const edges = extractDependencies(def.tasks, taskIds);
 
-  // Build nodes
   const nodes = resolved.map((task) => {
     const deps = getDirectDependencies(task);
     return taskToNode(task, deps);

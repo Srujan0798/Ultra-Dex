@@ -11,12 +11,31 @@ export {
   NodeState,
 } from './types.js';
 
-export { parse, loadYAML, resolveTemplates, ParseError, GraphError, StateError } from './parser.js';
+export {
+  parse,
+  parseString,
+  loadYAML,
+  resolveTemplates,
+  ParseError,
+  GraphError,
+  StateError,
+} from './parser.js';
 export { validateWorkflow, ValidationResult } from './schema.js';
 export { DexGraph } from './graph.js';
-export { Scheduler, Dispatcher, SchedulerConfig, SchedulerStatus, SchedulerResult } from './scheduler.js';
+export {
+  Scheduler,
+  Dispatcher,
+  SchedulerConfig,
+  SchedulerStatus,
+  SchedulerResult,
+} from './scheduler.js';
 export { StateMachine, StateTransition, TRANSITIONS } from './stateMachine.js';
-export { Dispatcher as TaskDispatcher, DispatcherConfig, DispatchedTask, Verifier } from './dispatcher.js';
+export {
+  Dispatcher as TaskDispatcher,
+  DispatcherConfig,
+  DispatchedTask,
+  Verifier,
+} from './dispatcher.js';
 export { createVerifier, VerificationResult } from './verifier.js';
 export {
   CheckResult,
@@ -66,18 +85,7 @@ export {
   WorkflowStoreConfig,
 } from './workflowStore.js';
 export { ContextCollector } from './contextCollector.js';
-export {
-  GovernanceManager,
-  ExecutionBlockedError,
-  Rule,
-  Decision,
-} from './governance.js';
-export {
-  EventEmitter,
-  createEvent,
-  DexEvent,
-  EventType,
-  EventHandler,
-} from './observability.js';
+export { GovernanceManager, ExecutionBlockedError, Rule, Decision } from './governance.js';
+export { EventEmitter, createEvent, DexEvent, EventType, EventHandler } from './observability.js';
 
 export { UltraDexAdapter } from './adapters/ultraDexAdapter.js';
