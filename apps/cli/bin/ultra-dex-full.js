@@ -110,7 +110,7 @@ const commandRegistrations = [
   [replayCmd, 'registerReplayCommand'],
   [pluginCmd, 'registerPluginCommand'],
   [marketplaceCmd, 'registerMarketplaceCommand'],
-  [teamCmd, 'registerTeamCommand'],
+  // teamCmd excluded — imports non-existent src/core/team/team-manager.ts
   [auditCmd, 'registerAuditCommand'],
   [perfCmd, 'registerPerfCommand'],
 
