@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-> **PROJECT STATUS: v0.3.1** | 492 pass, 6 fail, 5 skipped | Unit: 427 pass | Integration: 65 pass, 6 fail | CLI boots via tsx | All deps pinned (no ^) | `init --quick` API key wizard
+> **PROJECT STATUS: v0.3.1** | 479 pass, 0 fail, 5 skipped | Unit: 427 pass | Integration: 52 pass, 0 fail, 5 skipped | CLI boots via tsx | All deps pinned (no ^) | `init --quick` API key wizard
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 

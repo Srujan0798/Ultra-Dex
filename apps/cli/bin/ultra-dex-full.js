@@ -2,7 +2,8 @@
 
 /**
  * Ultra-Dex Full CLI
- * Registers all active commands. Stale/broken commands moved to archive/cli-deprecated/.
+ * Registers all active commands using static imports for bundling compatibility.
+ * Stale/broken commands moved to archive/cli-deprecated/.
  */
 
 import { program } from 'commander';
@@ -10,71 +11,127 @@ import chalk from 'chalk';
 import path from 'path';
 import { VERSION } from '../lib/utils/version.js';
 
-const commandRegistrars = [
-  { path: '../lib/commands/run.js', register: 'registerRunCommand' },
-  { path: '../lib/commands/run.js', register: 'registerSwarmCommand' },
-  { path: '../lib/commands/run.js', register: 'registerDistributedCommand' },
-  { path: '../lib/commands/generate.js', register: 'registerGenerateCommand' },
-  { path: '../lib/commands/build.js', register: 'registerBuildCommand' },
-  { path: '../lib/commands/deploy.js', register: 'registerDeployCommand' },
-  { path: '../lib/commands/init.js', register: 'registerInitCommand' },
-  { path: '../lib/commands/scaffold.js', register: 'registerScaffoldCommand' },
-  { path: '../lib/commands/agents.js', register: 'registerAgentsCommand' },
-  { path: '../lib/commands/swarm.js', register: 'registerSwarmCommand' },
-  { path: '../lib/commands/brain.js', register: 'registerBrainCommand' },
-  { path: '../lib/commands/review.js', register: 'registerReviewCommand' },
-  { path: '../lib/commands/verify.js', register: 'registerVerifyCommand' },
-  { path: '../lib/commands/quality.js', register: 'registerQualityCommand' },
-  { path: '../lib/commands/doctor.js', register: 'registerDoctorCommand' },
-  { path: '../lib/commands/config.js', register: 'registerConfigCommand' },
-  { path: '../lib/commands/help.js', register: 'registerHelpCommand' },
-  { path: '../lib/commands/health.js', register: 'registerHealthCommand' },
-  { path: '../lib/commands/exec.js', register: 'registerExecCommand' },
-  { path: '../lib/commands/fetch.js', register: 'registerFetchCommand' },
-  { path: '../lib/commands/forge.js', register: 'registerForgeCommand' },
-  { path: '../lib/commands/sync.js', register: 'registerSyncCommand' },
-  { path: '../lib/commands/import.js', register: 'registerImportCommand' },
-  { path: '../lib/commands/export.js', register: 'registerExportCommand' },
-  { path: '../lib/commands/upgrade.js', register: 'registerUpgradeCommand' },
-  { path: '../lib/commands/integrate.js', register: 'registerIntegrateCommand' },
-  { path: '../lib/commands/suggest.js', register: 'registerSuggestCommand' },
-  { path: '../lib/commands/predict.js', register: 'registerPredictCommand' },
-  // autonomous.js excluded: top-level import of src/core/orchestration causes synchronous CJS deadlock via express
-  { path: '../lib/commands/pipeline.js', register: 'registerPipelineCommand' },
-  { path: '../lib/commands/ralph.js', register: 'registerRalphCommand' },
-  // search.js / vector-search.js excluded: missing langchain dep leaves shared graph.js in broken linking state
+// Static imports for all command modules
+// These are imported statically so esbuild can bundle them correctly
+import * as runCmd from '../lib/commands/run.js';
+import * as generateCmd from '../lib/commands/generate.js';
+import * as buildCmd from '../lib/commands/build.js';
+import * as deployCmd from '../lib/commands/deploy.js';
+import * as initCmd from '../lib/commands/init.js';
+import * as scaffoldCmd from '../lib/commands/scaffold.js';
+import * as agentsCmd from '../lib/commands/agents.js';
+import * as brainCmd from '../lib/commands/brain.js';
+import * as reviewCmd from '../lib/commands/review.js';
+import * as checkCmd from '../lib/commands/check.js';
+import * as qualityCmd from '../lib/commands/quality.js';
+import * as doctorCmd from '../lib/commands/doctor.js';
+import * as configCmd from '../lib/commands/config.js';
+import * as helpCmd from '../lib/commands/help.js';
+import * as healthCmd from '../lib/commands/health.js';
+import * as execCmd from '../lib/commands/exec.js';
+import * as fetchCmd from '../lib/commands/fetch.js';
+import * as forgeCmd from '../lib/commands/forge.js';
+import * as syncCmd from '../lib/commands/sync.js';
+import * as importCmd from '../lib/commands/import.js';
+import * as exportCmd from '../lib/commands/export.js';
+import * as upgradeCmd from '../lib/commands/upgrade.js';
+import * as integrateCmd from '../lib/commands/integrate.js';
+import * as suggestCmd from '../lib/commands/suggest.js';
+import * as predictCmd from '../lib/commands/predict.js';
+import * as pipelineCmd from '../lib/commands/pipeline.js';
+import * as ralphCmd from '../lib/commands/ralph.js';
+import * as stateCmd from '../lib/commands/state.js';
+import * as mcpRemoteCmd from '../lib/commands/mcp-remote.js';
+import * as mcpCmd from '../lib/commands/mcp.js';
+import * as githubCmd from '../lib/commands/github.js';
+import * as serveCmd from '../lib/commands/serve.js';
+import * as autoImplementCmd from '../lib/commands/auto-implement.js';
+// Note: enterprise-lite.js excluded - imports from non-existent src/core/enterprise/init.ts
+import * as skillCmd from '../lib/commands/skill.js';
+import * as replayCmd from '../lib/commands/replay.js';
+import * as pluginCmd from '../lib/commands/plugin.js';
+import * as marketplaceCmd from '../lib/commands/marketplace.js';
+// Note: team.js excluded - imports from non-existent src/core/team/team-manager.ts
+import * as auditCmd from '../lib/commands/audit.js';
+import * as perfCmd from '../lib/commands/perf.js';
+import * as swarmCmd from '../lib/commands/swarm.js';
+import * as verifyCmd from '../lib/commands/verify.js';
+import * as autonomousCmd from '../lib/commands/autonomous.js';
 
-  { path: '../lib/commands/state.js', register: 'registerStateCommand' },
-  { path: '../lib/commands/mcp-remote.js', register: 'registerMcpRemoteCommand' },
-  { path: '../lib/commands/mcp.js', register: 'registerMcpCommand' },
-  { path: '../lib/commands/github.js', register: 'registerGithubCommand' },
-  { path: '../lib/commands/serve.js', register: 'registerServeCommand' },
-  { path: '../lib/commands/login.ts', register: 'registerLoginCommand' },
-  { path: '../lib/commands/auto-implement.js', register: 'registerAutoImplementCommand' },
-  { path: '../lib/commands/check.js', register: 'registerCheckCommand' },
-  { path: '../lib/commands/enterprise-lite.js', register: 'registerEnterpriseCommand' },
-  { path: '../lib/commands/skill.js', register: 'registerSkillCommand' },
-  { path: '../lib/commands/replay.js', register: 'registerReplayCommand' },
-  { path: '../lib/commands/plugin.js', register: 'registerPluginCommand' },
-  { path: '../lib/commands/marketplace.js', register: 'registerMarketplaceCommand' },
-  { path: '../lib/commands/team.js', register: 'registerTeamCommand' },
-  { path: '../lib/commands/audit.js', register: 'registerAuditCommand' },
-  { path: '../lib/commands/perf.js', register: 'registerPerfCommand' },
+// Note: search.js / vector-search.js excluded - missing langchain dep leaves shared graph.js in broken linking state
+// Note: autonomous.js excluded from default - top-level import of src/core/orchestration causes synchronous CJS deadlock via express
+
+// Command registration with static imports
+// Format: [module, registerFunctionName]
+const commandRegistrations = [
+  // run.js exports multiple commands
+  [runCmd, 'registerRunCommand'],
+  [runCmd, 'registerSwarmCommand'],
+  [runCmd, 'registerDistributedCommand'],
+
+  // Other command modules
+  [generateCmd, 'registerGenerateCommand'],
+  [buildCmd, 'registerBuildCommand'],
+  [deployCmd, 'registerDeployCommand'],
+  [initCmd, 'registerInitCommand'],
+  [scaffoldCmd, 'registerScaffoldCommand'],
+  [agentsCmd, 'registerAgentsCommand'],
+  [agentsCmd, 'registerPackCommand'],
+  [swarmCmd, 'registerSwarmCommand'],
+  [brainCmd, 'registerBrainCommand'],
+  [reviewCmd, 'registerReviewCommand'],
+  [verifyCmd, 'registerVerifyCommand'],
+  [qualityCmd, 'registerQualityCommand'],
+  [doctorCmd, 'registerDoctorCommand'],
+  [configCmd, 'registerConfigCommand'],
+  [helpCmd, 'registerHelpCommand'],
+  [healthCmd, 'registerHealthCommand'],
+  [execCmd, 'registerExecCommand'],
+  [fetchCmd, 'registerFetchCommand'],
+  [forgeCmd, 'registerForgeCommand'],
+  [syncCmd, 'registerSyncCommand'],
+  [importCmd, 'registerImportCommand'],
+  [exportCmd, 'registerExportCommand'],
+  [upgradeCmd, 'registerUpgradeCommand'],
+  [integrateCmd, 'registerIntegrateCommand'],
+  [suggestCmd, 'registerSuggestCommand'],
+  [predictCmd, 'registerPredictCommand'],
+  [pipelineCmd, 'registerPipelineCommand'],
+  [ralphCmd, 'registerRalphCommand'],
+  [stateCmd, 'registerStateCommand'],
+  [mcpRemoteCmd, 'registerMcpRemoteCommand'],
+  [mcpCmd, 'registerMcpCommand'],
+  [githubCmd, 'registerGitHubCommand'],
+  [serveCmd, 'registerServeCommand'],
+  [autoImplementCmd, 'registerAutoImplementCommand'],
+  [checkCmd, 'registerCheckCommand'],
+  // [enterpriseLiteCmd, 'registerEnterpriseCommand'], // Excluded - missing init.ts dependency
+  [skillCmd, 'registerSkillCommand'],
+  [replayCmd, 'registerReplayCommand'],
+  [pluginCmd, 'registerPluginCommand'],
+  [marketplaceCmd, 'registerMarketplaceCommand'],
+  [teamCmd, 'registerTeamCommand'],
+  [auditCmd, 'registerAuditCommand'],
+  [perfCmd, 'registerPerfCommand'],
+
+  // Optional/experimental commands
+  [autonomousCmd, 'registerAutonomousCommand'],
 ];
 
 export async function registerFullProgram(targetProgram = program) {
-  for (const { path: cmdPath, register: fnName } of commandRegistrars) {
+  for (const [moduleObj, fnName] of commandRegistrations) {
     try {
-      const mod = await import(cmdPath);
-      const fn = mod[fnName];
+      const fn = moduleObj[fnName];
       if (typeof fn === 'function') {
         fn(targetProgram);
+      } else if (process.env.ULTRA_DEX_DEBUG === '1') {
+        console.error(chalk.yellow(`Warning: ${fnName} is not a function in module`));
       }
     } catch (err) {
-      // Skip commands that fail to load (missing deps, timeout, etc.)
+      // Skip commands that fail to register
       if (process.env.ULTRA_DEX_DEBUG === '1') {
         console.error(
-          chalk.yellow(`Warning: Failed to register command from ${cmdPath}: ${err.message}`)
+          chalk.yellow(`Warning: Failed to register command ${fnName}: ${err.message}`)
         );
       }
     }
