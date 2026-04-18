@@ -20,8 +20,8 @@
   "author": "Srujan Sai Karna",
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.29.0",
-    "@ultra-dex/core": "^2.0.0"
+    "@modelcontextprotocol/sdk": "1.29.0",
+    "@ultra-dex/core": "0.3.0"
   },
   "engines": {
     "node": ">=18.0.0"
