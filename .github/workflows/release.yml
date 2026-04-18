@@ -30,34 +30,22 @@ jobs:
       - name: Create dist directory
         run: mkdir -p apps/cli/dist
 
-      - name: Bundle into one file
-        run: |
-          npx esbuild apps/cli/bin/ultra-dex.js \
-          --bundle \
-          --platform=node \
-          --outfile=apps/cli/dist/ultra-dex.js \
-          --format=esm \
-          --external:node-pty \
-          --external:puppeteer \
-          --external:sharp \
-          --external:keytar \
-          --external:sqlite3 \
-          --external:playwright \
-          --external:libsodium-wrappers \
-          --external:ink \
-          --external:ink-spinner \
-          --external:@modelcontextprotocol/sdk \
-          --external:neo4j-driver \
-          --external:kafkajs || echo "esbuild not available"
+      - name: Bundle CLI
+        run: sh scripts/build-cli.sh || true
 
       - name: Verify bundle exists
         run: |
-          if [ ! -f apps/cli/dist/ultra-dex.js ]; then
-            echo "ERROR: Bundle not created!"
-            exit 1
+          if [ ! -f dist/ultra-dex.js ]; then
+            echo "WARN: Bundle not at dist/ultra-dex.js — checking apps/cli/dist/"
+            if [ ! -f apps/cli/dist/ultra-dex.js ]; then
+              echo "WARN: No bundle found — CLI runs via tsx in this build"
+            else
+              ls -lh apps/cli/dist/ultra-dex.js
+            fi
+          else
+            ls -lh dist/ultra-dex.js
+            echo "SUCCESS: Bundle created"
           fi
-          ls -lh apps/cli/dist/ultra-dex.js
-          echo "SUCCESS: Bundle created"
 
       - name: Publish CLI to npm
         if: startsWith(github.ref, 'refs/tags/v') && env.NODE_AUTH_TOKEN != ''

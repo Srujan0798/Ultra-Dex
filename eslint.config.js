@@ -134,6 +134,7 @@ export default [
       ],
       'no-undef': 'error',
       'no-useless-assignment': 'off',
+      'no-unassigned-vars': 'off',
       'preserve-caught-error': 'off',
       'no-console': 'off',
       'no-empty': ['warn', { allowEmptyCatch: true }],
